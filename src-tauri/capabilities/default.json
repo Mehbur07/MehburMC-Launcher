@@ -49,6 +49,15 @@
     "allow-read-instance-log",
     "allow-list-loader-versions",
     "allow-import-optifine",
-    "allow-install-shader-support"
+    "allow-install-shader-support",
+    "allow-search-modrinth",
+    "allow-project-versions",
+    "allow-install-content",
+    "allow-scan-content",
+    "allow-update-content",
+    "allow-import-modpack",
+    "allow-install-modrinth-modpack",
+    "allow-content-icon",
+    "allow-open-external"
   ]
 }

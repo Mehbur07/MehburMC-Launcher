@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-project-versions"
+description = "Enables the project_versions command without any pre-configured scope."
+commands.allow = ["project_versions"]
+
+[[permission]]
+identifier = "deny-project-versions"
+description = "Denies the project_versions command without any pre-configured scope."
+commands.deny = ["project_versions"]

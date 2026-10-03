@@ -61,7 +61,9 @@
     "moveDataFolderSoon": "Faz 8'de eklenecek",
     "about": "Hakkında",
     "version": "Sürüm {{version}}",
-    "telemetry": "Telemetri yok: MehburMC Launcher hiçbir kullanım verisi göndermez."
+    "telemetry": "Telemetri yok: MehburMC Launcher hiçbir kullanım verisi göndermez.",
+    "curseforgeKey": "CurseForge API anahtarı",
+    "curseforgeKeyHint": "CurseForge modpack'lerini (.zip) kurmak için kendi anahtarın (console.curseforge.com). Yalnızca bu bilgisayarda saklanır."
   },
   "startup": {
     "title": "Launcher başlatılamadı",
@@ -146,6 +148,10 @@
       "optifineInvalid": "Bu dosya bir OptiFine jar'ı değil: {{path}}",
       "optifineMissing": "OptiFine {{mc}} {{edition}} jar'ı içe aktarılmamış. Profil ayarlarından jar'ı tekrar seç.",
       "addonUnavailable": "{{project}}, {{loader}} / Minecraft {{mc}} için bulunamadı."
+    },
+    "content": {
+      "modpackInvalid": "Geçersiz modpack: {{reason}}",
+      "curseforgeKey": "CurseForge modpack'i için geçerli bir API anahtarı gerekiyor (Ayarlar → Gelişmiş)."
     }
   },
   "instances": {
@@ -161,7 +167,8 @@
     "drag": "Sürükleyerek sırala",
     "playTime": "Oynama süresi",
     "deleteTitle": "Profil silinsin mi?",
-    "deleteBody": "\"{{name}}\" profili, dünyaları ve modlarıyla birlikte kalıcı olarak silinecek."
+    "deleteBody": "\"{{name}}\" profili, dünyaları ve modlarıyla birlikte kalıcı olarak silinecek.",
+    "importModpack": "Modpack içe aktar"
   },
   "instance": {
     "missing": "Profil bulunamadı",
@@ -231,7 +238,7 @@
       "screenshots": "Ekran görüntüsü yok",
       "logs": "Log dosyası yok"
     },
-    "modsHint": "Mod tarayıcısı Faz 6'da geliyor; şimdilik .jar dosyalarını klasöre kopyalayabilirsin.",
+    "modsHint": "\"İçerik ekle\" ile Modrinth'ten mod kurabilirsin.",
     "screenshotsHint": "Oyunda F2 ile ekran görüntüsü al.",
     "enabled": "Etkin",
     "deleteTitle": "Silinsin mi?",
@@ -266,7 +273,8 @@
     "emptyHint": "Bir profil başlattığında dosya indirmeleri burada görünür.",
     "kind": {
       "launch": "Başlatma",
-      "repair": "Onarım"
+      "repair": "Onarım",
+      "install": "Kurulum"
     },
     "status": {
       "preparing": "Hazırlanıyor",
@@ -286,7 +294,8 @@
     "natives": "Native dosyalar",
     "assets": "Asset'ler",
     "java": "Java",
-    "launching": "Başlatılıyor"
+    "launching": "Başlatılıyor",
+    "content": "İçerik"
   },
   "accounts": {
     "offlineTitle": "Offline hesap",
@@ -322,5 +331,52 @@
     "installing": "Kuruluyor…",
     "installed": "Kuruldu: {{files}}",
     "nothing": "Zaten kurulu: {{mods}}"
+  },
+  "browse": {
+    "target": "Hedef profil",
+    "noInstances": "Önce bir profil oluştur",
+    "types": {
+      "mod": "Modlar",
+      "modpack": "Modpack'ler",
+      "resourcepack": "Resource pack",
+      "shader": "Shader"
+    },
+    "search": "Modrinth'te ara…",
+    "sort": "Sıralama",
+    "sorts": {
+      "relevance": "İlgili",
+      "downloads": "En çok indirilen",
+      "updated": "Son güncellenen",
+      "newest": "En yeni"
+    },
+    "compatible": "Yalnızca uyumlu",
+    "needsLoader": "Bu profilde mod loader yok. Mod kurmak için profil ayarlarından Fabric, Forge vb. seç.",
+    "empty": "Sonuç yok",
+    "install": "Kur",
+    "installPack": "Profil olarak kur",
+    "installed": "Kuruldu",
+    "more": "Daha fazla ({{shown}} / {{total}})",
+    "openModrinth": "Modrinth'te aç",
+    "versions": "Sürümler",
+    "noCompatible": "Bu profille uyumlu sürüm yok.",
+    "compatibleWith": "{{name}} ile uyumlu"
+  },
+  "content": {
+    "add": "İçerik ekle",
+    "checkUpdates": "Güncellemeleri denetle",
+    "updateAll": "Tümünü güncelle ({{count}})",
+    "update": "Güncelle",
+    "updateTo": "→ {{version}}",
+    "upToDate": "Hepsi güncel.",
+    "emptyHint": "\"İçerik ekle\" ile Modrinth'ten kurabilir ya da dosyaları klasöre kopyalayabilirsin."
+  },
+  "modpack": {
+    "importing": "İçe aktarılıyor…",
+    "importedTitle": "Modpack kuruldu",
+    "imported": "\"{{name}}\" (Minecraft {{mc}}) profili oluşturuldu.",
+    "openInstance": "Profili aç",
+    "blockedTitle": "{{count}} dosya elle indirilmeli",
+    "blockedBody": "Bu dosyaların yazarları üçüncü taraf indirmeyi kapatmış. Sayfadan indirip belirtilen klasöre koy.",
+    "download": "İndir"
   }
 }

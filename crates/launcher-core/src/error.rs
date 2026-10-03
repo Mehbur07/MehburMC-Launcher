@@ -142,6 +142,12 @@ pub enum CoreError {
     #[error("the OptiFine jar for {mc} {edition} has not been imported")]
     OptifineMissing { mc: String, edition: String },
 
+    #[error("invalid modpack: {0}")]
+    ModpackInvalid(String),
+
+    #[error("a CurseForge API key is required (or it was rejected)")]
+    CurseForgeKey,
+
     #[error("{project} is not available for {loader} on Minecraft {mc}")]
     AddonUnavailable {
         project: String,
@@ -197,6 +203,8 @@ impl CoreError {
             Self::OptifineInvalid { .. } => "loader.optifineInvalid",
             Self::OptifineMissing { .. } => "loader.optifineMissing",
             Self::AddonUnavailable { .. } => "loader.addonUnavailable",
+            Self::ModpackInvalid(_) => "content.modpackInvalid",
+            Self::CurseForgeKey => "content.curseforgeKey",
         }
     }
 
@@ -275,7 +283,8 @@ impl CoreError {
                 put("loader", loader.clone());
                 put("mc", mc.clone());
             }
-            Self::NoDataDir | Self::Cancelled | Self::NoAccount => {}
+            Self::ModpackInvalid(reason) => put("reason", reason.clone()),
+            Self::NoDataDir | Self::Cancelled | Self::NoAccount | Self::CurseForgeKey => {}
         }
         p
     }

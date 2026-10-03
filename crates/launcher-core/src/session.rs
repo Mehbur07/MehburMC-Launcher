@@ -6,10 +6,15 @@ use std::sync::Arc;
 use tokio_util::sync::CancellationToken;
 
 use crate::auth::store::AccountStore;
-use crate::content::shaders::{self, ShaderSetup};
+use crate::content::install::{self, InstallRequest, InstallResult};
+use crate::content::installed::{self, InstalledItem};
+use crate::content::modpack::{self, ImportResult, PackKind};
+use crate::content::{modrinth, shaders};
 use crate::ctx::Ctx;
-use crate::error::Result;
+use crate::error::{CoreError, Result};
 use crate::events::EventSink;
+use crate::events::{Progress, Stage};
+use crate::instance::files::Folder;
 use crate::instance::{Instance, InstancePatch, InstanceStore, LoaderSpec, Running, split_args};
 use crate::launch::process::GameExit;
 use crate::launch::{self, LaunchOptions, process};
@@ -180,12 +185,125 @@ impl Launcher {
 
     /// Downloads Iris + Sodium (or Oculus + Embeddium) into the instance's
     /// `mods/` folder. The instance is reserved meanwhile so it cannot start.
-    pub async fn install_shader_support(&self, instance_id: &str) -> Result<ShaderSetup> {
+    pub async fn install_shader_support(&self, instance_id: &str) -> Result<InstallResult> {
         let inst = self.instances.get(instance_id)?;
         let _claim = self.running.try_claim(&inst)?;
-        let mods = self.instances.dir(&inst.id)?.join("mods");
-        std::fs::create_dir_all(&mods).map_err(|e| crate::CoreError::io(&mods, e))?;
-        shaders::install(&self.ctx, &inst, &mods, &CancellationToken::new()).await
+        let dir = self.instances.dir(&inst.id)?;
+        shaders::install(&self.ctx, &inst, &dir, &CancellationToken::new()).await
+    }
+
+    /// Installs Modrinth projects (with dependencies) into an instance.
+    pub async fn install_content(
+        &self,
+        instance_id: &str,
+        requests: &[InstallRequest],
+    ) -> Result<InstallResult> {
+        let inst = self.instances.get(instance_id)?;
+        let _claim = self.running.try_claim(&inst)?;
+        let dir = self.instances.dir(&inst.id)?;
+        install::install(
+            &self.ctx,
+            &inst,
+            &dir,
+            requests,
+            &install::quiet_progress(),
+            &CancellationToken::new(),
+        )
+        .await
+    }
+
+    /// Lists a content folder with Modrinth metadata (and updates).
+    pub async fn scan_content(
+        &self,
+        instance_id: &str,
+        folder: Folder,
+        check_updates: bool,
+    ) -> Result<Vec<InstalledItem>> {
+        let inst = self.instances.get(instance_id)?;
+        let dir = self.instances.dir(&inst.id)?;
+        installed::scan(&self.ctx, &inst, &dir, folder, check_updates).await
+    }
+
+    pub async fn update_content(
+        &self,
+        instance_id: &str,
+        folder: Folder,
+        files: &[String],
+    ) -> Result<Vec<String>> {
+        let inst = self.instances.get(instance_id)?;
+        let _claim = self.running.try_claim(&inst)?;
+        let dir = self.instances.dir(&inst.id)?;
+        installed::update(
+            &self.ctx,
+            &inst,
+            &dir,
+            folder,
+            files,
+            &CancellationToken::new(),
+        )
+        .await
+    }
+
+    /// Imports a `.mrpack` or CurseForge `.zip` as a new instance. Runs as a
+    /// task (progress in Downloads, cancellable) but returns the result.
+    pub async fn import_modpack(
+        &self,
+        pack: &std::path::Path,
+        curseforge_key: Option<&str>,
+    ) -> Result<ImportResult> {
+        let kind = modpack::detect(pack)?;
+        let title = pack
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_else(|| "modpack".into());
+        let (task, cancel) = self.tasks.create(TaskKind::Install, &title, None);
+        let progress = Progress::new(self.ctx.events.clone(), &task, Stage::Content);
+        let result = match kind {
+            PackKind::Modrinth => {
+                modpack::import_mrpack(&self.ctx, &self.instances, pack, &progress, &cancel).await
+            }
+            PackKind::CurseForge => {
+                modpack::import_curseforge(
+                    &self.ctx,
+                    &self.instances,
+                    pack,
+                    curseforge_key,
+                    &progress,
+                    &cancel,
+                )
+                .await
+            }
+        };
+        self.tasks.finish_ref(&task, result.as_ref().map(|_| ()));
+        result
+    }
+
+    /// Downloads a Modrinth modpack version (`.mrpack`) and imports it.
+    pub async fn install_modrinth_modpack(&self, version_id: &str) -> Result<ImportResult> {
+        let version = modrinth::version(&self.ctx, version_id).await?;
+        let file = version
+            .files
+            .iter()
+            .find(|f| f.primary && f.filename.ends_with(".mrpack"))
+            .or_else(|| {
+                version
+                    .files
+                    .iter()
+                    .find(|f| f.filename.ends_with(".mrpack"))
+            })
+            .ok_or_else(|| CoreError::ModpackInvalid("no .mrpack file".into()))?;
+        let name = crate::instance::files::checked_name(&file.filename)?.to_owned();
+        let dest = self.ctx.paths.modpacks().join(name);
+        self.ctx
+            .downloader()
+            .run(
+                vec![install::download_item(&dest, file)],
+                Verify::Full,
+                &install::quiet_progress(),
+                &CancellationToken::new(),
+            )
+            .await?;
+        self.import_modpack(&dest, None).await
     }
 
     /// Deletes an instance unless it is in use.

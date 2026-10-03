@@ -80,6 +80,39 @@ impl Http {
         Ok(bytes.to_vec())
     }
 
+    /// JSON request with extra headers; returns `(status, body)` without
+    /// treating non-2xx as an error (APIs explain errors in the body).
+    pub async fn request_json(
+        &self,
+        method: reqwest::Method,
+        url: &str,
+        body: Option<&serde_json::Value>,
+        headers: &[(&str, &str)],
+    ) -> Result<(u16, Vec<u8>)> {
+        let parsed = self.allowlist.check(url)?;
+        let mut req = self
+            .client
+            .request(method, parsed)
+            .header(reqwest::header::ACCEPT, "application/json");
+        for (k, v) in headers {
+            req = req.header(*k, *v);
+        }
+        if let Some(b) = body {
+            req = req
+                .header(reqwest::header::CONTENT_TYPE, "application/json")
+                .body(b.to_string());
+        }
+        let resp = req.send().await.map_err(|source| network(url, source))?;
+        let status = resp.status().as_u16();
+        let bytes = resp.bytes().await.map_err(|source| network(url, source))?;
+        Ok((status, bytes.to_vec()))
+    }
+
+    pub async fn post_json(&self, url: &str, body: &serde_json::Value) -> Result<(u16, Vec<u8>)> {
+        self.request_json(reqwest::Method::POST, url, Some(body), &[])
+            .await
+    }
+
     pub async fn get_text(&self, url: &str) -> Result<String> {
         let bytes = self.get_bytes(url).await?;
         Ok(String::from_utf8_lossy(&bytes).into_owned())

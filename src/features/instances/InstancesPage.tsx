@@ -17,6 +17,7 @@ import {
   GripVertical,
   Info,
   MoreVertical,
+  PackageOpen,
   Play,
   Plus,
   Square,
@@ -39,9 +40,11 @@ import {
 import { openFolder, play, stop } from "../../lib/actions";
 import { formatDuration } from "../../lib/format";
 import { ipc, toErrorPayload } from "../../lib/ipc";
+import type { ImportResult } from "../../lib/ipc/bindings/ImportResult";
 import type { Instance } from "../../lib/ipc/bindings/Instance";
 import { useApp } from "../../stores/app";
 import { useInstances } from "../../stores/instances";
+import { ImportResultDialog } from "../browse/ImportResultDialog";
 import { activeTaskFor, useTasks } from "../../stores/tasks";
 
 export function loaderLabel(kind: Instance["loader"]["kind"]) {
@@ -77,6 +80,27 @@ export function InstancesPage() {
     void reorder(arrayMove(ids, from, to));
   };
 
+  const [imported, setImported] = useState<ImportResult | null>(null);
+  const [importing, setImporting] = useState(false);
+
+  const importPack = async () => {
+    const src = await openDialog({
+      multiple: false,
+      filters: [{ name: "Modpack", extensions: ["mrpack", "zip"] }],
+    });
+    if (typeof src !== "string") return;
+    setImporting(true);
+    try {
+      const r = await ipc.importModpack(src);
+      await load();
+      setImported(r);
+    } catch (e) {
+      useApp.setState({ notice: toErrorPayload(e) });
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const importZip = async () => {
     const src = await openDialog({
       multiple: false,
@@ -96,6 +120,10 @@ export function InstancesPage() {
       <div className="flex items-center justify-between">
         <h1 className="font-display text-3xl font-bold tracking-wide">{t("nav.instances")}</h1>
         <div className="flex gap-2">
+          <Button disabled={importing} onClick={() => void importPack()}>
+            <PackageOpen size={15} />
+            {importing ? t("modpack.importing") : t("instances.importModpack")}
+          </Button>
           <Button onClick={() => void importZip()}>
             <Upload size={15} />
             {t("instances.import")}
@@ -126,6 +154,7 @@ export function InstancesPage() {
           </SortableContext>
         </DndContext>
       )}
+      <ImportResultDialog result={imported} onClose={() => setImported(null)} />
     </div>
   );
 }

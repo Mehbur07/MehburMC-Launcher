@@ -17,6 +17,8 @@ pub enum Stage {
     Metadata,
     /// Installing a mod loader (downloads + installer processors).
     Loader,
+    /// Downloading mods/packs (modpack import, content install).
+    Content,
     Libraries,
     Natives,
     Assets,

@@ -3,7 +3,7 @@
 Windows öncelikli, hafif, reklamsız ve telemetrisiz bir Minecraft Java Edition launcher'ı.
 Tauri 2 (Rust) + React + TypeScript ile geliştirilmektedir.
 
-> **Durum:** Faz 4 — mod loader'lar: Fabric, Quilt, Legacy Fabric, Forge (1.7.10 → 26.x), NeoForge, OptiFine (kendi jar'ınızla) ve tek tıkla Iris + Sodium. Microsoft girişi kullanıcı isteğiyle kaldırıldı (yalnızca offline hesaplar).
+> **Durum:** Faz 6 — Modrinth mod tarayıcısı (mod, modpack, resource pack, shader), bağımlılık çözümü, güncelleme denetimi, `.mrpack` ve CurseForge (kendi API anahtarınızla) modpack içe aktarma. Loader'lar Faz 4'te; Microsoft girişi kaldırıldı (yalnızca offline hesaplar).
 
 - Mimari ve kararlar: [ARCHITECTURE.md](ARCHITECTURE.md)
 
@@ -48,6 +48,9 @@ cargo run -p launcher-cli -- launch 1.20.1 --loader forge --exit-when-ready 5
 cargo run -p launcher-cli -- launch 26.3 --loader fabric:0.19.5      # belirli loader sürümü
 cargo run -p launcher-cli -- loader import-optifine OptiFine_1.20.1_HD_U_I6.jar
 cargo run -p launcher-cli -- launch 1.20.1 --loader optifine
+cargo run -p launcher-cli -- content search sodium --mc 1.20.1 --loader fabric
+cargo run -p launcher-cli -- modpack import paket.mrpack           # yeni profil
+cargo run -p launcher-cli -- content scan <profil-id> --updates
 ```
 
 Veri klasörü: `%APPDATA%\MehburMC\game\mc\`. Exe'nin yanına boş bir `portable.flag` dosyası koyarsanız veri exe klasöründeki `MehburMC\game\mc\` altında tutulur.

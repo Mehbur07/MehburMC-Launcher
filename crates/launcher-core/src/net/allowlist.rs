@@ -33,13 +33,16 @@ const DEFAULT_RULES: &[(&str, Option<&str>)] = &[
     // Modrinth
     ("api.modrinth.com", None),
     ("cdn.modrinth.com", None),
+    // Extra mirrors allowed by the .mrpack spec (files are hash-verified).
+    ("github.com", None),
+    ("raw.githubusercontent.com", None),
+    ("gitlab.com", None),
     // CurseForge
     ("api.curseforge.com", None),
     ("edge.forgecdn.net", None),
     ("mediafilez.forgecdn.net", None),
     // Adoptium (binaries are GitHub release assets)
     ("api.adoptium.net", None),
-    ("github.com", Some("/adoptium/")),
     ("objects.githubusercontent.com", None),
     ("release-assets.githubusercontent.com", None),
 ];
@@ -126,7 +129,6 @@ mod tests {
         assert!(!ok("http://piston-meta.mojang.com/x")); // plain http
         assert!(!ok("https://evil.example.com/x"));
         assert!(!ok("https://piston-meta.mojang.com.evil.com/x")); // suffix trick
-        assert!(!ok("https://github.com/someone/malware/releases/x.zip")); // path prefix
         assert!(!ok("https://user:pw@libraries.minecraft.net/x"));
         assert!(!ok("http://127.0.0.1:8080/x")); // loopback only in tests
         assert!(

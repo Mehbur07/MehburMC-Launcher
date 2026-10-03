@@ -14,6 +14,7 @@ import { HomePage } from "../features/home/HomePage";
 import { InstanceDetail } from "../features/instance-detail/InstanceDetail";
 import { CreateWizard } from "../features/instances/CreateWizard";
 import { InstancesPage } from "../features/instances/InstancesPage";
+import { BrowsePage } from "../features/browse/BrowsePage";
 import { ComingSoon } from "../features/placeholder/ComingSoon";
 import { SettingsPage } from "../features/settings/SettingsPage";
 import { applyLanguage } from "../i18n";
@@ -38,6 +39,8 @@ function Page({ view }: { view: View }) {
       return <ConsolePage />;
     case "settings":
       return <SettingsPage />;
+    case "browse":
+      return <BrowsePage />;
     default:
       return <ComingSoon view={view} />;
   }

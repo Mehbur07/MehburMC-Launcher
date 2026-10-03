@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use launcher_core::CoreError;
-use launcher_core::content::shaders::ShaderSetup;
+use launcher_core::content::install::InstallResult;
 use launcher_core::instance::LoaderKind;
 use launcher_core::loader::optifine::{self, OptifineInfo};
 use launcher_core::loader::{self, LoaderVersion};
@@ -39,7 +39,7 @@ pub async fn import_optifine(state: State<'_, AppState>, path: String) -> CmdRes
 pub async fn install_shader_support(
     state: State<'_, AppState>,
     id: String,
-) -> CmdResult<ShaderSetup> {
+) -> CmdResult<InstallResult> {
     let l = state.launcher()?.clone();
     Ok(l.install_shader_support(&id).await?)
 }

@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { ipc, toErrorPayload } from "../lib/ipc";
 import type { Bootstrap } from "../lib/ipc/bindings/Bootstrap";
 import type { ErrorPayload } from "../lib/ipc/bindings/ErrorPayload";
+import type { ProjectType } from "../lib/ipc/bindings/ProjectType";
 import type { Settings } from "../lib/ipc/bindings/Settings";
 
 export type View =
@@ -27,6 +28,9 @@ interface AppStore {
   detailId: string | null;
   /** Console filter: instance whose output is shown. */
   consoleInstance: string | null;
+  /** Instance the content browser installs into (null = none / modpacks). */
+  browseTarget: string | null;
+  browseType: ProjectType;
   wizardOpen: boolean;
   /** Last non-fatal error, shown as a dismissible notice. */
   notice: ErrorPayload | null;
@@ -37,6 +41,7 @@ interface AppStore {
   setView: (view: View) => void;
   openInstance: (id: string) => void;
   openConsole: (instanceId: string) => void;
+  openBrowse: (instanceId: string | null, type?: ProjectType) => void;
   setWizard: (open: boolean) => void;
   updateSettings: (patch: Partial<Settings>) => Promise<void>;
   dismissNotice: () => void;
@@ -49,6 +54,8 @@ export const useApp = create<AppStore>((set, get) => ({
   view: "home",
   detailId: null,
   consoleInstance: null,
+  browseTarget: null,
+  browseType: "mod",
   wizardOpen: false,
   notice: null,
   fatal: null,
@@ -70,6 +77,8 @@ export const useApp = create<AppStore>((set, get) => ({
   setView: (view) => set({ view }),
   openInstance: (id) => set({ view: "instance", detailId: id }),
   openConsole: (instanceId) => set({ view: "console", consoleInstance: instanceId }),
+  openBrowse: (instanceId, type) =>
+    set((s) => ({ view: "browse", browseTarget: instanceId, browseType: type ?? s.browseType })),
   setWizard: (open) => set({ wizardOpen: open }),
 
   // Optimistic: apply immediately, roll back if the backend rejects it.

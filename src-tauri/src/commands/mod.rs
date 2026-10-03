@@ -2,6 +2,7 @@
 //! error to an [`ErrorPayload`]; no business logic lives here.
 
 pub mod accounts;
+pub mod content;
 pub mod files;
 pub mod instances;
 pub mod loaders;

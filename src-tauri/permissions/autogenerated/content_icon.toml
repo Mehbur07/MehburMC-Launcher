@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-content-icon"
+description = "Enables the content_icon command without any pre-configured scope."
+commands.allow = ["content_icon"]
+
+[[permission]]
+identifier = "deny-content-icon"
+description = "Denies the content_icon command without any pre-configured scope."
+commands.deny = ["content_icon"]

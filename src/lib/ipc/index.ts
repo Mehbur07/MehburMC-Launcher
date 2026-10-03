@@ -7,6 +7,10 @@ import type { Bootstrap } from "./bindings/Bootstrap";
 import type { CoreEvent } from "./bindings/CoreEvent";
 import type { ErrorPayload } from "./bindings/ErrorPayload";
 import type { FileEntry } from "./bindings/FileEntry";
+import type { ImportResult } from "./bindings/ImportResult";
+import type { InstallRequest } from "./bindings/InstallRequest";
+import type { InstallResult } from "./bindings/InstallResult";
+import type { InstalledItem } from "./bindings/InstalledItem";
 import type { Folder } from "./bindings/Folder";
 import type { Instance } from "./bindings/Instance";
 import type { InstancePatch } from "./bindings/InstancePatch";
@@ -17,8 +21,11 @@ import type { LoaderVersion } from "./bindings/LoaderVersion";
 import type { ManifestEntry } from "./bindings/ManifestEntry";
 import type { NewInstance } from "./bindings/NewInstance";
 import type { OptifineInfo } from "./bindings/OptifineInfo";
+import type { ProjectType } from "./bindings/ProjectType";
+import type { SearchPage } from "./bindings/SearchPage";
+import type { SearchQuery } from "./bindings/SearchQuery";
+import type { VersionSummary } from "./bindings/VersionSummary";
 import type { Settings } from "./bindings/Settings";
-import type { ShaderSetup } from "./bindings/ShaderSetup";
 import type { TaskInfo } from "./bindings/TaskInfo";
 
 /** Typed wrappers around the Rust commands (see src-tauri/src/commands). */
@@ -70,7 +77,22 @@ export const ipc = {
   listLoaderVersions: (kind: LoaderKind, mc: string) =>
     invoke<LoaderVersion[]>("list_loader_versions", { kind, mc }),
   importOptifine: (path: string) => invoke<OptifineInfo>("import_optifine", { path }),
-  installShaderSupport: (id: string) => invoke<ShaderSetup>("install_shader_support", { id }),
+  installShaderSupport: (id: string) => invoke<InstallResult>("install_shader_support", { id }),
+
+  searchModrinth: (query: SearchQuery) => invoke<SearchPage>("search_modrinth", { query }),
+  projectVersions: (project: string, projectType: ProjectType, instanceId?: string) =>
+    invoke<VersionSummary[]>("project_versions", { project, projectType, instanceId }),
+  installContent: (id: string, requests: InstallRequest[]) =>
+    invoke<InstallResult>("install_content", { id, requests }),
+  scanContent: (id: string, folder: Folder, checkUpdates: boolean) =>
+    invoke<InstalledItem[]>("scan_content", { id, folder, checkUpdates }),
+  updateContent: (id: string, folder: Folder, files: string[]) =>
+    invoke<string[]>("update_content", { id, folder, files }),
+  importModpack: (path: string) => invoke<ImportResult>("import_modpack", { path }),
+  installModrinthModpack: (versionId: string) =>
+    invoke<ImportResult>("install_modrinth_modpack", { versionId }),
+  contentIcon: (url: string) => invoke<string>("content_icon", { url }),
+  openExternal: (url: string) => invoke<void>("open_external", { url }),
 };
 
 export type GameLogEvent = Extract<CoreEvent, { type: "gameLog" }>;

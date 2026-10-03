@@ -50,6 +50,16 @@ enum Command {
         #[command(subcommand)]
         action: JavaAction,
     },
+    /// Modpacks (.mrpack / CurseForge .zip).
+    Modpack {
+        #[command(subcommand)]
+        action: ModpackAction,
+    },
+    /// Modrinth content.
+    Content {
+        #[command(subcommand)]
+        action: ContentAction,
+    },
     /// Mod loaders.
     Loader {
         #[command(subcommand)]
@@ -95,6 +105,35 @@ enum Command {
 }
 
 #[derive(Subcommand)]
+enum ModpackAction {
+    /// Import a pack as a new instance (CurseForge needs settings.curseforgeApiKey).
+    Import { file: PathBuf },
+}
+
+#[derive(Subcommand)]
+enum ContentAction {
+    /// Search Modrinth.
+    Search {
+        query: String,
+        /// mod | modpack | resourcepack | shader
+        #[arg(long, default_value = "mod")]
+        r#type: String,
+        #[arg(long)]
+        mc: Option<String>,
+        #[arg(long)]
+        loader: Option<String>,
+    },
+    /// List an instance's content with Modrinth metadata.
+    Scan {
+        instance: String,
+        #[arg(long)]
+        updates: bool,
+    },
+    /// Install a Modrinth project into an instance.
+    Install { instance: String, project: String },
+}
+
+#[derive(Subcommand)]
 enum LoaderAction {
     /// List loader versions for a Minecraft version.
     List {
@@ -110,8 +149,8 @@ enum LoaderAction {
     Shaders {
         mc: String,
         loader: String,
-        /// Target mods folder.
-        mods: PathBuf,
+        /// Game directory (mods go into its `mods/`).
+        dir: PathBuf,
     },
 }
 
@@ -277,6 +316,132 @@ async fn run(command: Command, ctx: &Ctx, settings: &Settings, sink: Arc<CliSink
                 println!("installed Java {} at {}", j.version, j.home);
             }
         },
+        Command::Modpack { action } => match action {
+            ModpackAction::Import { file } => {
+                use launcher_core::content::modpack;
+                let store = launcher_core::instance::InstanceStore::new(ctx.paths.clone());
+                let progress = launcher_core::events::Progress::new(
+                    ctx.events.clone(),
+                    "modpack",
+                    launcher_core::events::Stage::Content,
+                );
+                let r = match modpack::detect(&file).map_err(core_err)? {
+                    modpack::PackKind::Modrinth => {
+                        modpack::import_mrpack(ctx, &store, &file, &progress, &cancel).await
+                    }
+                    modpack::PackKind::CurseForge => {
+                        modpack::import_curseforge(
+                            ctx,
+                            &store,
+                            &file,
+                            settings.curseforge_api_key.as_deref(),
+                            &progress,
+                            &cancel,
+                        )
+                        .await
+                    }
+                }
+                .map_err(core_err)?;
+                println!(
+                    "instance {} ({}): mc {} loader {:?} {}",
+                    r.instance.id,
+                    r.instance.name,
+                    r.instance.mc_version,
+                    r.instance.loader.kind,
+                    r.instance.loader.version.as_deref().unwrap_or("-")
+                );
+                println!(
+                    "dir {}",
+                    store.dir(&r.instance.id).map_err(core_err)?.display()
+                );
+                for b in r.blocked {
+                    println!("manual download: {} -> {} ({})", b.name, b.folder, b.url);
+                }
+            }
+        },
+        Command::Content { action } => match action {
+            ContentAction::Search {
+                query,
+                r#type,
+                mc,
+                loader,
+            } => {
+                use launcher_core::content::modrinth::{self, ProjectType, SearchQuery};
+                let project_type = match r#type.as_str() {
+                    "modpack" => ProjectType::Modpack,
+                    "resourcepack" => ProjectType::Resourcepack,
+                    "shader" => ProjectType::Shader,
+                    _ => ProjectType::Mod,
+                };
+                let page = modrinth::search(
+                    ctx,
+                    &SearchQuery {
+                        query,
+                        project_type,
+                        game_version: mc,
+                        loader,
+                        sort: Default::default(),
+                        offset: 0,
+                    },
+                )
+                .await
+                .map_err(core_err)?;
+                println!("{} results", page.total_hits);
+                for h in page.hits.iter().take(10) {
+                    println!("{:<24} {:<32} {:>12}", h.slug, h.title, h.downloads);
+                }
+            }
+            ContentAction::Scan { instance, updates } => {
+                let store = launcher_core::instance::InstanceStore::new(ctx.paths.clone());
+                let inst = store.get(&instance).map_err(core_err)?;
+                let dir = store.dir(&inst.id).map_err(core_err)?;
+                let items = launcher_core::content::installed::scan(
+                    ctx,
+                    &inst,
+                    &dir,
+                    launcher_core::instance::files::Folder::Mods,
+                    updates,
+                )
+                .await
+                .map_err(core_err)?;
+                for i in items {
+                    println!(
+                        "{:<48} {:<28} {:<20} {}",
+                        i.file_name,
+                        i.title.unwrap_or_else(|| "?".into()),
+                        i.version_number.unwrap_or_default(),
+                        i.update
+                            .map(|u| format!("-> {}", u.version_number))
+                            .unwrap_or_default()
+                    );
+                }
+            }
+            ContentAction::Install { instance, project } => {
+                use launcher_core::content::install::{self, InstallRequest};
+                use launcher_core::content::modrinth::ProjectType;
+                let store = launcher_core::instance::InstanceStore::new(ctx.paths.clone());
+                let inst = store.get(&instance).map_err(core_err)?;
+                let dir = store.dir(&inst.id).map_err(core_err)?;
+                let r = install::install(
+                    ctx,
+                    &inst,
+                    &dir,
+                    &[InstallRequest {
+                        project,
+                        project_type: ProjectType::Mod,
+                        version_id: None,
+                    }],
+                    &install::quiet_progress(),
+                    &cancel,
+                )
+                .await
+                .map_err(core_err)?;
+                println!(
+                    "installed {:?}, already present {:?}, incompatible {:?}",
+                    r.installed, r.already_present, r.incompatible
+                );
+            }
+        },
         Command::Loader { action } => match action {
             LoaderAction::List { kind, mc, limit } => {
                 let spec = parse_loader(&kind)?;
@@ -296,14 +461,13 @@ async fn run(command: Command, ctx: &Ctx, settings: &Settings, sink: Arc<CliSink
                     );
                 }
             }
-            LoaderAction::Shaders { mc, loader, mods } => {
+            LoaderAction::Shaders { mc, loader, dir } => {
                 let spec = parse_loader(&loader)?;
                 let inst: launcher_core::instance::Instance =
                     serde_json::from_value(serde_json::json!({
                         "name": "cli", "mcVersion": mc, "loader": spec
                     }))?;
-                std::fs::create_dir_all(&mods)?;
-                let r = launcher_core::content::shaders::install(ctx, &inst, &mods, &cancel)
+                let r = launcher_core::content::shaders::install(ctx, &inst, &dir, &cancel)
                     .await
                     .map_err(core_err)?;
                 println!(

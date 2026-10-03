@@ -36,6 +36,15 @@ const COMMANDS: &[&str] = &[
     "list_loader_versions",
     "import_optifine",
     "install_shader_support",
+    "search_modrinth",
+    "project_versions",
+    "install_content",
+    "scan_content",
+    "update_content",
+    "import_modpack",
+    "install_modrinth_modpack",
+    "content_icon",
+    "open_external",
 ];
 
 fn main() {

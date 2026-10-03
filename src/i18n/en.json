@@ -61,7 +61,9 @@
     "moveDataFolderSoon": "Arrives in phase 8",
     "about": "About",
     "version": "Version {{version}}",
-    "telemetry": "No telemetry: MehburMC Launcher sends no usage data."
+    "telemetry": "No telemetry: MehburMC Launcher sends no usage data.",
+    "curseforgeKey": "CurseForge API key",
+    "curseforgeKeyHint": "Your own key (console.curseforge.com) for installing CurseForge modpacks (.zip). Stored on this computer only."
   },
   "startup": {
     "title": "The launcher could not start",
@@ -146,6 +148,10 @@
       "optifineInvalid": "This file is not an OptiFine jar: {{path}}",
       "optifineMissing": "The OptiFine {{mc}} {{edition}} jar has not been imported. Pick the jar again in the instance settings.",
       "addonUnavailable": "{{project}} was not found for {{loader}} / Minecraft {{mc}}."
+    },
+    "content": {
+      "modpackInvalid": "Invalid modpack: {{reason}}",
+      "curseforgeKey": "A valid CurseForge API key is required for this modpack (Settings → Advanced)."
     }
   },
   "instances": {
@@ -161,7 +167,8 @@
     "drag": "Drag to reorder",
     "playTime": "Play time",
     "deleteTitle": "Delete instance?",
-    "deleteBody": "\"{{name}}\" will be deleted permanently, including its worlds and mods."
+    "deleteBody": "\"{{name}}\" will be deleted permanently, including its worlds and mods.",
+    "importModpack": "Import modpack"
   },
   "instance": {
     "missing": "Instance not found",
@@ -231,7 +238,7 @@
       "screenshots": "No screenshots",
       "logs": "No log files"
     },
-    "modsHint": "The mod browser arrives in phase 6; for now you can copy .jar files into the folder.",
+    "modsHint": "Use \"Add content\" to install mods from Modrinth.",
     "screenshotsHint": "Press F2 in game to take a screenshot.",
     "enabled": "Enabled",
     "deleteTitle": "Delete?",
@@ -266,7 +273,8 @@
     "emptyHint": "File downloads appear here when you start an instance.",
     "kind": {
       "launch": "Launch",
-      "repair": "Repair"
+      "repair": "Repair",
+      "install": "Install"
     },
     "status": {
       "preparing": "Preparing",
@@ -286,7 +294,8 @@
     "natives": "Natives",
     "assets": "Assets",
     "java": "Java",
-    "launching": "Launching"
+    "launching": "Launching",
+    "content": "Content"
   },
   "accounts": {
     "offlineTitle": "Offline account",
@@ -322,5 +331,52 @@
     "installing": "Installing…",
     "installed": "Installed: {{files}}",
     "nothing": "Already installed: {{mods}}"
+  },
+  "browse": {
+    "target": "Target instance",
+    "noInstances": "Create an instance first",
+    "types": {
+      "mod": "Mods",
+      "modpack": "Modpacks",
+      "resourcepack": "Resource packs",
+      "shader": "Shaders"
+    },
+    "search": "Search Modrinth…",
+    "sort": "Sort",
+    "sorts": {
+      "relevance": "Relevance",
+      "downloads": "Most downloaded",
+      "updated": "Recently updated",
+      "newest": "Newest"
+    },
+    "compatible": "Compatible only",
+    "needsLoader": "This instance has no mod loader. Choose Fabric, Forge, … in its settings to install mods.",
+    "empty": "No results",
+    "install": "Install",
+    "installPack": "Install as instance",
+    "installed": "Installed",
+    "more": "Load more ({{shown}} / {{total}})",
+    "openModrinth": "Open on Modrinth",
+    "versions": "Versions",
+    "noCompatible": "No version is compatible with this instance.",
+    "compatibleWith": "compatible with {{name}}"
+  },
+  "content": {
+    "add": "Add content",
+    "checkUpdates": "Check for updates",
+    "updateAll": "Update all ({{count}})",
+    "update": "Update",
+    "updateTo": "→ {{version}}",
+    "upToDate": "Everything is up to date.",
+    "emptyHint": "Use \"Add content\" to install from Modrinth, or copy files into the folder."
+  },
+  "modpack": {
+    "importing": "Importing…",
+    "importedTitle": "Modpack installed",
+    "imported": "Created the instance \"{{name}}\" (Minecraft {{mc}}).",
+    "openInstance": "Open instance",
+    "blockedTitle": "{{count}} files need a manual download",
+    "blockedBody": "Their authors disabled third-party downloads. Download them from the page and put them into the shown folder.",
+    "download": "Download"
   }
 }

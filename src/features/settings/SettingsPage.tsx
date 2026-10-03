@@ -1,8 +1,8 @@
 import { Check, FolderInput, FolderOpen, ShieldCheck } from "lucide-react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Toggle } from "../../components/ui";
+import { TextInput, Toggle } from "../../components/ui";
 import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { Accent } from "../../lib/ipc/bindings/Accent";
 import type { Language } from "../../lib/ipc/bindings/Language";
@@ -21,8 +21,16 @@ export function SettingsPage() {
   const settings = useApp((s) => s.settings);
   const boot = useApp((s) => s.boot);
   const update = useApp((s) => s.updateSettings);
+  const [cfKey, setCfKey] = useState(settings?.curseforgeApiKey ?? "");
 
   if (!settings || !boot) return null;
+
+  const saveCfKey = () => {
+    const v = cfKey.trim();
+    if (v !== (settings.curseforgeApiKey ?? "")) {
+      void update({ curseforgeApiKey: v || undefined });
+    }
+  };
 
   const openDataDir = async () => {
     try {
@@ -134,6 +142,22 @@ export function SettingsPage() {
             label={t("settings.debugLogging")}
           />
         </Row>
+        <div className="flex flex-col gap-2 py-3">
+          <div>
+            <div className="text-sm font-medium">{t("settings.curseforgeKey")}</div>
+            <div className="mt-0.5 text-xs text-muted">{t("settings.curseforgeKeyHint")}</div>
+          </div>
+          <TextInput
+            type="password"
+            value={cfKey}
+            onChange={(e) => setCfKey(e.target.value)}
+            onBlur={saveCfKey}
+            autoComplete="off"
+            spellCheck={false}
+            aria-label={t("settings.curseforgeKey")}
+            className="font-mono"
+          />
+        </div>
       </Section>
 
       <Section title={t("settings.about")}>

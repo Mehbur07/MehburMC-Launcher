@@ -23,6 +23,7 @@ pub struct Endpoints {
     pub forge_maven: String,
     pub neoforge_maven: String,
     pub modrinth: String,
+    pub curseforge: String,
 }
 
 impl Default for Endpoints {
@@ -39,6 +40,7 @@ impl Default for Endpoints {
             forge_maven: "https://maven.minecraftforge.net".into(),
             neoforge_maven: "https://maven.neoforged.net".into(),
             modrinth: "https://api.modrinth.com".into(),
+            curseforge: "https://api.curseforge.com".into(),
         }
     }
 }

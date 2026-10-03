@@ -11,4 +11,8 @@ backgroundEffects: boolean,
 /**
  * Verbose (debug-level) launcher logging.
  */
-debugLogging: boolean, downloadConcurrency: number, defaultMemoryMb: number, launchBehavior: LaunchBehavior, };
+debugLogging: boolean, downloadConcurrency: number, defaultMemoryMb: number, launchBehavior: LaunchBehavior, 
+/**
+ * The user's own CurseForge API key (needed for CurseForge modpacks).
+ */
+curseforgeApiKey?: string, };

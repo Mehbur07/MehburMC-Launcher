@@ -25,6 +25,8 @@ pub enum TaskKind {
     Launch,
     /// Prepare with full checksum verification, no play.
     Repair,
+    /// Modpack import / content download.
+    Install,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, TS)]
@@ -200,6 +202,11 @@ impl TaskRegistry {
     }
 
     pub fn finish(&self, id: &str, result: &Result<()>) {
+        self.finish_ref(id, result.as_ref().map(|_| ()));
+    }
+
+    /// [`finish`](Self::finish) for callers that keep ownership of the error.
+    pub fn finish_ref(&self, id: &str, result: std::result::Result<(), &CoreError>) {
         let paused = self
             .entries
             .lock()

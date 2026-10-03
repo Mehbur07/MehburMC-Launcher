@@ -37,6 +37,17 @@ pub fn safe_join(root: &Path, entry: &str) -> Option<PathBuf> {
 pub fn extract_zip(
     archive: &Path,
     dest: &Path,
+    map: impl FnMut(&str) -> Option<String>,
+) -> Result<usize> {
+    extract_zip_with(archive, dest, false, map)
+}
+
+/// Like [`extract_zip`]; with `overwrite` every file is rewritten, otherwise
+/// files of identical size are skipped (natives may be locked by a game).
+pub fn extract_zip_with(
+    archive: &Path,
+    dest: &Path,
+    overwrite: bool,
     mut map: impl FnMut(&str) -> Option<String>,
 ) -> Result<usize> {
     let file = File::open(archive).map_err(|e| CoreError::io(archive, e))?;
@@ -68,7 +79,7 @@ pub fn extract_zip(
             });
         };
         // Skip identical files (natives may be locked by a running game).
-        if fs::metadata(&target).is_ok_and(|m| m.len() == entry.size()) {
+        if !overwrite && fs::metadata(&target).is_ok_and(|m| m.len() == entry.size()) {
             continue;
         }
         if let Some(parent) = target.parent() {

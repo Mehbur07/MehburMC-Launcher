@@ -7,6 +7,7 @@ import { Badge, EmptyState } from "../../components/ui";
 import { useApp } from "../../stores/app";
 import { useInstances } from "../../stores/instances";
 import { loaderLabel } from "../instances/InstancesPage";
+import { ContentTab } from "./ContentTab";
 import { FilesTab } from "./FilesTab";
 import { GeneralTab } from "./GeneralTab";
 import { LogsTab } from "./LogsTab";
@@ -78,9 +79,9 @@ export function InstanceDetail() {
 
       <div className="min-h-0 flex-1 overflow-y-auto pb-4">
         {tab === "general" && <GeneralTab inst={inst} />}
-        {tab === "mods" && <FilesTab inst={inst} folder="mods" toggleable />}
-        {tab === "resourcePacks" && <FilesTab inst={inst} folder="resourcePacks" toggleable />}
-        {tab === "shaderPacks" && <FilesTab inst={inst} folder="shaderPacks" toggleable />}
+        {tab === "mods" && <ContentTab inst={inst} folder="mods" />}
+        {tab === "resourcePacks" && <ContentTab inst={inst} folder="resourcePacks" />}
+        {tab === "shaderPacks" && <ContentTab inst={inst} folder="shaderPacks" />}
         {tab === "saves" && <FilesTab inst={inst} folder="saves" />}
         {tab === "screenshots" && <ScreenshotsTab inst={inst} />}
         {tab === "logs" && <LogsTab inst={inst} />}

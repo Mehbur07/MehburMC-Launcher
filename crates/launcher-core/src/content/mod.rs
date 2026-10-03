@@ -1,5 +1,9 @@
-//! Content from mod platforms. Phase 4 only needs a small Modrinth client for
-//! the one-click shader setup; the full browser arrives in phase 6.
+//! Content from mod platforms: Modrinth browsing/installing/updating,
+//! `.mrpack` and CurseForge modpack import.
 
+pub mod icons;
+pub mod install;
+pub mod installed;
+pub mod modpack;
 pub mod modrinth;
 pub mod shaders;
