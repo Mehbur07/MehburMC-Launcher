@@ -2,6 +2,7 @@ import { Check, FolderInput, FolderOpen, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Toggle } from "../../components/ui";
 import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { Accent } from "../../lib/ipc/bindings/Accent";
 import type { Language } from "../../lib/ipc/bindings/Language";
@@ -170,26 +171,5 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
       </div>
       {children}
     </div>
-  );
-}
-
-function Toggle(props: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={props.checked}
-      aria-label={props.label}
-      onClick={() => props.onChange(!props.checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors ${
-        props.checked ? "border-accent bg-accent/25 neon-ring" : "border-line bg-surface-3"
-      }`}
-    >
-      <span
-        className={`absolute top-0.5 h-4 w-4 rounded-full transition-all ${
-          props.checked ? "left-[22px] bg-accent" : "left-0.5 bg-muted"
-        }`}
-      />
-    </button>
   );
 }

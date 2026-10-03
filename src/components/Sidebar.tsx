@@ -13,6 +13,7 @@ import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 
 import { useApp, type View } from "../stores/app";
+import { isActive, useTasks } from "../stores/tasks";
 
 const ITEMS: { view: View; icon: LucideIcon }[] = [
   { view: "home", icon: Play },
@@ -28,9 +29,16 @@ export function Sidebar() {
   const { t } = useTranslation();
   const view = useApp((s) => s.view);
   const setView = useApp((s) => s.setView);
+  const busy = useTasks(
+    (s) => Object.values(s.tasks).filter((t) => t.status === "preparing").length,
+  );
+  const playing = useTasks((s) =>
+    Object.values(s.tasks).some((t) => isActive(t) && t.status === "playing"),
+  );
 
   const item = (v: View, Icon: LucideIcon) => {
-    const active = v === view;
+    // The instance detail page belongs to "instances".
+    const active = v === view || (v === "instances" && view === "instance");
     return (
       <li key={v}>
         <button
@@ -50,6 +58,14 @@ export function Sidebar() {
           )}
           <Icon size={18} className={`relative ${active ? "neon-drop" : ""}`} />
           <span className="relative">{t(`nav.${v}`)}</span>
+          {v === "downloads" && busy > 0 && (
+            <span className="relative ml-auto rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-accent">
+              {busy}
+            </span>
+          )}
+          {v === "console" && playing && (
+            <span className="relative ml-auto h-2 w-2 animate-pulse rounded-full bg-success" />
+          )}
         </button>
       </li>
     );

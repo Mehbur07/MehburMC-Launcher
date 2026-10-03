@@ -1,9 +1,11 @@
+mod bridge;
 mod commands;
 mod state;
 
 use tauri::window::Color;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
+use crate::commands::{accounts, files, instances, play};
 use crate::state::AppState;
 
 /// Matches `--mc-bg` so the window never flashes white before the UI paints.
@@ -25,6 +27,7 @@ pub fn run() {
             }
         }))
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .setup(move |app| {
             let mut builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
                 .title(launcher_core::LAUNCHER_NAME)
@@ -42,6 +45,10 @@ pub fn run() {
                 builder = builder.data_directory(paths.webview_data());
             }
             builder.build()?;
+
+            if let Some(rx) = app_state.events_rx.lock().expect("events lock").take() {
+                tauri::async_runtime::spawn(bridge::forward(app.handle().clone(), rx));
+            }
             app.manage(app_state);
             Ok(())
         })
@@ -49,6 +56,34 @@ pub fn run() {
             commands::get_bootstrap,
             commands::save_settings,
             commands::open_data_dir,
+            commands::list_versions,
+            commands::list_java,
+            commands::save_text_file,
+            instances::list_instances,
+            instances::create_instance,
+            instances::update_instance,
+            instances::delete_instance,
+            instances::copy_instance,
+            instances::reorder_instances,
+            instances::select_instance,
+            instances::export_instance,
+            instances::import_instance,
+            instances::open_instance_folder,
+            play::launch_instance,
+            play::repair_instance,
+            play::stop_instance,
+            play::list_tasks,
+            play::cancel_task,
+            play::clear_tasks,
+            accounts::list_accounts,
+            accounts::add_offline_account,
+            accounts::remove_account,
+            accounts::select_account,
+            files::list_instance_files,
+            files::instance_folder_path,
+            files::toggle_instance_file,
+            files::delete_instance_file,
+            files::read_instance_log,
         ])
         .run(tauri::generate_context!())
         .expect("error while running MehburMC Launcher");

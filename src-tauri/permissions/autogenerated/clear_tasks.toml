@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-clear-tasks"
+description = "Enables the clear_tasks command without any pre-configured scope."
+commands.allow = ["clear_tasks"]
+
+[[permission]]
+identifier = "deny-clear-tasks"
+description = "Denies the clear_tasks command without any pre-configured scope."
+commands.deny = ["clear_tasks"]

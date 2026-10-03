@@ -1,7 +1,39 @@
 // Every app command must be listed here; tauri-build generates an
 // `allow-<command>` permission for each, and only commands granted in
 // `capabilities/` are callable from the webview.
-const COMMANDS: &[&str] = &["get_bootstrap", "save_settings", "open_data_dir"];
+const COMMANDS: &[&str] = &[
+    "get_bootstrap",
+    "save_settings",
+    "open_data_dir",
+    "list_versions",
+    "list_java",
+    "save_text_file",
+    "list_instances",
+    "create_instance",
+    "update_instance",
+    "delete_instance",
+    "copy_instance",
+    "reorder_instances",
+    "select_instance",
+    "export_instance",
+    "import_instance",
+    "open_instance_folder",
+    "launch_instance",
+    "repair_instance",
+    "stop_instance",
+    "list_tasks",
+    "cancel_task",
+    "clear_tasks",
+    "list_accounts",
+    "add_offline_account",
+    "remove_account",
+    "select_account",
+    "list_instance_files",
+    "instance_folder_path",
+    "toggle_instance_file",
+    "delete_instance_file",
+    "read_instance_log",
+];
 
 fn main() {
     tauri_build::try_build(

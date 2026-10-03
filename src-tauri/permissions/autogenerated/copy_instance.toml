@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-copy-instance"
+description = "Enables the copy_instance command without any pre-configured scope."
+commands.allow = ["copy_instance"]
+
+[[permission]]
+identifier = "deny-copy-instance"
+description = "Denies the copy_instance command without any pre-configured scope."
+commands.deny = ["copy_instance"]

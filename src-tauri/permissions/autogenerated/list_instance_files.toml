@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-list-instance-files"
+description = "Enables the list_instance_files command without any pre-configured scope."
+commands.allow = ["list_instance_files"]
+
+[[permission]]
+identifier = "deny-list-instance-files"
+description = "Denies the list_instance_files command without any pre-configured scope."
+commands.deny = ["list_instance_files"]

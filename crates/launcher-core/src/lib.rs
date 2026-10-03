@@ -11,6 +11,7 @@ pub mod error;
 pub mod events;
 pub mod fsutil;
 pub mod hash;
+pub mod instance;
 pub mod java;
 pub mod launch;
 pub mod library;
@@ -21,7 +22,10 @@ pub mod net;
 pub mod os;
 pub mod paths;
 pub mod rules;
+pub mod session;
 pub mod settings;
+pub mod state;
+pub mod tasks;
 pub mod version;
 
 pub use ctx::Ctx;

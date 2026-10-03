@@ -1,6 +1,7 @@
 //! Accounts as seen by the launch pipeline. Microsoft login arrives in phase 5.
 
 pub mod offline;
+pub mod store;
 
 /// Identity handed to the game (`${auth_*}` placeholders).
 #[derive(Debug, Clone)]

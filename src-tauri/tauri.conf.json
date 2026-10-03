@@ -25,12 +25,20 @@
         "base-uri": "'none'",
         "frame-ancestors": "'none'"
       },
-      "capabilities": ["default"]
+      "capabilities": [
+        "default"
+      ],
+      "assetProtocol": {
+        "enable": true,
+        "scope": []
+      }
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
+    "targets": [
+      "nsis"
+    ],
     "publisher": "Mehbur",
     "category": "Game",
     "shortDescription": "Lightweight Minecraft Java launcher",
@@ -44,7 +52,10 @@
     "windows": {
       "nsis": {
         "installMode": "currentUser",
-        "languages": ["Turkish", "English"]
+        "languages": [
+          "Turkish",
+          "English"
+        ]
       }
     }
   }

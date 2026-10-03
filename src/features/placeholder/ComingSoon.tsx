@@ -5,10 +5,6 @@ import type { View } from "../../stores/app";
 
 /** Phase in which each not-yet-built screen lands (ARCHITECTURE.md §12). */
 const PHASE: Partial<Record<View, number>> = {
-  instances: 3,
-  downloads: 3,
-  console: 3,
-  accounts: 5,
   browse: 6,
   skins: 7,
 };

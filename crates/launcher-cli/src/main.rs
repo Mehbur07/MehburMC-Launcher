@@ -125,6 +125,7 @@ impl EventSink for CliSink {
                     LogStream::Stderr => eprintln!("{line}"),
                 }
             }
+            CoreEvent::Task { .. } => {}
             CoreEvent::GameExited {
                 code, crash_report, ..
             } => {

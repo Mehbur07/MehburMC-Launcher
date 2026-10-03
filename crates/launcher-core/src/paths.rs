@@ -178,6 +178,9 @@ impl Paths {
     pub fn accounts_file(&self) -> PathBuf {
         self.launcher_dir().join("accounts.json")
     }
+    pub fn state_file(&self) -> PathBuf {
+        self.launcher_dir().join("state.json")
+    }
     pub fn redirect_file(&self) -> PathBuf {
         self.launcher_dir().join(REDIRECT_FILE)
     }

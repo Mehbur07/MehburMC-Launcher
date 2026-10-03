@@ -7,16 +7,35 @@ import { Logo } from "../components/Logo";
 import { NeonBackground } from "../components/NeonBackground";
 import { Sidebar } from "../components/Sidebar";
 import { TitleBar } from "../components/TitleBar";
+import { AccountsPage } from "../features/accounts/AccountsPage";
+import { ConsolePage } from "../features/console/ConsolePage";
+import { DownloadsPage } from "../features/downloads/DownloadsPage";
 import { HomePage } from "../features/home/HomePage";
+import { InstanceDetail } from "../features/instance-detail/InstanceDetail";
+import { CreateWizard } from "../features/instances/CreateWizard";
+import { InstancesPage } from "../features/instances/InstancesPage";
 import { ComingSoon } from "../features/placeholder/ComingSoon";
 import { SettingsPage } from "../features/settings/SettingsPage";
 import { applyLanguage } from "../i18n";
+import { useAccounts } from "../stores/accounts";
 import { useApp, type View } from "../stores/app";
+import { useInstances } from "../stores/instances";
+import { connectEvents } from "./events";
 
 function Page({ view }: { view: View }) {
   switch (view) {
     case "home":
       return <HomePage />;
+    case "instances":
+      return <InstancesPage />;
+    case "instance":
+      return <InstanceDetail />;
+    case "accounts":
+      return <AccountsPage />;
+    case "downloads":
+      return <DownloadsPage />;
+    case "console":
+      return <ConsolePage />;
     case "settings":
       return <SettingsPage />;
     default:
@@ -27,10 +46,29 @@ function Page({ view }: { view: View }) {
 export function App() {
   const { t } = useTranslation();
   const { status, settings, view, notice, fatal, load, dismissNotice } = useApp();
+  const loadInstances = useInstances((s) => s.load);
+  const loadAccounts = useAccounts((s) => s.load);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Once the backend is usable: subscribe to events, then load data.
+  useEffect(() => {
+    if (status !== "ready") return;
+    let unlisten: (() => void) | undefined;
+    let cancelled = false;
+    void connectEvents().then((u) => {
+      if (cancelled) u();
+      else unlisten = u;
+    });
+    void loadInstances();
+    void loadAccounts();
+    return () => {
+      cancelled = true;
+      unlisten?.();
+    };
+  }, [status, loadInstances, loadAccounts]);
 
   // Apply theme + language whenever settings change.
   useEffect(() => {
@@ -62,7 +100,7 @@ export function App() {
           <div className="relative flex min-h-0 flex-1">
             {settings.backgroundEffects && <NeonBackground accent={settings.accent} />}
             <Sidebar />
-            <main className="relative z-0 min-w-0 flex-1 overflow-y-auto p-6">
+            <main className="relative z-0 flex min-w-0 flex-1 flex-col overflow-y-auto p-6">
               {notice && (
                 <div className="mb-4">
                   <ErrorNotice error={notice} onDismiss={dismissNotice} />
@@ -71,7 +109,7 @@ export function App() {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={view}
-                  className="h-full"
+                  className="min-h-0 flex-1"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
@@ -81,6 +119,7 @@ export function App() {
                 </motion.div>
               </AnimatePresence>
             </main>
+            <CreateWizard />
           </div>
         )}
       </div>

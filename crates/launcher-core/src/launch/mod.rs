@@ -3,6 +3,7 @@
 
 pub mod args;
 pub mod cmdline;
+pub mod log4j;
 pub mod process;
 
 use std::path::{Path, PathBuf};
@@ -249,6 +250,18 @@ pub async fn prepare(
     }
     full.push(v.main_class.clone().expect("checked in resolve"));
     full.extend(game);
+    // Legacy versions have no rule-gated resolution arguments; 1.6+ still
+    // understand --width/--height.
+    if v.arguments.is_none()
+        && let Some((w, h)) = opts.resolution
+    {
+        full.extend([
+            "--width".into(),
+            w.to_string(),
+            "--height".into(),
+            h.to_string(),
+        ]);
+    }
     full.extend(opts.extra_game_args.iter().cloned());
 
     let left = args::unresolved(&full);

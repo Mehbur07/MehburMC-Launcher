@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-read-instance-log"
+description = "Enables the read_instance_log command without any pre-configured scope."
+commands.allow = ["read_instance_log"]
+
+[[permission]]
+identifier = "deny-read-instance-log"
+description = "Denies the read_instance_log command without any pre-configured scope."
+commands.deny = ["read_instance_log"]

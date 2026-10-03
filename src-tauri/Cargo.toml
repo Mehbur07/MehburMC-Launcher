@@ -17,9 +17,11 @@ tauri-build = { version = "2.7.1", features = [] }
 launcher-core.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-tauri = { version = "2.12.1", features = [] }
+tauri = { version = "2.12.1", features = ["protocol-asset"] }
+tauri-plugin-dialog = "2.8.1"
 tauri-plugin-opener = "2.7.0"
 tauri-plugin-single-instance = "2.5.2"
+tokio.workspace = true
 tracing.workspace = true
 tracing-appender.workspace = true
 ts-rs.workspace = true

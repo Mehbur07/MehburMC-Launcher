@@ -39,6 +39,31 @@ pub fn write_json_atomic<T: serde::Serialize>(path: &Path, value: &T) -> Result<
     write_atomic(path, &bytes)
 }
 
+/// Recursively copies `from` into `to`. `skip` receives paths relative to
+/// `from` and returns `true` for entries to leave out. Symlinks are skipped.
+pub fn copy_dir(from: &Path, to: &Path, skip: &dyn Fn(&Path) -> bool) -> Result<()> {
+    fn walk(root: &Path, dir: &Path, to: &Path, skip: &dyn Fn(&Path) -> bool) -> Result<()> {
+        fs::create_dir_all(to).map_err(|e| CoreError::io(to, e))?;
+        for entry in fs::read_dir(dir).map_err(|e| CoreError::io(dir, e))? {
+            let entry = entry.map_err(|e| CoreError::io(dir, e))?;
+            let path = entry.path();
+            let rel = path.strip_prefix(root).unwrap_or(&path);
+            if skip(rel) {
+                continue;
+            }
+            let ty = entry.file_type().map_err(|e| CoreError::io(&path, e))?;
+            let target = to.join(entry.file_name());
+            if ty.is_dir() {
+                walk(root, &path, &target, skip)?;
+            } else if ty.is_file() {
+                fs::copy(&path, &target).map_err(|e| CoreError::io(&target, e))?;
+            }
+        }
+        Ok(())
+    }
+    walk(from, from, to, skip)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

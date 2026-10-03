@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-update-instance"
+description = "Enables the update_instance command without any pre-configured scope."
+commands.allow = ["update_instance"]
+
+[[permission]]
+identifier = "deny-update-instance"
+description = "Denies the update_instance command without any pre-configured scope."
+commands.deny = ["update_instance"]

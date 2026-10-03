@@ -1,8 +1,10 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Least-privilege permissions for the main window. No shell, no fs, no http from the webview.",
-  "windows": ["main"],
+  "description": "Least-privilege permissions for the main window. No shell, no fs, no http from the webview; file dialogs only return paths.",
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:event:allow-listen",
     "core:event:allow-unlisten",
@@ -12,8 +14,38 @@
     "core:window:allow-is-maximized",
     "core:window:allow-start-dragging",
     "core:window:allow-close",
+    "dialog:allow-open",
+    "dialog:allow-save",
     "allow-get-bootstrap",
     "allow-save-settings",
-    "allow-open-data-dir"
+    "allow-open-data-dir",
+    "allow-list-versions",
+    "allow-list-java",
+    "allow-save-text-file",
+    "allow-list-instances",
+    "allow-create-instance",
+    "allow-update-instance",
+    "allow-delete-instance",
+    "allow-copy-instance",
+    "allow-reorder-instances",
+    "allow-select-instance",
+    "allow-export-instance",
+    "allow-import-instance",
+    "allow-open-instance-folder",
+    "allow-launch-instance",
+    "allow-repair-instance",
+    "allow-stop-instance",
+    "allow-list-tasks",
+    "allow-cancel-task",
+    "allow-clear-tasks",
+    "allow-list-accounts",
+    "allow-add-offline-account",
+    "allow-remove-account",
+    "allow-select-account",
+    "allow-list-instance-files",
+    "allow-instance-folder-path",
+    "allow-toggle-instance-file",
+    "allow-delete-instance-file",
+    "allow-read-instance-log"
   ]
 }

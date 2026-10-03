@@ -10,6 +10,7 @@ use tokio::process::Command;
 use tokio_util::sync::CancellationToken;
 
 use super::PreparedLaunch;
+use super::log4j::{Log4jParser, ParsedLine};
 use crate::error::{CoreError, Result};
 use crate::events::{CoreEvent, EventSink, LogStream};
 use crate::logging::mask_secrets;
@@ -120,25 +121,36 @@ async fn pump(
 ) {
     let mut reader = BufReader::new(stream);
     let mut buf = Vec::new();
+    let mut parser = Log4jParser::default();
+    let emit = |parsed: ParsedLine| {
+        let mut text = parsed.text;
+        for s in secrets.iter().filter(|s| s.len() > 3) {
+            text = text.replace(s.as_str(), "***");
+        }
+        events.emit(CoreEvent::GameLog {
+            task: task.clone(),
+            stream: which,
+            line: mask_secrets(&text),
+            level: parsed.level,
+            time_ms: parsed.time_ms,
+            thread: parsed.thread,
+        });
+    };
     loop {
         buf.clear();
         match reader.read_until(b'\n', &mut buf).await {
             Ok(0) | Err(_) => break,
             Ok(_) => {
                 // The game may not emit UTF-8 (e.g. legacy code pages).
-                let mut line = String::from_utf8_lossy(&buf)
-                    .trim_end_matches(['\r', '\n'])
-                    .to_owned();
-                for s in secrets.iter().filter(|s| s.len() > 3) {
-                    line = line.replace(s.as_str(), "***");
+                let line = String::from_utf8_lossy(&buf);
+                if let Some(parsed) = parser.feed(line.trim_end_matches(['\r', '\n'])) {
+                    emit(parsed);
                 }
-                events.emit(CoreEvent::GameLog {
-                    task: task.clone(),
-                    stream: which,
-                    line: mask_secrets(&line),
-                });
             }
         }
+    }
+    if let Some(parsed) = parser.finish() {
+        emit(parsed);
     }
 }
 

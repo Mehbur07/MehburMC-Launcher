@@ -114,6 +114,21 @@ pub enum CoreError {
         #[source]
         source: io::Error,
     },
+
+    #[error("instance {0} was not found")]
+    InstanceNotFound(String),
+
+    #[error("instance {name} is busy (running or being prepared)")]
+    InstanceBusy { name: String },
+
+    #[error("invalid instance: {0}")]
+    InvalidInstance(String),
+
+    #[error("no account selected")]
+    NoAccount,
+
+    #[error("account {0} was not found")]
+    AccountNotFound(String),
 }
 
 impl CoreError {
@@ -153,6 +168,11 @@ impl CoreError {
             Self::InvalidPlayerName(_) => "auth.invalidName",
             Self::CommandLineTooLong { .. } => "launch.commandTooLong",
             Self::Spawn { .. } => "launch.spawnFailed",
+            Self::InstanceNotFound(_) => "instance.notFound",
+            Self::InstanceBusy { .. } => "instance.busy",
+            Self::InvalidInstance(_) => "instance.invalid",
+            Self::NoAccount => "account.none",
+            Self::AccountNotFound(_) => "account.notFound",
         }
     }
 
@@ -206,7 +226,10 @@ impl CoreError {
             }
             Self::InvalidPlayerName(name) => put("name", name.clone()),
             Self::Spawn { program, .. } => put("path", program.display().to_string()),
-            Self::NoDataDir | Self::Cancelled => {}
+            Self::InstanceNotFound(id) | Self::AccountNotFound(id) => put("id", id.clone()),
+            Self::InstanceBusy { name } => put("name", name.clone()),
+            Self::InvalidInstance(reason) => put("reason", reason.clone()),
+            Self::NoDataDir | Self::Cancelled | Self::NoAccount => {}
         }
         p
     }

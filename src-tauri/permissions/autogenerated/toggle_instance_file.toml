@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-toggle-instance-file"
+description = "Enables the toggle_instance_file command without any pre-configured scope."
+commands.allow = ["toggle_instance_file"]
+
+[[permission]]
+identifier = "deny-toggle-instance-file"
+description = "Denies the toggle_instance_file command without any pre-configured scope."
+commands.deny = ["toggle_instance_file"]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-create-instance"
+description = "Enables the create_instance command without any pre-configured scope."
+commands.allow = ["create_instance"]
+
+[[permission]]
+identifier = "deny-create-instance"
+description = "Denies the create_instance command without any pre-configured scope."
+commands.deny = ["create_instance"]

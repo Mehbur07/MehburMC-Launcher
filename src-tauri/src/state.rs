@@ -1,10 +1,15 @@
 //! Process-wide state built before the window opens.
 
 use std::path::Path;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
+use launcher_core::events::CoreEvent;
+use launcher_core::session::Launcher;
 use launcher_core::{CoreError, ErrorPayload, Paths, Settings, logging};
+use tokio::sync::mpsc;
 use tracing_appender::non_blocking::WorkerGuard;
+
+use crate::bridge;
 
 pub struct AppState {
     /// `None` only if the platform data directory could not be determined.
@@ -13,6 +18,9 @@ pub struct AppState {
     /// Fatal startup problem (e.g. data folder not writable) shown by the UI
     /// instead of the normal shell.
     pub startup_error: Option<ErrorPayload>,
+    pub launcher: Option<Arc<Launcher>>,
+    /// Taken once by `setup` to start the event forwarder.
+    pub events_rx: Mutex<Option<mpsc::UnboundedReceiver<CoreEvent>>>,
     _log_guard: Option<WorkerGuard>,
 }
 
@@ -45,10 +53,22 @@ impl AppState {
             tracing::warn!(error = %e.detail(), "could not read settings, using defaults");
         }
 
+        let (sink, rx) = bridge::channel();
+        let launcher = match Launcher::new(
+            paths.clone(),
+            Arc::new(sink),
+            settings.download_concurrency as usize,
+        ) {
+            Ok(l) => l,
+            Err(e) => return Self::failed(Some(paths), e),
+        };
+
         Self {
             paths: Some(paths),
             settings: Mutex::new(settings),
             startup_error: None,
+            launcher: Some(launcher),
+            events_rx: Mutex::new(Some(rx)),
             _log_guard: log_guard,
         }
     }
@@ -59,6 +79,8 @@ impl AppState {
             paths,
             settings: Mutex::new(Settings::default()),
             startup_error: Some(err.to_payload()),
+            launcher: None,
+            events_rx: Mutex::new(None),
             _log_guard: None,
         }
     }
@@ -70,5 +92,16 @@ impl AppState {
             (Some(e), _) => Err(e.clone()),
             (None, None) => Err(CoreError::NoDataDir.to_payload()),
         }
+    }
+
+    pub fn launcher(&self) -> Result<&Arc<Launcher>, ErrorPayload> {
+        self.usable_paths()?;
+        self.launcher
+            .as_ref()
+            .ok_or_else(|| CoreError::NoDataDir.to_payload())
+    }
+
+    pub fn settings(&self) -> Settings {
+        self.settings.lock().expect("settings lock").clone()
     }
 }

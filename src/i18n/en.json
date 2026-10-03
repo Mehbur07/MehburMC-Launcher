@@ -19,12 +19,15 @@
     "settings": "Settings"
   },
   "home": {
-    "noInstance": "No instances yet",
-    "noInstanceHint": "Creating instances and launching the game arrive in the next phases.",
     "play": "PLAY",
-    "playDisabled": "Launching is enabled in phases 2–3",
-    "memory": "Default RAM",
-    "news": "News"
+    "welcome": "Create an instance to get started. Each instance runs isolated with its own mods, worlds and settings.",
+    "stop": "STOP",
+    "running": "Game running",
+    "preparing": "Preparing…",
+    "noAccount": "No account selected",
+    "addAccount": "Add account",
+    "showConsole": "Show console",
+    "switch": "Switch instance"
   },
   "comingSoon": {
     "title": "Coming soon",
@@ -68,7 +71,16 @@
     "copyDetails": "Copy details",
     "copied": "Copied",
     "dismiss": "Dismiss",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "close": "Close",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "more": "More",
+    "back": "Back",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "save": "Save",
+    "saved": "Saved"
   },
   "errors": {
     "unknown": "An unexpected error occurred.",
@@ -118,6 +130,171 @@
     "launch": {
       "commandTooLong": "The command line is too long for Java {{major}}.",
       "spawnFailed": "Could not start the game: {{path}}"
+    },
+    "instance": {
+      "notFound": "Instance not found: {{id}}",
+      "busy": "\"{{name}}\" is busy (running or being prepared).",
+      "invalid": "Invalid instance: {{reason}}"
+    },
+    "account": {
+      "none": "Add or select an account first.",
+      "notFound": "Account not found: {{id}}"
     }
+  },
+  "instances": {
+    "import": "Import",
+    "create": "Create instance",
+    "emptyTitle": "No instances yet",
+    "emptyBody": "Create your first instance and pick its version, RAM and Java.",
+    "details": "Details",
+    "openFolder": "Open folder",
+    "copy": "Copy",
+    "copyName": "{{name}} (copy)",
+    "export": "Export",
+    "drag": "Drag to reorder",
+    "playTime": "Play time",
+    "deleteTitle": "Delete instance?",
+    "deleteBody": "\"{{name}}\" will be deleted permanently, including its worlds and mods."
+  },
+  "instance": {
+    "missing": "Instance not found",
+    "tabs": {
+      "general": "General",
+      "mods": "Mods",
+      "resourcePacks": "Resource Packs",
+      "shaderPacks": "Shader Packs",
+      "saves": "Worlds",
+      "screenshots": "Screenshots",
+      "logs": "Logs",
+      "settings": "Settings"
+    },
+    "repair": "Repair",
+    "repairHint": "Verifies every file with SHA-1 and re-downloads broken ones.",
+    "version": "Minecraft version",
+    "loader": "Loader",
+    "lastPlayed": "Last played",
+    "never": "Never played",
+    "created": "Created"
+  },
+  "options": {
+    "java": "Java",
+    "javaHint": "Automatic: the Java version required by the game is downloaded and used.",
+    "javaAuto": "Automatic (recommended)",
+    "javaManaged": "launcher",
+    "javaSystem": "system",
+    "browse": "Browse",
+    "memory": "RAM",
+    "memoryDefault": "Use launcher default ({{gb}} GB)",
+    "jvmArgs": "Extra JVM arguments",
+    "jvmArgsHint": "Separate with spaces; quote values that contain spaces.",
+    "resolution": "Custom resolution",
+    "width": "Width",
+    "height": "Height",
+    "fullscreen": "Fullscreen",
+    "default": "default"
+  },
+  "wizard": {
+    "title": "New instance",
+    "create": "Create",
+    "name": "Name",
+    "icon": "Icon",
+    "loader": "Mod loader",
+    "loaderSoon": "Phase 4",
+    "version": "Minecraft version",
+    "searchVersion": "Search versions…",
+    "versionCount": "{{count}} versions"
+  },
+  "versionType": {
+    "release": "Release",
+    "snapshot": "Snapshot",
+    "old_beta": "Beta",
+    "old_alpha": "Alpha"
+  },
+  "units": {
+    "h": "h",
+    "m": "min",
+    "s": "s"
+  },
+  "files": {
+    "count": "{{count}} items",
+    "empty": {
+      "mods": "No mods",
+      "resourcePacks": "No resource packs",
+      "shaderPacks": "No shader packs",
+      "saves": "No worlds yet",
+      "screenshots": "No screenshots",
+      "logs": "No log files"
+    },
+    "modsHint": "The mod browser arrives in phase 6; for now you can copy .jar files into the folder.",
+    "screenshotsHint": "Press F2 in game to take a screenshot.",
+    "enabled": "Enabled",
+    "deleteTitle": "Delete?",
+    "deleteBody": "\"{{name}}\" will be deleted permanently.",
+    "deleteWorld": "The world \"{{name}}\" will be deleted permanently. This cannot be undone."
+  },
+  "logs": {
+    "crash": "Crash"
+  },
+  "console": {
+    "instance": "Instance",
+    "running": "Running",
+    "filter": {
+      "all": "All",
+      "warn": "Warn+",
+      "error": "Errors"
+    },
+    "search": "Search log…",
+    "crashed": "The game closed unexpectedly (exit code {{code}}).",
+    "openCrash": "Open crash report",
+    "empty": "No output yet",
+    "emptyHint": "When you start this instance its output streams here live.",
+    "follow": "Jump to bottom",
+    "lines": "{{shown}} / {{total}} lines",
+    "copy": "Copy",
+    "save": "Save",
+    "clear": "Clear"
+  },
+  "downloads": {
+    "clear": "Clear finished",
+    "empty": "No downloads",
+    "emptyHint": "File downloads appear here when you start an instance.",
+    "kind": {
+      "launch": "Launch",
+      "repair": "Repair"
+    },
+    "status": {
+      "preparing": "Preparing",
+      "playing": "Playing",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "paused": "Paused"
+    },
+    "pause": "Pause",
+    "resume": "Resume"
+  },
+  "stage": {
+    "metadata": "Version info",
+    "libraries": "Libraries",
+    "natives": "Natives",
+    "assets": "Assets",
+    "java": "Java",
+    "launching": "Launching"
+  },
+  "accounts": {
+    "offlineTitle": "Offline account",
+    "offlineBody": "To play without internet, singleplayer, or on offline-mode servers.",
+    "namePlaceholder": "Player name",
+    "add": "Add",
+    "nameRules": "3–16 characters; letters, digits and _ only.",
+    "microsoftTitle": "Microsoft account",
+    "soon": "Phase 5",
+    "microsoftBody": "Premium sign-in (device code) arrives in phase 5. It becomes available once an Azure client_id is configured.",
+    "notPremium": "not premium",
+    "active": "Active",
+    "use": "Use",
+    "offlineServers": "Offline accounts cannot join online-mode servers and skins show as the default in game.",
+    "removeTitle": "Remove account?",
+    "removeBody": "\"{{name}}\" will be removed from the list."
   }
 }

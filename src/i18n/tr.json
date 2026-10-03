@@ -19,12 +19,15 @@
     "settings": "Ayarlar"
   },
   "home": {
-    "noInstance": "Henüz bir profil yok",
-    "noInstanceHint": "Profil oluşturma ve oyunu başlatma sonraki fazlarda eklenecek.",
     "play": "OYNA",
-    "playDisabled": "Oyun başlatma Faz 2–3'te etkinleşecek",
-    "memory": "Varsayılan RAM",
-    "news": "Haberler"
+    "welcome": "Başlamak için bir profil oluştur. Her profil kendi modları, dünyaları ve ayarlarıyla izole çalışır.",
+    "stop": "DURDUR",
+    "running": "Oyun çalışıyor",
+    "preparing": "Hazırlanıyor…",
+    "noAccount": "Hesap seçilmedi",
+    "addAccount": "Hesap ekle",
+    "showConsole": "Konsolu göster",
+    "switch": "Profil değiştir"
   },
   "comingSoon": {
     "title": "Yakında",
@@ -68,7 +71,16 @@
     "copyDetails": "Detayları kopyala",
     "copied": "Kopyalandı",
     "dismiss": "Kapat",
-    "loading": "Yükleniyor…"
+    "loading": "Yükleniyor…",
+    "close": "Kapat",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "more": "Diğer",
+    "back": "Geri",
+    "refresh": "Yenile",
+    "retry": "Tekrar dene",
+    "save": "Kaydet",
+    "saved": "Kaydedildi"
   },
   "errors": {
     "unknown": "Beklenmeyen bir hata oluştu.",
@@ -118,6 +130,171 @@
     "launch": {
       "commandTooLong": "Komut satırı Java {{major}} için çok uzun.",
       "spawnFailed": "Oyun başlatılamadı: {{path}}"
+    },
+    "instance": {
+      "notFound": "Profil bulunamadı: {{id}}",
+      "busy": "\"{{name}}\" şu anda kullanımda (çalışıyor veya hazırlanıyor).",
+      "invalid": "Geçersiz profil: {{reason}}"
+    },
+    "account": {
+      "none": "Önce bir hesap ekle veya seç.",
+      "notFound": "Hesap bulunamadı: {{id}}"
     }
+  },
+  "instances": {
+    "import": "İçe aktar",
+    "create": "Profil oluştur",
+    "emptyTitle": "Henüz profil yok",
+    "emptyBody": "İlk profilini oluştur; sürüm, RAM ve Java ayarlarını sen seç.",
+    "details": "Detaylar",
+    "openFolder": "Klasörü aç",
+    "copy": "Kopyala",
+    "copyName": "{{name}} (kopya)",
+    "export": "Dışa aktar",
+    "drag": "Sürükleyerek sırala",
+    "playTime": "Oynama süresi",
+    "deleteTitle": "Profil silinsin mi?",
+    "deleteBody": "\"{{name}}\" profili, dünyaları ve modlarıyla birlikte kalıcı olarak silinecek."
+  },
+  "instance": {
+    "missing": "Profil bulunamadı",
+    "tabs": {
+      "general": "Genel",
+      "mods": "Modlar",
+      "resourcePacks": "Resource Pack",
+      "shaderPacks": "Shader Pack",
+      "saves": "Dünyalar",
+      "screenshots": "Ekran görüntüleri",
+      "logs": "Loglar",
+      "settings": "Ayarlar"
+    },
+    "repair": "Onar",
+    "repairHint": "Tüm dosyaları SHA-1 ile doğrular, bozuk olanları yeniden indirir.",
+    "version": "Minecraft sürümü",
+    "loader": "Loader",
+    "lastPlayed": "Son oynama",
+    "never": "Hiç oynanmadı",
+    "created": "Oluşturulma"
+  },
+  "options": {
+    "java": "Java",
+    "javaHint": "Otomatik: sürümün istediği Java indirilir ve kullanılır.",
+    "javaAuto": "Otomatik (önerilen)",
+    "javaManaged": "launcher",
+    "javaSystem": "sistem",
+    "browse": "Gözat",
+    "memory": "RAM",
+    "memoryDefault": "Launcher varsayılanını kullan ({{gb}} GB)",
+    "jvmArgs": "Ek JVM argümanları",
+    "jvmArgsHint": "Boşlukla ayır; boşluk içeren değerleri tırnakla yaz.",
+    "resolution": "Özel çözünürlük",
+    "width": "Genişlik",
+    "height": "Yükseklik",
+    "fullscreen": "Tam ekran",
+    "default": "varsayılan"
+  },
+  "wizard": {
+    "title": "Yeni profil",
+    "create": "Oluştur",
+    "name": "Ad",
+    "icon": "İkon",
+    "loader": "Mod loader",
+    "loaderSoon": "Faz 4",
+    "version": "Minecraft sürümü",
+    "searchVersion": "Sürüm ara…",
+    "versionCount": "{{count}} sürüm"
+  },
+  "versionType": {
+    "release": "Release",
+    "snapshot": "Snapshot",
+    "old_beta": "Beta",
+    "old_alpha": "Alpha"
+  },
+  "units": {
+    "h": "sa",
+    "m": "dk",
+    "s": "sn"
+  },
+  "files": {
+    "count": "{{count}} öğe",
+    "empty": {
+      "mods": "Mod yok",
+      "resourcePacks": "Resource pack yok",
+      "shaderPacks": "Shader pack yok",
+      "saves": "Henüz dünya yok",
+      "screenshots": "Ekran görüntüsü yok",
+      "logs": "Log dosyası yok"
+    },
+    "modsHint": "Mod tarayıcısı Faz 6'da geliyor; şimdilik .jar dosyalarını klasöre kopyalayabilirsin.",
+    "screenshotsHint": "Oyunda F2 ile ekran görüntüsü al.",
+    "enabled": "Etkin",
+    "deleteTitle": "Silinsin mi?",
+    "deleteBody": "\"{{name}}\" kalıcı olarak silinecek.",
+    "deleteWorld": "\"{{name}}\" dünyası kalıcı olarak silinecek. Bu işlem geri alınamaz."
+  },
+  "logs": {
+    "crash": "Crash"
+  },
+  "console": {
+    "instance": "Profil",
+    "running": "Çalışıyor",
+    "filter": {
+      "all": "Tümü",
+      "warn": "Uyarı+",
+      "error": "Hata"
+    },
+    "search": "Logda ara…",
+    "crashed": "Oyun beklenmedik şekilde kapandı (çıkış kodu {{code}}).",
+    "openCrash": "Crash raporunu aç",
+    "empty": "Henüz çıktı yok",
+    "emptyHint": "Bu profili başlattığında oyunun çıktısı burada canlı akar.",
+    "follow": "En alta git",
+    "lines": "{{shown}} / {{total}} satır",
+    "copy": "Kopyala",
+    "save": "Kaydet",
+    "clear": "Temizle"
+  },
+  "downloads": {
+    "clear": "Bitenleri temizle",
+    "empty": "İndirme yok",
+    "emptyHint": "Bir profil başlattığında dosya indirmeleri burada görünür.",
+    "kind": {
+      "launch": "Başlatma",
+      "repair": "Onarım"
+    },
+    "status": {
+      "preparing": "Hazırlanıyor",
+      "playing": "Oynanıyor",
+      "completed": "Tamamlandı",
+      "failed": "Başarısız",
+      "cancelled": "İptal edildi",
+      "paused": "Duraklatıldı"
+    },
+    "pause": "Duraklat",
+    "resume": "Devam et"
+  },
+  "stage": {
+    "metadata": "Sürüm bilgisi",
+    "libraries": "Kütüphaneler",
+    "natives": "Native dosyalar",
+    "assets": "Asset'ler",
+    "java": "Java",
+    "launching": "Başlatılıyor"
+  },
+  "accounts": {
+    "offlineTitle": "Offline hesap",
+    "offlineBody": "İnternetsiz ve tek oyunculu oynamak ya da offline-mode sunuculara girmek için.",
+    "namePlaceholder": "Oyuncu adı",
+    "add": "Ekle",
+    "nameRules": "3–16 karakter; yalnızca harf, rakam ve _.",
+    "microsoftTitle": "Microsoft hesabı",
+    "soon": "Faz 5",
+    "microsoftBody": "Premium giriş (device code) Faz 5'te geliyor. Azure client_id ayarlandığında etkinleşecek.",
+    "notPremium": "premium değil",
+    "active": "Aktif",
+    "use": "Kullan",
+    "offlineServers": "Offline hesaplar çevrimiçi (online-mode) sunuculara giremez ve skin'ler oyunda varsayılan görünür.",
+    "removeTitle": "Hesap kaldırılsın mı?",
+    "removeBody": "\"{{name}}\" hesabı listeden kaldırılacak."
   }
 }

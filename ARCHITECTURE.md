@@ -1,6 +1,6 @@
 # MehburMC Launcher — Mimari
 
-> Durum: **Onaylandı (2026-10-03). Faz 2 tamamlandı.** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
+> Durum: **Onaylandı (2026-10-03). Faz 3 tamamlandı.** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
 
 MehburMC Launcher; Windows öncelikli (Linux/macOS'a taşınabilir), açık mimarili, reklamsız, telemetrisiz bir Minecraft Java Edition launcher'ıdır. SKLauncher'ın özellik zenginliğini (offline + premium, skin/cape, modpack, loader desteği, portable) ve Legacy Launcher'ın hafifliğini / izole profil yapısını birleştirir.
 
@@ -333,4 +333,11 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 | 2026-10-03 | K18: Komut satırı sınırı — yalnızca `-cp` çifti Java `@argfile`'a taşınır (dosyada asla token yok; oyun bitince silinir). Java 8'de sınır aşılırsa `launch.commandTooLong` hatası; "pathing jar" gerekirse Faz 4'te (Forge). |
 | 2026-10-03 | K19: Java seçimi — instance override → `runtime/java{N}` → sistemde tam eşleşen major → Adoptium'dan indir. Adoptium Windows ARM64'te Java 8 sunmuyor → x64'e düşülür. Linux/macOS `tar.gz` runtime'ları henüz desteklenmiyor. |
 | 2026-10-03 | K20: Çevrimdışı — manifest alınamazsa yerel `versions/<id>/<id>.json` güvenilir kabul edilir; yerel dosya SHA-1'i manifestle uyuşuyorsa yeniden indirilmez. |
-| 2026-10-03 | Not (Faz 3): modern istemciler log4j **XML olayları** basar (`<log4j:Event …>`); konsol bunları ayrıştırıp düz satıra çevirmeli. |
+| 2026-10-03 | Not (Faz 3): modern istemciler log4j **XML olayları** basar (`<log4j:Event …>`); konsol bunları ayrıştırıp düz satıra çevirmeli. → K25 ile çözüldü. |
+| 2026-10-03 | K21: `launcher/state.json` — tercih olmayan UI durumu (seçili instance, sürükle-bırak sırası). `settings.json`'dan ayrı tutulur. |
+| 2026-10-03 | K22: Faz 3'te OYNA'nın çalışması için `accounts.json` + offline hesap ekle/sil/seç eklendi (yalnızca metadata). Microsoft hesap türü modelde var, girişi Faz 5'te. |
+| 2026-10-03 | K23: Görevler (`tasks.rs`) — "duraklat" = iptal + `.part` dosyaları korunur; "devam et" görevi yeniden başlatır ve indirme `Range` ile kaldığı yerden sürer. Aynı instance için yeni görev eski bitmiş kaydı değiştirir; en fazla 30 bitmiş görev tutulur. |
+| 2026-10-03 | K24: "Oyun açılınca kapat" davranışı şimdilik "küçült" gibi çalışır (oyunu launcher'dan bağımsız başlatma Faz 8'de). |
+| 2026-10-03 | K25: Oyun çıktısı core'da log4j XML'den {metin, seviye, zaman, thread} olaylarına çevrilir; köprü logları 50 ms'de bir toplu gönderir (flush başına ≤2000 satır), ilerleme olaylarını birleştirir. UI'da instance başına 5000 satırlık halka tampon + sanal liste. |
+| 2026-10-03 | K26: Ekran görüntüleri asset protokolüyle gösterilir; kapsam başlangıçta boştur ve yalnızca listelenen instance'ın `screenshots/` klasörü çalışma anında izinlenir. |
+| 2026-10-03 | K27: Instance id'leri `slug(ad)-<6 hex>` biçiminde üretilir ve her komutta `[a-z0-9._-]` + `..` yok kuralıyla doğrulanır; dosya adları ayrıca ayırıcı/`..`/`:` içeremez (yol geçişi koruması). |

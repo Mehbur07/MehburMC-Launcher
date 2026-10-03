@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-import-instance"
+description = "Enables the import_instance command without any pre-configured scope."
+commands.allow = ["import_instance"]
+
+[[permission]]
+identifier = "deny-import-instance"
+description = "Denies the import_instance command without any pre-configured scope."
+commands.deny = ["import_instance"]

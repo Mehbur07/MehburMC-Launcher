@@ -3,7 +3,7 @@
 Windows öncelikli, hafif, reklamsız ve telemetrisiz bir Minecraft Java Edition launcher'ı.
 Tauri 2 (Rust) + React + TypeScript ile geliştirilmektedir.
 
-> **Durum:** Faz 2 — çekirdek: vanilla sürümler CLI ile offline başlatılabiliyor. Arayüzden başlatma Faz 3'te.
+> **Durum:** Faz 3 — profil sistemi: arayüzden profil oluşturma, offline hesapla OYNA, konsol, indirmeler. Mod loader'lar Faz 4'te.
 
 - Mimari ve kararlar: [ARCHITECTURE.md](ARCHITECTURE.md)
 

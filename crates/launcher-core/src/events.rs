@@ -30,10 +30,38 @@ pub enum LogStream {
     Stderr,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum LogLevel {
+    Trace,
+    Debug,
+    Info,
+    Warn,
+    Error,
+    Fatal,
+}
+
+impl LogLevel {
+    pub fn parse(s: &str) -> Option<Self> {
+        Some(match s.to_ascii_uppercase().as_str() {
+            "TRACE" | "FINEST" | "FINER" => Self::Trace,
+            "DEBUG" | "FINE" => Self::Debug,
+            "INFO" | "CONFIG" => Self::Info,
+            "WARN" | "WARNING" => Self::Warn,
+            "ERROR" | "SEVERE" => Self::Error,
+            "FATAL" => Self::Fatal,
+            _ => return None,
+        })
+    }
+}
+
 #[derive(Debug, Clone, Serialize, TS)]
 #[serde(tag = "type", rename_all = "camelCase")]
 #[ts(export)]
 pub enum CoreEvent {
+    #[serde(rename_all = "camelCase")]
+    Task { task: crate::tasks::TaskInfo },
     #[serde(rename_all = "camelCase")]
     Progress {
         task: String,
@@ -52,6 +80,11 @@ pub enum CoreEvent {
         task: String,
         stream: LogStream,
         line: String,
+        level: Option<LogLevel>,
+        /// Unix milliseconds from the log4j event, if the game provided one.
+        #[ts(type = "number | null")]
+        time_ms: Option<u64>,
+        thread: Option<String>,
     },
     #[serde(rename_all = "camelCase")]
     GameExited {
