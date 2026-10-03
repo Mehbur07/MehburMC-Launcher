@@ -96,6 +96,38 @@
   animation: progress-flow 1.6s linear infinite;
 }
 
+/* Staggered list entrance; set --i on the element for the delay step. */
+@utility rise-in {
+  animation: rise-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(min(var(--i, 0), 12) * 35ms);
+}
+
+@utility pop-in {
+  animation: pop-in 0.25s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
 @keyframes play-pulse {
   0%,
   100% {

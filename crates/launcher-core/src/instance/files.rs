@@ -167,6 +167,11 @@ pub fn delete(store: &InstanceStore, id: &str, folder: Folder, name: &str) -> Re
 }
 
 /// Reads a log or crash report (last `MAX_LOG_BYTES` if it is larger).
+/// Path of a file directly inside an instance folder (name validated).
+pub fn file_path(store: &InstanceStore, id: &str, folder: Folder, name: &str) -> Result<PathBuf> {
+    Ok(folder_path(store, id, folder)?.join(checked_name(name)?))
+}
+
 pub fn read_text(store: &InstanceStore, id: &str, folder: Folder, name: &str) -> Result<String> {
     if !matches!(folder, Folder::Logs | Folder::CrashReports) {
         return Err(CoreError::InvalidInstance("not a log folder".into()));

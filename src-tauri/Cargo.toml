@@ -21,6 +21,7 @@ tauri = { version = "2.12.1", features = ["protocol-asset"] }
 tauri-plugin-dialog = "2.8.1"
 tauri-plugin-opener = "2.7.0"
 tauri-plugin-single-instance = "2.5.2"
+tauri-plugin-updater = "2"
 tokio.workspace = true
 tracing.workspace = true
 tracing-appender.workspace = true

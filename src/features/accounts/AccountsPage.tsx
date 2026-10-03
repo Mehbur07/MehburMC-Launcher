@@ -72,12 +72,13 @@ export function AccountsPage() {
       </section>
 
       <section className="flex flex-col gap-2">
-        {accounts.map((a) => {
+        {accounts.map((a, i) => {
           const active = a.id === selected;
           return (
             <div
               key={a.id}
-              className={`flex items-center gap-3 rounded-lg border bg-surface-1/85 px-4 py-3 ${
+              style={{ ["--i" as string]: i }}
+              className={`rise-in flex items-center gap-3 rounded-lg border bg-surface-1/85 px-4 py-3 ${
                 active ? "border-accent/60 neon-ring" : "border-line"
               }`}
             >

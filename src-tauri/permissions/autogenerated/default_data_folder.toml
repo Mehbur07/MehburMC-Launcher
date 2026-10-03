@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-default-data-folder"
+description = "Enables the default_data_folder command without any pre-configured scope."
+commands.allow = ["default_data_folder"]
+
+[[permission]]
+identifier = "deny-default-data-folder"
+description = "Denies the default_data_folder command without any pre-configured scope."
+commands.deny = ["default_data_folder"]

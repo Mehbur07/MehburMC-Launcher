@@ -1,8 +1,10 @@
 //! Spawns the game, streams its output as events and reports how it exited.
 
+use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
-use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
 use tokio::io::{AsyncBufReadExt, AsyncRead, BufReader};
@@ -23,7 +25,29 @@ pub struct GameExit {
     pub duration: Duration,
     /// Exit was triggered by cancellation (launcher-side kill).
     pub killed: bool,
+    /// Last lines the game printed (for crash analysis).
+    pub output_tail: String,
+    pub started_at: SystemTime,
 }
+
+/// Lines of game output kept in memory for crash analysis.
+const TAIL_LINES: usize = 400;
+
+/// Optional callbacks while the game runs.
+#[derive(Default)]
+pub struct RunHooks {
+    /// Called once when the client reaches the main menu ([`is_ready_line`]).
+    pub on_ready: Option<Box<dyn FnOnce() + Send>>,
+    /// Send stdout + stderr to this file instead of pipes and follow it.
+    /// Used when the launcher quits while the game keeps running: a pipe
+    /// whose reader is gone can block the game's logging thread.
+    pub output_file: Option<PathBuf>,
+}
+
+/// How often a followed output file is polled for new lines.
+const FOLLOW_INTERVAL: Duration = Duration::from_millis(100);
+
+type Shared<T> = Arc<Mutex<T>>;
 
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
@@ -35,13 +59,38 @@ pub async fn run(
     task: &str,
     cancel: &CancellationToken,
 ) -> Result<GameExit> {
+    run_with(prepared, events, task, cancel, RunHooks::default()).await
+}
+
+pub async fn run_with(
+    prepared: &PreparedLaunch,
+    events: Arc<dyn EventSink>,
+    task: &str,
+    cancel: &CancellationToken,
+    hooks: RunHooks,
+) -> Result<GameExit> {
     let mut cmd = Command::new(&prepared.program);
     cmd.args(&prepared.args)
         .current_dir(&prepared.cwd)
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .kill_on_drop(true);
+        .stdin(Stdio::null());
+    match &hooks.output_file {
+        Some(path) => {
+            if let Some(dir) = path.parent() {
+                std::fs::create_dir_all(dir).map_err(|e| CoreError::io(dir, e))?;
+            }
+            let f = std::fs::File::create(path).map_err(|e| CoreError::io(path, e))?;
+            let f2 = f.try_clone().map_err(|e| CoreError::io(path, e))?;
+            // The game must outlive the launcher here.
+            cmd.stdout(Stdio::from(f))
+                .stderr(Stdio::from(f2))
+                .kill_on_drop(false);
+        }
+        None => {
+            cmd.stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .kill_on_drop(true);
+        }
+    }
     #[cfg(windows)]
     cmd.creation_flags(CREATE_NO_WINDOW);
 
@@ -54,24 +103,52 @@ pub async fn run(
     })?;
 
     let secrets = Arc::new(prepared.secrets.clone());
-    let out = child.stdout.take().map(|s| {
+    let tail: Shared<VecDeque<String>> = Arc::new(Mutex::new(VecDeque::with_capacity(TAIL_LINES)));
+    let on_ready = Arc::new(Mutex::new(hooks.on_ready));
+    let exited = Arc::new(AtomicBool::new(false));
+    let spawn_pump = |stream, which, follow: Option<Arc<AtomicBool>>| {
         tokio::spawn(pump(
-            s,
-            LogStream::Stdout,
-            events.clone(),
-            task.to_owned(),
-            secrets.clone(),
+            stream,
+            Pump {
+                which,
+                events: events.clone(),
+                task: task.to_owned(),
+                secrets: secrets.clone(),
+                tail: tail.clone(),
+                on_ready: on_ready.clone(),
+            },
+            follow,
         ))
-    });
-    let err = child.stderr.take().map(|s| {
-        tokio::spawn(pump(
-            s,
-            LogStream::Stderr,
-            events.clone(),
-            task.to_owned(),
-            secrets.clone(),
-        ))
-    });
+    };
+    let (out, err) = match &hooks.output_file {
+        Some(path) => {
+            let f = tokio::fs::File::open(path)
+                .await
+                .map_err(|e| CoreError::io(path, e))?;
+            let out = spawn_pump(
+                Box::new(f) as Box<dyn AsyncRead + Unpin + Send>,
+                LogStream::Stdout,
+                Some(exited.clone()),
+            );
+            (Some(out), None)
+        }
+        None => (
+            child.stdout.take().map(|s| {
+                spawn_pump(
+                    Box::new(s) as Box<dyn AsyncRead + Unpin + Send>,
+                    LogStream::Stdout,
+                    None,
+                )
+            }),
+            child.stderr.take().map(|s| {
+                spawn_pump(
+                    Box::new(s) as Box<dyn AsyncRead + Unpin + Send>,
+                    LogStream::Stderr,
+                    None,
+                )
+            }),
+        ),
+    };
 
     let mut killed = false;
     let status = tokio::select! {
@@ -83,6 +160,7 @@ pub async fn run(
         }
     }
     .map_err(|e| CoreError::io(&prepared.program, e))?;
+    exited.store(true, Ordering::SeqCst);
 
     for h in [out, err].into_iter().flatten() {
         let _ = h.await;
@@ -97,11 +175,22 @@ pub async fn run(
     } else {
         None
     };
+    let output_tail = tail
+        .lock()
+        .map(|t| {
+            t.iter().map(String::as_str).collect::<Vec<_>>().join(
+                "
+",
+            )
+        })
+        .unwrap_or_default();
     let exit = GameExit {
         code,
         crash_report,
         duration: started.elapsed(),
         killed,
+        output_tail,
+        started_at: started_wall,
     };
     tracing::info!(?exit.code, killed, secs = exit.duration.as_secs(), "game exited");
     events.emit(CoreEvent::GameExited {
@@ -112,13 +201,26 @@ pub async fn run(
     Ok(exit)
 }
 
-async fn pump(
-    stream: impl AsyncRead + Unpin,
+struct Pump {
     which: LogStream,
     events: Arc<dyn EventSink>,
     task: String,
     secrets: Arc<Vec<String>>,
-) {
+    tail: Shared<VecDeque<String>>,
+    on_ready: Shared<Option<Box<dyn FnOnce() + Send>>>,
+}
+
+/// Reads lines until EOF. With `follow`, EOF only ends the loop once the
+/// game has exited (tail -f over the output file).
+async fn pump(stream: Box<dyn AsyncRead + Unpin + Send>, p: Pump, follow: Option<Arc<AtomicBool>>) {
+    let Pump {
+        which,
+        events,
+        task,
+        secrets,
+        tail,
+        on_ready,
+    } = p;
     let mut reader = BufReader::new(stream);
     let mut buf = Vec::new();
     let mut parser = Log4jParser::default();
@@ -127,26 +229,49 @@ async fn pump(
         for s in secrets.iter().filter(|s| s.len() > 3) {
             text = text.replace(s.as_str(), "***");
         }
+        let line = mask_secrets(&text);
+        if is_ready_line(&line)
+            && let Some(f) = on_ready.lock().ok().and_then(|mut g| g.take())
+        {
+            f();
+        }
+        if let Ok(mut t) = tail.lock() {
+            if t.len() == TAIL_LINES {
+                t.pop_front();
+            }
+            t.push_back(line.clone());
+        }
         events.emit(CoreEvent::GameLog {
             task: task.clone(),
             stream: which,
-            line: mask_secrets(&text),
+            line,
             level: parsed.level,
             time_ms: parsed.time_ms,
             thread: parsed.thread,
         });
     };
-    loop {
-        buf.clear();
-        match reader.read_until(b'\n', &mut buf).await {
-            Ok(0) | Err(_) => break,
-            Ok(_) => {
-                // The game may not emit UTF-8 (e.g. legacy code pages).
-                let line = String::from_utf8_lossy(&buf);
-                if let Some(parsed) = parser.feed(line.trim_end_matches(['\r', '\n'])) {
-                    emit(parsed);
-                }
+    while let Ok(n) = reader.read_until(b'\n', &mut buf).await {
+        let following = follow
+            .as_ref()
+            .is_some_and(|exited| !exited.load(Ordering::SeqCst));
+        if n == 0 && buf.is_empty() {
+            if following {
+                tokio::time::sleep(FOLLOW_INTERVAL).await;
+                continue;
             }
+            break;
+        }
+        // A followed file may end mid-line while the game is still writing:
+        // keep the partial line and wait for the rest.
+        if following && !buf.ends_with(b"\n") {
+            tokio::time::sleep(FOLLOW_INTERVAL).await;
+            continue;
+        }
+        // The game may not emit UTF-8 (e.g. legacy code pages).
+        let line = String::from_utf8_lossy(&buf).into_owned();
+        buf.clear();
+        if let Some(parsed) = parser.feed(line.trim_end_matches(['\r', '\n'])) {
+            emit(parsed);
         }
     }
     if let Some(parsed) = parser.finish() {
@@ -186,6 +311,68 @@ mod tests {
             "[Render thread/INFO]: Created: 1024x512x4 minecraft:textures/atlas/blocks.png-atlas"
         ));
         assert!(!is_ready_line("[main/INFO]: Loading Minecraft"));
+    }
+
+    struct Collect(Mutex<Vec<String>>);
+    impl EventSink for Collect {
+        fn emit(&self, e: CoreEvent) {
+            if let CoreEvent::GameLog { line, .. } = e {
+                self.0.lock().unwrap().push(line);
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn follows_a_growing_file_until_exit() {
+        use std::io::Write;
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("out.log");
+        let mut w = std::fs::File::create(&path).unwrap();
+        let sink = Arc::new(Collect(Mutex::new(vec![])));
+        let exited = Arc::new(AtomicBool::new(false));
+        let ready = Arc::new(AtomicBool::new(false));
+        let r = ready.clone();
+        let p = Pump {
+            which: LogStream::Stdout,
+            events: sink.clone(),
+            task: "t".into(),
+            secrets: Arc::new(vec![]),
+            tail: Arc::new(Mutex::new(VecDeque::new())),
+            on_ready: Arc::new(Mutex::new(Some(Box::new(move || {
+                r.store(true, Ordering::SeqCst)
+            })))),
+        };
+        let f = tokio::fs::File::open(&path).await.unwrap();
+        let h = tokio::spawn(pump(Box::new(f), p, Some(exited.clone())));
+        write!(
+            w,
+            "first
+half"
+        )
+        .unwrap();
+        w.flush().unwrap();
+        tokio::time::sleep(Duration::from_millis(250)).await;
+        write!(
+            w,
+            " line
+[Render thread/INFO]: Sound engine started
+last"
+        )
+        .unwrap();
+        w.flush().unwrap();
+        tokio::time::sleep(Duration::from_millis(250)).await;
+        assert!(ready.load(Ordering::SeqCst));
+        exited.store(true, Ordering::SeqCst);
+        h.await.unwrap();
+        assert_eq!(
+            *sink.0.lock().unwrap(),
+            [
+                "first",
+                "half line",
+                "[Render thread/INFO]: Sound engine started",
+                "last"
+            ]
+        );
     }
 
     #[test]

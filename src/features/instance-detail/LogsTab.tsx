@@ -1,4 +1,4 @@
-import { FileText, RefreshCw } from "lucide-react";
+import { FileText, RefreshCw, Stethoscope } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -8,6 +8,8 @@ import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { FileEntry } from "../../lib/ipc/bindings/FileEntry";
 import type { Folder } from "../../lib/ipc/bindings/Folder";
 import type { Instance } from "../../lib/ipc/bindings/Instance";
+import { useApp } from "../../stores/app";
+import { useCrash } from "../../stores/crash";
 import { lineClass } from "../console/ConsolePage";
 
 type LogFile = FileEntry & { folder: Folder };
@@ -76,25 +78,43 @@ export function LogsTab({ inst }: { inst: Instance }) {
           </button>
         ))}
       </div>
-      <pre
-        data-selectable
-        className="overflow-auto rounded-md border border-line bg-bg/80 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap"
-      >
-        {content.split("\n").map((l, i) => (
-          <div
-            key={i}
-            className={lineClass(
-              /\b(ERROR|FATAL|Exception)\b/.test(l)
-                ? "error"
-                : /\bWARN\b/.test(l)
-                  ? "warn"
-                  : "info",
-            )}
+      <div className="flex min-h-0 flex-col gap-2">
+        {current?.folder === "crashReports" && (
+          <Button
+            size="sm"
+            variant="primary"
+            className="self-end"
+            onClick={() =>
+              void ipc
+                .analyzeCrashReport(inst.id, current.name)
+                .then(useCrash.getState().show)
+                .catch((e) => useApp.setState({ notice: toErrorPayload(e) }))
+            }
           >
-            {l || " "}
-          </div>
-        ))}
-      </pre>
+            <Stethoscope size={14} />
+            {t("crash.analyze")}
+          </Button>
+        )}
+        <pre
+          data-selectable
+          className="min-h-0 flex-1 overflow-auto rounded-md border border-line bg-bg/80 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap"
+        >
+          {content.split("\n").map((l, i) => (
+            <div
+              key={i}
+              className={lineClass(
+                /\b(ERROR|FATAL|Exception)\b/.test(l)
+                  ? "error"
+                  : /\bWARN\b/.test(l)
+                    ? "warn"
+                    : "info",
+              )}
+            >
+              {l || " "}
+            </div>
+          ))}
+        </pre>
+      </div>
     </div>
   );
 }

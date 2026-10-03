@@ -3,11 +3,14 @@
 
 pub mod accounts;
 pub mod content;
+pub mod data;
 pub mod files;
+pub mod home;
 pub mod instances;
 pub mod loaders;
 pub mod play;
 pub mod skins;
+pub mod update;
 
 use launcher_core::{CoreError, ErrorPayload, PathsInfo, Settings};
 use serde::Serialize;

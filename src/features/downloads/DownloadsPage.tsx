@@ -52,8 +52,10 @@ export function DownloadsPage() {
           <p>{t("downloads.emptyHint")}</p>
         </EmptyState>
       )}
-      {list.map((task) => (
-        <TaskRow key={task.id} task={task} />
+      {list.map((task, i) => (
+        <div key={task.id} className="rise-in" style={{ ["--i" as string]: i }}>
+          <TaskRow task={task} />
+        </div>
       ))}
     </div>
   );

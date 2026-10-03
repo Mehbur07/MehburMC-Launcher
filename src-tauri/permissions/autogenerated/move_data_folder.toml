@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-move-data-folder"
+description = "Enables the move_data_folder command without any pre-configured scope."
+commands.allow = ["move_data_folder"]
+
+[[permission]]
+identifier = "deny-move-data-folder"
+description = "Denies the move_data_folder command without any pre-configured scope."
+commands.deny = ["move_data_folder"]

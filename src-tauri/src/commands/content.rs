@@ -119,7 +119,11 @@ pub fn open_external(app: tauri::AppHandle, url: String) -> CmdResult<()> {
     let allowed = reqwest_url_host(&url).is_some_and(|h| {
         matches!(
             h.as_str(),
-            "modrinth.com" | "www.curseforge.com" | "curseforge.com"
+            "modrinth.com"
+                | "www.curseforge.com"
+                | "curseforge.com"
+                | "www.minecraft.net"
+                | "minecraft.net"
         )
     });
     if !allowed {

@@ -21,6 +21,8 @@ pub struct AppState {
     pub launcher: Option<Arc<Launcher>>,
     /// Taken once by `setup` to start the event forwarder.
     pub events_rx: Mutex<Option<mpsc::UnboundedReceiver<CoreEvent>>>,
+    /// Result of the last successful update check, installed on request.
+    pub pending_update: Mutex<Option<tauri_plugin_updater::Update>>,
     _log_guard: Option<WorkerGuard>,
 }
 
@@ -69,6 +71,7 @@ impl AppState {
             startup_error: None,
             launcher: Some(launcher),
             events_rx: Mutex::new(Some(rx)),
+            pending_update: Mutex::new(None),
             _log_guard: log_guard,
         }
     }
@@ -81,6 +84,7 @@ impl AppState {
             startup_error: Some(err.to_payload()),
             launcher: None,
             events_rx: Mutex::new(None),
+            pending_update: Mutex::new(None),
             _log_guard: None,
         }
     }

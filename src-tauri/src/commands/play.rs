@@ -1,4 +1,6 @@
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
 
 use launcher_core::instance::Instance;
 use launcher_core::launch::process::GameExit;
@@ -10,23 +12,53 @@ use tauri::{AppHandle, Manager, State};
 use super::CmdResult;
 use crate::state::AppState;
 
+/// `Close` without a main-menu line (unusual logging): quit after this long
+/// if the game is still running.
+const CLOSE_FALLBACK: Duration = Duration::from_secs(120);
+
 /// Minimises the launcher while the game runs and brings it back afterwards.
+/// With `Close`, the launcher quits once the game reached the main menu; the
+/// game keeps running on its own (Windows does not kill child processes and
+/// the launcher never terminates the game on exit).
 struct WindowHooks {
     app: AppHandle,
     behavior: LaunchBehavior,
+    exited: Arc<AtomicBool>,
+}
+
+impl WindowHooks {
+    fn quit(app: &AppHandle) {
+        tracing::info!("game is running; closing the launcher (launch behaviour: close)");
+        app.exit(0);
+    }
 }
 
 impl LaunchHooks for WindowHooks {
     fn game_started(&self, _instance: &Instance) {
-        // `Close` is treated like `Minimize` until detached launching lands.
         if self.behavior != LaunchBehavior::KeepOpen
             && let Some(w) = self.app.get_webview_window("main")
         {
             let _ = w.minimize();
         }
+        if self.behavior == LaunchBehavior::Close {
+            let (app, exited) = (self.app.clone(), self.exited.clone());
+            std::thread::spawn(move || {
+                std::thread::sleep(CLOSE_FALLBACK);
+                if !exited.load(Ordering::SeqCst) {
+                    Self::quit(&app);
+                }
+            });
+        }
+    }
+
+    fn game_ready(&self, _instance: &Instance) {
+        if self.behavior == LaunchBehavior::Close {
+            Self::quit(&self.app);
+        }
     }
 
     fn game_exited(&self, _instance: &Instance, _exit: &GameExit) {
+        self.exited.store(true, Ordering::SeqCst);
         if self.behavior != LaunchBehavior::KeepOpen
             && let Some(w) = self.app.get_webview_window("main")
         {
@@ -41,6 +73,7 @@ fn start(app: AppHandle, state: &AppState, id: &str, mode: StartMode) -> CmdResu
     let hooks = Arc::new(WindowHooks {
         app,
         behavior: settings.launch_behavior,
+        exited: Arc::new(AtomicBool::new(false)),
     });
     Ok(state.launcher()?.start(id, settings, mode, hooks)?)
 }

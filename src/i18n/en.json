@@ -27,7 +27,8 @@
     "noAccount": "No account selected",
     "addAccount": "Add account",
     "showConsole": "Show console",
-    "switch": "Switch instance"
+    "switch": "Switch instance",
+    "news": "Minecraft news"
   },
   "settings": {
     "title": "Settings",
@@ -54,12 +55,32 @@
     "redirected": "Moved",
     "openDataFolder": "Open data folder",
     "moveDataFolder": "Move data folder",
-    "moveDataFolderSoon": "Arrives in phase 8",
     "about": "About",
     "version": "Version {{version}}",
     "telemetry": "No telemetry: MehburMC Launcher sends no usage data.",
     "curseforgeKey": "CurseForge API key",
-    "curseforgeKeyHint": "Your own key (console.curseforge.com) for installing CurseForge modpacks (.zip). Stored on this computer only."
+    "curseforgeKeyHint": "Your own key (console.curseforge.com) for installing CurseForge modpacks (.zip). Stored on this computer only.",
+    "game": "Game",
+    "launchBehavior": "When the game starts",
+    "launchBehaviorHint": "With \"Close\", the launcher quits once the game reaches the main menu; the game keeps running (play time is not recorded for that session).",
+    "launch": {
+      "minimize": "Minimize",
+      "close": "Close",
+      "keepOpen": "Keep open"
+    },
+    "defaultMemory": "Default RAM",
+    "defaultMemoryHint": "Instances without their own setting use {{gb}} GB.",
+    "concurrency": "Parallel downloads",
+    "concurrencyHint": "Files downloaded at the same time (1–32).",
+    "moveBusy": "Finish running games and downloads first.",
+    "moveBack": "Move back to the default location",
+    "portableHint": "Portable mode: data lives in the MehburMC folder next to the exe.",
+    "moveStart": "Move",
+    "restart": "Restart",
+    "moveConfirm": "All game files, instances and caches will be copied to this folder, verified and deleted from the old location. The folder must be empty. Settings and accounts stay where they are.",
+    "moving": "Moving… Do not close the launcher.",
+    "moved": "Move complete. Restart the launcher to use the new location.",
+    "movedLeftovers": "Move complete; {{n}} old file(s) were in use and could not be deleted — remove them later. Restart the launcher."
   },
   "startup": {
     "title": "The launcher could not start",
@@ -85,7 +106,8 @@
     "paths": {
       "noDataDir": "Could not determine the user data folder.",
       "notWritable": "The data folder is not writable: {{path}}",
-      "invalidRedirect": "Invalid data folder redirect ({{path}}): {{reason}}"
+      "invalidRedirect": "Invalid data folder redirect ({{path}}): {{reason}}",
+      "moveFailed": "Could not move the data folder: {{reason}}"
     },
     "io": {
       "diskFull": "Disk is full: {{path}}",
@@ -430,6 +452,83 @@
       "install": "Install CustomSkinLoader",
       "vanillaNote": "In Vanilla, OptiFine and Legacy Fabric instances the skin only shows in the launcher preview. Other players only see your skin if they also run CustomSkinLoader and have the same file.",
       "syncNote": "The skin is refreshed on every launch; restart the game after changing it."
+    }
+  },
+  "crash": {
+    "title": "{{name}} crashed",
+    "exitCode": "The game closed unexpectedly (exit code {{code}}). Likely causes:",
+    "fromReport": "Crash report analysis:",
+    "openReport": "Open crash report",
+    "repair": "Repair",
+    "fix": {
+      "settings": "Open instance settings",
+      "mods": "Open mods"
+    },
+    "unknownTitle": "No known cause found",
+    "unknownHint": "Check the last errors in the console and the crash report. Disabling the most recently added mod often reveals the culprit.",
+    "analyze": "Analyze",
+    "kind": {
+      "outOfMemory": {
+        "title": "Out of memory",
+        "hint": "The game used up its RAM. Increase memory in the instance settings (6–8 GB for modpacks) or remove heavy mods."
+      },
+      "heapReserve": {
+        "title": "Could not reserve RAM",
+        "hint": "Java could not reserve the requested memory. Lower the RAM setting or free up system memory."
+      },
+      "javaTooOld": {
+        "title": "Java is too old",
+        "hint": "This version or mod needs Java {{detail}}. Set Java to \"Automatic\" in the instance settings and the launcher downloads the right one."
+      },
+      "javaTooNew": {
+        "title": "Java is too new",
+        "hint": "Old Minecraft/Forge versions need Java 8. Set Java to \"Automatic\" or pick Java 8."
+      },
+      "missingDependency": {
+        "title": "Missing dependency",
+        "hint": "A mod needs another mod that is not installed. Install it (often Fabric API / Architectury / GeckoLib) from the Mod Browser."
+      },
+      "incompatibleMods": {
+        "title": "Incompatible mods",
+        "hint": "Some mods cannot run together. Disable or update one of the mods named below."
+      },
+      "duplicateMod": {
+        "title": "Mod installed twice",
+        "hint": "The mods folder contains the same mod more than once. Delete the old copy."
+      },
+      "mixinFailure": {
+        "title": "Mod conflict (Mixin)",
+        "hint": "A mod failed to patch the game, usually a version mismatch or two mods clashing. Update or remove the named mod."
+      },
+      "missingClass": {
+        "title": "Incompatible mod version",
+        "hint": "A mod tried to use code that does not exist in this Minecraft/loader version. Make sure your mods are built for it."
+      },
+      "graphicsDriver": {
+        "title": "Graphics driver problem",
+        "hint": "OpenGL could not start or the driver crashed. Update your GPU driver from the vendor; on laptops make sure the game runs on the dedicated GPU."
+      },
+      "nativeCrash": {
+        "title": "Java crashed",
+        "hint": "The Java VM died with a native error ({{detail}}). Update drivers; try again with shader/performance mods disabled."
+      },
+      "corruptFile": {
+        "title": "Corrupt file",
+        "hint": "A jar/zip file looks damaged. Use \"Repair\" to verify game files; if it is a mod, download it again."
+      }
+    }
+  },
+  "update": {
+    "available": "New version ready: {{version}} (you have {{current}})",
+    "install": "Update and restart",
+    "auto": "Check for updates",
+    "autoHint": "Looks for a new launcher version at startup. Updates are signed and verified.",
+    "checkNow": "Check now",
+    "status": {
+      "upToDate": "The launcher is up to date.",
+      "available": "Version {{version}} is available.",
+      "unavailable": "Update channel unreachable (offline or no release yet).",
+      "portable": "Portable copies do not self-update; download the new portable zip and extract it over this folder."
     }
   }
 }

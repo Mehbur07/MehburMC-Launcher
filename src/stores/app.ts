@@ -26,6 +26,8 @@ interface AppStore {
   view: View;
   /** Instance shown by the "instance" detail view. */
   detailId: string | null;
+  /** Tab the detail view opens on (e.g. "mods" from the crash dialog). */
+  detailTab: string | null;
   /** Console filter: instance whose output is shown. */
   consoleInstance: string | null;
   /** Instance the content browser installs into (null = none / modpacks). */
@@ -39,7 +41,7 @@ interface AppStore {
 
   load: () => Promise<void>;
   setView: (view: View) => void;
-  openInstance: (id: string) => void;
+  openInstance: (id: string, tab?: string) => void;
   openConsole: (instanceId: string) => void;
   openBrowse: (instanceId: string | null, type?: ProjectType) => void;
   setWizard: (open: boolean) => void;
@@ -53,6 +55,7 @@ export const useApp = create<AppStore>((set, get) => ({
   settings: null,
   view: "home",
   detailId: null,
+  detailTab: null,
   consoleInstance: null,
   browseTarget: null,
   browseType: "mod",
@@ -75,7 +78,7 @@ export const useApp = create<AppStore>((set, get) => ({
   },
 
   setView: (view) => set({ view }),
-  openInstance: (id) => set({ view: "instance", detailId: id }),
+  openInstance: (id, tab) => set({ view: "instance", detailId: id, detailTab: tab ?? null }),
   openConsole: (instanceId) => set({ view: "console", consoleInstance: instanceId }),
   openBrowse: (instanceId, type) =>
     set((s) => ({ view: "browse", browseTarget: instanceId, browseType: type ?? s.browseType })),

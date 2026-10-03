@@ -96,6 +96,12 @@ pub enum CoreEvent {
         code: Option<i32>,
         crash_report: Option<String>,
     },
+    /// Non-zero exit with the analysis (sent after `GameExited`).
+    #[serde(rename_all = "camelCase")]
+    GameCrashed {
+        task: String,
+        info: crate::crash::CrashInfo,
+    },
 }
 
 pub trait EventSink: Send + Sync {

@@ -27,7 +27,8 @@
     "noAccount": "Hesap seçilmedi",
     "addAccount": "Hesap ekle",
     "showConsole": "Konsolu göster",
-    "switch": "Profil değiştir"
+    "switch": "Profil değiştir",
+    "news": "Minecraft haberleri"
   },
   "settings": {
     "title": "Ayarlar",
@@ -54,12 +55,32 @@
     "redirected": "Taşınmış",
     "openDataFolder": "Veri klasörünü aç",
     "moveDataFolder": "Veri klasörünü taşı",
-    "moveDataFolderSoon": "Faz 8'de eklenecek",
     "about": "Hakkında",
     "version": "Sürüm {{version}}",
     "telemetry": "Telemetri yok: MehburMC Launcher hiçbir kullanım verisi göndermez.",
     "curseforgeKey": "CurseForge API anahtarı",
-    "curseforgeKeyHint": "CurseForge modpack'lerini (.zip) kurmak için kendi anahtarın (console.curseforge.com). Yalnızca bu bilgisayarda saklanır."
+    "curseforgeKeyHint": "CurseForge modpack'lerini (.zip) kurmak için kendi anahtarın (console.curseforge.com). Yalnızca bu bilgisayarda saklanır.",
+    "game": "Oyun",
+    "launchBehavior": "Oyun açılınca",
+    "launchBehaviorHint": "\"Kapat\" seçiliyse launcher, oyun ana menüye gelince kapanır; oyun çalışmaya devam eder (oynama süresi o oturum için kaydedilmez).",
+    "launch": {
+      "minimize": "Küçült",
+      "close": "Kapat",
+      "keepOpen": "Açık bırak"
+    },
+    "defaultMemory": "Varsayılan RAM",
+    "defaultMemoryHint": "Kendi ayarı olmayan profiller {{gb}} GB kullanır.",
+    "concurrency": "Eşzamanlı indirme",
+    "concurrencyHint": "Aynı anda indirilecek dosya sayısı (1–32).",
+    "moveBusy": "Önce çalışan oyun ve indirmeleri bitir.",
+    "moveBack": "Varsayılan konuma geri taşı",
+    "portableHint": "Portable mod: veriler exe'nin yanındaki MehburMC klasöründe tutulur.",
+    "moveStart": "Taşı",
+    "restart": "Yeniden başlat",
+    "moveConfirm": "Tüm oyun dosyaları, profiller ve önbellek bu klasöre kopyalanacak, doğrulanacak ve eski konumdan silinecek. Klasör boş olmalı. Ayarlar ve hesaplar yerinde kalır.",
+    "moving": "Taşınıyor… Bu sırada launcher'ı kapatma.",
+    "moved": "Taşıma tamamlandı. Yeni konumu kullanmak için launcher'ı yeniden başlat.",
+    "movedLeftovers": "Taşıma tamamlandı; eski konumdaki {{n}} dosya (kullanımda olduğu için) silinemedi, sonra elle silebilirsin. Launcher'ı yeniden başlat."
   },
   "startup": {
     "title": "Launcher başlatılamadı",
@@ -85,7 +106,8 @@
     "paths": {
       "noDataDir": "Kullanıcı veri klasörü belirlenemedi.",
       "notWritable": "Veri klasörüne yazılamıyor: {{path}}",
-      "invalidRedirect": "Veri klasörü yönlendirmesi geçersiz ({{path}}): {{reason}}"
+      "invalidRedirect": "Veri klasörü yönlendirmesi geçersiz ({{path}}): {{reason}}",
+      "moveFailed": "Veri klasörü taşınamadı: {{reason}}"
     },
     "io": {
       "diskFull": "Disk dolu: {{path}}",
@@ -430,6 +452,83 @@
       "install": "CustomSkinLoader kur",
       "vanillaNote": "Vanilla, OptiFine ve Legacy Fabric profillerinde skin yalnızca launcher önizlemesinde görünür. Diğer oyuncular skin'ini yalnızca onlarda da CustomSkinLoader varsa ve aynı dosya kendilerinde bulunuyorsa görür.",
       "syncNote": "Skin her başlatmada güncellenir; değişiklik için oyunu yeniden başlat."
+    }
+  },
+  "crash": {
+    "title": "{{name}} çöktü",
+    "exitCode": "Oyun beklenmedik şekilde kapandı (çıkış kodu {{code}}). Olası nedenler:",
+    "fromReport": "Crash raporu analizi:",
+    "openReport": "Crash raporunu aç",
+    "repair": "Onar",
+    "fix": {
+      "settings": "Profil ayarlarını aç",
+      "mods": "Modları aç"
+    },
+    "unknownTitle": "Bilinen bir neden bulunamadı",
+    "unknownHint": "Konsoldaki son hataları ve crash raporunu incele. Son eklenen modu devre dışı bırakıp tekrar denemek çoğu zaman sorunu ortaya çıkarır.",
+    "analyze": "Analiz et",
+    "kind": {
+      "outOfMemory": {
+        "title": "Bellek yetmedi",
+        "hint": "Oyuna ayrılan RAM doldu. Profil ayarlarından belleği artır (modlu paketlerde 6–8 GB önerilir) veya ağır modları azalt."
+      },
+      "heapReserve": {
+        "title": "İstenen RAM ayrılamadı",
+        "hint": "Java istenen bellek miktarını ayıramadı. RAM ayarını düşür veya sisteminde yeterli boş bellek olduğundan emin ol."
+      },
+      "javaTooOld": {
+        "title": "Java sürümü eski",
+        "hint": "Bu sürüm veya mod Java {{detail}} gerektiriyor. Profil ayarlarında Java'yı \"Otomatik\" yap; launcher doğru sürümü indirir."
+      },
+      "javaTooNew": {
+        "title": "Java sürümü çok yeni",
+        "hint": "Eski Minecraft/Forge sürümleri Java 8 ister. Profil ayarlarında Java'yı \"Otomatik\" yap veya Java 8 seç."
+      },
+      "missingDependency": {
+        "title": "Eksik bağımlılık",
+        "hint": "Bir mod, kurulu olmayan başka bir moda ihtiyaç duyuyor. Eksik modu (çoğunlukla Fabric API / Architectury / GeckoLib) Mod Tarayıcı'dan kur."
+      },
+      "incompatibleMods": {
+        "title": "Uyumsuz modlar",
+        "hint": "Bazı modlar birlikte çalışamıyor. Aşağıda adı geçen modlardan birini devre dışı bırak veya güncelle."
+      },
+      "duplicateMod": {
+        "title": "Aynı mod iki kez yüklü",
+        "hint": "mods klasöründe aynı modun birden fazla sürümü var. Eski kopyayı sil."
+      },
+      "mixinFailure": {
+        "title": "Mod yüklenirken çakışma (Mixin)",
+        "hint": "Bir mod oyunun kodunu değiştiremedi; genellikle sürüm uyumsuzluğu veya iki modun çakışmasıdır. Adı geçen modu güncelle veya kaldır."
+      },
+      "missingClass": {
+        "title": "Uyumsuz mod sürümü",
+        "hint": "Bir mod, bu Minecraft/loader sürümünde bulunmayan bir sınıfa erişmeye çalıştı. Modların bu sürüm için yapılmış olduğundan emin ol."
+      },
+      "graphicsDriver": {
+        "title": "Ekran kartı sürücüsü sorunu",
+        "hint": "OpenGL başlatılamadı veya sürücü çöktü. Ekran kartı sürücünü üreticinin sitesinden güncelle; dizüstünde oyunun harici GPU ile çalıştığından emin ol."
+      },
+      "nativeCrash": {
+        "title": "Java çöktü",
+        "hint": "Java sanal makinesi yerel bir hatayla kapandı ({{detail}}). Sürücüleri güncelle; shader/performans modlarını devre dışı bırakıp tekrar dene."
+      },
+      "corruptFile": {
+        "title": "Bozuk dosya",
+        "hint": "Bir jar/zip dosyası bozuk görünüyor. \"Onar\" ile oyun dosyalarını doğrula; sorun bir moddaysa onu yeniden indir."
+      }
+    }
+  },
+  "update": {
+    "available": "Yeni sürüm hazır: {{version}} (şu an {{current}})",
+    "install": "Güncelle ve yeniden başlat",
+    "auto": "Güncellemeleri denetle",
+    "autoHint": "Açılışta yeni launcher sürümü olup olmadığına bakar. Güncellemeler imzalıdır ve doğrulanır.",
+    "checkNow": "Şimdi denetle",
+    "status": {
+      "upToDate": "Launcher güncel.",
+      "available": "{{version}} sürümü mevcut.",
+      "unavailable": "Güncelleme kanalına ulaşılamadı (çevrimdışı veya henüz yayın yok).",
+      "portable": "Portable sürümde otomatik güncelleme yok; yeni portable zip'i indirip klasörün üzerine çıkar."
     }
   }
 }

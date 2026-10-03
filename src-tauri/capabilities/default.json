@@ -65,6 +65,14 @@
     "allow-update-skin",
     "allow-delete-skin",
     "allow-assign-skin",
-    "allow-export-skin"
+    "allow-export-skin",
+    "allow-list-news",
+    "allow-analyze-crash-report",
+    "allow-open-data-file",
+    "allow-move-data-folder",
+    "allow-default-data-folder",
+    "allow-restart-app",
+    "allow-check-app-update",
+    "allow-install-app-update"
   ]
 }

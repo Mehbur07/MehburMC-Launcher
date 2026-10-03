@@ -13,6 +13,7 @@ import { accountSkin, useSkins } from "../../stores/skins";
 import { activeTaskFor, fraction, useTasks } from "../../stores/tasks";
 import { loaderLabel, usePlayTimeUnits } from "../instances/InstancesPage";
 import { SkinThumb } from "../skins/SkinThumb";
+import { NewsFeed } from "./NewsFeed";
 
 export function HomePage() {
   const { t, i18n } = useTranslation();
@@ -30,17 +31,20 @@ export function HomePage() {
 
   if (!inst) {
     return (
-      <section className="relative overflow-hidden rounded-lg border border-line bg-surface-1/80 p-10 text-center backdrop-blur">
-        <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
-        <h1 className="font-display text-4xl font-bold tracking-wide">
-          MehburMC <span className="text-accent neon-text">Launcher</span>
-        </h1>
-        <p className="mx-auto mt-3 max-w-md text-sm text-muted">{t("home.welcome")}</p>
-        <Button variant="primary" className="mt-6" onClick={() => setWizard(true)}>
-          <Plus size={16} />
-          {t("instances.create")}
-        </Button>
-      </section>
+      <div className="flex flex-col gap-5">
+        <section className="relative overflow-hidden rounded-lg border border-line bg-surface-1/80 p-10 text-center backdrop-blur">
+          <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
+          <h1 className="font-display text-4xl font-bold tracking-wide">
+            MehburMC <span className="text-accent neon-text">Launcher</span>
+          </h1>
+          <p className="mx-auto mt-3 max-w-md text-sm text-muted">{t("home.welcome")}</p>
+          <Button variant="primary" className="mt-6" onClick={() => setWizard(true)}>
+            <Plus size={16} />
+            {t("instances.create")}
+          </Button>
+        </section>
+        <NewsFeed />
+      </div>
     );
   }
 
@@ -50,7 +54,10 @@ export function HomePage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <section className="relative overflow-hidden rounded-lg border border-line bg-surface-1/80 p-7 backdrop-blur">
+      <section
+        key={inst.id}
+        className="rise-in relative overflow-hidden rounded-lg border border-line bg-surface-1/80 p-7 backdrop-blur"
+      >
         <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
         <div className="relative flex items-end justify-between gap-8">
           <div className="flex min-w-0 items-center gap-5">
@@ -184,6 +191,8 @@ export function HomePage() {
           </div>
         </section>
       )}
+
+      <NewsFeed />
     </div>
   );
 }

@@ -70,6 +70,8 @@ mod tests {
             crash_report: None,
             duration: Duration::from_secs(secs),
             killed,
+            output_tail: String::new(),
+            started_at: std::time::SystemTime::now(),
         }
     }
 

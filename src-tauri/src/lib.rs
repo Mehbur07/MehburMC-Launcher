@@ -5,7 +5,9 @@ mod state;
 use tauri::window::Color;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
-use crate::commands::{accounts, content, files, instances, loaders, play, skins};
+use crate::commands::{
+    accounts, content, data, files, home, instances, loaders, play, skins, update,
+};
 use crate::state::AppState;
 
 /// Matches `--mc-bg` so the window never flashes white before the UI paints.
@@ -28,6 +30,7 @@ pub fn run() {
         }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(move |app| {
             let mut builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
                 .title(launcher_core::LAUNCHER_NAME)
@@ -103,6 +106,14 @@ pub fn run() {
             skins::delete_skin,
             skins::assign_skin,
             skins::export_skin,
+            home::list_news,
+            home::analyze_crash_report,
+            home::open_data_file,
+            data::move_data_folder,
+            data::default_data_folder,
+            data::restart_app,
+            update::check_app_update,
+            update::install_app_update,
         ])
         .run(tauri::generate_context!())
         .expect("error while running MehburMC Launcher");

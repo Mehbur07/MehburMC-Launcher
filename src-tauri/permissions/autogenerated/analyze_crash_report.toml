@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-analyze-crash-report"
+description = "Enables the analyze_crash_report command without any pre-configured scope."
+commands.allow = ["analyze_crash_report"]
+
+[[permission]]
+identifier = "deny-analyze-crash-report"
+description = "Denies the analyze_crash_report command without any pre-configured scope."
+commands.deny = ["analyze_crash_report"]

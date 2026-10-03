@@ -10,9 +10,10 @@ use crate::content::install::{self, InstallRequest, InstallResult};
 use crate::content::installed::{self, InstalledItem};
 use crate::content::modpack::{self, ImportResult, PackKind};
 use crate::content::{modrinth, shaders};
+use crate::crash;
 use crate::ctx::Ctx;
 use crate::error::{CoreError, Result};
-use crate::events::EventSink;
+use crate::events::{CoreEvent, EventSink};
 use crate::events::{Progress, Stage};
 use crate::instance::files::Folder;
 use crate::instance::{Instance, InstancePatch, InstanceStore, LoaderSpec, Running, split_args};
@@ -21,13 +22,15 @@ use crate::launch::{self, LaunchOptions, process};
 use crate::loader;
 use crate::net::download::Verify;
 use crate::paths::Paths;
-use crate::settings::Settings;
+use crate::settings::{LaunchBehavior, Settings};
 use crate::skin::{self, SkinStore};
 use crate::tasks::{TaskKind, TaskRegistry, TaskStatus, TrackingSink};
 
 /// Callbacks for UI side effects (window minimise/restore).
 pub trait LaunchHooks: Send + Sync {
     fn game_started(&self, _instance: &Instance) {}
+    /// The client reached the main menu.
+    fn game_ready(&self, _instance: &Instance) {}
     fn game_exited(&self, _instance: &Instance, _exit: &GameExit) {}
 }
 
@@ -149,8 +152,25 @@ impl Launcher {
                 }
                 this.tasks.set_status(&tid, TaskStatus::Playing);
                 hooks.game_started(&inst);
-                let mut exit =
-                    process::run(&prepared, this.ctx.events.clone(), &tid, &cancel).await;
+                // "Close on launch": the launcher quits while the game runs,
+                // so the game must not write into launcher-owned pipes.
+                let output_file = (settings.launch_behavior == LaunchBehavior::Close)
+                    .then(|| opts.game_dir.join("logs").join("launcher-output.log"));
+                let ready_hooks = || {
+                    let (h, i) = (hooks.clone(), inst.clone());
+                    process::RunHooks {
+                        on_ready: Some(Box::new(move || h.game_ready(&i))),
+                        output_file: output_file.clone(),
+                    }
+                };
+                let mut exit = process::run_with(
+                    &prepared,
+                    this.ctx.events.clone(),
+                    &tid,
+                    &cancel,
+                    ready_hooks(),
+                )
+                .await;
                 if let Ok(e) = &exit
                     && loader::early_window::looks_like_early_window_crash(inst.loader.kind, e)
                     && loader::early_window::disable(&opts.game_dir).unwrap_or(false)
@@ -162,12 +182,37 @@ impl Launcher {
                     // Argfiles were removed with the first run: prepare again (fast).
                     let again = launch::prepare(&this.ctx, &opts, &tid, &cancel).await?;
                     this.tasks.set_status(&tid, TaskStatus::Playing);
-                    exit = process::run(&again, this.ctx.events.clone(), &tid, &cancel).await;
+                    exit = process::run_with(
+                        &again,
+                        this.ctx.events.clone(),
+                        &tid,
+                        &cancel,
+                        ready_hooks(),
+                    )
+                    .await;
                 }
                 if let Ok(e) = &exit {
                     let secs = e.duration.as_secs();
                     if let Err(err) = this.instances.record_session(&inst.id, secs) {
                         tracing::warn!(error = %err.detail(), "could not record play time");
+                    }
+                    if !e.killed && e.code != Some(0) {
+                        let info = crash::analyze(
+                            &inst.id,
+                            &inst.name,
+                            crash::Inputs {
+                                game_dir: &opts.game_dir,
+                                exit_code: e.code,
+                                crash_report: e.crash_report.as_deref(),
+                                output: &e.output_tail,
+                                started: e.started_at,
+                            },
+                        );
+                        tracing::info!(diagnoses = ?info.diagnoses, "crash analysed");
+                        this.ctx.events.emit(CoreEvent::GameCrashed {
+                            task: tid.clone(),
+                            info,
+                        });
                     }
                     hooks.game_exited(&inst, e);
                 }

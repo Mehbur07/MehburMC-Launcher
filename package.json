@@ -11,7 +11,9 @@
     "test": "vitest run",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "package": "tauri build && node scripts/package-portable.mjs",
+    "package:portable": "node scripts/package-portable.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

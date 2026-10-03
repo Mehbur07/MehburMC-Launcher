@@ -24,6 +24,7 @@ const settings: Settings = {
   downloadConcurrency: 8,
   defaultMemoryMb: 4096,
   launchBehavior: "minimize",
+  checkUpdates: true,
 };
 
 const boot: Bootstrap = {

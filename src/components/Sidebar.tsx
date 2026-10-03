@@ -59,7 +59,10 @@ export function Sidebar() {
           <Icon size={18} className={`relative ${active ? "neon-drop" : ""}`} />
           <span className="relative">{t(`nav.${v}`)}</span>
           {v === "downloads" && busy > 0 && (
-            <span className="relative ml-auto rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-accent">
+            <span
+              key={busy}
+              className="pop-in relative ml-auto rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-accent"
+            >
               {busy}
             </span>
           )}

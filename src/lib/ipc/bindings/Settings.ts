@@ -13,6 +13,10 @@ backgroundEffects: boolean,
  */
 debugLogging: boolean, downloadConcurrency: number, defaultMemoryMb: number, launchBehavior: LaunchBehavior, 
 /**
+ * Look for a new launcher version at startup.
+ */
+checkUpdates: boolean, 
+/**
  * The user's own CurseForge API key (needed for CurseForge modpacks).
  */
 curseforgeApiKey?: string, };

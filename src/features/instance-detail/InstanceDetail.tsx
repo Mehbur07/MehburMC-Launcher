@@ -31,7 +31,10 @@ export function InstanceDetail() {
   const id = useApp((s) => s.detailId);
   const setView = useApp((s) => s.setView);
   const inst = useInstances((s) => s.instances.find((i) => i.id === id) ?? null);
-  const [tab, setTab] = useState<Tab>("general");
+  const initialTab = useApp((s) => s.detailTab);
+  const [tab, setTab] = useState<Tab>(() =>
+    TABS.includes(initialTab as Tab) ? (initialTab as Tab) : "general",
+  );
 
   if (!inst) {
     return <EmptyState icon={<ArrowLeft size={32} />} title={t("instance.missing")} />;

@@ -28,6 +28,8 @@ pub struct Endpoints {
     pub mojang_services: String,
     /// Profile textures by UUID.
     pub session_server: String,
+    /// Official launcher news feed and its images.
+    pub launcher_content: String,
 }
 
 impl Default for Endpoints {
@@ -47,6 +49,7 @@ impl Default for Endpoints {
             curseforge: "https://api.curseforge.com".into(),
             mojang_services: "https://api.minecraftservices.com".into(),
             session_server: "https://sessionserver.mojang.com".into(),
+            launcher_content: "https://launchercontent.mojang.com".into(),
         }
     }
 }

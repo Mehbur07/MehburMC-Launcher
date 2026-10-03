@@ -163,6 +163,9 @@ pub enum CoreError {
 
     #[error("no Minecraft player named {0}")]
     PlayerNotFound(String),
+
+    #[error("cannot move the data folder: {0}")]
+    DataMove(String),
 }
 
 impl CoreError {
@@ -217,6 +220,7 @@ impl CoreError {
             Self::SkinInvalid(_) => "skin.invalid",
             Self::SkinNotFound(_) => "skin.notFound",
             Self::PlayerNotFound(_) => "skin.playerNotFound",
+            Self::DataMove(_) => "paths.moveFailed",
         }
     }
 
@@ -295,7 +299,7 @@ impl CoreError {
                 put("loader", loader.clone());
                 put("mc", mc.clone());
             }
-            Self::ModpackInvalid(reason) | Self::SkinInvalid(reason) => {
+            Self::ModpackInvalid(reason) | Self::SkinInvalid(reason) | Self::DataMove(reason) => {
                 put("reason", reason.clone())
             }
             Self::SkinNotFound(id) => put("id", id.clone()),

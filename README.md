@@ -3,7 +3,7 @@
 Windows öncelikli, hafif, reklamsız ve telemetrisiz bir Minecraft Java Edition launcher'ı.
 Tauri 2 (Rust) + React + TypeScript ile geliştirilmektedir.
 
-> **Durum:** Faz 6 — Modrinth mod tarayıcısı (mod, modpack, resource pack, shader), bağımlılık çözümü, güncelleme denetimi, `.mrpack` ve CurseForge (kendi API anahtarınızla) modpack içe aktarma. Loader'lar Faz 4'te; Microsoft girişi kaldırıldı (yalnızca offline hesaplar).
+> **Durum:** Faz 8 — haberler, crash analizi, gerçek "oyun açılınca kapat", veri klasörünü taşıma, imzalı otomatik güncelleme altyapısı, NSIS kurulum + portable zip, CI. Önceki fazlar: loader'lar, Modrinth/modpack, skin & cape yöneticisi (yalnızca offline hesaplar).
 
 - Mimari ve kararlar: [ARCHITECTURE.md](ARCHITECTURE.md)
 
@@ -31,7 +31,23 @@ cargo clippy --workspace --all-targets -- -D warnings
 npm test                   # Vitest
 npm run lint               # ESLint
 cargo run -p launcher-cli -- paths   # çekirdeği UI olmadan dene
+npm run package            # imzalı NSIS kurulum + portable zip (aşağıya bakın)
 ```
+
+### Paketleme ve yayın
+
+`npm run package` → `target/release/bundle/nsis/*-setup.exe` (+ updater için `.sig`) ve
+`target/release/bundle/portable/*-portable.zip`. Updater imzası için ortam değişkenleri gerekir:
+
+```powershell
+$env:TAURI_SIGNING_PRIVATE_KEY = Get-Content -Raw "$HOME\.tauri\mehburmc-updater.key"
+$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = Get-Content -Raw "$HOME\.tauri\mehburmc-updater.password"
+npm run package
+```
+
+GitHub'da: `tauri.conf.json` sürümünü artır, `vX.Y.Z` tag'ini push'la → `Release` iş akışı taslak
+bir release oluşturur (kurulum, `latest.json`, portable zip). Taslağı yayınlayınca güncelleme kanalı
+onu görür — depo herkese açık olduğunda (private depoda kanal erişilemez).
 
 ### Çekirdek CLI (`mehbur-cli`)
 

@@ -147,8 +147,8 @@ export function InstancesPage() {
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
           <SortableContext items={instances.map((i) => i.id)} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4">
-              {instances.map((i) => (
-                <InstanceCard key={i.id} inst={i} />
+              {instances.map((i, idx) => (
+                <InstanceCard key={i.id} inst={i} index={idx} />
               ))}
             </div>
           </SortableContext>
@@ -159,7 +159,7 @@ export function InstancesPage() {
   );
 }
 
-function InstanceCard({ inst }: { inst: Instance }) {
+function InstanceCard({ inst, index }: { inst: Instance; index: number }) {
   const { t } = useTranslation();
   const units = usePlayTimeUnits();
   const openInstance = useApp((s) => s.openInstance);
@@ -230,8 +230,9 @@ function InstanceCard({ inst }: { inst: Instance }) {
         transform: CSS.Transform.toString(transform),
         transition,
         zIndex: isDragging ? 10 : undefined,
+        ["--i" as string]: index,
       }}
-      className={`group relative flex flex-col gap-3 rounded-lg border bg-surface-1/85 p-4 backdrop-blur transition-colors ${
+      className={`rise-in group relative flex flex-col gap-3 rounded-lg border bg-surface-1/85 p-4 backdrop-blur transition-colors ${
         selected ? "border-accent/60 neon-ring" : "border-line hover:border-accent/40"
       } ${isDragging ? "opacity-80" : ""}`}
       onClick={() => void select(inst.id)}

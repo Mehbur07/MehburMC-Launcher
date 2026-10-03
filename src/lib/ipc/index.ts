@@ -2,10 +2,12 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
 import type { Account } from "./bindings/Account";
+import type { AppUpdate } from "./bindings/AppUpdate";
 import type { Assignment } from "./bindings/Assignment";
 import type { AccountsView } from "./bindings/AccountsView";
 import type { Bootstrap } from "./bindings/Bootstrap";
 import type { CoreEvent } from "./bindings/CoreEvent";
+import type { CrashInfo } from "./bindings/CrashInfo";
 import type { ErrorPayload } from "./bindings/ErrorPayload";
 import type { FileEntry } from "./bindings/FileEntry";
 import type { ImportResult } from "./bindings/ImportResult";
@@ -21,7 +23,9 @@ import type { LibraryView } from "./bindings/LibraryView";
 import type { LoaderKind } from "./bindings/LoaderKind";
 import type { LoaderVersion } from "./bindings/LoaderVersion";
 import type { ManifestEntry } from "./bindings/ManifestEntry";
+import type { MoveProgress } from "./bindings/MoveProgress";
 import type { NewInstance } from "./bindings/NewInstance";
+import type { NewsItem } from "./bindings/NewsItem";
 import type { OptifineInfo } from "./bindings/OptifineInfo";
 import type { PlayerImport } from "./bindings/PlayerImport";
 import type { ProjectType } from "./bindings/ProjectType";
@@ -109,7 +113,25 @@ export const ipc = {
   assignSkin: (accountId: string, kind: TextureKind, id: string | null) =>
     invoke<Record<string, Assignment>>("assign_skin", { accountId, kind, id }),
   exportSkin: (id: string, dest: string) => invoke<void>("export_skin", { id, dest }),
+
+  listNews: () => invoke<NewsItem[]>("list_news"),
+  analyzeCrashReport: (id: string, name: string) =>
+    invoke<CrashInfo>("analyze_crash_report", { id, name }),
+  openDataFile: (path: string) => invoke<void>("open_data_file", { path }),
+  moveDataFolder: (dest: string) => invoke<number>("move_data_folder", { dest }),
+  defaultDataFolder: () => invoke<string>("default_data_folder"),
+  restartApp: () => invoke<void>("restart_app"),
+  checkAppUpdate: () => invoke<AppUpdate>("check_app_update"),
+  installAppUpdate: () => invoke<void>("install_app_update"),
 };
+
+/** Progress of "Move data folder". */
+export const onDataMove = (f: (p: MoveProgress) => void) =>
+  listen<MoveProgress>("core://datamove", (e) => f(e.payload));
+
+/** Update download progress as `[doneBytes, totalBytes]`. */
+export const onUpdateProgress = (f: (p: [number, number]) => void) =>
+  listen<[number, number]>("core://update", (e) => f(e.payload));
 
 export type GameLogEvent = Extract<CoreEvent, { type: "gameLog" }>;
 

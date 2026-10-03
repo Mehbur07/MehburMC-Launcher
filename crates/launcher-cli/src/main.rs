@@ -216,7 +216,7 @@ impl EventSink for CliSink {
                     LogStream::Stderr => eprintln!("{line}"),
                 }
             }
-            CoreEvent::Task { .. } => {}
+            CoreEvent::Task { .. } | CoreEvent::GameCrashed { .. } => {}
             CoreEvent::GameExited {
                 code, crash_report, ..
             } => {
@@ -226,6 +226,19 @@ impl EventSink for CliSink {
                 }
             }
         }
+    }
+}
+
+fn print_crash(info: &launcher_core::crash::CrashInfo) {
+    if let Some(s) = &info.summary {
+        eprintln!(">>> crash: {s}");
+    }
+    for d in &info.diagnoses {
+        eprintln!(
+            ">>> diagnosis: {:?} {}",
+            d.kind,
+            d.detail.as_deref().unwrap_or("")
+        );
     }
 }
 
@@ -591,6 +604,18 @@ already present: {:?}",
                     return Err(anyhow!("{version_id} exited before reaching the main menu"));
                 }
             } else if exit.code != Some(0) && !exit.killed {
+                let info = launcher_core::crash::analyze(
+                    &version_id,
+                    &version_id,
+                    launcher_core::crash::Inputs {
+                        game_dir: &opts.game_dir,
+                        exit_code: exit.code,
+                        crash_report: exit.crash_report.as_deref(),
+                        output: &exit.output_tail,
+                        started: exit.started_at,
+                    },
+                );
+                print_crash(&info);
                 return Err(anyhow!("game exited with code {:?}", exit.code));
             }
         }

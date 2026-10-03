@@ -21,6 +21,9 @@ import { useAccounts } from "../stores/accounts";
 import { useApp, type View } from "../stores/app";
 import { useInstances } from "../stores/instances";
 import { useSkins } from "../stores/skins";
+import { useUpdate } from "../stores/update";
+import { CrashDialog } from "../features/crash/CrashDialog";
+import { UpdateBanner } from "../features/update/UpdateBanner";
 import { connectEvents } from "./events";
 
 // three.js + skinview3d are only loaded when the skins screen opens.
@@ -59,6 +62,7 @@ export function App() {
   const loadInstances = useInstances((s) => s.load);
   const loadAccounts = useAccounts((s) => s.load);
   const loadSkins = useSkins((s) => s.load);
+  const checkUpdate = useUpdate((s) => s.check);
 
   useEffect(() => {
     void load();
@@ -76,11 +80,12 @@ export function App() {
     void loadInstances();
     void loadAccounts();
     void loadSkins();
+    if (useApp.getState().settings?.checkUpdates) void checkUpdate();
     return () => {
       cancelled = true;
       unlisten?.();
     };
-  }, [status, loadInstances, loadAccounts, loadSkins]);
+  }, [status, loadInstances, loadAccounts, loadSkins, checkUpdate]);
 
   // Apply theme + language whenever settings change.
   useEffect(() => {
@@ -113,6 +118,7 @@ export function App() {
             {settings.backgroundEffects && <NeonBackground accent={settings.accent} />}
             <Sidebar />
             <main className="relative z-0 flex min-w-0 flex-1 flex-col overflow-y-auto p-6">
+              <UpdateBanner />
               {notice && (
                 <div className="mb-4">
                   <ErrorNotice error={notice} onDismiss={dismissNotice} />
@@ -132,6 +138,7 @@ export function App() {
               </AnimatePresence>
             </main>
             <CreateWizard />
+            <CrashDialog />
           </div>
         )}
       </div>

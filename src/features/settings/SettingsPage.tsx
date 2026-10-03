@@ -1,12 +1,14 @@
-import { Check, FolderInput, FolderOpen, ShieldCheck } from "lucide-react";
+import { Check, RefreshCw, ShieldCheck } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { TextInput, Toggle } from "../../components/ui";
-import { ipc, toErrorPayload } from "../../lib/ipc";
+import { Button, TextInput, Toggle } from "../../components/ui";
 import type { Accent } from "../../lib/ipc/bindings/Accent";
 import type { Language } from "../../lib/ipc/bindings/Language";
+import type { LaunchBehavior } from "../../lib/ipc/bindings/LaunchBehavior";
 import { useApp } from "../../stores/app";
+import { useUpdate } from "../../stores/update";
+import { DataFolderSection } from "./DataFolderSection";
 
 /** Swatch colors mirror tokens.css presets. */
 const ACCENTS: { id: Accent; color: string }[] = [
@@ -22,6 +24,7 @@ export function SettingsPage() {
   const boot = useApp((s) => s.boot);
   const update = useApp((s) => s.updateSettings);
   const [cfKey, setCfKey] = useState(settings?.curseforgeApiKey ?? "");
+  const upd = useUpdate();
 
   if (!settings || !boot) return null;
 
@@ -29,14 +32,6 @@ export function SettingsPage() {
     const v = cfKey.trim();
     if (v !== (settings.curseforgeApiKey ?? "")) {
       void update({ curseforgeApiKey: v || undefined });
-    }
-  };
-
-  const openDataDir = async () => {
-    try {
-      await ipc.openDataDir();
-    } catch (e) {
-      useApp.setState({ notice: toErrorPayload(e) });
     }
   };
 
@@ -94,44 +89,55 @@ export function SettingsPage() {
         </Row>
       </Section>
 
-      <Section title={t("settings.dataFolder")}>
-        <div className="flex flex-col gap-3 py-3">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-accent">
-              {t(`settings.dataMode.${boot.paths?.mode ?? "standard"}`)}
-            </span>
-            {boot.paths?.redirected && (
-              <span className="rounded-full border border-warn/40 bg-warn/10 px-2 py-0.5 text-warn">
-                {t("settings.redirected")}
-              </span>
-            )}
-          </div>
-          <code
-            data-selectable
-            className="rounded-md bg-bg/70 px-3 py-2 text-xs break-all text-muted"
+      <Section title={t("settings.game")}>
+        <Row label={t("settings.launchBehavior")} hint={t("settings.launchBehaviorHint")}>
+          <select
+            value={settings.launchBehavior}
+            onChange={(e) => void update({ launchBehavior: e.target.value as LaunchBehavior })}
+            className="rounded-md border border-line bg-surface-2 px-3 py-2 text-sm focus:border-accent"
           >
-            {boot.paths?.content}
-          </code>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => void openDataDir()}
-              className="inline-flex items-center gap-2 rounded-md border border-accent/50 px-3 py-2 text-sm text-accent transition-colors hover:bg-accent/10"
-            >
-              <FolderOpen size={16} />
-              {t("settings.openDataFolder")}
-            </button>
-            <button
-              type="button"
-              disabled
-              title={t("settings.moveDataFolderSoon")}
-              className="inline-flex cursor-not-allowed items-center gap-2 rounded-md border border-line px-3 py-2 text-sm text-muted opacity-60"
-            >
-              <FolderInput size={16} />
-              {t("settings.moveDataFolder")}
-            </button>
-          </div>
-        </div>
+            {(["minimize", "close", "keepOpen"] as const).map((b) => (
+              <option key={b} value={b}>
+                {t(`settings.launch.${b}`)}
+              </option>
+            ))}
+          </select>
+        </Row>
+        <Row
+          label={t("settings.defaultMemory")}
+          hint={t("settings.defaultMemoryHint", {
+            gb: (settings.defaultMemoryMb / 1024).toFixed(1),
+          })}
+        >
+          <input
+            type="range"
+            min={1024}
+            max={16384}
+            step={512}
+            value={Math.min(settings.defaultMemoryMb, 16384)}
+            onChange={(e) => void update({ defaultMemoryMb: Number(e.target.value) })}
+            aria-label={t("settings.defaultMemory")}
+            className="w-48 accent-[var(--mc-accent)]"
+          />
+        </Row>
+        <Row label={t("settings.concurrency")} hint={t("settings.concurrencyHint")}>
+          <input
+            type="number"
+            min={1}
+            max={32}
+            value={settings.downloadConcurrency}
+            onChange={(e) => {
+              const v = Math.round(Number(e.target.value));
+              if (v >= 1 && v <= 32) void update({ downloadConcurrency: v });
+            }}
+            aria-label={t("settings.concurrency")}
+            className="w-20 rounded-md border border-line bg-surface-2 px-3 py-2 text-sm focus:border-accent"
+          />
+        </Row>
+      </Section>
+
+      <Section title={t("settings.dataFolder")}>
+        <DataFolderSection />
       </Section>
 
       <Section title={t("settings.advanced")}>
@@ -169,6 +175,34 @@ export function SettingsPage() {
             <ShieldCheck size={16} className="text-success" />
             {t("settings.telemetry")}
           </span>
+        </div>
+        <Row label={t("update.auto")} hint={t("update.autoHint")}>
+          <Toggle
+            checked={settings.checkUpdates}
+            onChange={(v) => void update({ checkUpdates: v })}
+            label={t("update.auto")}
+          />
+        </Row>
+        <div className="flex flex-wrap items-center gap-3 py-3 text-sm">
+          <Button size="sm" disabled={upd.checking} onClick={() => void upd.check()}>
+            <RefreshCw size={13} className={upd.checking ? "animate-spin" : ""} />
+            {t("update.checkNow")}
+          </Button>
+          {upd.info && (
+            <span className={upd.info.status === "available" ? "text-accent" : "text-muted"}>
+              {t(`update.status.${upd.info.status}`, { version: upd.info.version ?? "" })}
+            </span>
+          )}
+          {upd.info?.status === "available" && (
+            <Button
+              size="sm"
+              variant="primary"
+              disabled={upd.installing !== null}
+              onClick={() => void upd.install()}
+            >
+              {t("update.install")}
+            </Button>
+          )}
         </div>
       </Section>
     </div>

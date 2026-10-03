@@ -63,6 +63,8 @@ pub struct Settings {
     pub download_concurrency: u32,
     pub default_memory_mb: u32,
     pub launch_behavior: LaunchBehavior,
+    /// Look for a new launcher version at startup.
+    pub check_updates: bool,
     /// The user's own CurseForge API key (needed for CurseForge modpacks).
     #[ts(optional)]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -80,6 +82,7 @@ impl Default for Settings {
             download_concurrency: 8,
             default_memory_mb: 4096,
             launch_behavior: LaunchBehavior::Minimize,
+            check_updates: true,
             curseforge_api_key: None,
         }
     }

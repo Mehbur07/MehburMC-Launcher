@@ -30,7 +30,7 @@ export function Button({
     <button
       type="button"
       {...props}
-      className={`inline-flex items-center justify-center rounded-md transition-all disabled:cursor-not-allowed disabled:opacity-50 ${sz} ${VARIANTS[variant]} ${className}`}
+      className={`inline-flex items-center justify-center rounded-md transition-all not-disabled:active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 ${sz} ${VARIANTS[variant]} ${className}`}
     />
   );
 }

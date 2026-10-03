@@ -142,6 +142,30 @@ impl Paths {
         Ok(())
     }
 
+    /// Names of the folders that "Move data folder" relocates.
+    pub fn content_dir_names() -> &'static [&'static str] {
+        CONTENT_DIRS
+    }
+
+    /// Writes (`Some`) or removes (`None`) `launcher/redirect.json`. Takes
+    /// effect on the next start.
+    pub fn set_redirect(&self, target: Option<&Path>) -> Result<()> {
+        let file = self.redirect_file();
+        match target {
+            Some(t) => crate::fsutil::write_json_atomic(
+                &file,
+                &Redirect {
+                    content_root: t.to_path_buf(),
+                },
+            ),
+            None => match fs::remove_file(&file) {
+                Ok(()) => Ok(()),
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+                Err(e) => Err(CoreError::io(&file, e)),
+            },
+        }
+    }
+
     pub fn info(&self) -> PathsInfo {
         PathsInfo {
             mode: self.mode,

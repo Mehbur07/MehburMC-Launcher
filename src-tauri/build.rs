@@ -52,6 +52,14 @@ const COMMANDS: &[&str] = &[
     "delete_skin",
     "assign_skin",
     "export_skin",
+    "list_news",
+    "analyze_crash_report",
+    "open_data_file",
+    "move_data_folder",
+    "default_data_folder",
+    "restart_app",
+    "check_app_update",
+    "install_app_update",
 ];
 
 fn main() {

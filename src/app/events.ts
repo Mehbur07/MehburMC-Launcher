@@ -1,4 +1,5 @@
 import { ipc, subscribe, type GameLogEvent } from "../lib/ipc";
+import { useCrash } from "../stores/crash";
 import { useInstances } from "../stores/instances";
 import { useLogs } from "../stores/logs";
 import { useTasks } from "../stores/tasks";
@@ -31,6 +32,9 @@ export async function connectEvents(): Promise<() => void> {
           }
           break;
         }
+        case "gameCrashed":
+          useCrash.getState().show(e.info);
+          break;
         case "gameLog":
           break; // logs arrive batched on their own channel
       }
