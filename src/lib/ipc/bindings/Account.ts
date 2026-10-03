@@ -5,4 +5,8 @@ export type Account = { id: string, kind: AccountKind, name: string,
 /**
  * Hyphenated UUID.
  */
-uuid: string, addedAt: number, };
+uuid: string, addedAt: number, 
+/**
+ * Microsoft only: the stored session is no longer valid.
+ */
+needsLogin: boolean, };

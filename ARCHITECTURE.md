@@ -1,6 +1,6 @@
 # MehburMC Launcher — Mimari
 
-> Durum: **Onaylandı (2026-10-03). Faz 4 tamamlandı.** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
+> Durum: **Onaylandı (2026-10-03). Faz 5 tamamlandı.** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
 
 MehburMC Launcher; Windows öncelikli (Linux/macOS'a taşınabilir), açık mimarili, reklamsız, telemetrisiz bir Minecraft Java Edition launcher'ıdır. SKLauncher'ın özellik zenginliğini (offline + premium, skin/cape, modpack, loader desteği, portable) ve Legacy Launcher'ın hafifliğini / izole profil yapısını birleştirir.
 
@@ -348,3 +348,7 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 | 2026-10-03 | K32: OptiFine — API ve yeniden dağıtım izni yok; kullanıcı jar'ı seçer, `loaders/optifine/`'a kopyalanır, `changelog.txt` ilk satırından sürüm okunur. Kurulum HMCL yöntemiyle: `optifine.Patcher` vanilla jar'a karşı `optifine:OptiFine` kütüphanesini üretir, gömülü `launchwrapper-of` çıkarılır, `--tweakClass optifine.OptiFineTweaker`. Forge ile OptiFine = jar'ı `mods/`'a koymak. |
 | 2026-10-03 | K33: "Shader desteği" — Modrinth'ten Iris + Sodium (Fabric/Quilt/NeoForge) veya Oculus + Embeddium (Forge), zorunlu bağımlılıklarla (sabitlenmiş sürüm önceliklidir), SHA-512 doğrulamalı. Aynı projenin jar'ı zaten varsa atlanır. Tam Modrinth istemcisi Faz 6'da. |
 | 2026-10-03 | K34: NeoForge erken yükleme penceresi bazı sürücülerde devirde native çöküyor (`0xC000041D`, RTX 5060'ta 26.3 ile görüldü). NeoForge'un resmi önerisi uygulanır: 90 sn içinde negatif (NTSTATUS) çıkış kodu → `config/fml.toml` `earlyWindowControl=false` → bir kez otomatik yeniden başlatma. |
+| 2026-10-03 | K35: Microsoft girişi — device code → XBL → XSTS → `login_with_xbox` → `/minecraft/profile`. Sahiplik ölçütü profilin varlığıdır (Game Pass dahil); 404 = `auth.noProfile`. XSTS `XErr` kodları (2148916233/35/36/37/38) ayrı mesajlara çevrilir; `login_with_xbox` 403 = uygulama Mojang onaylı değil (R4). xuid, Minecraft token'ının JWT yükünden okunur. |
+| 2026-10-03 | K36: Refresh token yalnızca OS anahtar deposunda (`keyring` 4, servis `MehburMC Launcher`, kullanıcı = hesap id'si). Windows'ta kayıt başına 2560 bayt sınırı yüzünden değer 1000 karakterlik parçalara bölünür (`<id>` → `chunks:n`, `<id>#i`). Microsoft her yenilemede yeni refresh token verir, saklanan güncellenir. Access token yalnızca bellekte, süresine 5 dk kala yenilenir. |
+| 2026-10-03 | K37: Hesap çözümü OYNA görevinin içinde yapılır (ağ gerekebilir). Refresh reddedilirse (`invalid_grant`) hesap `needsLogin` işaretlenir ve kullanıcıdan yeniden giriş istenir. Ağ yoksa / Microsoft 5xx dönerse son bilinen ad + UUID ile `accessToken=0` başlatılır (yalnızca tek oyunculu, §4.2). |
+| 2026-10-03 | K38: Giriş UI'ı iki adımlı IPC: `begin_microsoft_login` (kod) + `finish_microsoft_login` (bekler, iptal edilebilir). Doğrulama sayfası Rust tarafından, yalnızca Microsoft alan adlarıysa tarayıcıda açılır; webview'a URL açma yetkisi verilmez. client_id ayarlar ekranından girilebilir (K8 korunur: koda/repoya gömülmez). |

@@ -88,3 +88,7 @@ export const useApp = create<AppStore>((set, get) => ({
 
   dismissNotice: () => set({ notice: null }),
 }));
+
+/** Microsoft sign-in needs an Azure client id (env var or settings). */
+export const msaConfigured = (s: AppStore) =>
+  !!s.boot?.msaConfigured || !!s.settings?.auth.msaClientId?.trim();

@@ -3,6 +3,7 @@
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
+use launcher_core::auth::secrets::KeyringStore;
 use launcher_core::events::CoreEvent;
 use launcher_core::session::Launcher;
 use launcher_core::{CoreError, ErrorPayload, Paths, Settings, logging};
@@ -58,6 +59,7 @@ impl AppState {
             paths.clone(),
             Arc::new(sink),
             settings.download_concurrency as usize,
+            Arc::new(KeyringStore),
         ) {
             Ok(l) => l,
             Err(e) => return Self::failed(Some(paths), e),

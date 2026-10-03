@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-finish-microsoft-login"
+description = "Enables the finish_microsoft_login command without any pre-configured scope."
+commands.allow = ["finish_microsoft_login"]
+
+[[permission]]
+identifier = "deny-finish-microsoft-login"
+description = "Denies the finish_microsoft_login command without any pre-configured scope."
+commands.deny = ["finish_microsoft_login"]

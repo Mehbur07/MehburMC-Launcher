@@ -142,6 +142,33 @@ pub enum CoreError {
     #[error("the OptiFine jar for {mc} {edition} has not been imported")]
     OptifineMissing { mc: String, edition: String },
 
+    #[error("Microsoft sign-in is not configured (no client id)")]
+    AuthNotConfigured,
+
+    #[error("the sign-in was declined")]
+    AuthDeclined,
+
+    #[error("the sign-in code expired")]
+    AuthCodeExpired,
+
+    #[error("Xbox Live refused the sign-in (XErr {code})")]
+    AuthXbox { code: u64 },
+
+    #[error("this launcher is not approved for Minecraft sign-in yet")]
+    AuthNotApproved,
+
+    #[error("this Microsoft account does not own Minecraft: Java Edition (or has no profile yet)")]
+    AuthNoProfile,
+
+    #[error("the session of {name} expired; sign in again")]
+    AuthRelogin { name: String },
+
+    #[error("Microsoft sign-in failed at {step} (HTTP {status})")]
+    AuthFailed { step: String, status: u16 },
+
+    #[error("credential store error: {0}")]
+    Keyring(String),
+
     #[error("{project} is not available for {loader} on Minecraft {mc}")]
     AddonUnavailable {
         project: String,
@@ -197,6 +224,21 @@ impl CoreError {
             Self::OptifineInvalid { .. } => "loader.optifineInvalid",
             Self::OptifineMissing { .. } => "loader.optifineMissing",
             Self::AddonUnavailable { .. } => "loader.addonUnavailable",
+            Self::AuthNotConfigured => "auth.notConfigured",
+            Self::AuthDeclined => "auth.declined",
+            Self::AuthCodeExpired => "auth.codeExpired",
+            Self::AuthXbox { code } => match code {
+                2148916233 => "auth.xbox.noAccount",
+                2148916235 => "auth.xbox.region",
+                2148916236 | 2148916237 => "auth.xbox.adultVerification",
+                2148916238 => "auth.xbox.child",
+                _ => "auth.xbox.other",
+            },
+            Self::AuthNotApproved => "auth.notApproved",
+            Self::AuthNoProfile => "auth.noProfile",
+            Self::AuthRelogin { .. } => "auth.relogin",
+            Self::AuthFailed { .. } => "auth.failed",
+            Self::Keyring(_) => "auth.keyring",
         }
     }
 
@@ -275,7 +317,21 @@ impl CoreError {
                 put("loader", loader.clone());
                 put("mc", mc.clone());
             }
-            Self::NoDataDir | Self::Cancelled | Self::NoAccount => {}
+            Self::AuthXbox { code } => put("code", code.to_string()),
+            Self::AuthRelogin { name } => put("name", name.clone()),
+            Self::AuthFailed { step, status } => {
+                put("step", step.clone());
+                put("status", status.to_string());
+            }
+            Self::Keyring(reason) => put("reason", reason.clone()),
+            Self::NoDataDir
+            | Self::Cancelled
+            | Self::NoAccount
+            | Self::AuthNotConfigured
+            | Self::AuthDeclined
+            | Self::AuthCodeExpired
+            | Self::AuthNotApproved
+            | Self::AuthNoProfile => {}
         }
         p
     }
@@ -285,6 +341,7 @@ impl CoreError {
     pub fn is_transient(&self) -> bool {
         match self {
             Self::Network { .. } | Self::HashMismatch { .. } => true,
+            Self::AuthFailed { status, .. } => *status == 429 || *status >= 500,
             Self::HttpStatus { status, .. } => *status == 429 || *status == 408 || *status >= 500,
             Self::Io { source, .. } => matches!(
                 source.kind(),

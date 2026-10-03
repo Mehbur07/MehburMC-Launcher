@@ -50,6 +50,9 @@ enum Command {
         #[command(subcommand)]
         action: JavaAction,
     },
+    /// Test Microsoft sign-in (needs MEHBURMC_MSA_CLIENT_ID or auth.msaClientId).
+    /// Prints the profile; nothing is stored.
+    MsaLogin,
     /// Mod loaders.
     Loader {
         #[command(subcommand)]
@@ -277,6 +280,26 @@ async fn run(command: Command, ctx: &Ctx, settings: &Settings, sink: Arc<CliSink
                 println!("installed Java {} at {}", j.version, j.home);
             }
         },
+        Command::MsaLogin => {
+            use launcher_core::auth::microsoft;
+            let client_id = settings
+                .msa_client_id()
+                .ok_or_else(|| core_err(launcher_core::CoreError::AuthNotConfigured))?;
+            let code = microsoft::request_device_code(ctx, &client_id)
+                .await
+                .map_err(core_err)?;
+            eprintln!(
+                "open {} and enter the code {}",
+                code.verification_uri, code.user_code
+            );
+            let tokens = microsoft::poll_device_code(ctx, &client_id, &code, &cancel)
+                .await
+                .map_err(core_err)?;
+            let session = microsoft::minecraft_login(ctx, &tokens.access_token)
+                .await
+                .map_err(core_err)?;
+            println!("signed in as {} ({})", session.name, session.uuid);
+        }
         Command::Loader { action } => match action {
             LoaderAction::List { kind, mc, limit } => {
                 let spec = parse_loader(&kind)?;

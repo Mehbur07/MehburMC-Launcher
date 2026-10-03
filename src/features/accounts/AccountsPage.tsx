@@ -1,4 +1,4 @@
-import { Check, Info, KeyRound, Trash2, UserPlus, UserRound } from "lucide-react";
+import { Check, Info, KeyRound, LogIn, Settings2, Trash2, UserPlus, UserRound } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -6,6 +6,8 @@ import { Badge, Button, ConfirmDialog, IconButton, TextInput } from "../../compo
 import type { Account } from "../../lib/ipc/bindings/Account";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
 import { useAccounts } from "../../stores/accounts";
+import { msaConfigured, useApp } from "../../stores/app";
+import { MicrosoftLogin } from "./MicrosoftLogin";
 
 const NAME_RE = /^[A-Za-z0-9_]{3,16}$/;
 
@@ -19,6 +21,9 @@ export function AccountsPage() {
   const [name, setName] = useState("");
   const [error, setError] = useState<ErrorPayload | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Account | null>(null);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const configured = useApp(msaConfigured);
+  const setView = useApp((s) => s.setView);
 
   const valid = NAME_RE.test(name);
   const add = async () => {
@@ -66,13 +71,26 @@ export function AccountsPage() {
         </p>
       </section>
 
-      <section className="flex items-start gap-3 rounded-lg border border-line bg-surface-1/60 p-5 opacity-80">
-        <KeyRound size={20} className="mt-0.5 shrink-0 text-muted" />
+      <section className="flex items-start gap-3 rounded-lg border border-line bg-surface-1/85 p-5 backdrop-blur">
+        <KeyRound size={20} className="mt-0.5 shrink-0 text-accent" />
         <div className="flex-1">
-          <div className="flex items-center gap-2 font-display text-lg font-semibold">
-            {t("accounts.microsoftTitle")} <Badge>{t("accounts.soon")}</Badge>
+          <div className="font-display text-lg font-semibold">{t("accounts.microsoftTitle")}</div>
+          <p className="mt-1 text-sm text-muted">
+            {configured ? t("accounts.microsoftBody") : t("accounts.microsoftNotConfigured")}
+          </p>
+          <div className="mt-3">
+            {configured ? (
+              <Button variant="primary" onClick={() => setLoginOpen(true)}>
+                <LogIn size={15} />
+                {t("accounts.microsoftLogin")}
+              </Button>
+            ) : (
+              <Button onClick={() => setView("settings")}>
+                <Settings2 size={15} />
+                {t("accounts.openSettings")}
+              </Button>
+            )}
           </div>
-          <p className="mt-1 text-sm text-muted">{t("accounts.microsoftBody")}</p>
         </div>
       </section>
 
@@ -92,12 +110,23 @@ export function AccountsPage() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 font-semibold">
                   {a.name}
-                  {a.kind === "offline" && <Badge tone="warn">{t("accounts.notPremium")}</Badge>}
+                  {a.kind === "offline" ? (
+                    <Badge tone="warn">{t("accounts.notPremium")}</Badge>
+                  ) : (
+                    <Badge tone="success">Microsoft</Badge>
+                  )}
+                  {a.needsLogin && <Badge tone="danger">{t("accounts.needsLogin")}</Badge>}
                 </div>
                 <div data-selectable className="truncate font-mono text-xs text-muted">
                   {a.uuid}
                 </div>
               </div>
+              {a.needsLogin && configured && (
+                <Button size="sm" variant="primary" onClick={() => setLoginOpen(true)}>
+                  <LogIn size={13} />
+                  {t("accounts.relogin")}
+                </Button>
+              )}
               {active ? (
                 <Badge tone="accent">
                   <Check size={12} />
@@ -124,6 +153,8 @@ export function AccountsPage() {
         <Info size={14} className="mt-0.5 shrink-0" />
         {t("accounts.offlineServers")}
       </p>
+
+      <MicrosoftLogin open={loginOpen} onClose={() => setLoginOpen(false)} />
 
       <ConfirmDialog
         open={pendingDelete !== null}

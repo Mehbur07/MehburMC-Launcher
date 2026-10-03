@@ -13,7 +13,7 @@ vi.mock("../lib/ipc", async (orig) => ({
   ipc: ipcMock,
 }));
 
-import { useApp } from "./app";
+import { msaConfigured, useApp } from "./app";
 
 const settings: Settings = {
   schemaVersion: 1,
@@ -70,5 +70,16 @@ describe("app store", () => {
 
     expect(useApp.getState().settings?.accent).toBe("green");
     expect(ipcMock.saveSettings).toHaveBeenCalledWith({ ...settings, accent: "green" });
+  });
+
+  it("detects a Microsoft client id from bootstrap or settings", () => {
+    useApp.setState({ boot: { ...boot, msaConfigured: false }, settings });
+    expect(msaConfigured(useApp.getState())).toBe(false);
+    useApp.setState({ settings: { ...settings, auth: { msaClientId: "  " } } });
+    expect(msaConfigured(useApp.getState())).toBe(false);
+    useApp.setState({ settings: { ...settings, auth: { msaClientId: "abc" } } });
+    expect(msaConfigured(useApp.getState())).toBe(true);
+    useApp.setState({ boot: { ...boot, msaConfigured: true }, settings });
+    expect(msaConfigured(useApp.getState())).toBe(true);
   });
 });

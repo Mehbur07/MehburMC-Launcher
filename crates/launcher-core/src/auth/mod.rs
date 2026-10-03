@@ -1,6 +1,8 @@
-//! Accounts as seen by the launch pipeline. Microsoft login arrives in phase 5.
+//! Accounts: offline names and Microsoft accounts (device code sign-in).
 
+pub mod microsoft;
 pub mod offline;
+pub mod secrets;
 pub mod store;
 
 /// Identity handed to the game (`${auth_*}` placeholders).

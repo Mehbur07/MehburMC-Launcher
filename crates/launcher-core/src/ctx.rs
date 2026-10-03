@@ -23,6 +23,10 @@ pub struct Endpoints {
     pub forge_maven: String,
     pub neoforge_maven: String,
     pub modrinth: String,
+    pub ms_login: String,
+    pub xbox_user: String,
+    pub xbox_xsts: String,
+    pub mc_services: String,
 }
 
 impl Default for Endpoints {
@@ -39,6 +43,10 @@ impl Default for Endpoints {
             forge_maven: "https://maven.minecraftforge.net".into(),
             neoforge_maven: "https://maven.neoforged.net".into(),
             modrinth: "https://api.modrinth.com".into(),
+            ms_login: "https://login.microsoftonline.com".into(),
+            xbox_user: "https://user.auth.xboxlive.com".into(),
+            xbox_xsts: "https://xsts.auth.xboxlive.com".into(),
+            mc_services: "https://api.minecraftservices.com".into(),
         }
     }
 }
