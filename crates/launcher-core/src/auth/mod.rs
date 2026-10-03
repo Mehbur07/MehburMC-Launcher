@@ -1,0 +1,33 @@
+//! Accounts as seen by the launch pipeline. Microsoft login arrives in phase 5.
+
+pub mod offline;
+
+/// Identity handed to the game (`${auth_*}` placeholders).
+#[derive(Debug, Clone)]
+pub struct LaunchAccount {
+    pub name: String,
+    /// Hyphenated UUID.
+    pub uuid: String,
+    pub access_token: String,
+    /// `msa` for Microsoft accounts, `legacy` for offline.
+    pub user_type: String,
+    pub xuid: String,
+    pub client_id: String,
+    pub offline: bool,
+}
+
+impl LaunchAccount {
+    /// UUID without hyphens, the form used on the game command line.
+    pub fn uuid_simple(&self) -> String {
+        self.uuid.replace('-', "")
+    }
+
+    /// `${auth_session}` for pre-1.6 versions.
+    pub fn session(&self) -> String {
+        if self.offline {
+            "-".into()
+        } else {
+            format!("token:{}:{}", self.access_token, self.uuid_simple())
+        }
+    }
+}

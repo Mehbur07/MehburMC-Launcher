@@ -87,6 +87,37 @@
     },
     "settings": {
       "invalid": "Invalid setting value: {{setting}}"
+    },
+    "net": {
+      "timeout": "The connection timed out: {{url}}",
+      "unreachable": "The server could not be reached. Check your internet connection.",
+      "httpStatus": "The server returned HTTP {{status}}: {{url}}",
+      "notAllowed": "Security: blocked an address that is not on the allowlist: {{url}}"
+    },
+    "download": {
+      "hashMismatch": "The downloaded file is corrupt (checksum mismatch): {{path}}"
+    },
+    "task": {
+      "cancelled": "The operation was cancelled."
+    },
+    "version": {
+      "notFound": "Minecraft {{version}} was not found (if you are offline, install it once while online).",
+      "invalid": "The version file for {{version}} is invalid: {{reason}}"
+    },
+    "java": {
+      "notFound": "Java {{major}} was not found.",
+      "unavailable": "Java {{major}} cannot be downloaded automatically for this system ({{os}}/{{arch}})."
+    },
+    "archive": {
+      "invalid": "Could not open archive: {{path}}",
+      "unsafe": "Security: the archive contains an unsafe entry ({{entry}}): {{path}}"
+    },
+    "auth": {
+      "invalidName": "Invalid player name \"{{name}}\": 3–16 characters, letters, digits and _ only."
+    },
+    "launch": {
+      "commandTooLong": "The command line is too long for Java {{major}}.",
+      "spawnFailed": "Could not start the game: {{path}}"
     }
   }
 }

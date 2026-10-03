@@ -45,6 +45,75 @@ pub enum CoreError {
 
     #[error("invalid setting: {0}")]
     InvalidSetting(String),
+
+    #[error("network error while fetching {url}")]
+    Network {
+        url: String,
+        #[source]
+        source: reqwest::Error,
+    },
+
+    #[error("server returned HTTP {status} for {url}")]
+    HttpStatus { url: String, status: u16 },
+
+    #[error("download blocked: {url} is not on the allowlist")]
+    UrlNotAllowed { url: String },
+
+    #[error("checksum mismatch for {}: expected {expected}, got {actual}", path.display())]
+    HashMismatch {
+        path: PathBuf,
+        expected: String,
+        actual: String,
+    },
+
+    #[error("not enough disk space in {}: need {needed} bytes, {available} available", path.display())]
+    DiskFull {
+        path: PathBuf,
+        needed: u64,
+        available: u64,
+    },
+
+    #[error("operation cancelled")]
+    Cancelled,
+
+    #[error("Minecraft version {0} was not found")]
+    VersionNotFound(String),
+
+    #[error("version {id} is invalid: {reason}")]
+    InvalidVersion { id: String, reason: String },
+
+    #[error("no Java {major} runtime is available")]
+    JavaNotFound { major: u32 },
+
+    #[error("Java {major} is not offered for {os}/{arch}")]
+    JavaUnavailable {
+        major: u32,
+        os: String,
+        arch: String,
+    },
+
+    #[error("invalid archive {}", path.display())]
+    Archive {
+        path: PathBuf,
+        #[source]
+        source: zip::result::ZipError,
+    },
+
+    #[error("archive {} contains an unsafe entry: {entry}", path.display())]
+    UnsafeArchiveEntry { path: PathBuf, entry: String },
+
+    #[error("invalid offline player name: {0}")]
+    InvalidPlayerName(String),
+
+    #[error("the command line is too long for Java {major}")]
+    CommandLineTooLong { major: u32 },
+
+    #[error("failed to start {}", program.display())]
+    Spawn {
+        program: PathBuf,
+        #[source]
+        source: io::Error,
+    },
 }
 
 impl CoreError {
@@ -68,28 +137,96 @@ impl CoreError {
             Self::Io { .. } => "io.generic",
             Self::Json { .. } => "json.invalid",
             Self::InvalidSetting(_) => "settings.invalid",
+            Self::Network { source, .. } if source.is_timeout() => "net.timeout",
+            Self::Network { .. } => "net.unreachable",
+            Self::HttpStatus { .. } => "net.httpStatus",
+            Self::UrlNotAllowed { .. } => "net.notAllowed",
+            Self::HashMismatch { .. } => "download.hashMismatch",
+            Self::DiskFull { .. } => "io.diskFull",
+            Self::Cancelled => "task.cancelled",
+            Self::VersionNotFound(_) => "version.notFound",
+            Self::InvalidVersion { .. } => "version.invalid",
+            Self::JavaNotFound { .. } => "java.notFound",
+            Self::JavaUnavailable { .. } => "java.unavailable",
+            Self::Archive { .. } => "archive.invalid",
+            Self::UnsafeArchiveEntry { .. } => "archive.unsafe",
+            Self::InvalidPlayerName(_) => "auth.invalidName",
+            Self::CommandLineTooLong { .. } => "launch.commandTooLong",
+            Self::Spawn { .. } => "launch.spawnFailed",
         }
     }
 
     /// Interpolation parameters for the translated message.
     pub fn params(&self) -> BTreeMap<String, String> {
         let mut p = BTreeMap::new();
+        let mut put = |k: &str, v: String| {
+            p.insert(k.to_owned(), v);
+        };
         match self {
             Self::DataDirNotWritable { path, .. }
             | Self::Io { path, .. }
-            | Self::Json { path, .. } => {
-                p.insert("path".into(), path.display().to_string());
-            }
+            | Self::Json { path, .. }
+            | Self::Archive { path, .. } => put("path", path.display().to_string()),
             Self::InvalidRedirect { path, reason } => {
-                p.insert("path".into(), path.display().to_string());
-                p.insert("reason".into(), reason.clone());
+                put("path", path.display().to_string());
+                put("reason", reason.clone());
             }
-            Self::InvalidSetting(what) => {
-                p.insert("setting".into(), what.clone());
+            Self::InvalidSetting(what) => put("setting", what.clone()),
+            Self::Network { url, .. } | Self::UrlNotAllowed { url } => put("url", url.clone()),
+            Self::HttpStatus { url, status } => {
+                put("url", url.clone());
+                put("status", status.to_string());
             }
-            Self::NoDataDir => {}
+            Self::HashMismatch { path, .. } => put("path", path.display().to_string()),
+            Self::DiskFull {
+                path,
+                needed,
+                available,
+            } => {
+                put("path", path.display().to_string());
+                put("needed", format_mb(*needed));
+                put("available", format_mb(*available));
+            }
+            Self::VersionNotFound(id) => put("version", id.clone()),
+            Self::InvalidVersion { id, reason } => {
+                put("version", id.clone());
+                put("reason", reason.clone());
+            }
+            Self::JavaNotFound { major } | Self::CommandLineTooLong { major } => {
+                put("major", major.to_string())
+            }
+            Self::JavaUnavailable { major, os, arch } => {
+                put("major", major.to_string());
+                put("os", os.clone());
+                put("arch", arch.clone());
+            }
+            Self::UnsafeArchiveEntry { path, entry } => {
+                put("path", path.display().to_string());
+                put("entry", entry.clone());
+            }
+            Self::InvalidPlayerName(name) => put("name", name.clone()),
+            Self::Spawn { program, .. } => put("path", program.display().to_string()),
+            Self::NoDataDir | Self::Cancelled => {}
         }
         p
+    }
+
+    /// Whether retrying the same request may succeed (network blips, 5xx, 429,
+    /// corrupted transfer).
+    pub fn is_transient(&self) -> bool {
+        match self {
+            Self::Network { .. } | Self::HashMismatch { .. } => true,
+            Self::HttpStatus { status, .. } => *status == 429 || *status == 408 || *status >= 500,
+            Self::Io { source, .. } => matches!(
+                source.kind(),
+                io::ErrorKind::ConnectionReset
+                    | io::ErrorKind::ConnectionAborted
+                    | io::ErrorKind::TimedOut
+                    | io::ErrorKind::UnexpectedEof
+                    | io::ErrorKind::Interrupted
+            ),
+            _ => false,
+        }
     }
 
     /// Full technical description including the source chain.
@@ -126,6 +263,10 @@ impl From<CoreError> for ErrorPayload {
     fn from(e: CoreError) -> Self {
         e.to_payload()
     }
+}
+
+fn format_mb(bytes: u64) -> String {
+    format!("{:.0} MB", bytes as f64 / 1_048_576.0)
 }
 
 /// Detects "disk full" across platforms (`ERROR_DISK_FULL` = 112 and

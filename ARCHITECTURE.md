@@ -1,6 +1,6 @@
 # MehburMC Launcher — Mimari
 
-> Durum: **Onaylandı (2026-10-03). Faz 1 tamamlandı.** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
+> Durum: **Onaylandı (2026-10-03). Faz 2 tamamlandı.** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
 
 MehburMC Launcher; Windows öncelikli (Linux/macOS'a taşınabilir), açık mimarili, reklamsız, telemetrisiz bir Minecraft Java Edition launcher'ıdır. SKLauncher'ın özellik zenginliğini (offline + premium, skin/cape, modpack, loader desteği, portable) ve Legacy Launcher'ın hafifliğini / izole profil yapısını birleştirir.
 
@@ -327,3 +327,10 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 | 2026-10-03 | K12: Uygulama komutları `build.rs` → `AppManifest` ile listelenir; webview yalnızca capability'de izin verilen komutları çağırabilir. |
 | 2026-10-03 | K13: Ana pencere `tauri.conf.json` yerine Rust'ta oluşturulur (portable modda WebView2 veri klasörünü ayarlayabilmek için). |
 | 2026-10-03 | K14: TS tipleri `ts-rs` ile `cargo test` sırasında `src/lib/ipc/bindings/`'e üretilir ve repoya commit'lenir (frontend, Rust olmadan derlenebilsin). |
+| 2026-10-03 | K15: Natives — eski `natives` haritası: classifier jar `extract.exclude`'a uyularak düzen korunarak çıkarılır. Yeni `natives-*` classifier'ları: Mojang gibi tüm mimariler (ör. `natives-windows` + `natives-windows-arm64`, aynı kuralla gelir) classpath'e girer; yalnızca makinenin mimarisine uyan çıkarılır ve düz (flatten) yazılır, aksi halde aynı adlı DLL'ler çakışır. 26.x, `${natives_directory}/{java,jna,lwjgl,netty}` alt klasörlerini kullanır; LWJGL kendini `SharedLibraryExtractPath`'e çıkarır. |
+| 2026-10-03 | K16: Doğrulama modları — her başlatmada `Quick` (varlık + boyut); "onar" için `Full` (SHA-1). Yeni indirilen her dosya her zaman hash'lenir. Tam önbellekli 26.3 hazırlığı ≈0,3 sn. |
+| 2026-10-03 | K17: Offline hesap — `accessToken="0"`, `userType="legacy"`, `auth_session="-"`. Modern sürümlerin logladığı `401 /player/attributes` beklenen gürültüdür. |
+| 2026-10-03 | K18: Komut satırı sınırı — yalnızca `-cp` çifti Java `@argfile`'a taşınır (dosyada asla token yok; oyun bitince silinir). Java 8'de sınır aşılırsa `launch.commandTooLong` hatası; "pathing jar" gerekirse Faz 4'te (Forge). |
+| 2026-10-03 | K19: Java seçimi — instance override → `runtime/java{N}` → sistemde tam eşleşen major → Adoptium'dan indir. Adoptium Windows ARM64'te Java 8 sunmuyor → x64'e düşülür. Linux/macOS `tar.gz` runtime'ları henüz desteklenmiyor. |
+| 2026-10-03 | K20: Çevrimdışı — manifest alınamazsa yerel `versions/<id>/<id>.json` güvenilir kabul edilir; yerel dosya SHA-1'i manifestle uyuşuyorsa yeniden indirilmez. |
+| 2026-10-03 | Not (Faz 3): modern istemciler log4j **XML olayları** basar (`<log4j:Event …>`); konsol bunları ayrıştırıp düz satıra çevirmeli. |

@@ -87,6 +87,37 @@
     },
     "settings": {
       "invalid": "Geçersiz ayar değeri: {{setting}}"
+    },
+    "net": {
+      "timeout": "Bağlantı zaman aşımına uğradı: {{url}}",
+      "unreachable": "Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin.",
+      "httpStatus": "Sunucu HTTP {{status}} döndürdü: {{url}}",
+      "notAllowed": "Güvenlik: izin listesinde olmayan adres engellendi: {{url}}"
+    },
+    "download": {
+      "hashMismatch": "İndirilen dosya bozuk (sağlama toplamı uyuşmuyor): {{path}}"
+    },
+    "task": {
+      "cancelled": "İşlem iptal edildi."
+    },
+    "version": {
+      "notFound": "Minecraft {{version}} bulunamadı (çevrimdışıysanız önce internetle bir kez kurun).",
+      "invalid": "{{version}} sürüm dosyası geçersiz: {{reason}}"
+    },
+    "java": {
+      "notFound": "Java {{major}} bulunamadı.",
+      "unavailable": "Java {{major}} bu sistem için ({{os}}/{{arch}}) otomatik indirilemiyor."
+    },
+    "archive": {
+      "invalid": "Arşiv dosyası açılamadı: {{path}}",
+      "unsafe": "Güvenlik: arşivde tehlikeli bir girdi var ({{entry}}): {{path}}"
+    },
+    "auth": {
+      "invalidName": "Geçersiz oyuncu adı \"{{name}}\": 3–16 karakter, yalnızca harf, rakam ve _."
+    },
+    "launch": {
+      "commandTooLong": "Komut satırı Java {{major}} için çok uzun.",
+      "spawnFailed": "Oyun başlatılamadı: {{path}}"
     }
   }
 }

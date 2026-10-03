@@ -4,3 +4,4 @@ src-tauri
 src/lib/ipc/bindings
 package-lock.json
 *.md
+crates/**/tests/fixtures
