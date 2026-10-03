@@ -1,6 +1,6 @@
 # MehburMC Launcher — Mimari
 
-> Durum: **Faz 0 taslağı, onay bekliyor.** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
+> Durum: **Onaylandı (2026-10-03). Faz 1 tamamlandı.** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
 
 MehburMC Launcher; Windows öncelikli (Linux/macOS'a taşınabilir), açık mimarili, reklamsız, telemetrisiz bir Minecraft Java Edition launcher'ıdır. SKLauncher'ın özellik zenginliğini (offline + premium, skin/cape, modpack, loader desteği, portable) ve Legacy Launcher'ın hafifliğini / izole profil yapısını birleştirir.
 
@@ -27,14 +27,14 @@ MehburMC Launcher; Windows öncelikli (Linux/macOS'a taşınabilir), açık mima
 | Frontend | **React 19 + TypeScript + Vite** | |
 | Stil | **Tailwind CSS v4** (CSS-first `@theme`) | Token'lar CSS değişkeni, Tailwind bu değişkenlere bağlanır → çalışma anında tema değişimi. |
 | Durum | Zustand | Küçük, kalıp gerektirmeyen store'lar. |
-| Yönlendirme | React Router (memory router) | Masaüstünde URL çubuğu yok. |
+| Yönlendirme | Zustand `view` durumu (router yok) | Masaüstünde URL çubuğu yok; düz menü için router gereksiz bağımlılık (K10). |
 | Animasyon | Framer Motion (`MotionConfig reducedMotion="user"`) | |
 | İkon | lucide-react | |
 | i18n | i18next + react-i18next | Anahtar tabanlı TR/EN, varsayılan sistem dili. |
 | Liste | `@tanstack/react-virtual` | Sürüm/mod listelerinde sanallaştırma. |
 | Sürükle-bırak | `@dnd-kit` | Instance sıralama. |
 | 3B skin | `skinview3d` | three.js tabanlı, hazır Minecraft modeli. |
-| Font | `@fontsource/orbitron` (başlık), `@fontsource-variable/inter` (gövde) | npm ile **yerel paketlenir**, CDN yok. |
+| Font | `@fontsource/rajdhani` (başlık), `@fontsource/orbitron` (yalnızca marka yazısı / OYNA), `@fontsource-variable/inter` (gövde) | npm ile **yerel paketlenir**, CDN yok. Orbitron'da yalnızca latin alt kümesi var (ğ/ş/İ yok), bu yüzden Türkçe başlıklarda Rajdhani (latin-ext) kullanılır (K9). |
 | Frontend test | Vitest + Testing Library | |
 | Paket | Tauri bundler → **NSIS** installer + portable zip | |
 | Güncelleme | `tauri-plugin-updater` (imzalı) | Bkz. Risk R7. |
@@ -321,3 +321,9 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 | 2026-10-03 | Offline skin: önizleme + isteğe bağlı CustomSkinLoader (R12). |
 | 2026-10-03 | Ayarlar `game\mc\launcher\` altında (K1). Veri taşıma `redirect.json` ile (K3). |
 | 2026-10-03 | GitHub deposu `MehburMC-Launcher`, private. |
+| 2026-10-03 | K9: Başlık fontu Rajdhani; Orbitron yalnızca marka yazısında (Türkçe glif eksikliği). |
+| 2026-10-03 | K10: React Router yerine Zustand tabanlı ekran durumu. |
+| 2026-10-03 | K11: TypeScript `~6.0`'a sabitlendi; typescript-eslint henüz TS 7'yi desteklemiyor (`<6.1`). |
+| 2026-10-03 | K12: Uygulama komutları `build.rs` → `AppManifest` ile listelenir; webview yalnızca capability'de izin verilen komutları çağırabilir. |
+| 2026-10-03 | K13: Ana pencere `tauri.conf.json` yerine Rust'ta oluşturulur (portable modda WebView2 veri klasörünü ayarlayabilmek için). |
+| 2026-10-03 | K14: TS tipleri `ts-rs` ile `cargo test` sırasında `src/lib/ipc/bindings/`'e üretilir ve repoya commit'lenir (frontend, Rust olmadan derlenebilsin). |

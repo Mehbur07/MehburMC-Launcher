@@ -3,7 +3,7 @@
 Windows öncelikli, hafif, reklamsız ve telemetrisiz bir Minecraft Java Edition launcher'ı.
 Tauri 2 (Rust) + React + TypeScript ile geliştirilmektedir.
 
-> **Durum:** Faz 0 — mimari tasarım. Henüz çalıştırılabilir bir sürüm yok.
+> **Durum:** Faz 1 — temel kabuk (tema, pencere, veri klasörü, ayarlar, i18n, log). Oyun başlatma henüz yok.
 
 - Mimari ve kararlar: [ARCHITECTURE.md](ARCHITECTURE.md)
 
@@ -23,7 +23,17 @@ Tauri 2 (Rust) + React + TypeScript ile geliştirilmektedir.
 - Node.js 20+
 - WebView2 (Windows 11'de hazır gelir)
 
-Derleme ve geliştirme komutları Faz 1'de eklenecek.
+```sh
+npm install
+npm run tauri dev          # uygulamayı geliştirme modunda aç
+cargo test --workspace     # Rust testleri (+ src/lib/ipc/bindings TS tiplerini üretir)
+cargo clippy --workspace --all-targets -- -D warnings
+npm test                   # Vitest
+npm run lint               # ESLint
+cargo run -p launcher-cli -- paths   # çekirdeği UI olmadan dene
+```
+
+Veri klasörü: `%APPDATA%\MehburMC\game\mc\`. Exe'nin yanına boş bir `portable.flag` dosyası koyarsanız veri exe klasöründeki `MehburMC\game\mc\` altında tutulur.
 
 ## Yasal
 

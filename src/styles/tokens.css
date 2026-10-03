@@ -1,0 +1,55 @@
+/*
+ * Design tokens. Tailwind utilities (bg-surface-1, text-accent, …) map onto
+ * these variables in index.css, so switching `data-accent` on <html>
+ * re-themes the whole app at runtime.
+ */
+:root {
+  color-scheme: dark;
+
+  --mc-bg: #05070a;
+  --mc-surface-1: #0b1117;
+  --mc-surface-2: #101a22;
+  --mc-surface-3: #162430;
+  --mc-border: #1c2b37;
+  --mc-text: #e6f1f5;
+  --mc-text-muted: #8fa3ae;
+
+  --mc-warn: #ffb800;
+  --mc-danger: #ff3b5c;
+  --mc-success: #00ffa3;
+
+  /* Accent preset: cyan (default). `--mc-accent-rgb` feeds glows. */
+  --mc-accent: #00f0ff;
+  --mc-accent-2: #00b8d4;
+  --mc-accent-glow: #7df9ff;
+  --mc-accent-rgb: 0 240 255;
+  --mc-on-accent: #021a1d;
+
+  --mc-radius-sm: 6px;
+  --mc-radius: 10px;
+  --mc-radius-lg: 16px;
+}
+
+[data-accent="magenta"] {
+  --mc-accent: #ff3df0;
+  --mc-accent-2: #c81fbb;
+  --mc-accent-glow: #ff9cf7;
+  --mc-accent-rgb: 255 61 240;
+  --mc-on-accent: #1f0420;
+}
+
+[data-accent="green"] {
+  --mc-accent: #39ff88;
+  --mc-accent-2: #1fc266;
+  --mc-accent-glow: #a6ffc9;
+  --mc-accent-rgb: 57 255 136;
+  --mc-on-accent: #04200f;
+}
+
+[data-accent="purple"] {
+  --mc-accent: #b77cff;
+  --mc-accent-2: #8a46e8;
+  --mc-accent-glow: #dcc2ff;
+  --mc-accent-rgb: 183 124 255;
+  --mc-on-accent: #160829;
+}

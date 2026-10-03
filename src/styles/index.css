@@ -1,0 +1,130 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@theme inline {
+  --color-bg: var(--mc-bg);
+  --color-surface-1: var(--mc-surface-1);
+  --color-surface-2: var(--mc-surface-2);
+  --color-surface-3: var(--mc-surface-3);
+  --color-line: var(--mc-border);
+  --color-fg: var(--mc-text);
+  --color-muted: var(--mc-text-muted);
+  --color-accent: var(--mc-accent);
+  --color-accent-2: var(--mc-accent-2);
+  --color-accent-glow: var(--mc-accent-glow);
+  --color-on-accent: var(--mc-on-accent);
+  --color-warn: var(--mc-warn);
+  --color-danger: var(--mc-danger);
+  --color-success: var(--mc-success);
+
+  --font-sans: "Inter Variable", "Segoe UI", system-ui, sans-serif;
+  /* Rajdhani ships latin-ext (ğ, ş, İ); Orbitron is latin-only → brand text only. */
+  --font-display: "Rajdhani", "Inter Variable", sans-serif;
+  --font-brand: "Orbitron", "Rajdhani", sans-serif;
+
+  --radius-sm: var(--mc-radius-sm);
+  --radius-md: var(--mc-radius);
+  --radius-lg: var(--mc-radius-lg);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--mc-bg);
+    color: var(--mc-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    user-select: none;
+  }
+  input,
+  textarea,
+  [data-selectable] {
+    user-select: text;
+  }
+  :focus-visible {
+    outline: 2px solid var(--mc-accent);
+    outline-offset: 2px;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--mc-surface-3);
+    border-radius: 999px;
+    border: 2px solid var(--mc-bg);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--mc-border);
+  }
+}
+
+/* Subtle neon: a thin glowing ring, never a blur that hurts readability. */
+@utility neon-ring {
+  box-shadow:
+    0 0 0 1px rgb(var(--mc-accent-rgb) / 0.55),
+    0 0 16px rgb(var(--mc-accent-rgb) / 0.22);
+}
+
+@utility neon-text {
+  text-shadow: 0 0 12px rgb(var(--mc-accent-rgb) / 0.55);
+}
+
+@utility neon-drop {
+  filter: drop-shadow(0 0 6px rgb(var(--mc-accent-rgb) / 0.6));
+}
+
+@utility play-pulse {
+  animation: play-pulse 2.4s ease-in-out infinite;
+}
+
+@utility progress-flow {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(255 255 255 / 0.35) 50%,
+    transparent 100%
+  );
+  background-size: 40% 100%;
+  background-repeat: no-repeat;
+  animation: progress-flow 1.6s linear infinite;
+}
+
+@keyframes play-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgb(var(--mc-accent-rgb) / 0.7),
+      0 0 18px rgb(var(--mc-accent-rgb) / 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgb(var(--mc-accent-rgb) / 0.9),
+      0 0 34px rgb(var(--mc-accent-rgb) / 0.55);
+  }
+}
+
+@keyframes progress-flow {
+  from {
+    background-position: -40% 0;
+  }
+  to {
+    background-position: 140% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

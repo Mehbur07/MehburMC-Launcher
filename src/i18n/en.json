@@ -1,0 +1,92 @@
+{
+  "app": {
+    "name": "MehburMC Launcher"
+  },
+  "titlebar": {
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "restore": "Restore",
+    "close": "Close"
+  },
+  "nav": {
+    "home": "Play",
+    "instances": "Instances",
+    "browse": "Mod Browser",
+    "accounts": "Accounts",
+    "skins": "Skin & Cape",
+    "downloads": "Downloads",
+    "console": "Console",
+    "settings": "Settings"
+  },
+  "home": {
+    "noInstance": "No instances yet",
+    "noInstanceHint": "Creating instances and launching the game arrive in the next phases.",
+    "play": "PLAY",
+    "playDisabled": "Launching is enabled in phases 2–3",
+    "memory": "Default RAM",
+    "news": "News"
+  },
+  "comingSoon": {
+    "title": "Coming soon",
+    "body": "This screen arrives in phase {{phase}}."
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "language": "Language",
+    "languageSystem": "System language",
+    "accent": "Accent color",
+    "accents": {
+      "cyan": "Neon cyan",
+      "magenta": "Magenta",
+      "green": "Green",
+      "purple": "Purple"
+    },
+    "backgroundEffects": "Background effects",
+    "backgroundEffectsHint": "Subtle animated grid and particles.",
+    "advanced": "Advanced",
+    "debugLogging": "Debug logging",
+    "debugLoggingHint": "Writes verbose logs. Takes effect after a restart.",
+    "dataFolder": "Data folder",
+    "dataMode": {
+      "standard": "Standard",
+      "portable": "Portable"
+    },
+    "redirected": "Moved",
+    "openDataFolder": "Open data folder",
+    "moveDataFolder": "Move data folder",
+    "moveDataFolderSoon": "Arrives in phase 8",
+    "about": "About",
+    "version": "Version {{version}}",
+    "telemetry": "No telemetry: MehburMC Launcher sends no usage data."
+  },
+  "startup": {
+    "title": "The launcher could not start",
+    "hint": "The data folder could not be created or is not writable. Check folder permissions or run the launcher in portable mode (portable.flag next to the exe)."
+  },
+  "common": {
+    "copyDetails": "Copy details",
+    "copied": "Copied",
+    "dismiss": "Dismiss",
+    "loading": "Loading…"
+  },
+  "errors": {
+    "unknown": "An unexpected error occurred.",
+    "paths": {
+      "noDataDir": "Could not determine the user data folder.",
+      "notWritable": "The data folder is not writable: {{path}}",
+      "invalidRedirect": "Invalid data folder redirect ({{path}}): {{reason}}"
+    },
+    "io": {
+      "diskFull": "Disk is full: {{path}}",
+      "permissionDenied": "Access denied: {{path}}",
+      "generic": "File operation failed: {{path}}"
+    },
+    "json": {
+      "invalid": "Invalid JSON file: {{path}}"
+    },
+    "settings": {
+      "invalid": "Invalid setting value: {{setting}}"
+    }
+  }
+}

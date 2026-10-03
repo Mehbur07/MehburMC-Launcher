@@ -1,0 +1,6 @@
+dist
+target
+src-tauri
+src/lib/ipc/bindings
+package-lock.json
+*.md

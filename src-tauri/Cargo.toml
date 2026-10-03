@@ -1,0 +1,28 @@
+[package]
+name = "mehbur-launcher"
+description = "MehburMC Launcher desktop app (thin Tauri wrapper around launcher-core)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "mehbur_launcher_lib"
+crate-type = ["lib"]
+
+[build-dependencies]
+tauri-build = { version = "2.7.1", features = [] }
+
+[dependencies]
+launcher-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tauri = { version = "2.12.1", features = [] }
+tauri-plugin-opener = "2.7.0"
+tauri-plugin-single-instance = "2.5.2"
+tracing.workspace = true
+tracing-appender.workspace = true
+ts-rs.workspace = true
+
+[lints]
+workspace = true

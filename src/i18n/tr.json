@@ -1,0 +1,92 @@
+{
+  "app": {
+    "name": "MehburMC Launcher"
+  },
+  "titlebar": {
+    "minimize": "Küçült",
+    "maximize": "Büyüt",
+    "restore": "Önceki boyut",
+    "close": "Kapat"
+  },
+  "nav": {
+    "home": "Oyna",
+    "instances": "Profiller",
+    "browse": "Mod Tarayıcı",
+    "accounts": "Hesaplar",
+    "skins": "Skin & Cape",
+    "downloads": "İndirmeler",
+    "console": "Konsol",
+    "settings": "Ayarlar"
+  },
+  "home": {
+    "noInstance": "Henüz bir profil yok",
+    "noInstanceHint": "Profil oluşturma ve oyunu başlatma sonraki fazlarda eklenecek.",
+    "play": "OYNA",
+    "playDisabled": "Oyun başlatma Faz 2–3'te etkinleşecek",
+    "memory": "Varsayılan RAM",
+    "news": "Haberler"
+  },
+  "comingSoon": {
+    "title": "Yakında",
+    "body": "Bu ekran {{phase}}. fazda eklenecek."
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "appearance": "Görünüm",
+    "language": "Dil",
+    "languageSystem": "Sistem dili",
+    "accent": "Vurgu rengi",
+    "accents": {
+      "cyan": "Neon cyan",
+      "magenta": "Magenta",
+      "green": "Yeşil",
+      "purple": "Mor"
+    },
+    "backgroundEffects": "Arka plan efektleri",
+    "backgroundEffectsHint": "Hafif animasyonlu ızgara ve parçacıklar.",
+    "advanced": "Gelişmiş",
+    "debugLogging": "Hata ayıklama günlüğü",
+    "debugLoggingHint": "Ayrıntılı log yazar. Yeniden başlatınca etkinleşir.",
+    "dataFolder": "Veri klasörü",
+    "dataMode": {
+      "standard": "Standart",
+      "portable": "Portable"
+    },
+    "redirected": "Taşınmış",
+    "openDataFolder": "Veri klasörünü aç",
+    "moveDataFolder": "Veri klasörünü taşı",
+    "moveDataFolderSoon": "Faz 8'de eklenecek",
+    "about": "Hakkında",
+    "version": "Sürüm {{version}}",
+    "telemetry": "Telemetri yok: MehburMC Launcher hiçbir kullanım verisi göndermez."
+  },
+  "startup": {
+    "title": "Launcher başlatılamadı",
+    "hint": "Veri klasörü oluşturulamadı ya da yazılamıyor. Klasör izinlerini kontrol edin veya launcher'ı portable modda (exe yanına portable.flag) çalıştırın."
+  },
+  "common": {
+    "copyDetails": "Detayları kopyala",
+    "copied": "Kopyalandı",
+    "dismiss": "Kapat",
+    "loading": "Yükleniyor…"
+  },
+  "errors": {
+    "unknown": "Beklenmeyen bir hata oluştu.",
+    "paths": {
+      "noDataDir": "Kullanıcı veri klasörü belirlenemedi.",
+      "notWritable": "Veri klasörüne yazılamıyor: {{path}}",
+      "invalidRedirect": "Veri klasörü yönlendirmesi geçersiz ({{path}}): {{reason}}"
+    },
+    "io": {
+      "diskFull": "Disk dolu: {{path}}",
+      "permissionDenied": "Erişim reddedildi: {{path}}",
+      "generic": "Dosya işlemi başarısız: {{path}}"
+    },
+    "json": {
+      "invalid": "Geçersiz JSON dosyası: {{path}}"
+    },
+    "settings": {
+      "invalid": "Geçersiz ayar değeri: {{setting}}"
+    }
+  }
+}
