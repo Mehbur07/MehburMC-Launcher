@@ -1,0 +1,34 @@
+# Rust
+/target/
+**/target/
+
+# Node / Vite
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/
+
+# Tauri
+src-tauri/gen/schemas/
+
+# Secrets & local config (never commit)
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.pfx
+*.p12
+*.keystore
+
+# Local launcher data (portable mode / dev runs)
+portable.flag
+MehburMC/
+
+# Logs & OS / editor noise
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
