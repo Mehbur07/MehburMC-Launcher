@@ -49,17 +49,6 @@ pub enum LaunchBehavior {
     KeepOpen,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase", default)]
-#[ts(export)]
-pub struct AuthSettings {
-    /// Azure application (client) id for Microsoft login. Never shipped in
-    /// the binary; `MEHBURMC_MSA_CLIENT_ID` overrides it.
-    #[ts(optional)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub msa_client_id: Option<String>,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase", default)]
 #[ts(export)]
@@ -74,7 +63,6 @@ pub struct Settings {
     pub download_concurrency: u32,
     pub default_memory_mb: u32,
     pub launch_behavior: LaunchBehavior,
-    pub auth: AuthSettings,
 }
 
 impl Default for Settings {
@@ -88,7 +76,6 @@ impl Default for Settings {
             download_concurrency: 8,
             default_memory_mb: 4096,
             launch_behavior: LaunchBehavior::Minimize,
-            auth: AuthSettings::default(),
         }
     }
 }
@@ -139,15 +126,6 @@ impl Settings {
             return Err(CoreError::InvalidSetting("defaultMemoryMb".into()));
         }
         Ok(())
-    }
-
-    /// Effective Microsoft client id: environment variable wins over the file.
-    pub fn msa_client_id(&self) -> Option<String> {
-        std::env::var("MEHBURMC_MSA_CLIENT_ID")
-            .ok()
-            .or_else(|| self.auth.msa_client_id.clone())
-            .map(|s| s.trim().to_owned())
-            .filter(|s| !s.is_empty())
     }
 
     fn migrate(&mut self) {

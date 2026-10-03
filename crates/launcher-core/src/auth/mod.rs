@@ -1,8 +1,7 @@
-//! Accounts: offline names and Microsoft accounts (device code sign-in).
+//! Accounts as seen by the launch pipeline. Only offline accounts exist;
+//! Microsoft sign-in was removed on request (see ARCHITECTURE.md K35).
 
-pub mod microsoft;
 pub mod offline;
-pub mod secrets;
 pub mod store;
 
 /// Identity handed to the game (`${auth_*}` placeholders).
@@ -12,7 +11,7 @@ pub struct LaunchAccount {
     /// Hyphenated UUID.
     pub uuid: String,
     pub access_token: String,
-    /// `msa` for Microsoft accounts, `legacy` for offline.
+    /// Always `legacy` (offline).
     pub user_type: String,
     pub xuid: String,
     pub client_id: String,

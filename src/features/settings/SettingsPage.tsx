@@ -1,14 +1,12 @@
 import { Check, FolderInput, FolderOpen, ShieldCheck } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { TextInput, Toggle } from "../../components/ui";
+import { Toggle } from "../../components/ui";
 import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { Accent } from "../../lib/ipc/bindings/Accent";
 import type { Language } from "../../lib/ipc/bindings/Language";
 import { useApp } from "../../stores/app";
-
-const GUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Swatch colors mirror tokens.css presets. */
 const ACCENTS: { id: Accent; color: string }[] = [
@@ -23,16 +21,8 @@ export function SettingsPage() {
   const settings = useApp((s) => s.settings);
   const boot = useApp((s) => s.boot);
   const update = useApp((s) => s.updateSettings);
-  const [clientId, setClientId] = useState(settings?.auth.msaClientId ?? "");
 
   if (!settings || !boot) return null;
-
-  const saveClientId = () => {
-    const v = clientId.trim();
-    if (v === (settings.auth.msaClientId ?? "")) return;
-    void update({ auth: { ...settings.auth, msaClientId: v || undefined } });
-  };
-  const clientIdValid = !clientId.trim() || GUID_RE.test(clientId.trim());
 
   const openDataDir = async () => {
     try {
@@ -144,25 +134,6 @@ export function SettingsPage() {
             label={t("settings.debugLogging")}
           />
         </Row>
-        <div className="flex flex-col gap-2 py-3">
-          <div>
-            <div className="text-sm font-medium">{t("settings.msaClientId")}</div>
-            <div className="mt-0.5 text-xs text-muted">{t("settings.msaClientIdHint")}</div>
-          </div>
-          <TextInput
-            value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
-            onBlur={saveClientId}
-            placeholder="00000000-0000-0000-0000-000000000000"
-            spellCheck={false}
-            aria-invalid={!clientIdValid}
-            aria-label={t("settings.msaClientId")}
-            className="font-mono"
-          />
-          {!clientIdValid && (
-            <div className="text-xs text-warn">{t("settings.msaClientIdInvalid")}</div>
-          )}
-        </div>
       </Section>
 
       <Section title={t("settings.about")}>

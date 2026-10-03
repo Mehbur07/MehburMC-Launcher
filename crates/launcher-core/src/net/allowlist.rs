@@ -16,10 +16,6 @@ const DEFAULT_RULES: &[(&str, Option<&str>)] = &[
     ("textures.minecraft.net", None),
     ("sessionserver.mojang.com", None),
     ("api.minecraftservices.com", None),
-    // Microsoft / Xbox auth
-    ("login.microsoftonline.com", None),
-    ("user.auth.xboxlive.com", None),
-    ("xsts.auth.xboxlive.com", None),
     // Fabric / Quilt / Legacy Fabric
     ("meta.fabricmc.net", None),
     ("maven.fabricmc.net", None),

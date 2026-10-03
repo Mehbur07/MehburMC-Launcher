@@ -61,10 +61,7 @@
     "moveDataFolderSoon": "Arrives in phase 8",
     "about": "About",
     "version": "Version {{version}}",
-    "telemetry": "No telemetry: MehburMC Launcher sends no usage data.",
-    "msaClientId": "Microsoft client_id (Azure)",
-    "msaClientIdHint": "Azure application id for Microsoft sign-in. Never built into the app; the MEHBURMC_MSA_CLIENT_ID environment variable takes precedence.",
-    "msaClientIdInvalid": "Not a valid GUID."
+    "telemetry": "No telemetry: MehburMC Launcher sends no usage data."
   },
   "startup": {
     "title": "The launcher could not start",
@@ -128,22 +125,7 @@
       "unsafe": "Security: the archive contains an unsafe entry ({{entry}}): {{path}}"
     },
     "auth": {
-      "invalidName": "Invalid player name \"{{name}}\": 3–16 characters, letters, digits and _ only.",
-      "notConfigured": "Microsoft sign-in is not configured: enter an Azure client_id in Settings → Advanced.",
-      "declined": "The sign-in was declined in the browser.",
-      "codeExpired": "The sign-in code expired. Try again.",
-      "xbox": {
-        "noAccount": "This Microsoft account has no Xbox profile. Sign in once at xbox.com to create one.",
-        "region": "Xbox Live is not available in this country.",
-        "adultVerification": "The account needs adult verification (South Korea). Complete it at xbox.com.",
-        "child": "This is a child account; an adult must add it to a Microsoft Family.",
-        "other": "Xbox Live refused the sign-in (XErr {{code}})."
-      },
-      "notApproved": "This launcher has not been approved by Mojang for Minecraft sign-in yet (Azure app not approved).",
-      "noProfile": "This account does not own Minecraft: Java Edition or has not chosen a player name yet.",
-      "relogin": "The session of {{name}} expired; sign in again from Accounts.",
-      "failed": "Microsoft sign-in failed ({{step}}, HTTP {{status}}).",
-      "keyring": "Credential store error: {{reason}}"
+      "invalidName": "Invalid player name \"{{name}}\": 3–16 characters, letters, digits and _ only."
     },
     "launch": {
       "commandTooLong": "The command line is too long for Java {{major}}.",
@@ -312,19 +294,12 @@
     "namePlaceholder": "Player name",
     "add": "Add",
     "nameRules": "3–16 characters; letters, digits and _ only.",
-    "microsoftTitle": "Microsoft account",
-    "microsoftBody": "Sign in with your premium account: online servers, your own skin. Your password never touches the launcher; you sign in on Microsoft's page in the browser.",
     "notPremium": "not premium",
     "active": "Active",
     "use": "Use",
     "offlineServers": "Offline accounts cannot join online-mode servers and skins show as the default in game.",
     "removeTitle": "Remove account?",
-    "removeBody": "\"{{name}}\" will be removed from the list.",
-    "microsoftNotConfigured": "Microsoft sign-in needs an Azure application id (client_id). You can add it in Settings → Advanced.",
-    "microsoftLogin": "Sign in with Microsoft",
-    "openSettings": "Open settings",
-    "needsLogin": "sign-in required",
-    "relogin": "Sign in"
+    "removeBody": "\"{{name}}\" will be removed from the list."
   },
   "loader": {
     "version": "Loader version",
@@ -347,15 +322,5 @@
     "installing": "Installing…",
     "installed": "Installed: {{files}}",
     "nothing": "Already installed: {{mods}}"
-  },
-  "msa": {
-    "title": "Sign in with Microsoft",
-    "step1": "Enter this code on the page that opened in your browser:",
-    "copy": "Copy code",
-    "copied": "Copied",
-    "openBrowser": "Open in browser",
-    "step2": "If no page opened: {{url}}",
-    "waiting": "Waiting for the sign-in to complete…",
-    "done": "Signed in as {{name}}."
   }
 }

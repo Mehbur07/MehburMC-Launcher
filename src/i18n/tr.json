@@ -61,10 +61,7 @@
     "moveDataFolderSoon": "Faz 8'de eklenecek",
     "about": "Hakkında",
     "version": "Sürüm {{version}}",
-    "telemetry": "Telemetri yok: MehburMC Launcher hiçbir kullanım verisi göndermez.",
-    "msaClientId": "Microsoft client_id (Azure)",
-    "msaClientIdHint": "Microsoft girişi için Azure uygulama kimliği. Koda gömülmez; MEHBURMC_MSA_CLIENT_ID ortam değişkeni önceliklidir.",
-    "msaClientIdInvalid": "Geçerli bir GUID değil."
+    "telemetry": "Telemetri yok: MehburMC Launcher hiçbir kullanım verisi göndermez."
   },
   "startup": {
     "title": "Launcher başlatılamadı",
@@ -128,22 +125,7 @@
       "unsafe": "Güvenlik: arşivde tehlikeli bir girdi var ({{entry}}): {{path}}"
     },
     "auth": {
-      "invalidName": "Geçersiz oyuncu adı \"{{name}}\": 3–16 karakter, yalnızca harf, rakam ve _.",
-      "notConfigured": "Microsoft girişi yapılandırılmamış: Ayarlar → Gelişmiş'e Azure client_id gir.",
-      "declined": "Giriş tarayıcıda reddedildi.",
-      "codeExpired": "Giriş kodunun süresi doldu. Tekrar dene.",
-      "xbox": {
-        "noAccount": "Bu Microsoft hesabının Xbox profili yok. xbox.com'da bir kez giriş yapıp profil oluştur.",
-        "region": "Xbox Live bu ülkede kullanılamıyor.",
-        "adultVerification": "Hesabın yetişkin doğrulaması gerekiyor (Güney Kore). xbox.com'da tamamla.",
-        "child": "Bu bir çocuk hesabı; bir yetişkinin Microsoft Family'ye eklemesi gerekiyor.",
-        "other": "Xbox Live girişi reddetti (XErr {{code}})."
-      },
-      "notApproved": "Bu launcher henüz Minecraft girişi için Mojang onayı almadı (Azure uygulaması onaylanmamış).",
-      "noProfile": "Bu hesapta Minecraft: Java Edition yok ya da henüz oyuncu adı seçilmemiş.",
-      "relogin": "{{name}} hesabının oturumu sona erdi; Hesaplar'dan yeniden giriş yap.",
-      "failed": "Microsoft girişi başarısız ({{step}}, HTTP {{status}}).",
-      "keyring": "Kimlik bilgisi deposu hatası: {{reason}}"
+      "invalidName": "Geçersiz oyuncu adı \"{{name}}\": 3–16 karakter, yalnızca harf, rakam ve _."
     },
     "launch": {
       "commandTooLong": "Komut satırı Java {{major}} için çok uzun.",
@@ -312,19 +294,12 @@
     "namePlaceholder": "Oyuncu adı",
     "add": "Ekle",
     "nameRules": "3–16 karakter; yalnızca harf, rakam ve _.",
-    "microsoftTitle": "Microsoft hesabı",
-    "microsoftBody": "Premium hesabınla giriş yap: çevrimiçi sunucular, kendi skin'in. Şifren launcher'a hiç girilmez; giriş tarayıcıda Microsoft sayfasında yapılır.",
     "notPremium": "premium değil",
     "active": "Aktif",
     "use": "Kullan",
     "offlineServers": "Offline hesaplar çevrimiçi (online-mode) sunuculara giremez ve skin'ler oyunda varsayılan görünür.",
     "removeTitle": "Hesap kaldırılsın mı?",
-    "removeBody": "\"{{name}}\" hesabı listeden kaldırılacak.",
-    "microsoftNotConfigured": "Microsoft girişi için bir Azure uygulama kimliği (client_id) gerekiyor. Ayarlar → Gelişmiş bölümünden ekleyebilirsin.",
-    "microsoftLogin": "Microsoft ile giriş yap",
-    "openSettings": "Ayarlara git",
-    "needsLogin": "yeniden giriş gerekli",
-    "relogin": "Giriş yap"
+    "removeBody": "\"{{name}}\" hesabı listeden kaldırılacak."
   },
   "loader": {
     "version": "Loader sürümü",
@@ -347,15 +322,5 @@
     "installing": "Kuruluyor…",
     "installed": "Kuruldu: {{files}}",
     "nothing": "Zaten kurulu: {{mods}}"
-  },
-  "msa": {
-    "title": "Microsoft ile giriş",
-    "step1": "Tarayıcıda açılan sayfaya bu kodu gir:",
-    "copy": "Kodu kopyala",
-    "copied": "Kopyalandı",
-    "openBrowser": "Tarayıcıda aç",
-    "step2": "Sayfa açılmadıysa: {{url}}",
-    "waiting": "Girişin tamamlanması bekleniyor…",
-    "done": "{{name}} olarak giriş yapıldı."
   }
 }

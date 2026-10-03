@@ -3,13 +3,13 @@
 Windows öncelikli, hafif, reklamsız ve telemetrisiz bir Minecraft Java Edition launcher'ı.
 Tauri 2 (Rust) + React + TypeScript ile geliştirilmektedir.
 
-> **Durum:** Faz 5 — Microsoft (premium) hesapları: device code girişi, refresh token Windows Kimlik Bilgisi Yöneticisi'nde, çoklu hesap, çevrimdışı tek oyunculu geri dönüş. Microsoft girişi için kendi Azure `client_id`'nizi Ayarlar → Gelişmiş'e (veya `MEHBURMC_MSA_CLIENT_ID`) girmeniz ve uygulamanın Mojang onayı alması gerekir. Mod tarayıcısı Faz 6'da.
+> **Durum:** Faz 4 — mod loader'lar: Fabric, Quilt, Legacy Fabric, Forge (1.7.10 → 26.x), NeoForge, OptiFine (kendi jar'ınızla) ve tek tıkla Iris + Sodium. Microsoft girişi kullanıcı isteğiyle kaldırıldı (yalnızca offline hesaplar).
 
 - Mimari ve kararlar: [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ## Planlanan özellikler
 
-- Offline mod + Microsoft (premium) girişi, çoklu hesap
+- Offline hesaplar (çoklu hesap); Microsoft/premium girişi yok
 - İzole instance'lar (her profil kendi `mods`, `saves`, `config` klasörüyle)
 - Vanilla, Fabric, Quilt, Legacy Fabric, Forge, NeoForge; OptiFine içe aktarma + Sodium/Iris önerileri
 - Modrinth tarayıcısı, `.mrpack` ve CurseForge (kendi API anahtarınızla) modpack içe aktarma
@@ -48,7 +48,6 @@ cargo run -p launcher-cli -- launch 1.20.1 --loader forge --exit-when-ready 5
 cargo run -p launcher-cli -- launch 26.3 --loader fabric:0.19.5      # belirli loader sürümü
 cargo run -p launcher-cli -- loader import-optifine OptiFine_1.20.1_HD_U_I6.jar
 cargo run -p launcher-cli -- launch 1.20.1 --loader optifine
-MEHBURMC_MSA_CLIENT_ID=<guid> cargo run -p launcher-cli -- msa-login  # Microsoft girişini dene (kaydetmez)
 ```
 
 Veri klasörü: `%APPDATA%\MehburMC\game\mc\`. Exe'nin yanına boş bir `portable.flag` dosyası koyarsanız veri exe klasöründeki `MehburMC\game\mc\` altında tutulur.

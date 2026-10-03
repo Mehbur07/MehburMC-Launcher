@@ -6,4 +6,4 @@ import type { Settings } from "./Settings";
 /**
  * Everything the UI needs for its first render, in one round trip.
  */
-export type Bootstrap = { appName: string, version: string, paths: PathsInfo | null, settings: Settings, startupError: ErrorPayload | null, msaConfigured: boolean, };
+export type Bootstrap = { appName: string, version: string, paths: PathsInfo | null, settings: Settings, startupError: ErrorPayload | null, };

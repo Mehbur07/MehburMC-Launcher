@@ -14,7 +14,6 @@ import type { InstancesView } from "./bindings/InstancesView";
 import type { JavaInstall } from "./bindings/JavaInstall";
 import type { LoaderKind } from "./bindings/LoaderKind";
 import type { LoaderVersion } from "./bindings/LoaderVersion";
-import type { LoginPrompt } from "./bindings/LoginPrompt";
 import type { ManifestEntry } from "./bindings/ManifestEntry";
 import type { NewInstance } from "./bindings/NewInstance";
 import type { OptifineInfo } from "./bindings/OptifineInfo";
@@ -56,10 +55,6 @@ export const ipc = {
   addOfflineAccount: (name: string) => invoke<Account>("add_offline_account", { name }),
   removeAccount: (id: string) => invoke<AccountsView>("remove_account", { id }),
   selectAccount: (id: string) => invoke<AccountsView>("select_account", { id }),
-  beginMicrosoftLogin: () => invoke<LoginPrompt>("begin_microsoft_login"),
-  finishMicrosoftLogin: (loginId: string) => invoke<Account>("finish_microsoft_login", { loginId }),
-  cancelMicrosoftLogin: (loginId: string) => invoke<void>("cancel_microsoft_login", { loginId }),
-  openMicrosoftLogin: (loginId: string) => invoke<void>("open_microsoft_login", { loginId }),
 
   listInstanceFiles: (id: string, folder: Folder) =>
     invoke<FileEntry[]>("list_instance_files", { id, folder }),

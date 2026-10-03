@@ -43,7 +43,6 @@ pub struct Bootstrap {
     pub paths: Option<PathsInfo>,
     pub settings: Settings,
     pub startup_error: Option<ErrorPayload>,
-    pub msa_configured: bool,
 }
 
 #[tauri::command]
@@ -53,7 +52,6 @@ pub fn get_bootstrap(state: State<'_, AppState>) -> Bootstrap {
         app_name: launcher_core::LAUNCHER_NAME.to_owned(),
         version: launcher_core::LAUNCHER_VERSION.to_owned(),
         paths: state.paths.as_ref().map(|p| p.info()),
-        msa_configured: settings.msa_client_id().is_some(),
         settings,
         startup_error: state.startup_error.clone(),
     }

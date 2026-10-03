@@ -80,63 +80,6 @@ impl Http {
         Ok(bytes.to_vec())
     }
 
-    /// Sends a request built from `req` and returns `(status, body)` without
-    /// treating non-2xx as an error (auth endpoints explain errors in JSON).
-    async fn send_raw(&self, url: &str, req: reqwest::RequestBuilder) -> Result<(u16, Vec<u8>)> {
-        let resp = req
-            .header(reqwest::header::ACCEPT, "application/json")
-            .send()
-            .await
-            .map_err(|source| network(url, source))?;
-        let status = resp.status().as_u16();
-        let body = resp.bytes().await.map_err(|source| network(url, source))?;
-        Ok((status, body.to_vec()))
-    }
-
-    /// `application/x-www-form-urlencoded` POST.
-    pub async fn post_form(&self, url: &str, fields: &[(&str, &str)]) -> Result<(u16, Vec<u8>)> {
-        let parsed = self.allowlist.check(url)?;
-        let body = reqwest::Url::parse_with_params("https://x.invalid/", fields)
-            .ok()
-            .and_then(|u| u.query().map(str::to_owned))
-            .unwrap_or_default();
-        let req = self
-            .client
-            .post(parsed)
-            .header(
-                reqwest::header::CONTENT_TYPE,
-                "application/x-www-form-urlencoded",
-            )
-            .body(body);
-        self.send_raw(url, req).await
-    }
-
-    /// JSON POST, optionally with a bearer token.
-    pub async fn post_json(
-        &self,
-        url: &str,
-        body: &serde_json::Value,
-        bearer: Option<&str>,
-    ) -> Result<(u16, Vec<u8>)> {
-        let parsed = self.allowlist.check(url)?;
-        let mut req = self
-            .client
-            .post(parsed)
-            .header(reqwest::header::CONTENT_TYPE, "application/json")
-            .body(body.to_string());
-        if let Some(t) = bearer {
-            req = req.bearer_auth(t);
-        }
-        self.send_raw(url, req).await
-    }
-
-    /// GET with a bearer token.
-    pub async fn get_bearer(&self, url: &str, bearer: &str) -> Result<(u16, Vec<u8>)> {
-        let parsed = self.allowlist.check(url)?;
-        let req = self.client.get(parsed).bearer_auth(bearer);
-        self.send_raw(url, req).await
-    }
-
     pub async fn get_text(&self, url: &str) -> Result<String> {
         let bytes = self.get_bytes(url).await?;
         Ok(String::from_utf8_lossy(&bytes).into_owned())

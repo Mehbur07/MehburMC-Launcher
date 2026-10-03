@@ -1,8 +1,8 @@
 # MehburMC Launcher — Mimari
 
-> Durum: **Onaylandı (2026-10-03). Faz 5 tamamlandı.** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
+> Durum: **Onaylandı (2026-10-03). Faz 5 iptal edildi (K39), Faz 4'e kadar tamamlandı.** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
 
-MehburMC Launcher; Windows öncelikli (Linux/macOS'a taşınabilir), açık mimarili, reklamsız, telemetrisiz bir Minecraft Java Edition launcher'ıdır. SKLauncher'ın özellik zenginliğini (offline + premium, skin/cape, modpack, loader desteği, portable) ve Legacy Launcher'ın hafifliğini / izole profil yapısını birleştirir.
+MehburMC Launcher; Windows öncelikli (Linux/macOS'a taşınabilir), açık mimarili, reklamsız, telemetrisiz bir Minecraft Java Edition launcher'ıdır. SKLauncher'ın özellik zenginliğini (offline hesaplar, skin/cape, modpack, loader desteği, portable) ve Legacy Launcher'ın hafifliğini / izole profil yapısını birleştirir.
 
 ---
 
@@ -20,7 +20,6 @@ MehburMC Launcher; Windows öncelikli (Linux/macOS'a taşınabilir), açık mima
 | Hata | `thiserror` | Türlü hatalar + i18n anahtarı. |
 | Log | `tracing`, `tracing-subscriber`, `tracing-appender` | Günlük döndürmeli dosya, token maskeleme katmanı. |
 | Yollar | `directories` | Platforma göre veri kökü. |
-| Gizli anahtar | `keyring` | Windows Credential Manager / macOS Keychain / Secret Service. |
 | Dosya kilidi | `fs4` | Instance ve kurulum kilitleri, boş disk alanı ölçümü. |
 | TS tip üretimi | `ts-rs` | Rust DTO'larından TypeScript tipleri; elle senkron tutma yok. |
 | Test | `wiremock`, `tempfile`, `insta` (snapshot) | Sahte HTTP, geçici `Paths`, argüman çıktısı snapshot'ları. |
@@ -107,8 +106,7 @@ launcher-core
 │   ├── forge.rs    neoforge.rs  optifine.rs
 ├── auth
 │   ├── offline     ad doğrulama, UUID v3 ("OfflinePlayer:<ad>")
-│   ├── microsoft   device code → XBL → XSTS → MC services → profil/sahiplik
-│   └── store       accounts.json (yalnızca meta) + keyring (refresh token)
+│   └── store       accounts.json (offline hesaplar)
 ├── content      Modrinth v2, CurseForge (kullanıcı anahtarı), mrpack/CF zip, bağımlılık çözümü
 ├── skin         doğrulama (64x64 / 64x32), Mojang skin/cape API, CustomSkinLoader kurulumu
 ├── news         Mojang launcher içerik feed'i (hata → boş liste)
@@ -148,7 +146,7 @@ Yeni loader = `loader/<ad>.rs` + `LoaderKind` enum'una bir satır. `Ctx` paylaş
 ```
 UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch::prepare
    1. instance kilidi al (zaten çalışıyorsa → hata "instance.already_running")
-   2. hesap: offline → UUID v3 | microsoft → keyring'den refresh → access token (yalnızca bellekte)
+   2. hesap: offline → UUID v3
    3. profil: loader.build_launch_profile → inheritsFrom birleştir
    4. doğrula/indir: libraries + natives + assetIndex/objects + client.jar + log4j config
         └─ download kuyruğu ──CoreEvent::Progress──▶ UI ilerleme çubuğu
@@ -163,7 +161,6 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 
 - Ağ yoksa manifest/loader listeleri `cache/`'den okunur (süresi geçmiş olsa bile).
 - Kurulu instance: yalnızca dosyaların varlığı ve boyutu kontrol edilir, indirme denenmez.
-- Microsoft hesabı çevrimdışıyken son bilinen profil + offline benzeri başlatma (yalnızca tek oyunculu); UI bunu açıkça belirtir.
 
 ### 4.3 Hata modeli
 
@@ -212,7 +209,6 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 
 - **Allowlist (host + isteğe bağlı yol öneki), yalnızca HTTPS, redirect'lerde de uygulanır:**
   - Mojang: `piston-meta.mojang.com`, `piston-data.mojang.com`, `launchermeta.mojang.com`, `launcher.mojang.com`, `libraries.minecraft.net`, `resources.download.minecraft.net`, `launchercontent.mojang.com`, `textures.minecraft.net`, `sessionserver.mojang.com`, `api.minecraftservices.com`
-  - Auth: `login.microsoftonline.com`, `user.auth.xboxlive.com`, `xsts.auth.xboxlive.com`
   - Fabric / Quilt / Legacy Fabric: `meta.fabricmc.net`, `maven.fabricmc.net`, `meta.quiltmc.org`, `maven.quiltmc.org`, `meta.legacyfabric.net`, `maven.legacyfabric.net` (→ `repo.legacyfabric.net`'e yönlendirir)
   - Forge / NeoForge: `files.minecraftforge.net`, `maven.minecraftforge.net`, `maven.neoforged.net`, `repo1.maven.org` (eski Forge bağımlılıkları)
   - Modrinth: `api.modrinth.com`, `cdn.modrinth.com` (+ mrpack spec'inin izin verdiği `github.com`, `raw.githubusercontent.com`, `gitlab.com`)
@@ -226,10 +222,7 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 ## 7. Kimlik Doğrulama
 
 - **Offline:** ad `^[A-Za-z0-9_]{3,16}$`; UUID = MD5 tabanlı v3 (`OfflinePlayer:<ad>`), Java `UUID.nameUUIDFromBytes` ile birebir; birim testiyle doğrulanır. UI "premium değil" rozeti + çevrimiçi sunucu kısıtı açıklaması gösterir.
-- **Microsoft:** OAuth2 device code (`/consumers/oauth2/v2.0/devicecode`, scope `XboxLive.signin offline_access`) → XBL → XSTS → `login_with_xbox` → `/entitlements/mcstore` + `/minecraft/profile`.
-  - **Karar K8:** `client_id` sırasıyla `MEHBURMC_MSA_CLIENT_ID` ortam değişkeninden, sonra `settings.json → auth.msaClientId`'den okunur. **Koda ve repoya gömülmez.** Tanımlı değilse Microsoft girişi butonu devre dışıdır ve nedeni açıklanır. Mojang onayı alınana kadar offline mod tam çalışır.
-  - Refresh token → `keyring` (servis: `MehburMC Launcher`, kullanıcı: hesap UUID'si). Access token yalnızca bellekte tutulur.
-  - Sahiplik doğrulanamayan hesapta skin/cape API özellikleri kapatılır.
+- **Microsoft (premium) girişi yok** (K39): kullanıcı isteğiyle kaldırıldı. Launcher yalnızca offline hesaplarla çalışır; çevrimiçi (online-mode) sunucular desteklenmez.
 - **Log maskeleme:** `tracing` katmanı token, `accessToken`, `--accessToken <x>` ve JWT kalıplarını `***` ile değiştirir. Oyun komut satırı loglanırken token argümanı maskelenir.
 
 ---
@@ -275,7 +268,7 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 | R1 | **Yeni sürüm şeması:** Mojang yıl tabanlı sürümlere geçti (güncel release `26.3`, snapshot `26.4-snapshot-2`). NeoForge `26.3.0.x` biçiminde. | Sürüm karşılaştırma ve NeoForge↔MC eşlemesi kırılabilir. | Karşılaştırıcı iki şemayı da destekler. Eşleme: major ≤ 21 ise `X.Y.z → 1.X.Y` (`Y=0` → `1.X`); major ≥ 26 ise `X.Y.Z.b → X.Y[.Z]`. Gerçek metadata ile test edilir. |
 | R2 | **Windows komut satırı sınırı (32.767 karakter):** Forge/NeoForge classpath'leri bu sınırı aşabilir. | Oyun başlamaz. | Java ≥ 9 → `@argfile`. Java 8 → sınır aşılırsa "pathing jar" (manifest `Class-Path`). |
 | R3 | **Java 25 gereksinimi:** 26.x sürümleri `javaVersion.majorVersion = 25` istiyor. | Eski runtime ile çökme. | `runtime\java{major}` dinamik; Adoptium'da 8/11/17/21/25 LTS mevcut (doğrulandı). Windows ARM64'te Java 8 yoksa x64'e geri düşülür. |
-| R4 | **Microsoft girişi Mojang onayı gerektirir.** | Onay olmadan `login_with_xbox` 403 döner. | K8: client_id dışarıdan alınır; offline mod tam işlevseldir. |
+| R4 | ~~**Microsoft girişi Mojang onayı gerektirir.**~~ (K39 ile geçersiz: Microsoft girişi yok) | Onay olmadan `login_with_xbox` 403 döner. | K8: client_id dışarıdan alınır; offline mod tam işlevseldir. |
 | R5 | **Forge installer çeşitliliği:** 1.5–1.12 arası eski installer'ların headless modu yok; modern installer mc kökünde `launcher_profiles.json` ister. | Kurulum başarısız olur. | Eski installer'larda `install_profile.json` (spec 0) elle ayrıştırılır, universal jar `libraries\`'e çıkarılır. Modern installer'da geçici `launcher_profiles.json` oluşturulur, kurulum sonrası silinir, kurulum global kilitle yapılır. |
 | R6 | **OptiFine'ın API'si yok.** | Otomatik kurulum yapılamaz. | Yalnızca kullanıcının kendi indirdiği jar içe aktarılır (Forge → `mods\`). Modern sürümlerde Sodium+Iris / Embeddium+Oculus tek tıkla önerilir. Ayrıntılar Faz 4'te araştırılır. |
 | R7 | **Private repo + auto-update:** updater, `latest.json`'a herkese açık erişim ister. | Depo private iken güncelleme çalışmaz. | Updater altyapısı Faz 8'de kurulur. Depo public olana kadar (ya da ayrı bir public release deposu açılana kadar) güncelleme kanalı devre dışıdır. İmzalama anahtarı yalnızca GitHub Secrets'ta durur. |
@@ -299,7 +292,7 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 | 2 | Core/Vanilla: manifest, indirici, kütüphane/asset/native, Java, offline başlatma (CLI) |
 | 3 | Instance sistemi + ana ekranlar + konsol + indirme kuyruğu |
 | 4 | Loader'lar: Fabric → Quilt → Legacy Fabric → Forge → NeoForge → OptiFine/Iris |
-| 5 | Microsoft hesapları, keyring, çoklu hesap |
+| 5 | ~~Microsoft hesapları~~ — kullanıcı isteğiyle kaldırıldı (K39); çoklu offline hesap Faz 3'te mevcut |
 | 6 | Modrinth / mrpack / CurseForge, bağımlılık çözümü, güncelleme |
 | 7 | Skin/Cape yöneticisi + skinview3d |
 | 8 | Cila: animasyon, haberler, crash analizi, portable, updater, installer |
@@ -348,7 +341,4 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 | 2026-10-03 | K32: OptiFine — API ve yeniden dağıtım izni yok; kullanıcı jar'ı seçer, `loaders/optifine/`'a kopyalanır, `changelog.txt` ilk satırından sürüm okunur. Kurulum HMCL yöntemiyle: `optifine.Patcher` vanilla jar'a karşı `optifine:OptiFine` kütüphanesini üretir, gömülü `launchwrapper-of` çıkarılır, `--tweakClass optifine.OptiFineTweaker`. Forge ile OptiFine = jar'ı `mods/`'a koymak. |
 | 2026-10-03 | K33: "Shader desteği" — Modrinth'ten Iris + Sodium (Fabric/Quilt/NeoForge) veya Oculus + Embeddium (Forge), zorunlu bağımlılıklarla (sabitlenmiş sürüm önceliklidir), SHA-512 doğrulamalı. Aynı projenin jar'ı zaten varsa atlanır. Tam Modrinth istemcisi Faz 6'da. |
 | 2026-10-03 | K34: NeoForge erken yükleme penceresi bazı sürücülerde devirde native çöküyor (`0xC000041D`, RTX 5060'ta 26.3 ile görüldü). NeoForge'un resmi önerisi uygulanır: 90 sn içinde negatif (NTSTATUS) çıkış kodu → `config/fml.toml` `earlyWindowControl=false` → bir kez otomatik yeniden başlatma. |
-| 2026-10-03 | K35: Microsoft girişi — device code → XBL → XSTS → `login_with_xbox` → `/minecraft/profile`. Sahiplik ölçütü profilin varlığıdır (Game Pass dahil); 404 = `auth.noProfile`. XSTS `XErr` kodları (2148916233/35/36/37/38) ayrı mesajlara çevrilir; `login_with_xbox` 403 = uygulama Mojang onaylı değil (R4). xuid, Minecraft token'ının JWT yükünden okunur. |
-| 2026-10-03 | K36: Refresh token yalnızca OS anahtar deposunda (`keyring` 4, servis `MehburMC Launcher`, kullanıcı = hesap id'si). Windows'ta kayıt başına 2560 bayt sınırı yüzünden değer 1000 karakterlik parçalara bölünür (`<id>` → `chunks:n`, `<id>#i`). Microsoft her yenilemede yeni refresh token verir, saklanan güncellenir. Access token yalnızca bellekte, süresine 5 dk kala yenilenir. |
-| 2026-10-03 | K37: Hesap çözümü OYNA görevinin içinde yapılır (ağ gerekebilir). Refresh reddedilirse (`invalid_grant`) hesap `needsLogin` işaretlenir ve kullanıcıdan yeniden giriş istenir. Ağ yoksa / Microsoft 5xx dönerse son bilinen ad + UUID ile `accessToken=0` başlatılır (yalnızca tek oyunculu, §4.2). |
-| 2026-10-03 | K38: Giriş UI'ı iki adımlı IPC: `begin_microsoft_login` (kod) + `finish_microsoft_login` (bekler, iptal edilebilir). Doğrulama sayfası Rust tarafından, yalnızca Microsoft alan adlarıysa tarayıcıda açılır; webview'a URL açma yetkisi verilmez. client_id ayarlar ekranından girilebilir (K8 korunur: koda/repoya gömülmez). |
+| 2026-10-03 | K39: Microsoft (premium) girişi kullanıcı isteğiyle tamamen kaldırıldı: device code akışı, keyring, `msaClientId` ayarı, Xbox/Microsoft giriş host'ları (allowlist) ve UI. `AccountKind` yalnızca `offline`; eski `accounts.json` içindeki Microsoft kayıtları okunurken atlanır. Uygulama git geçmişinde (`467ba34`) duruyor. |
