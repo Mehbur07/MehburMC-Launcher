@@ -16,7 +16,12 @@ pub fn add_offline_account(state: State<'_, AppState>, name: String) -> CmdResul
 
 #[tauri::command]
 pub fn remove_account(state: State<'_, AppState>, id: String) -> CmdResult<AccountsView> {
-    Ok(state.launcher()?.accounts.remove(&id)?)
+    let launcher = state.launcher()?;
+    let view = launcher.accounts.remove(&id)?;
+    if let Err(e) = launcher.skins.forget_account(&id) {
+        tracing::warn!(error = %e.detail(), "could not clear skin assignment");
+    }
+    Ok(view)
 }
 
 #[tauri::command]

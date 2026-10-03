@@ -154,6 +154,15 @@ pub enum CoreError {
         loader: String,
         mc: String,
     },
+
+    #[error("invalid skin or cape image: {0}")]
+    SkinInvalid(String),
+
+    #[error("skin or cape {0} was not found")]
+    SkinNotFound(String),
+
+    #[error("no Minecraft player named {0}")]
+    PlayerNotFound(String),
 }
 
 impl CoreError {
@@ -205,6 +214,9 @@ impl CoreError {
             Self::AddonUnavailable { .. } => "loader.addonUnavailable",
             Self::ModpackInvalid(_) => "content.modpackInvalid",
             Self::CurseForgeKey => "content.curseforgeKey",
+            Self::SkinInvalid(_) => "skin.invalid",
+            Self::SkinNotFound(_) => "skin.notFound",
+            Self::PlayerNotFound(_) => "skin.playerNotFound",
         }
     }
 
@@ -283,7 +295,11 @@ impl CoreError {
                 put("loader", loader.clone());
                 put("mc", mc.clone());
             }
-            Self::ModpackInvalid(reason) => put("reason", reason.clone()),
+            Self::ModpackInvalid(reason) | Self::SkinInvalid(reason) => {
+                put("reason", reason.clone())
+            }
+            Self::SkinNotFound(id) => put("id", id.clone()),
+            Self::PlayerNotFound(name) => put("name", name.clone()),
             Self::NoDataDir | Self::Cancelled | Self::NoAccount | Self::CurseForgeKey => {}
         }
         p

@@ -1,4 +1,4 @@
-import { Check, Info, Trash2, UserPlus, UserRound } from "lucide-react";
+import { Check, Info, Shirt, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -6,6 +6,9 @@ import { Badge, Button, ConfirmDialog, IconButton, TextInput } from "../../compo
 import type { Account } from "../../lib/ipc/bindings/Account";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
 import { useAccounts } from "../../stores/accounts";
+import { useApp } from "../../stores/app";
+import { accountSkin, useSkins } from "../../stores/skins";
+import { SkinThumb } from "../skins/SkinThumb";
 
 const NAME_RE = /^[A-Za-z0-9_]{3,16}$/;
 
@@ -19,6 +22,8 @@ export function AccountsPage() {
   const [name, setName] = useState("");
   const [error, setError] = useState<ErrorPayload | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Account | null>(null);
+  const skins = useSkins();
+  const setView = useApp((s) => s.setView);
 
   const valid = NAME_RE.test(name);
   const add = async () => {
@@ -76,9 +81,12 @@ export function AccountsPage() {
                 active ? "border-accent/60 neon-ring" : "border-line"
               }`}
             >
-              <div className="grid h-10 w-10 place-items-center rounded-md bg-surface-3">
-                <UserRound size={20} className="text-accent" />
-              </div>
+              <SkinThumb
+                src={accountSkin(skins, a.id)?.dataUri ?? null}
+                variant="head"
+                unit={5}
+                className="h-10 w-10 rounded-md bg-surface-3"
+              />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 font-semibold">
                   {a.name}
@@ -98,6 +106,9 @@ export function AccountsPage() {
                   {t("accounts.use")}
                 </Button>
               )}
+              <IconButton label={t("accounts.editSkin")} onClick={() => setView("skins")}>
+                <Shirt size={15} />
+              </IconButton>
               <IconButton
                 label={t("common.delete")}
                 onClick={() => setPendingDelete(a)}

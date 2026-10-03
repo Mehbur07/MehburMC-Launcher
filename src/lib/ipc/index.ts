@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
 import type { Account } from "./bindings/Account";
+import type { Assignment } from "./bindings/Assignment";
 import type { AccountsView } from "./bindings/AccountsView";
 import type { Bootstrap } from "./bindings/Bootstrap";
 import type { CoreEvent } from "./bindings/CoreEvent";
@@ -16,17 +17,21 @@ import type { Instance } from "./bindings/Instance";
 import type { InstancePatch } from "./bindings/InstancePatch";
 import type { InstancesView } from "./bindings/InstancesView";
 import type { JavaInstall } from "./bindings/JavaInstall";
+import type { LibraryView } from "./bindings/LibraryView";
 import type { LoaderKind } from "./bindings/LoaderKind";
 import type { LoaderVersion } from "./bindings/LoaderVersion";
 import type { ManifestEntry } from "./bindings/ManifestEntry";
 import type { NewInstance } from "./bindings/NewInstance";
 import type { OptifineInfo } from "./bindings/OptifineInfo";
+import type { PlayerImport } from "./bindings/PlayerImport";
 import type { ProjectType } from "./bindings/ProjectType";
 import type { SearchPage } from "./bindings/SearchPage";
 import type { SearchQuery } from "./bindings/SearchQuery";
+import type { SkinModel } from "./bindings/SkinModel";
 import type { VersionSummary } from "./bindings/VersionSummary";
 import type { Settings } from "./bindings/Settings";
 import type { TaskInfo } from "./bindings/TaskInfo";
+import type { TextureKind } from "./bindings/TextureKind";
 
 /** Typed wrappers around the Rust commands (see src-tauri/src/commands). */
 export const ipc = {
@@ -93,6 +98,17 @@ export const ipc = {
     invoke<ImportResult>("install_modrinth_modpack", { versionId }),
   contentIcon: (url: string) => invoke<string>("content_icon", { url }),
   openExternal: (url: string) => invoke<void>("open_external", { url }),
+
+  listSkins: () => invoke<LibraryView>("list_skins"),
+  importSkinFile: (kind: TextureKind, path: string, model?: SkinModel) =>
+    invoke<string>("import_skin_file", { kind, path, model }),
+  importPlayerSkin: (name: string) => invoke<PlayerImport>("import_player_skin", { name }),
+  updateSkin: (kind: TextureKind, id: string, name?: string, model?: SkinModel) =>
+    invoke<void>("update_skin", { kind, id, name, model }),
+  deleteSkin: (kind: TextureKind, id: string) => invoke<void>("delete_skin", { kind, id }),
+  assignSkin: (accountId: string, kind: TextureKind, id: string | null) =>
+    invoke<Record<string, Assignment>>("assign_skin", { accountId, kind, id }),
+  exportSkin: (id: string, dest: string) => invoke<void>("export_skin", { id, dest }),
 };
 
 export type GameLogEvent = Extract<CoreEvent, { type: "gameLog" }>;

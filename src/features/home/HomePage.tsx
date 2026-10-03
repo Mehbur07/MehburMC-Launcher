@@ -1,14 +1,4 @@
-import {
-  Clock,
-  MemoryStick,
-  Play,
-  Plus,
-  Square,
-  SquareTerminal,
-  Timer,
-  UserRound,
-  X,
-} from "lucide-react";
+import { Clock, MemoryStick, Play, Plus, Square, SquareTerminal, Timer, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { InstanceIcon } from "../../components/InstanceIcon";
@@ -19,8 +9,10 @@ import { ipc } from "../../lib/ipc";
 import { selectedAccount, useAccounts } from "../../stores/accounts";
 import { useApp } from "../../stores/app";
 import { selectedInstance, useInstances } from "../../stores/instances";
+import { accountSkin, useSkins } from "../../stores/skins";
 import { activeTaskFor, fraction, useTasks } from "../../stores/tasks";
 import { loaderLabel, usePlayTimeUnits } from "../instances/InstancesPage";
+import { SkinThumb } from "../skins/SkinThumb";
 
 export function HomePage() {
   const { t, i18n } = useTranslation();
@@ -29,6 +21,7 @@ export function HomePage() {
   const instances = useInstances((s) => s.instances);
   const select = useInstances((s) => s.select);
   const account = useAccounts(selectedAccount);
+  const skin = useSkins((s) => accountSkin(s, account?.id));
   const defaultMem = useApp((s) => s.settings?.defaultMemoryMb ?? 4096);
   const setView = useApp((s) => s.setView);
   const setWizard = useApp((s) => s.setWizard);
@@ -99,7 +92,12 @@ export function HomePage() {
               onClick={() => setView("accounts")}
               className="flex items-center justify-end gap-2 text-xs text-muted hover:text-accent"
             >
-              <UserRound size={14} />
+              <SkinThumb
+                src={skin?.dataUri ?? null}
+                variant="head"
+                unit={2}
+                className="h-4 w-4 rounded-sm"
+              />
               {account ? account.name : t("home.noAccount")}
               {account?.kind === "offline" && <Badge tone="warn">{t("accounts.notPremium")}</Badge>}
             </button>

@@ -29,10 +29,6 @@
     "showConsole": "Show console",
     "switch": "Switch instance"
   },
-  "comingSoon": {
-    "title": "Coming soon",
-    "body": "This screen arrives in phase {{phase}}."
-  },
   "settings": {
     "title": "Settings",
     "appearance": "Appearance",
@@ -152,6 +148,12 @@
     "content": {
       "modpackInvalid": "Invalid modpack: {{reason}}",
       "curseforgeKey": "A valid CurseForge API key is required for this modpack (Settings → Advanced)."
+    },
+    "skin": {
+      "invalid": "Invalid skin/cape image: {{reason}}",
+      "notFound": "Skin or cape not found.",
+      "playerNotFound": "No Minecraft player named \"{{name}}\" was found.",
+      "noTextures": "This player has no custom skin or cape."
     }
   },
   "instances": {
@@ -306,9 +308,10 @@
     "notPremium": "not premium",
     "active": "Active",
     "use": "Use",
-    "offlineServers": "Offline accounts cannot join online-mode servers and skins show as the default in game.",
+    "offlineServers": "Offline accounts cannot join online-mode servers. Skins only show in game in instances with CustomSkinLoader.",
     "removeTitle": "Remove account?",
-    "removeBody": "\"{{name}}\" will be removed from the list."
+    "removeBody": "\"{{name}}\" will be removed from the list.",
+    "editSkin": "Edit skin"
   },
   "loader": {
     "version": "Loader version",
@@ -378,5 +381,55 @@
     "blockedTitle": "{{count}} files need a manual download",
     "blockedBody": "Their authors disabled third-party downloads. Download them from the page and put them into the shown folder.",
     "download": "Download"
+  },
+  "skins": {
+    "account": "Account",
+    "noAccount": "Add an offline account first to assign skins.",
+    "noSkin": "No skin selected — the default skin is used in game.",
+    "pose": {
+      "idle": "Idle",
+      "walk": "Walk",
+      "run": "Run"
+    },
+    "showElytra": "Show elytra",
+    "showCape": "Show cape",
+    "skin": "Skin",
+    "cape": "Cape",
+    "default": "Default",
+    "none": "None",
+    "model": {
+      "classic": "Classic",
+      "slim": "Slim"
+    },
+    "apply": "Apply to {{name}}",
+    "appliedTo": "Showing {{name}}'s skin. Click a card to preview it.",
+    "applied": "Used by this account",
+    "tabSkins": "Skins ({{count}})",
+    "tabCapes": "Capes ({{count}})",
+    "importSkin": "Add skin from file",
+    "importCape": "Add cape from file",
+    "playerPlaceholder": "Premium player name (e.g. jeb_)",
+    "fetchPlayer": "Get skin",
+    "playerHint": "Copies a premium player's public skin and cape into your library.",
+    "noCape": "No cape",
+    "emptySkins": "No skins yet",
+    "emptySkinsHint": "Add a 64×64 or 64×32 PNG, or get a skin from a player name.",
+    "emptyCapes": "No capes yet",
+    "emptyCapesHint": "Add a 64×32 cape PNG. Capes fetched from premium players show up here too.",
+    "preview": "Preview {{name}}",
+    "toggleModel": "Switch arm model (Classic / Slim)",
+    "rename": "Rename",
+    "export": "Save as PNG",
+    "deleteTitle": "Delete?",
+    "deleteBody": "\"{{name}}\" will be deleted from the library and removed from accounts using it.",
+    "inGame": {
+      "title": "Show in game",
+      "body": "Offline skins are invisible in the vanilla game. In instances with the CustomSkinLoader mod, the launcher hands the selected account's skin and cape to the game every time you press PLAY.",
+      "noModded": "You have no Fabric, Quilt, Forge or NeoForge instance. Create one to see your skin in game.",
+      "installed": "CustomSkinLoader installed",
+      "install": "Install CustomSkinLoader",
+      "vanillaNote": "In Vanilla, OptiFine and Legacy Fabric instances the skin only shows in the launcher preview. Other players only see your skin if they also run CustomSkinLoader and have the same file.",
+      "syncNote": "The skin is refreshed on every launch; restart the game after changing it."
+    }
   }
 }

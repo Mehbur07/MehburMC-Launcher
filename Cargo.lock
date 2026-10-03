@@ -2329,6 +2329,7 @@ dependencies = [
  "futures-util",
  "hex",
  "md-5",
+ "png 0.18.1",
  "regex",
  "reqwest",
  "serde",

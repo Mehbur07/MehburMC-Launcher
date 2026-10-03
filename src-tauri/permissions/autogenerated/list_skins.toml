@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-list-skins"
+description = "Enables the list_skins command without any pre-configured scope."
+commands.allow = ["list_skins"]
+
+[[permission]]
+identifier = "deny-list-skins"
+description = "Denies the list_skins command without any pre-configured scope."
+commands.deny = ["list_skins"]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-export-skin"
+description = "Enables the export_skin command without any pre-configured scope."
+commands.allow = ["export_skin"]
+
+[[permission]]
+identifier = "deny-export-skin"
+description = "Denies the export_skin command without any pre-configured scope."
+commands.deny = ["export_skin"]

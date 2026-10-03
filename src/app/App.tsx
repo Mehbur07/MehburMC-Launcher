@@ -1,5 +1,5 @@
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ErrorNotice } from "../components/ErrorNotice";
@@ -15,13 +15,16 @@ import { InstanceDetail } from "../features/instance-detail/InstanceDetail";
 import { CreateWizard } from "../features/instances/CreateWizard";
 import { InstancesPage } from "../features/instances/InstancesPage";
 import { BrowsePage } from "../features/browse/BrowsePage";
-import { ComingSoon } from "../features/placeholder/ComingSoon";
 import { SettingsPage } from "../features/settings/SettingsPage";
 import { applyLanguage } from "../i18n";
 import { useAccounts } from "../stores/accounts";
 import { useApp, type View } from "../stores/app";
 import { useInstances } from "../stores/instances";
+import { useSkins } from "../stores/skins";
 import { connectEvents } from "./events";
+
+// three.js + skinview3d are only loaded when the skins screen opens.
+const SkinsPage = lazy(() => import("../features/skins/SkinsPage"));
 
 function Page({ view }: { view: View }) {
   switch (view) {
@@ -41,8 +44,12 @@ function Page({ view }: { view: View }) {
       return <SettingsPage />;
     case "browse":
       return <BrowsePage />;
-    default:
-      return <ComingSoon view={view} />;
+    case "skins":
+      return (
+        <Suspense fallback={<Logo className="mx-auto mt-24 h-10 w-10 animate-pulse text-accent" />}>
+          <SkinsPage />
+        </Suspense>
+      );
   }
 }
 
@@ -51,6 +58,7 @@ export function App() {
   const { status, settings, view, notice, fatal, load, dismissNotice } = useApp();
   const loadInstances = useInstances((s) => s.load);
   const loadAccounts = useAccounts((s) => s.load);
+  const loadSkins = useSkins((s) => s.load);
 
   useEffect(() => {
     void load();
@@ -67,11 +75,12 @@ export function App() {
     });
     void loadInstances();
     void loadAccounts();
+    void loadSkins();
     return () => {
       cancelled = true;
       unlisten?.();
     };
-  }, [status, loadInstances, loadAccounts]);
+  }, [status, loadInstances, loadAccounts, loadSkins]);
 
   // Apply theme + language whenever settings change.
   useEffect(() => {

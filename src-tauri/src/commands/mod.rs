@@ -7,6 +7,7 @@ pub mod files;
 pub mod instances;
 pub mod loaders;
 pub mod play;
+pub mod skins;
 
 use launcher_core::{CoreError, ErrorPayload, PathsInfo, Settings};
 use serde::Serialize;

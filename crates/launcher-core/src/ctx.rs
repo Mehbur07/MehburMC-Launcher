@@ -24,6 +24,10 @@ pub struct Endpoints {
     pub neoforge_maven: String,
     pub modrinth: String,
     pub curseforge: String,
+    /// Player name → UUID lookup.
+    pub mojang_services: String,
+    /// Profile textures by UUID.
+    pub session_server: String,
 }
 
 impl Default for Endpoints {
@@ -41,6 +45,8 @@ impl Default for Endpoints {
             neoforge_maven: "https://maven.neoforged.net".into(),
             modrinth: "https://api.modrinth.com".into(),
             curseforge: "https://api.curseforge.com".into(),
+            mojang_services: "https://api.minecraftservices.com".into(),
+            session_server: "https://sessionserver.mojang.com".into(),
         }
     }
 }

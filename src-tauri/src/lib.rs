@@ -5,7 +5,7 @@ mod state;
 use tauri::window::Color;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
-use crate::commands::{accounts, content, files, instances, loaders, play};
+use crate::commands::{accounts, content, files, instances, loaders, play, skins};
 use crate::state::AppState;
 
 /// Matches `--mc-bg` so the window never flashes white before the UI paints.
@@ -96,6 +96,13 @@ pub fn run() {
             content::install_modrinth_modpack,
             content::content_icon,
             content::open_external,
+            skins::list_skins,
+            skins::import_skin_file,
+            skins::import_player_skin,
+            skins::update_skin,
+            skins::delete_skin,
+            skins::assign_skin,
+            skins::export_skin,
         ])
         .run(tauri::generate_context!())
         .expect("error while running MehburMC Launcher");

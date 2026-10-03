@@ -26,6 +26,7 @@ pub mod paths;
 pub mod rules;
 pub mod session;
 pub mod settings;
+pub mod skin;
 pub mod state;
 pub mod tasks;
 pub mod version;

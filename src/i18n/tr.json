@@ -29,10 +29,6 @@
     "showConsole": "Konsolu göster",
     "switch": "Profil değiştir"
   },
-  "comingSoon": {
-    "title": "Yakında",
-    "body": "Bu ekran {{phase}}. fazda eklenecek."
-  },
   "settings": {
     "title": "Ayarlar",
     "appearance": "Görünüm",
@@ -152,6 +148,12 @@
     "content": {
       "modpackInvalid": "Geçersiz modpack: {{reason}}",
       "curseforgeKey": "CurseForge modpack'i için geçerli bir API anahtarı gerekiyor (Ayarlar → Gelişmiş)."
+    },
+    "skin": {
+      "invalid": "Geçersiz skin/pelerin görseli: {{reason}}",
+      "notFound": "Skin veya pelerin bulunamadı.",
+      "playerNotFound": "\"{{name}}\" adında bir Minecraft oyuncusu bulunamadı.",
+      "noTextures": "Bu oyuncunun özel bir skin'i veya pelerini yok."
     }
   },
   "instances": {
@@ -306,9 +308,10 @@
     "notPremium": "premium değil",
     "active": "Aktif",
     "use": "Kullan",
-    "offlineServers": "Offline hesaplar çevrimiçi (online-mode) sunuculara giremez ve skin'ler oyunda varsayılan görünür.",
+    "offlineServers": "Offline hesaplar çevrimiçi (online-mode) sunuculara giremez. Skin'ler oyunda yalnızca CustomSkinLoader kurulu profillerde görünür.",
     "removeTitle": "Hesap kaldırılsın mı?",
-    "removeBody": "\"{{name}}\" hesabı listeden kaldırılacak."
+    "removeBody": "\"{{name}}\" hesabı listeden kaldırılacak.",
+    "editSkin": "Skin'i düzenle"
   },
   "loader": {
     "version": "Loader sürümü",
@@ -378,5 +381,55 @@
     "blockedTitle": "{{count}} dosya elle indirilmeli",
     "blockedBody": "Bu dosyaların yazarları üçüncü taraf indirmeyi kapatmış. Sayfadan indirip belirtilen klasöre koy.",
     "download": "İndir"
+  },
+  "skins": {
+    "account": "Hesap",
+    "noAccount": "Skin atamak için önce bir offline hesap ekle.",
+    "noSkin": "Skin seçilmedi — oyunda varsayılan skin görünür.",
+    "pose": {
+      "idle": "Dur",
+      "walk": "Yürü",
+      "run": "Koş"
+    },
+    "showElytra": "Elytra göster",
+    "showCape": "Pelerin göster",
+    "skin": "Skin",
+    "cape": "Pelerin",
+    "default": "Varsayılan",
+    "none": "Yok",
+    "model": {
+      "classic": "Klasik",
+      "slim": "İnce"
+    },
+    "apply": "{{name}} için uygula",
+    "appliedTo": "Gösterilen: {{name}} hesabının skin'i. Önizlemek için bir karta tıkla.",
+    "applied": "Bu hesapta kullanılıyor",
+    "tabSkins": "Skinler ({{count}})",
+    "tabCapes": "Pelerinler ({{count}})",
+    "importSkin": "Dosyadan skin ekle",
+    "importCape": "Dosyadan pelerin ekle",
+    "playerPlaceholder": "Premium oyuncu adı (ör. jeb_)",
+    "fetchPlayer": "Skin'i al",
+    "playerHint": "Bir premium oyuncunun herkese açık skin'ini ve pelerinini kütüphaneye kopyalar.",
+    "noCape": "Pelerinsiz",
+    "emptySkins": "Henüz skin yok",
+    "emptySkinsHint": "64×64 veya 64×32 PNG ekle ya da bir oyuncu adından skin al.",
+    "emptyCapes": "Henüz pelerin yok",
+    "emptyCapesHint": "64×32 pelerin PNG'si ekle. Premium oyuncudan alınan pelerinler de burada görünür.",
+    "preview": "{{name}} önizle",
+    "toggleModel": "Kol modelini değiştir (Klasik / İnce)",
+    "rename": "Yeniden adlandır",
+    "export": "PNG olarak kaydet",
+    "deleteTitle": "Silinsin mi?",
+    "deleteBody": "\"{{name}}\" kütüphaneden silinecek ve onu kullanan hesaplardan kaldırılacak.",
+    "inGame": {
+      "title": "Oyunda göster",
+      "body": "Offline skin'ler vanilla oyunda görünmez. CustomSkinLoader modu kurulu profillerde launcher, OYNA'ya bastığında seçili hesabın skin'ini ve pelerinini otomatik olarak oyuna aktarır.",
+      "noModded": "Fabric, Quilt, Forge veya NeoForge profilin yok. Skin'ini oyunda görmek için böyle bir profil oluştur.",
+      "installed": "CustomSkinLoader kurulu",
+      "install": "CustomSkinLoader kur",
+      "vanillaNote": "Vanilla, OptiFine ve Legacy Fabric profillerinde skin yalnızca launcher önizlemesinde görünür. Diğer oyuncular skin'ini yalnızca onlarda da CustomSkinLoader varsa ve aynı dosya kendilerinde bulunuyorsa görür.",
+      "syncNote": "Skin her başlatmada güncellenir; değişiklik için oyunu yeniden başlat."
+    }
   }
 }

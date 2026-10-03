@@ -29,6 +29,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-i18next": "^17.0.15",
+    "skinview3d": "^3.4.2",
     "zustand": "^5.0.15"
   },
   "devDependencies": {

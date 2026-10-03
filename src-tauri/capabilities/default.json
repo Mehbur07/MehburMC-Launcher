@@ -58,6 +58,13 @@
     "allow-import-modpack",
     "allow-install-modrinth-modpack",
     "allow-content-icon",
-    "allow-open-external"
+    "allow-open-external",
+    "allow-list-skins",
+    "allow-import-skin-file",
+    "allow-import-player-skin",
+    "allow-update-skin",
+    "allow-delete-skin",
+    "allow-assign-skin",
+    "allow-export-skin"
   ]
 }

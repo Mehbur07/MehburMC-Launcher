@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-import-player-skin"
+description = "Enables the import_player_skin command without any pre-configured scope."
+commands.allow = ["import_player_skin"]
+
+[[permission]]
+identifier = "deny-import-player-skin"
+description = "Denies the import_player_skin command without any pre-configured scope."
+commands.deny = ["import_player_skin"]

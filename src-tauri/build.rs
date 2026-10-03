@@ -45,6 +45,13 @@ const COMMANDS: &[&str] = &[
     "install_modrinth_modpack",
     "content_icon",
     "open_external",
+    "list_skins",
+    "import_skin_file",
+    "import_player_skin",
+    "update_skin",
+    "delete_skin",
+    "assign_skin",
+    "export_skin",
 ];
 
 fn main() {

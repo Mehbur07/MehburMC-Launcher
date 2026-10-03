@@ -1,6 +1,6 @@
 # MehburMC Launcher — Mimari
 
-> Durum: **Onaylandı (2026-10-03). Faz 6 tamamlandı; Faz 5 iptal edildi (K39).** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
+> Durum: **Onaylandı (2026-10-03). Faz 7 tamamlandı; Faz 5 iptal edildi (K39).** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
 
 MehburMC Launcher; Windows öncelikli (Linux/macOS'a taşınabilir), açık mimarili, reklamsız, telemetrisiz bir Minecraft Java Edition launcher'ıdır. SKLauncher'ın özellik zenginliğini (offline hesaplar, skin/cape, modpack, loader desteği, portable) ve Legacy Launcher'ın hafifliğini / izole profil yapısını birleştirir.
 
@@ -108,7 +108,8 @@ launcher-core
 │   ├── offline     ad doğrulama, UUID v3 ("OfflinePlayer:<ad>")
 │   └── store       accounts.json (offline hesaplar)
 ├── content      Modrinth v2, CurseForge (kullanıcı anahtarı), mrpack/CF zip, bağımlılık çözümü
-├── skin         doğrulama (64x64 / 64x32), Mojang skin/cape API, CustomSkinLoader kurulumu
+├── skin         kütüphane (library.json + textures/<sha1>.png), PNG doğrulama, slim algılama,
+│                premium oyuncudan skin alma, CustomSkinLoader eşitleme (K44–K46)
 ├── news         Mojang launcher içerik feed'i (hata → boş liste)
 └── crash        log/crash-report kalıp eşleme → teşhis ipuçları
 ```
@@ -346,3 +347,6 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 | 2026-10-04 | K41: Kurulu içerik SHA-1 ile Modrinth'te tanınır (`version_files`); hash'ler `cache/content-hashes.json`'da yol+boyut+mtime anahtarıyla önbelleklenir. Güncelleme `version_files/update` ile; yeni dosya indirilip doğrulanınca eskisi silinir, `.disabled` durumu korunur. Çevrimdışıyken liste metadata'sız gösterilir. |
 | 2026-10-04 | K42: Modpack — `.mrpack`: `client: unsupported` dosyalar atlanır, yollar zip-slip kontrolünden geçer, SHA-512/SHA-1 zorunlu, önce `overrides/` sonra `client-overrides/` (üzerine yazarak). CurseForge `.zip`: kullanıcının kendi API anahtarı (`settings.curseforgeApiKey`), `/v1/mods/files` + `/v1/mods` (classId → klasör); yazarın engellediği dosyalar sayfa bağlantısıyla listelenir. Loader sürümü gerçek listeden eşlenir (`47.2.0` → `1.20.1-47.2.0`). Başarısız içe aktarma profili siler; içe aktarma bir `Install` görevi olarak İndirmeler'de görünür. mrpack spec'i GitHub/GitLab aynalarına izin verdiği için `github.com` artık yol öneki olmadan izinli (dosyalar hash ile doğrulanır). |
 | 2026-10-04 | K43: Proje ikonları CSP nedeniyle webview'da yüklenmez; Rust indirir (allowlist), `cache/icons/`'a yazar, yalnızca PNG/JPEG/GIF/WebP'yi (`data:` URI) döndürür — SVG reddedilir. Modrinth/CurseForge sayfaları yalnızca bu alan adları için Rust tarafında tarayıcıda açılır. |
+| 2026-10-04 | K44: Skin kütüphanesi — dokular içerik adreslidir (`skins/textures/<sha1>.png`), metadata ve hesap→skin/pelerin atamaları `skins/library.json`'da (`accounts.json` değişmez). PNG tamamen çözülür (`png` crate); skin 64×64 / 64×32 ve HD katları (≤1024), pelerin 64×32 / 22×17 ve katları, dosya ≤2 MB. Kol modeli verilmezse kolun dış sütunundan (şeffaf veya opak siyah) slim algılanır. Hesap silinince ataması da silinir. |
+| 2026-10-04 | K45: Oyunda gösterim — OYNA'da instance'ın `mods/` klasöründe etkin bir CustomSkinLoader jar'ı varsa seçili hesabın dokuları `CustomSkinLoader/MehburMC/{slim,classic,capes}/<ad>.png`'ye yazılır (yalnızca bu klasöre dokunulur; aynı içerikse mtime korunur). İki `ExtraList` girdisi (`MehburMC-Slim`/`-Classic`, tür `Legacy`, sabit model) CSL tarafından yükleme listesinin başına eklenir, böylece premium ad çakışmasında Mojang skini yerine yerel skin gelir; girdiler CSL config'inde zaten varsa tekrar yazılmaz. Eşitleme hatası başlatmayı engellemez. CSL (Modrinth `idMHQ4n2`, GPL-3.0) launcher'a gömülmez; mevcut içerik kurucusuyla indirilir. |
+| 2026-10-04 | K46: Premium oyuncudan skin alma — `api.minecraftservices.com/minecraft/profile/lookup/name/<ad>` → `sessionserver.mojang.com/session/minecraft/profile/<uuid>` → `textures.minecraft.net` (profilde `http://` olarak gelen adres HTTPS'e çevrilir). Giriş gerekmez; yeni allowlist host'u yok. 3B önizleme skinview3d (three.js) ile, sayfa lazy yüklenir; webview'a dokular `data:` URI olarak verilir (CSP/asset kapsamı değişmedi). |

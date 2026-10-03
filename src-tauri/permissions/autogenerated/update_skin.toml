@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-update-skin"
+description = "Enables the update_skin command without any pre-configured scope."
+commands.allow = ["update_skin"]
+
+[[permission]]
+identifier = "deny-update-skin"
+description = "Denies the update_skin command without any pre-configured scope."
+commands.deny = ["update_skin"]

@@ -22,6 +22,7 @@ use crate::loader;
 use crate::net::download::Verify;
 use crate::paths::Paths;
 use crate::settings::Settings;
+use crate::skin::{self, SkinStore};
 use crate::tasks::{TaskKind, TaskRegistry, TaskStatus, TrackingSink};
 
 /// Callbacks for UI side effects (window minimise/restore).
@@ -43,6 +44,7 @@ pub struct Launcher {
     pub ctx: Ctx,
     pub instances: InstanceStore,
     pub accounts: AccountStore,
+    pub skins: SkinStore,
     pub tasks: Arc<TaskRegistry>,
     pub running: Running,
 }
@@ -57,7 +59,8 @@ impl Launcher {
         Ok(Arc::new(Self {
             ctx: Ctx::new(paths.clone(), sink, concurrency)?,
             instances: InstanceStore::new(paths.clone()),
-            accounts: AccountStore::new(paths),
+            accounts: AccountStore::new(paths.clone()),
+            skins: SkinStore::new(paths),
             tasks,
             running: Running::default(),
         }))
@@ -73,6 +76,7 @@ impl Launcher {
         hooks: Arc<dyn LaunchHooks>,
     ) -> Result<String> {
         let inst = self.instances.get(instance_id)?;
+        let account_id = self.accounts.view().selected;
         let account = match mode {
             StartMode::Play => self.accounts.launch_account()?,
             // Repair never starts the game; any identity will do.
@@ -140,6 +144,9 @@ impl Launcher {
                 if mode == StartMode::Repair {
                     return Ok(());
                 }
+                if let Some(id) = &account_id {
+                    this.sync_skin(&opts.game_dir, id, &opts.account.name);
+                }
                 this.tasks.set_status(&tid, TaskStatus::Playing);
                 hooks.game_started(&inst);
                 let mut exit =
@@ -174,6 +181,22 @@ impl Launcher {
             this.tasks.finish(&tid, &result);
         });
         Ok(task_id)
+    }
+
+    /// Hands the account's offline skin to CustomSkinLoader, if installed.
+    /// Never blocks the launch: failures are only logged.
+    fn sync_skin(&self, game_dir: &std::path::Path, account_id: &str, player: &str) {
+        if !skin::csl::is_installed(game_dir) {
+            return;
+        }
+        let textures = self.skins.textures_for(account_id);
+        match skin::csl::sync(game_dir, player, &textures) {
+            Ok(files) => tracing::info!(
+                count = files.len(),
+                "offline skin synced for CustomSkinLoader"
+            ),
+            Err(e) => tracing::warn!(error = %e.detail(), "could not sync offline skin"),
+        }
     }
 
     /// Stops whatever runs for the instance (download or game).
