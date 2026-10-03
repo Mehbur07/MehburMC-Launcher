@@ -27,6 +27,8 @@ const DEFAULT_RULES: &[(&str, Option<&str>)] = &[
     ("maven.quiltmc.org", None),
     ("meta.legacyfabric.net", None),
     ("maven.legacyfabric.net", None),
+    // maven.legacyfabric.net redirects here
+    ("repo.legacyfabric.net", None),
     // Forge / NeoForge
     ("files.minecraftforge.net", None),
     ("maven.minecraftforge.net", None),

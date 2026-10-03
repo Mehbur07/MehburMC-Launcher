@@ -6,6 +6,7 @@
 pub mod archive;
 pub mod assets;
 pub mod auth;
+pub mod content;
 pub mod ctx;
 pub mod error;
 pub mod events;
@@ -15,6 +16,7 @@ pub mod instance;
 pub mod java;
 pub mod launch;
 pub mod library;
+pub mod loader;
 pub mod logging;
 pub mod maven;
 pub mod natives;

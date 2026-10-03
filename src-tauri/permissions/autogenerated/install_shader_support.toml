@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-install-shader-support"
+description = "Enables the install_shader_support command without any pre-configured scope."
+commands.allow = ["install_shader_support"]
+
+[[permission]]
+identifier = "deny-install-shader-support"
+description = "Denies the install_shader_support command without any pre-configured scope."
+commands.deny = ["install_shader_support"]

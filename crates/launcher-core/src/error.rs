@@ -129,6 +129,25 @@ pub enum CoreError {
 
     #[error("account {0} was not found")]
     AccountNotFound(String),
+
+    #[error("no {loader} version is available for Minecraft {mc}")]
+    LoaderUnavailable { loader: String, mc: String },
+
+    #[error("installing {loader} failed: {reason}")]
+    LoaderInstall { loader: String, reason: String },
+
+    #[error("{} is not an OptiFine jar", path.display())]
+    OptifineInvalid { path: PathBuf },
+
+    #[error("the OptiFine jar for {mc} {edition} has not been imported")]
+    OptifineMissing { mc: String, edition: String },
+
+    #[error("{project} is not available for {loader} on Minecraft {mc}")]
+    AddonUnavailable {
+        project: String,
+        loader: String,
+        mc: String,
+    },
 }
 
 impl CoreError {
@@ -173,6 +192,11 @@ impl CoreError {
             Self::InvalidInstance(_) => "instance.invalid",
             Self::NoAccount => "account.none",
             Self::AccountNotFound(_) => "account.notFound",
+            Self::LoaderUnavailable { .. } => "loader.unavailable",
+            Self::LoaderInstall { .. } => "loader.installFailed",
+            Self::OptifineInvalid { .. } => "loader.optifineInvalid",
+            Self::OptifineMissing { .. } => "loader.optifineMissing",
+            Self::AddonUnavailable { .. } => "loader.addonUnavailable",
         }
     }
 
@@ -229,6 +253,28 @@ impl CoreError {
             Self::InstanceNotFound(id) | Self::AccountNotFound(id) => put("id", id.clone()),
             Self::InstanceBusy { name } => put("name", name.clone()),
             Self::InvalidInstance(reason) => put("reason", reason.clone()),
+            Self::LoaderUnavailable { loader, mc } => {
+                put("loader", loader.clone());
+                put("mc", mc.clone());
+            }
+            Self::LoaderInstall { loader, reason } => {
+                put("loader", loader.clone());
+                put("reason", reason.clone());
+            }
+            Self::OptifineInvalid { path } => put("path", path.display().to_string()),
+            Self::OptifineMissing { mc, edition } => {
+                put("mc", mc.clone());
+                put("edition", edition.clone());
+            }
+            Self::AddonUnavailable {
+                project,
+                loader,
+                mc,
+            } => {
+                put("project", project.clone());
+                put("loader", loader.clone());
+                put("mc", mc.clone());
+            }
             Self::NoDataDir | Self::Cancelled | Self::NoAccount => {}
         }
         p

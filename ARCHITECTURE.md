@@ -1,6 +1,6 @@
 # MehburMC Launcher — Mimari
 
-> Durum: **Onaylandı (2026-10-03). Faz 3 tamamlandı.** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
+> Durum: **Onaylandı (2026-10-03). Faz 4 tamamlandı.** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
 
 MehburMC Launcher; Windows öncelikli (Linux/macOS'a taşınabilir), açık mimarili, reklamsız, telemetrisiz bir Minecraft Java Edition launcher'ıdır. SKLauncher'ın özellik zenginliğini (offline + premium, skin/cape, modpack, loader desteği, portable) ve Legacy Launcher'ın hafifliğini / izole profil yapısını birleştirir.
 
@@ -213,7 +213,7 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 - **Allowlist (host + isteğe bağlı yol öneki), yalnızca HTTPS, redirect'lerde de uygulanır:**
   - Mojang: `piston-meta.mojang.com`, `piston-data.mojang.com`, `launchermeta.mojang.com`, `launcher.mojang.com`, `libraries.minecraft.net`, `resources.download.minecraft.net`, `launchercontent.mojang.com`, `textures.minecraft.net`, `sessionserver.mojang.com`, `api.minecraftservices.com`
   - Auth: `login.microsoftonline.com`, `user.auth.xboxlive.com`, `xsts.auth.xboxlive.com`
-  - Fabric / Quilt / Legacy Fabric: `meta.fabricmc.net`, `maven.fabricmc.net`, `meta.quiltmc.org`, `maven.quiltmc.org`, `meta.legacyfabric.net`, `maven.legacyfabric.net`
+  - Fabric / Quilt / Legacy Fabric: `meta.fabricmc.net`, `maven.fabricmc.net`, `meta.quiltmc.org`, `maven.quiltmc.org`, `meta.legacyfabric.net`, `maven.legacyfabric.net` (→ `repo.legacyfabric.net`'e yönlendirir)
   - Forge / NeoForge: `files.minecraftforge.net`, `maven.minecraftforge.net`, `maven.neoforged.net`, `repo1.maven.org` (eski Forge bağımlılıkları)
   - Modrinth: `api.modrinth.com`, `cdn.modrinth.com` (+ mrpack spec'inin izin verdiği `github.com`, `raw.githubusercontent.com`, `gitlab.com`)
   - CurseForge: `api.curseforge.com`, `edge.forgecdn.net`, `mediafilez.forgecdn.net`
@@ -341,3 +341,10 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 | 2026-10-03 | K25: Oyun çıktısı core'da log4j XML'den {metin, seviye, zaman, thread} olaylarına çevrilir; köprü logları 50 ms'de bir toplu gönderir (flush başına ≤2000 satır), ilerleme olaylarını birleştirir. UI'da instance başına 5000 satırlık halka tampon + sanal liste. |
 | 2026-10-03 | K26: Ekran görüntüleri asset protokolüyle gösterilir; kapsam başlangıçta boştur ve yalnızca listelenen instance'ın `screenshots/` klasörü çalışma anında izinlenir. |
 | 2026-10-03 | K27: Instance id'leri `slug(ad)-<6 hex>` biçiminde üretilir ve her komutta `[a-z0-9._-]` + `..` yok kuralıyla doğrulanır; dosya adları ayrıca ayırıcı/`..`/`:` içeremez (yol geçişi koruması). |
+| 2026-10-03 | K28: Loader'lar trait yerine `LoaderKind` üzerinden `match` ile dağıtılır (async trait bağımlılığı gereksiz). Her loader `versions/<id>/<id>.json` üretir; id yalnızca spec'ten türetilir (`fabric-loader-<v>-<mc>`, `quilt-loader-…`, `legacyfabric-loader-…`, `forge-<maven sürümü>`, `neoforge-<v>`, `optifine-<mc>_<edition>`) → kurulu loader ağsız tespit edilir. Profil JSON'u en son ve atomik yazılır; yarım kurulum "kurulu" sayılmaz. Kurulumlar global kilitle sıralanır. |
+| 2026-10-03 | K29: Loader sürümü seçilmezse ilk OYNA'da önerilen sürüm kurulur ve `instance.json`'a sabitlenir (profil kendiliğinden güncellenmez). "Onar" loader'ı yeniden kurar. |
+| 2026-10-03 | K30: Forge/NeoForge — installer indirilir (`.sha1` yan dosyasıyla doğrulanır), üç nesil desteklenir: eski `versionInfo` (1.7.10), `version.json` + `maven/` (1.12.2), spec 1 + processor'lar (1.13+, NeoForge). Processor'lar vanilla sürümün Java'sıyla, `CREATE_NO_WINDOW` ile çalışır; çıktılar SHA-1 ile doğrulanır, geçerliyse atlanır. Bazı processor'lar (ör. 1.20.1 `DOWNLOAD_MOJMAPS`) kendi ağ isteklerini yapar; bunlar allowlist dışında Forge'un aracıdır. |
+| 2026-10-03 | K31: Paylaşılan `versions/<mc>/<mc>.jar` yüzünden modern Forge'un `-DignoreList=…${version_name}.jar` kalıbı vanilla jar'ı kaçırıyordu; jar dosya adı listeye eklenir. Natives artık artifact başına tekilleştirilir (Legacy Fabric LWJGL'i vanilla'nınkini ezer). Loader profili eski (`minecraftArguments`) bir ebeveyne yalnızca birkaç JVM argümanı eklerse `-cp`/`java.library.path` yine eklenir. |
+| 2026-10-03 | K32: OptiFine — API ve yeniden dağıtım izni yok; kullanıcı jar'ı seçer, `loaders/optifine/`'a kopyalanır, `changelog.txt` ilk satırından sürüm okunur. Kurulum HMCL yöntemiyle: `optifine.Patcher` vanilla jar'a karşı `optifine:OptiFine` kütüphanesini üretir, gömülü `launchwrapper-of` çıkarılır, `--tweakClass optifine.OptiFineTweaker`. Forge ile OptiFine = jar'ı `mods/`'a koymak. |
+| 2026-10-03 | K33: "Shader desteği" — Modrinth'ten Iris + Sodium (Fabric/Quilt/NeoForge) veya Oculus + Embeddium (Forge), zorunlu bağımlılıklarla (sabitlenmiş sürüm önceliklidir), SHA-512 doğrulamalı. Aynı projenin jar'ı zaten varsa atlanır. Tam Modrinth istemcisi Faz 6'da. |
+| 2026-10-03 | K34: NeoForge erken yükleme penceresi bazı sürücülerde devirde native çöküyor (`0xC000041D`, RTX 5060'ta 26.3 ile görüldü). NeoForge'un resmi önerisi uygulanır: 90 sn içinde negatif (NTSTATUS) çıkış kodu → `config/fml.toml` `earlyWindowControl=false` → bir kez otomatik yeniden başlatma. |

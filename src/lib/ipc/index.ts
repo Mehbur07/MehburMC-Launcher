@@ -12,9 +12,13 @@ import type { Instance } from "./bindings/Instance";
 import type { InstancePatch } from "./bindings/InstancePatch";
 import type { InstancesView } from "./bindings/InstancesView";
 import type { JavaInstall } from "./bindings/JavaInstall";
+import type { LoaderKind } from "./bindings/LoaderKind";
+import type { LoaderVersion } from "./bindings/LoaderVersion";
 import type { ManifestEntry } from "./bindings/ManifestEntry";
 import type { NewInstance } from "./bindings/NewInstance";
+import type { OptifineInfo } from "./bindings/OptifineInfo";
 import type { Settings } from "./bindings/Settings";
+import type { ShaderSetup } from "./bindings/ShaderSetup";
 import type { TaskInfo } from "./bindings/TaskInfo";
 
 /** Typed wrappers around the Rust commands (see src-tauri/src/commands). */
@@ -62,6 +66,11 @@ export const ipc = {
     invoke<void>("delete_instance_file", { id, folder, name }),
   readInstanceLog: (id: string, folder: Folder, name: string) =>
     invoke<string>("read_instance_log", { id, folder, name }),
+
+  listLoaderVersions: (kind: LoaderKind, mc: string) =>
+    invoke<LoaderVersion[]>("list_loader_versions", { kind, mc }),
+  importOptifine: (path: string) => invoke<OptifineInfo>("import_optifine", { path }),
+  installShaderSupport: (id: string) => invoke<ShaderSetup>("install_shader_support", { id }),
 };
 
 export type GameLogEvent = Extract<CoreEvent, { type: "gameLog" }>;

@@ -139,6 +139,13 @@
     "account": {
       "none": "Add or select an account first.",
       "notFound": "Account not found: {{id}}"
+    },
+    "loader": {
+      "unavailable": "{{loader}} is not available for Minecraft {{mc}}.",
+      "installFailed": "Installing {{loader}} failed: {{reason}}",
+      "optifineInvalid": "This file is not an OptiFine jar: {{path}}",
+      "optifineMissing": "The OptiFine {{mc}} {{edition}} jar has not been imported. Pick the jar again in the instance settings.",
+      "addonUnavailable": "{{project}} was not found for {{loader}} / Minecraft {{mc}}."
     }
   },
   "instances": {
@@ -199,7 +206,6 @@
     "name": "Name",
     "icon": "Icon",
     "loader": "Mod loader",
-    "loaderSoon": "Phase 4",
     "version": "Minecraft version",
     "searchVersion": "Search versions…",
     "versionCount": "{{count}} versions"
@@ -275,6 +281,7 @@
   },
   "stage": {
     "metadata": "Version info",
+    "loader": "Loader setup",
     "libraries": "Libraries",
     "natives": "Natives",
     "assets": "Assets",
@@ -296,5 +303,27 @@
     "offlineServers": "Offline accounts cannot join online-mode servers and skins show as the default in game.",
     "removeTitle": "Remove account?",
     "removeBody": "\"{{name}}\" will be removed from the list."
+  },
+  "loader": {
+    "version": "Loader version",
+    "recommended": "Recommended ({{version}})",
+    "unstable": "beta",
+    "unavailable": "{{loader}} is not available for Minecraft {{mc}}.",
+    "optifineNone": "No imported OptiFine for Minecraft {{mc}}.",
+    "optifineImport": "Choose OptiFine jar…",
+    "optifineOtherVersion": "The chosen jar is for Minecraft {{jar}}; this instance is {{mc}}.",
+    "forgeHint": "The installer runs on first launch (patches the vanilla jar); this can take a few minutes.",
+    "legacyFabricHint": "For old versions Fabric does not support (1.3 – 1.13.2).",
+    "optifineHint": "OptiFine has no download API and forbids redistribution: choose the jar you downloaded from optifine.net. To use it with Forge, put the jar into the mods folder.",
+    "changeWarning": "Existing mods may not work after changing the loader. The new loader is installed on the next launch."
+  },
+  "shaders": {
+    "title": "Shader support",
+    "body": "Installs Iris + Sodium (with required dependencies) from Modrinth into the mods folder.",
+    "bodyForge": "Installs Oculus + Embeddium (with required dependencies) from Modrinth into the mods folder.",
+    "install": "One-click install",
+    "installing": "Installing…",
+    "installed": "Installed: {{files}}",
+    "nothing": "Already installed: {{mods}}"
   }
 }

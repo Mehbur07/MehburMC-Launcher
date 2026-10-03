@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-list-loader-versions"
+description = "Enables the list_loader_versions command without any pre-configured scope."
+commands.allow = ["list_loader_versions"]
+
+[[permission]]
+identifier = "deny-list-loader-versions"
+description = "Denies the list_loader_versions command without any pre-configured scope."
+commands.deny = ["list_loader_versions"]

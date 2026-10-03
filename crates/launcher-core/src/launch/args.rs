@@ -89,10 +89,22 @@ fn legacy_jvm(env: &RuleEnv) -> Vec<String> {
 pub fn build(version: &VersionJson, env: &RuleEnv, vars: &Vars) -> (Vec<String>, Vec<String>) {
     match &version.arguments {
         Some(a) if !a.jvm.is_empty() || version.minecraft_arguments.is_none() => {
+            // A loader profile may add a few JVM arguments on top of a legacy
+            // parent; the classpath/natives arguments must still be present.
+            let has_classpath = a
+                .jvm
+                .iter()
+                .any(|x| matches!(x, Argument::Plain(s) if s.contains("${classpath}")));
             let jvm = if a.jvm.is_empty() {
                 legacy_jvm(env)
                     .iter()
                     .map(|s| substitute(s, vars))
+                    .collect()
+            } else if !has_classpath {
+                legacy_jvm(env)
+                    .iter()
+                    .map(|s| substitute(s, vars))
+                    .chain(flatten(&a.jvm, env, vars))
                     .collect()
             } else {
                 flatten(&a.jvm, env, vars)
@@ -219,6 +231,17 @@ mod tests {
         assert!(!game.contains(&"--width".to_owned()));
         assert!(!game.iter().any(|a| a.starts_with("--quickPlay")));
         assert!(unresolved(&jvm).is_empty() && unresolved(&game).is_empty());
+    }
+
+    #[test]
+    fn loader_jvm_args_on_legacy_parent_keep_classpath() {
+        let mut v = fixture("1.12.2.json");
+        v.arguments = Some(serde_json::from_str(r#"{"game":[],"jvm":["-Dloader=1"]}"#).unwrap());
+        let env = RuleEnv::new(OsInfo::fake("windows", "x86_64"));
+        let (jvm, game) = build(&v, &env, &vars());
+        assert!(jvm.contains(&"-Dloader=1".to_owned()));
+        assert!(jvm.contains(&"CP".to_owned()));
+        assert_eq!(&game[..2], ["--username", "Steve"]);
     }
 
     #[test]

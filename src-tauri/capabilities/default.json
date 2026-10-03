@@ -46,6 +46,9 @@
     "allow-instance-folder-path",
     "allow-toggle-instance-file",
     "allow-delete-instance-file",
-    "allow-read-instance-log"
+    "allow-read-instance-log",
+    "allow-list-loader-versions",
+    "allow-import-optifine",
+    "allow-install-shader-support"
   ]
 }

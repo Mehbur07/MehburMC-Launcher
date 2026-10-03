@@ -1,25 +1,16 @@
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { INSTANCE_ICONS, InstanceIcon } from "../../components/InstanceIcon";
-import { Badge, Button, Field, Modal, TextInput } from "../../components/ui";
-import type { LoaderKind } from "../../lib/ipc/bindings/LoaderKind";
+import { Button, Field, Modal, TextInput } from "../../components/ui";
+import type { LoaderSpec } from "../../lib/ipc/bindings/LoaderSpec";
 import { useApp } from "../../stores/app";
 import { useInstances } from "../../stores/instances";
 import { InstanceOptionsFields, type InstanceOptions } from "./InstanceOptionsFields";
+import { loaderLabel } from "./InstancesPage";
+import { LoaderPicker } from "./LoaderPicker";
 import { VersionPicker } from "./VersionPicker";
-
-/** Only vanilla is installable until phase 4. */
-const LOADERS: { kind: LoaderKind; label: string; ready: boolean }[] = [
-  { kind: "vanilla", label: "Vanilla", ready: true },
-  { kind: "fabric", label: "Fabric", ready: false },
-  { kind: "quilt", label: "Quilt", ready: false },
-  { kind: "forge", label: "Forge", ready: false },
-  { kind: "neoForge", label: "NeoForge", ready: false },
-  { kind: "legacyFabric", label: "Legacy Fabric", ready: false },
-  { kind: "optifine", label: "OptiFine", ready: false },
-];
 
 const EMPTY: InstanceOptions = {
   javaPath: null,
@@ -39,7 +30,9 @@ export function CreateWizard() {
   const [name, setName] = useState("");
   const [icon, setIcon] = useState("grass");
   const [version, setVersion] = useState<string | null>(null);
-  const [loader, setLoader] = useState<LoaderKind>("vanilla");
+  const [loader, setLoader] = useState<LoaderSpec>({ kind: "vanilla" });
+  const [loaderReady, setLoaderReady] = useState(true);
+  const onLoaderReady = useCallback((ok: boolean) => setLoaderReady(ok), []);
   const [options, setOptions] = useState<InstanceOptions>(EMPTY);
   const [busy, setBusy] = useState(false);
 
@@ -47,11 +40,19 @@ export function CreateWizard() {
     setWizard(false);
     setName("");
     setIcon("grass");
+    setLoader({ kind: "vanilla" });
     setOptions(EMPTY);
   };
 
-  const finalName = name.trim() || (version ? `Minecraft ${version}` : "");
-  const valid = !!version && finalName.length > 0 && finalName.length <= 64;
+  // A loader version belongs to one Minecraft version; reset it on change.
+  const pickVersion = (v: string) => {
+    setVersion(v);
+    setLoader((l) => (l.kind === "optifine" || v === version ? l : { kind: l.kind }));
+  };
+
+  const suffix = loader.kind === "vanilla" ? "" : ` (${loaderLabel(loader.kind)})`;
+  const finalName = name.trim() || (version ? `Minecraft ${version}${suffix}` : "");
+  const valid = !!version && loaderReady && finalName.length > 0 && finalName.length <= 64;
 
   const submit = async () => {
     if (!valid || !version) return;
@@ -60,7 +61,7 @@ export function CreateWizard() {
       name: finalName,
       icon,
       mcVersion: version,
-      loader: { kind: loader },
+      loader,
       javaPath: options.javaPath ?? undefined,
       memoryMb: options.memoryMb ?? undefined,
       jvmArgs: options.jvmArgs || undefined,
@@ -101,7 +102,7 @@ export function CreateWizard() {
                 <TextInput
                   value={name}
                   maxLength={64}
-                  placeholder={version ? `Minecraft ${version}` : ""}
+                  placeholder={version ? `Minecraft ${version}${suffix}` : ""}
                   onChange={(e) => setName(e.target.value)}
                   autoFocus
                 />
@@ -127,33 +128,18 @@ export function CreateWizard() {
             </div>
           </Field>
 
-          <Field label={t("wizard.loader")}>
-            <div
-              className="grid grid-cols-4 gap-2"
-              role="radiogroup"
-              aria-label={t("wizard.loader")}
-            >
-              {LOADERS.map((l) => (
-                <button
-                  key={l.kind}
-                  type="button"
-                  role="radio"
-                  aria-checked={loader === l.kind}
-                  disabled={!l.ready}
-                  onClick={() => setLoader(l.kind)}
-                  title={l.ready ? l.label : t("wizard.loaderSoon")}
-                  className={`flex flex-col items-start gap-1 rounded-md border px-3 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
-                    loader === l.kind
-                      ? "border-accent bg-accent/10 text-accent"
-                      : "border-line hover:border-accent/40"
-                  }`}
-                >
-                  <span className="font-semibold">{l.label}</span>
-                  {!l.ready && <Badge>{t("wizard.loaderSoon")}</Badge>}
-                </button>
-              ))}
-            </div>
-          </Field>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold tracking-wide text-muted uppercase">
+              {t("wizard.loader")}
+            </span>
+            <LoaderPicker
+              mc={version}
+              value={loader}
+              onChange={setLoader}
+              onReady={onLoaderReady}
+              onMcVersion={setVersion}
+            />
+          </div>
 
           <InstanceOptionsFields
             value={options}
@@ -166,7 +152,7 @@ export function CreateWizard() {
           <span className="mb-1.5 text-xs font-semibold tracking-wide text-muted uppercase">
             {t("wizard.version")}
           </span>
-          <VersionPicker value={version} onChange={setVersion} />
+          <VersionPicker value={version} onChange={pickVersion} />
         </div>
       </div>
     </Modal>

@@ -235,7 +235,8 @@ pub async fn prepare(
         vars.insert(k, val);
     }
 
-    let (jvm, game) = args::build(v, &env, &vars);
+    let (mut jvm, game) = args::build(v, &env, &vars);
+    fix_ignore_list(&mut jvm, &resolved.jar_id);
     let mut full = Vec::new();
     let max = opts.max_memory_mb.max(512);
     let min = opts.min_memory_mb.unwrap_or(max.min(1024)).min(max);
@@ -302,6 +303,64 @@ pub async fn prepare(
     })
 }
 
+/// Modern Forge keeps the vanilla jar off its module layer via
+/// `-DignoreList=…,${version_name}.jar`, assuming the official launcher's
+/// layout where the client jar is copied to `versions/<loader id>/`. We share
+/// `versions/<mc>/<mc>.jar` instead, so its file name is added explicitly.
+fn fix_ignore_list(jvm: &mut [String], jar_id: &str) {
+    let jar = format!("{jar_id}.jar");
+    for a in jvm.iter_mut() {
+        if a.starts_with("-DignoreList=") && !a.split(',').any(|x| x == jar) {
+            a.push(',');
+            a.push_str(&jar);
+        }
+    }
+}
+
+/// Makes sure the vanilla version JSON and client jar of `mc` are present
+/// (loader installers patch the client jar). Returns the resolved version
+/// and the jar path.
+pub async fn ensure_client(
+    ctx: &Ctx,
+    mc: &str,
+    progress: &Progress,
+    cancel: &CancellationToken,
+) -> Result<(version::ResolvedVersion, PathBuf)> {
+    let resolved = version::resolve(ctx, mc).await?;
+    let jar = ctx
+        .paths
+        .versions()
+        .join(&resolved.jar_id)
+        .join(format!("{}.jar", resolved.jar_id));
+    if let Some(c) = resolved
+        .json
+        .downloads
+        .as_ref()
+        .and_then(|d| d.client.clone())
+    {
+        ctx.downloader()
+            .run(
+                vec![DownloadItem {
+                    url: c.url,
+                    dest: jar.clone(),
+                    checksum: c.sha1.map(Checksum::Sha1),
+                    size: c.size,
+                }],
+                Verify::Quick,
+                progress,
+                cancel,
+            )
+            .await?;
+    }
+    if !jar.is_file() {
+        return Err(CoreError::InvalidVersion {
+            id: mc.to_owned(),
+            reason: "no client jar".into(),
+        });
+    }
+    Ok((resolved, jar))
+}
+
 fn sanitize(id: &str) -> String {
     id.chars()
         .map(|c| {
@@ -343,6 +402,22 @@ fn mask_command(program: &Path, args: &[String], secrets: &[String]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn ignore_list_gets_shared_jar() {
+        let mut jvm = vec![
+            "-DignoreList=asm,client-extra,forge-,forge-1.20.1-47.4.26.jar".to_owned(),
+            "-Dx=1".to_owned(),
+        ];
+        fix_ignore_list(&mut jvm, "1.20.1");
+        assert_eq!(
+            jvm[0],
+            "-DignoreList=asm,client-extra,forge-,forge-1.20.1-47.4.26.jar,1.20.1.jar"
+        );
+        fix_ignore_list(&mut jvm, "1.20.1");
+        assert!(jvm[0].ends_with(",1.20.1.jar") && !jvm[0].ends_with("1.20.1.jar,1.20.1.jar"));
+        assert_eq!(jvm[1], "-Dx=1");
+    }
 
     #[test]
     fn command_masking() {

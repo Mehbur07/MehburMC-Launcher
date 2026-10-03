@@ -4,6 +4,7 @@
 pub mod accounts;
 pub mod files;
 pub mod instances;
+pub mod loaders;
 pub mod play;
 
 use launcher_core::{CoreError, ErrorPayload, PathsInfo, Settings};

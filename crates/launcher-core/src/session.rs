@@ -3,13 +3,17 @@
 
 use std::sync::Arc;
 
+use tokio_util::sync::CancellationToken;
+
 use crate::auth::store::AccountStore;
+use crate::content::shaders::{self, ShaderSetup};
 use crate::ctx::Ctx;
-use crate::error::{CoreError, Result};
+use crate::error::Result;
 use crate::events::EventSink;
-use crate::instance::{Instance, InstanceStore, LoaderKind, Running, split_args};
+use crate::instance::{Instance, InstancePatch, InstanceStore, LoaderSpec, Running, split_args};
 use crate::launch::process::GameExit;
 use crate::launch::{self, LaunchOptions, process};
+use crate::loader;
 use crate::net::download::Verify;
 use crate::paths::Paths;
 use crate::settings::Settings;
@@ -54,16 +58,6 @@ impl Launcher {
         }))
     }
 
-    fn version_id(inst: &Instance) -> Result<String> {
-        match inst.loader.kind {
-            LoaderKind::Vanilla => Ok(inst.mc_version.clone()),
-            // Loader installation arrives in phase 4.
-            other => Err(CoreError::InvalidInstance(format!(
-                "{other:?} is not supported yet"
-            ))),
-        }
-    }
-
     /// Validates and starts a task in the background; returns its id.
     /// Errors that the user must fix (no account, busy) are returned directly.
     pub fn start(
@@ -74,7 +68,6 @@ impl Launcher {
         hooks: Arc<dyn LaunchHooks>,
     ) -> Result<String> {
         let inst = self.instances.get(instance_id)?;
-        let version_id = Self::version_id(&inst)?;
         let account = match mode {
             StartMode::Play => self.accounts.launch_account()?,
             // Repair never starts the game; any identity will do.
@@ -87,8 +80,9 @@ impl Launcher {
         };
         let (task_id, cancel) = self.tasks.create(kind, &inst.name, Some(&inst.id));
 
-        let opts = LaunchOptions {
-            version_id,
+        let mut opts = LaunchOptions {
+            // Filled in once the loader is installed.
+            version_id: String::new(),
             game_dir: self.instances.dir(&inst.id)?,
             account,
             max_memory_mb: inst.memory_mb.unwrap_or(settings.default_memory_mb),
@@ -113,13 +107,51 @@ impl Launcher {
         tokio::spawn(async move {
             let _claim = claim;
             let result: Result<()> = async {
+                let installed = loader::ensure_installed(
+                    &this.ctx,
+                    &inst.mc_version,
+                    &inst.loader,
+                    mode == StartMode::Repair,
+                    &tid,
+                    &cancel,
+                )
+                .await?;
+                // Pin the automatically chosen loader version so the
+                // instance does not silently change on the next update.
+                if inst.loader.version.is_none() && installed.loader_version.is_some() {
+                    let patch = InstancePatch {
+                        loader: Some(LoaderSpec {
+                            kind: inst.loader.kind,
+                            version: installed.loader_version.clone(),
+                        }),
+                        ..Default::default()
+                    };
+                    if let Err(e) = this.instances.update(&inst.id, patch) {
+                        tracing::warn!(error = %e.detail(), "could not pin loader version");
+                    }
+                }
+                opts.version_id = installed.version_id;
                 let prepared = launch::prepare(&this.ctx, &opts, &tid, &cancel).await?;
                 if mode == StartMode::Repair {
                     return Ok(());
                 }
                 this.tasks.set_status(&tid, TaskStatus::Playing);
                 hooks.game_started(&inst);
-                let exit = process::run(&prepared, this.ctx.events.clone(), &tid, &cancel).await;
+                let mut exit =
+                    process::run(&prepared, this.ctx.events.clone(), &tid, &cancel).await;
+                if let Ok(e) = &exit
+                    && loader::early_window::looks_like_early_window_crash(inst.loader.kind, e)
+                    && loader::early_window::disable(&opts.game_dir).unwrap_or(false)
+                {
+                    tracing::warn!(
+                        code = ?e.code,
+                        "native crash in the early loading window; retrying with earlyWindowControl=false"
+                    );
+                    // Argfiles were removed with the first run: prepare again (fast).
+                    let again = launch::prepare(&this.ctx, &opts, &tid, &cancel).await?;
+                    this.tasks.set_status(&tid, TaskStatus::Playing);
+                    exit = process::run(&again, this.ctx.events.clone(), &tid, &cancel).await;
+                }
                 if let Ok(e) = &exit {
                     let secs = e.duration.as_secs();
                     if let Err(err) = this.instances.record_session(&inst.id, secs) {
@@ -144,6 +176,16 @@ impl Launcher {
         self.tasks
             .active_for_instance(instance_id)
             .is_some_and(|t| self.tasks.cancel(&t, false))
+    }
+
+    /// Downloads Iris + Sodium (or Oculus + Embeddium) into the instance's
+    /// `mods/` folder. The instance is reserved meanwhile so it cannot start.
+    pub async fn install_shader_support(&self, instance_id: &str) -> Result<ShaderSetup> {
+        let inst = self.instances.get(instance_id)?;
+        let _claim = self.running.try_claim(&inst)?;
+        let mods = self.instances.dir(&inst.id)?.join("mods");
+        std::fs::create_dir_all(&mods).map_err(|e| crate::CoreError::io(&mods, e))?;
+        shaders::install(&self.ctx, &inst, &mods, &CancellationToken::new()).await
     }
 
     /// Deletes an instance unless it is in use.

@@ -15,6 +15,14 @@ pub struct Endpoints {
     pub version_manifest: String,
     pub resources: String,
     pub adoptium: String,
+    pub fabric_meta: String,
+    pub quilt_meta: String,
+    pub legacy_fabric_meta: String,
+    /// files.minecraftforge.net (version index + promotions).
+    pub forge_files: String,
+    pub forge_maven: String,
+    pub neoforge_maven: String,
+    pub modrinth: String,
 }
 
 impl Default for Endpoints {
@@ -24,6 +32,13 @@ impl Default for Endpoints {
                 .into(),
             resources: "https://resources.download.minecraft.net".into(),
             adoptium: "https://api.adoptium.net".into(),
+            fabric_meta: "https://meta.fabricmc.net".into(),
+            quilt_meta: "https://meta.quiltmc.org".into(),
+            legacy_fabric_meta: "https://meta.legacyfabric.net".into(),
+            forge_files: "https://files.minecraftforge.net".into(),
+            forge_maven: "https://maven.minecraftforge.net".into(),
+            neoforge_maven: "https://maven.neoforged.net".into(),
+            modrinth: "https://api.modrinth.com".into(),
         }
     }
 }

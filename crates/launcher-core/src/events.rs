@@ -15,6 +15,8 @@ use ts_rs::TS;
 #[ts(export)]
 pub enum Stage {
     Metadata,
+    /// Installing a mod loader (downloads + installer processors).
+    Loader,
     Libraries,
     Natives,
     Assets,

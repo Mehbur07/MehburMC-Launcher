@@ -57,7 +57,7 @@ pub struct FileEntry {
     pub enabled: bool,
 }
 
-fn checked_name(name: &str) -> Result<&str> {
+pub(crate) fn checked_name(name: &str) -> Result<&str> {
     let bad = name.is_empty()
         || name == "."
         || name.contains("..")

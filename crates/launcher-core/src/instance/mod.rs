@@ -155,6 +155,29 @@ pub struct InstancePatch {
     pub clear_resolution: Option<bool>,
     #[ts(optional)]
     pub fullscreen: Option<bool>,
+    /// Switches the mod loader (or its version). The Minecraft version
+    /// itself is fixed for an instance.
+    #[ts(optional)]
+    pub loader: Option<LoaderSpec>,
+}
+
+fn validate_loader(spec: LoaderSpec) -> Result<LoaderSpec> {
+    let version = spec.version.filter(|v| !v.trim().is_empty());
+    match (spec.kind, &version) {
+        (LoaderKind::Vanilla, _) => Ok(LoaderSpec::default()),
+        (LoaderKind::Optifine, None) => Err(CoreError::InvalidInstance("loader".into())),
+        (_, Some(v)) => {
+            crate::loader::validate_loader_version(v)?;
+            Ok(LoaderSpec {
+                kind: spec.kind,
+                version,
+            })
+        }
+        (kind, None) => Ok(LoaderSpec {
+            kind,
+            version: None,
+        }),
+    }
 }
 
 pub fn now_secs() -> u64 {
@@ -369,7 +392,7 @@ impl InstanceStore {
             name,
             icon: req.icon.unwrap_or_else(default_icon),
             mc_version: req.mc_version.trim().to_owned(),
-            loader: req.loader.unwrap_or_default(),
+            loader: validate_loader(req.loader.unwrap_or_default())?,
             java_path: req.java_path.filter(|p| !p.trim().is_empty()),
             memory_mb: validate_memory(req.memory_mb)?,
             jvm_args: req.jvm_args.unwrap_or_default(),
@@ -417,6 +440,9 @@ impl InstanceStore {
         }
         if let Some(f) = patch.fullscreen {
             inst.fullscreen = f;
+        }
+        if let Some(l) = patch.loader {
+            inst.loader = validate_loader(l)?;
         }
         self.save(&inst)?;
         Ok(inst)
@@ -609,6 +635,52 @@ mod tests {
         s.delete(&a.id).unwrap();
         assert_eq!(s.list().len(), 1);
         assert_eq!(s.get(&a.id).unwrap_err().code(), "instance.notFound");
+    }
+
+    #[test]
+    fn loader_specs_are_validated() {
+        let (_t, s) = store();
+        let mut req = new("Mods");
+        req.loader = Some(LoaderSpec {
+            kind: LoaderKind::Fabric,
+            version: Some("../../evil".into()),
+        });
+        assert_eq!(s.create(req).unwrap_err().code(), "instance.invalid");
+
+        let mut req = new("Mods");
+        req.loader = Some(LoaderSpec {
+            kind: LoaderKind::Vanilla,
+            version: Some("ignored".into()),
+        });
+        assert_eq!(s.create(req).unwrap().loader, LoaderSpec::default());
+
+        let a = s.create(new("Switch")).unwrap();
+        let u = s
+            .update(
+                &a.id,
+                InstancePatch {
+                    loader: Some(LoaderSpec {
+                        kind: LoaderKind::Forge,
+                        version: Some("1.20.1-47.4.26".into()),
+                    }),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(u.loader.kind, LoaderKind::Forge);
+        assert!(
+            s.update(
+                &a.id,
+                InstancePatch {
+                    loader: Some(LoaderSpec {
+                        kind: LoaderKind::Optifine,
+                        version: None
+                    }),
+                    ..Default::default()
+                }
+            )
+            .is_err()
+        );
     }
 
     #[test]

@@ -10,9 +10,10 @@ use anyhow::{Result, anyhow};
 use clap::{Parser, Subcommand};
 use launcher_core::auth::LaunchAccount;
 use launcher_core::events::{CoreEvent, EventSink, LogStream};
+use launcher_core::instance::{LoaderKind, LoaderSpec};
 use launcher_core::launch::{self, LaunchOptions, process};
 use launcher_core::net::download::Verify;
-use launcher_core::{Ctx, DataMode, Paths, Settings, java, version};
+use launcher_core::{Ctx, DataMode, Paths, Settings, java, loader, version};
 use tokio_util::sync::CancellationToken;
 
 #[derive(Parser)]
@@ -49,6 +50,11 @@ enum Command {
         #[command(subcommand)]
         action: JavaAction,
     },
+    /// Mod loaders.
+    Loader {
+        #[command(subcommand)]
+        action: LoaderAction,
+    },
     /// Download (if needed) and launch a version with an offline account.
     Launch {
         /// Version id, e.g. 26.3, 1.12.2 (default: latest release).
@@ -74,11 +80,57 @@ enum Command {
         /// Stop the game N seconds after the main menu is reached (testing).
         #[arg(long)]
         exit_when_ready: Option<u64>,
+        /// Mod loader: fabric, quilt, legacy-fabric, forge, neoforge or
+        /// optifine, optionally with a version (`fabric:0.19.5`).
+        #[arg(long)]
+        loader: Option<String>,
+        /// Reinstall the loader even if it is already present.
+        #[arg(long)]
+        reinstall: bool,
         #[arg(long)]
         width: Option<u32>,
         #[arg(long)]
         height: Option<u32>,
     },
+}
+
+#[derive(Subcommand)]
+enum LoaderAction {
+    /// List loader versions for a Minecraft version.
+    List {
+        /// fabric | quilt | legacy-fabric | forge | neoforge | optifine
+        kind: String,
+        mc: String,
+        #[arg(long, default_value_t = 15)]
+        limit: usize,
+    },
+    /// Import a user-downloaded OptiFine jar.
+    ImportOptifine { jar: PathBuf },
+    /// Install Iris + Sodium (or Oculus + Embeddium) into a mods folder.
+    Shaders {
+        mc: String,
+        loader: String,
+        /// Target mods folder.
+        mods: PathBuf,
+    },
+}
+
+fn parse_loader(s: &str) -> Result<LoaderSpec> {
+    let (kind, version) = match s.split_once(':') {
+        Some((k, v)) => (k, Some(v.to_owned())),
+        None => (s, None),
+    };
+    let kind = match kind.to_ascii_lowercase().as_str() {
+        "vanilla" => LoaderKind::Vanilla,
+        "fabric" => LoaderKind::Fabric,
+        "quilt" => LoaderKind::Quilt,
+        "legacy-fabric" | "legacyfabric" => LoaderKind::LegacyFabric,
+        "forge" => LoaderKind::Forge,
+        "neoforge" => LoaderKind::NeoForge,
+        "optifine" => LoaderKind::Optifine,
+        other => return Err(anyhow!("unknown loader {other}")),
+    };
+    Ok(LoaderSpec { kind, version })
 }
 
 #[derive(Subcommand)]
@@ -225,8 +277,50 @@ async fn run(command: Command, ctx: &Ctx, settings: &Settings, sink: Arc<CliSink
                 println!("installed Java {} at {}", j.version, j.home);
             }
         },
+        Command::Loader { action } => match action {
+            LoaderAction::List { kind, mc, limit } => {
+                let spec = parse_loader(&kind)?;
+                let list = loader::list_versions(ctx, spec.kind, &mc)
+                    .await
+                    .map_err(core_err)?;
+                if list.is_empty() {
+                    println!("no {kind} versions for {mc}");
+                }
+                for v in list.iter().take(limit) {
+                    println!(
+                        "{:<28} {:<20} {}{}",
+                        v.id,
+                        v.label,
+                        if v.stable { "stable" } else { "unstable" },
+                        if v.recommended { "  (recommended)" } else { "" }
+                    );
+                }
+            }
+            LoaderAction::Shaders { mc, loader, mods } => {
+                let spec = parse_loader(&loader)?;
+                let inst: launcher_core::instance::Instance =
+                    serde_json::from_value(serde_json::json!({
+                        "name": "cli", "mcVersion": mc, "loader": spec
+                    }))?;
+                std::fs::create_dir_all(&mods)?;
+                let r = launcher_core::content::shaders::install(ctx, &inst, &mods, &cancel)
+                    .await
+                    .map_err(core_err)?;
+                println!(
+                    "installed: {:?}
+already present: {:?}",
+                    r.installed, r.already_present
+                );
+            }
+            LoaderAction::ImportOptifine { jar } => {
+                let info = loader::optifine::import(&ctx.paths, &jar).map_err(core_err)?;
+                println!("imported OptiFine {} {}", info.mc_version, info.edition);
+            }
+        },
         Command::Launch {
             version,
+            loader: loader_arg,
+            reinstall,
             offline,
             memory,
             game_dir,
@@ -248,8 +342,28 @@ async fn run(command: Command, ctx: &Ctx, settings: &Settings, sink: Arc<CliSink
                 }
             };
             let account = LaunchAccount::offline(&offline).map_err(core_err)?;
-            let game_dir =
-                game_dir.unwrap_or_else(|| ctx.paths.instances().join(format!("cli-{version_id}")));
+            let spec = match &loader_arg {
+                Some(l) => parse_loader(l)?,
+                None => LoaderSpec::default(),
+            };
+            let started = std::time::Instant::now();
+            let installed =
+                loader::ensure_installed(ctx, &version_id, &spec, reinstall, "cli", &cancel)
+                    .await
+                    .map_err(core_err)?;
+            if spec.kind != LoaderKind::Vanilla {
+                eprintln!(
+                    "loader ready: {} in {:.1}s",
+                    installed.version_id,
+                    started.elapsed().as_secs_f64()
+                );
+            }
+            let game_dir = game_dir.unwrap_or_else(|| {
+                ctx.paths
+                    .instances()
+                    .join(format!("cli-{}", installed.version_id))
+            });
+            let version_id = installed.version_id;
             let opts = LaunchOptions {
                 version_id: version_id.clone(),
                 game_dir,
@@ -290,9 +404,22 @@ async fn run(command: Command, ctx: &Ctx, settings: &Settings, sink: Arc<CliSink
                     c.cancel();
                 });
             }
-            let exit = process::run(&prepared, ctx.events.clone(), &version_id, &cancel)
+            let mut exit = process::run(&prepared, ctx.events.clone(), &version_id, &cancel)
                 .await
                 .map_err(core_err)?;
+            if loader::early_window::looks_like_early_window_crash(spec.kind, &exit)
+                && loader::early_window::disable(&opts.game_dir).map_err(core_err)?
+            {
+                eprintln!(
+                    ">>> early loading window crashed; retrying with earlyWindowControl=false"
+                );
+                let again = launch::prepare(ctx, &opts, &version_id, &cancel)
+                    .await
+                    .map_err(core_err)?;
+                exit = process::run(&again, ctx.events.clone(), &version_id, &cancel)
+                    .await
+                    .map_err(core_err)?;
+            }
             if exit_when_ready.is_some() {
                 if sink.ready.load(Ordering::SeqCst) {
                     eprintln!(">>> SUCCESS: {version_id} reached the main menu");

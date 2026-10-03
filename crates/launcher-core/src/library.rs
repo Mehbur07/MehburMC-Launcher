@@ -76,8 +76,13 @@ pub fn resolve(libs: &[Library], env: &RuleEnv, libraries_dir: &Path) -> Resolve
         let downloads = lib.downloads.as_ref();
 
         // Legacy natives map: { "windows": "natives-windows-${arch}" }.
+        // A loader may replace vanilla natives (Legacy Fabric's LWJGL); the
+        // first entry per artifact wins, otherwise both extract into the same
+        // folder and overwrite each other's DLLs.
         if let Some(natives) = &lib.natives {
-            if let Some(classifier) = natives.get(env.os.name) {
+            if let Some(classifier) = natives.get(env.os.name)
+                && seen.insert(format!("natives:{}:{}", coord.group, coord.artifact))
+            {
                 let classifier = classifier.replace("${arch}", env.os.bitness());
                 let declared = downloads
                     .and_then(|d| d.classifiers.as_ref())
@@ -133,6 +138,18 @@ pub fn resolve(libs: &[Library], env: &RuleEnv, libraries_dir: &Path) -> Resolve
         out.classpath.push(artifact);
     }
     out
+}
+
+/// The main artifact of one library, ignoring rules, natives and
+/// de-duplication (installer libraries are processed one by one). Returns the
+/// repository-relative path too.
+pub fn plain_artifact(lib: &Library, libraries_dir: &Path) -> Option<(String, LibArtifact)> {
+    let coord = Coordinate::parse(&lib.name)?;
+    let declared = lib.downloads.as_ref().and_then(|d| d.artifact.as_ref());
+    let rel = declared
+        .and_then(|a| a.path.clone())
+        .unwrap_or_else(|| coord.path());
+    Some((rel, artifact_for(&coord, declared, lib, libraries_dir)))
 }
 
 fn artifact_for(
@@ -250,6 +267,25 @@ mod tests {
                 .all(|n| n.exclude == ["META-INF/"] && !n.flatten)
         );
         assert!(!r.classpath.iter().any(|a| a.name.contains("2.9.2-nightly")));
+    }
+
+    #[test]
+    fn loader_natives_replace_vanilla_natives() {
+        let libs: Vec<Library> = serde_json::from_str(
+            r#"[{"name":"org.lwjgl.lwjgl:lwjgl-platform:2.9.4+legacyfabric.17","url":"https://maven.legacyfabric.net/",
+                 "natives":{"windows":"natives-windows"},"extract":{"exclude":["META-INF/"]}},
+                {"name":"org.lwjgl.lwjgl:lwjgl-platform:2.9.4-nightly-20150209","natives":{"windows":"natives-windows"},
+                 "downloads":{"classifiers":{"natives-windows":{"path":"x.jar","url":"https://libraries.minecraft.net/x.jar","sha1":"a","size":1}}}}]"#,
+        )
+        .unwrap();
+        let r = resolve(&libs, &win64(), Path::new("L"));
+        assert_eq!(r.natives.len(), 1);
+        assert_eq!(
+            r.natives[0].artifact.url.as_deref(),
+            Some(
+                "https://maven.legacyfabric.net/org/lwjgl/lwjgl/lwjgl-platform/2.9.4+legacyfabric.17/lwjgl-platform-2.9.4+legacyfabric.17-natives-windows.jar"
+            )
+        );
     }
 
     #[test]

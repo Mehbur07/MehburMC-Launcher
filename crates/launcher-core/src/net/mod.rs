@@ -80,6 +80,11 @@ impl Http {
         Ok(bytes.to_vec())
     }
 
+    pub async fn get_text(&self, url: &str) -> Result<String> {
+        let bytes = self.get_bytes(url).await?;
+        Ok(String::from_utf8_lossy(&bytes).into_owned())
+    }
+
     pub async fn get_json<T: DeserializeOwned>(&self, url: &str) -> Result<T> {
         let bytes = self.get_bytes(url).await?;
         serde_json::from_slice(&bytes).map_err(|source| CoreError::Json {
@@ -87,6 +92,21 @@ impl Http {
             source,
         })
     }
+}
+
+/// Appends percent-encoded path segments to `base`
+/// (`https://meta.fabricmc.net/` + `["v2", "1.14 Pre-Release 1"]`).
+pub fn join_url(base: &str, segments: &[&str]) -> Result<String> {
+    let mut url = reqwest::Url::parse(base).map_err(|_| CoreError::UrlNotAllowed {
+        url: base.to_owned(),
+    })?;
+    url.path_segments_mut()
+        .map_err(|()| CoreError::UrlNotAllowed {
+            url: base.to_owned(),
+        })?
+        .pop_if_empty()
+        .extend(segments);
+    Ok(url.into())
 }
 
 pub(crate) fn network(url: &str, source: reqwest::Error) -> CoreError {
@@ -105,5 +125,26 @@ pub(crate) fn check_status(url: &str, resp: reqwest::Response) -> Result<reqwest
             url: url.to_owned(),
             status: status.as_u16(),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn join_url_encodes_segments() {
+        assert_eq!(
+            join_url(
+                "https://meta.fabricmc.net/",
+                &["v2", "versions", "1.14 Pre-Release 1"]
+            )
+            .unwrap(),
+            "https://meta.fabricmc.net/v2/versions/1.14%20Pre-Release%201"
+        );
+        assert_eq!(
+            join_url("https://x.org/base", &["a+b"]).unwrap(),
+            "https://x.org/base/a+b"
+        );
     }
 }

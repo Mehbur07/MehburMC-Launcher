@@ -139,6 +139,13 @@
     "account": {
       "none": "Önce bir hesap ekle veya seç.",
       "notFound": "Hesap bulunamadı: {{id}}"
+    },
+    "loader": {
+      "unavailable": "{{loader}}, Minecraft {{mc}} için mevcut değil.",
+      "installFailed": "{{loader}} kurulamadı: {{reason}}",
+      "optifineInvalid": "Bu dosya bir OptiFine jar'ı değil: {{path}}",
+      "optifineMissing": "OptiFine {{mc}} {{edition}} jar'ı içe aktarılmamış. Profil ayarlarından jar'ı tekrar seç.",
+      "addonUnavailable": "{{project}}, {{loader}} / Minecraft {{mc}} için bulunamadı."
     }
   },
   "instances": {
@@ -199,7 +206,6 @@
     "name": "Ad",
     "icon": "İkon",
     "loader": "Mod loader",
-    "loaderSoon": "Faz 4",
     "version": "Minecraft sürümü",
     "searchVersion": "Sürüm ara…",
     "versionCount": "{{count}} sürüm"
@@ -275,6 +281,7 @@
   },
   "stage": {
     "metadata": "Sürüm bilgisi",
+    "loader": "Loader kurulumu",
     "libraries": "Kütüphaneler",
     "natives": "Native dosyalar",
     "assets": "Asset'ler",
@@ -296,5 +303,27 @@
     "offlineServers": "Offline hesaplar çevrimiçi (online-mode) sunuculara giremez ve skin'ler oyunda varsayılan görünür.",
     "removeTitle": "Hesap kaldırılsın mı?",
     "removeBody": "\"{{name}}\" hesabı listeden kaldırılacak."
+  },
+  "loader": {
+    "version": "Loader sürümü",
+    "recommended": "Önerilen ({{version}})",
+    "unstable": "beta",
+    "unavailable": "{{loader}}, Minecraft {{mc}} için mevcut değil.",
+    "optifineNone": "Minecraft {{mc}} için içe aktarılmış OptiFine yok.",
+    "optifineImport": "OptiFine jar'ı seç…",
+    "optifineOtherVersion": "Seçilen jar Minecraft {{jar}} için; bu profil {{mc}}.",
+    "forgeHint": "İlk başlatmada installer çalıştırılır (vanilla jar yamalanır); birkaç dakika sürebilir.",
+    "legacyFabricHint": "Fabric'in desteklemediği eski sürümler (1.3 – 1.13.2) için.",
+    "optifineHint": "OptiFine'ın indirme API'si yok ve yeniden dağıtımı yasak: optifine.net'ten indirdiğin jar'ı seç. Forge ile kullanmak için jar'ı mods klasörüne koy.",
+    "changeWarning": "Loader değişince mevcut modlar uyumsuz olabilir. Bir sonraki başlatmada yeni loader kurulur."
+  },
+  "shaders": {
+    "title": "Shader desteği",
+    "body": "Iris + Sodium'u (gereken bağımlılıklarla) Modrinth'ten mods klasörüne kurar.",
+    "bodyForge": "Oculus + Embeddium'u (gereken bağımlılıklarla) Modrinth'ten mods klasörüne kurar.",
+    "install": "Tek tıkla kur",
+    "installing": "Kuruluyor…",
+    "installed": "Kuruldu: {{files}}",
+    "nothing": "Zaten kurulu: {{mods}}"
   }
 }

@@ -81,6 +81,64 @@ pub fn extract_zip(
     Ok(written)
 }
 
+fn open(archive: &Path) -> Result<zip::ZipArchive<File>> {
+    let file = File::open(archive).map_err(|e| CoreError::io(archive, e))?;
+    zip::ZipArchive::new(file).map_err(|source| CoreError::Archive {
+        path: archive.to_owned(),
+        source,
+    })
+}
+
+/// Names of all file entries (`/` separators).
+pub fn entry_names(archive: &Path) -> Result<Vec<String>> {
+    let zip = open(archive)?;
+    Ok(zip
+        .file_names()
+        .filter(|n| !n.ends_with('/'))
+        .map(|n| n.replace('\\', "/"))
+        .collect())
+}
+
+/// Reads one entry fully into memory; `None` if it does not exist.
+pub fn read_entry(archive: &Path, name: &str) -> Result<Option<Vec<u8>>> {
+    let mut zip = open(archive)?;
+    let mut entry = match zip.by_name(name) {
+        Ok(e) => e,
+        Err(zip::result::ZipError::FileNotFound) => return Ok(None),
+        Err(source) => {
+            return Err(CoreError::Archive {
+                path: archive.to_owned(),
+                source,
+            });
+        }
+    };
+    let mut buf = Vec::with_capacity(entry.size() as usize);
+    io::copy(&mut entry, &mut buf).map_err(|e| CoreError::io(archive, e))?;
+    Ok(Some(buf))
+}
+
+/// Copies one entry to `dest` (atomically). Returns `false` if it is missing.
+pub fn extract_entry(archive: &Path, name: &str, dest: &Path) -> Result<bool> {
+    match read_entry(archive, name)? {
+        Some(bytes) => {
+            crate::fsutil::write_atomic(dest, &bytes)?;
+            Ok(true)
+        }
+        None => Ok(false),
+    }
+}
+
+/// `Main-Class` from a jar's manifest.
+pub fn main_class(jar: &Path) -> Result<Option<String>> {
+    let Some(bytes) = read_entry(jar, "META-INF/MANIFEST.MF")? else {
+        return Ok(None);
+    };
+    Ok(String::from_utf8_lossy(&bytes)
+        .lines()
+        .find_map(|l| l.strip_prefix("Main-Class:"))
+        .map(|s| s.trim().to_owned()))
+}
+
 #[cfg(test)]
 mod tests {
     use std::io::Write;
@@ -130,6 +188,11 @@ mod tests {
         assert_eq!(n, 1);
         assert!(out.join("lwjgl.dll").exists());
         assert!(!out.join("META-INF").exists());
+
+        assert_eq!(read_entry(&good, "lwjgl.dll").unwrap().unwrap(), b"x");
+        assert!(read_entry(&good, "nope").unwrap().is_none());
+        assert_eq!(entry_names(&good).unwrap().len(), 2);
+        assert!(extract_entry(&good, "lwjgl.dll", &out.join("copy.dll")).unwrap());
 
         let evil = dir.path().join("evil.zip");
         make_zip(&evil, &[("../../escaped.txt", b"pwn")]);

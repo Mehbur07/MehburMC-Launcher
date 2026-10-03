@@ -1,5 +1,5 @@
 import { Save } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { INSTANCE_ICONS, InstanceIcon } from "../../components/InstanceIcon";
@@ -7,7 +7,9 @@ import { Button, Field, TextInput } from "../../components/ui";
 import type { Instance } from "../../lib/ipc/bindings/Instance";
 import { useApp } from "../../stores/app";
 import { useInstances } from "../../stores/instances";
+import type { LoaderSpec } from "../../lib/ipc/bindings/LoaderSpec";
 import { InstanceOptionsFields, type InstanceOptions } from "../instances/InstanceOptionsFields";
+import { LoaderPicker } from "../instances/LoaderPicker";
 
 export function SettingsTab({ inst }: { inst: Instance }) {
   const { t } = useTranslation();
@@ -23,6 +25,11 @@ export function SettingsTab({ inst }: { inst: Instance }) {
     fullscreen: inst.fullscreen,
   });
   const [saved, setSaved] = useState(false);
+  const [loader, setLoader] = useState<LoaderSpec>(inst.loader);
+  const [loaderReady, setLoaderReady] = useState(true);
+  const onLoaderReady = useCallback((ok: boolean) => setLoaderReady(ok), []);
+  const loaderChanged =
+    loader.kind !== inst.loader.kind || (loader.version ?? null) !== (inst.loader.version ?? null);
 
   const save = async () => {
     const res = await update(inst.id, {
@@ -36,6 +43,7 @@ export function SettingsTab({ inst }: { inst: Instance }) {
       resolution: options.resolution ?? undefined,
       clearResolution: options.resolution === null,
       fullscreen: options.fullscreen,
+      loader: loaderChanged ? loader : undefined,
     });
     if (res) {
       setSaved(true);
@@ -64,13 +72,29 @@ export function SettingsTab({ inst }: { inst: Instance }) {
           ))}
         </div>
       </Field>
+      <div className="flex flex-col gap-1.5">
+        <span className="text-xs font-semibold tracking-wide text-muted uppercase">
+          {t("wizard.loader")}
+        </span>
+        <LoaderPicker
+          mc={inst.mcVersion}
+          value={loader}
+          onChange={setLoader}
+          onReady={onLoaderReady}
+        />
+        {loaderChanged && <p className="text-xs text-warn">{t("loader.changeWarning")}</p>}
+      </div>
       <InstanceOptionsFields
         value={options}
         onChange={setOptions}
         defaultMemoryMb={defaultMemory}
       />
       <div>
-        <Button variant="primary" disabled={!name.trim()} onClick={() => void save()}>
+        <Button
+          variant="primary"
+          disabled={!name.trim() || (loaderChanged && !loaderReady)}
+          onClick={() => void save()}
+        >
           <Save size={15} />
           {saved ? t("common.saved") : t("common.save")}
         </Button>

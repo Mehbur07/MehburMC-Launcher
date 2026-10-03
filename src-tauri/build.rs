@@ -33,6 +33,9 @@ const COMMANDS: &[&str] = &[
     "toggle_instance_file",
     "delete_instance_file",
     "read_instance_log",
+    "list_loader_versions",
+    "import_optifine",
+    "install_shader_support",
 ];
 
 fn main() {
