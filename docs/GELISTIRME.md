@@ -71,9 +71,10 @@ başlatmayın** (o pencere öne gelir).
 
 1. `src-tauri/tauri.conf.json`, `Cargo.toml` (workspace) ve `package.json` sürümünü artır,
    `CHANGELOG.md`'yi güncelle.
-2. `vX.Y.Z` tag'ini push'la → `Release` iş akışı taslak release oluşturur (NSIS, `.sig`,
-   `latest.json`, portable zip).
-3. Taslağı yayınla. (Güncelleme kanalı yalnızca depo herkese açıkken çalışır.)
+2. İmza anahtarıyla `npm run package` (yukarıdaki PowerShell örneği).
+3. `node scripts/publish-release.mjs`: `vX.Y.Z` sürümüne yalnızca kurulum `.exe`'si yüklenir,
+   `latest.json` (sürüm, notlar, imza, indirme adresi) kod içermeyen `updater` dalına yazılır;
+   kurulu launcher'lar oradan okur (K63).
 
 İmza anahtarı repoda **yoktur**: GitHub Secrets (`TAURI_SIGNING_PRIVATE_KEY`,
 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`) ve geliştiricinin `~/.tauri/` klasörü.

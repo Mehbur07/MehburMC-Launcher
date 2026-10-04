@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/launcher-core", "crates/launcher-cli", "src-tauri"]
 
 [workspace.package]
-version = "0.2.1"
+version = "0.2.2"
 edition = "2024"
 license = "UNLICENSED"
 repository = "https://github.com/Mehbur07/MehburMC-Launcher"

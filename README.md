@@ -1,9 +1,18 @@
 # MehburMC Launcher
 
-Windows öncelikli, hafif, reklamsız ve telemetrisiz bir Minecraft Java Edition launcher'ı.
-Tauri 2 (Rust) + React + TypeScript ile geliştirilmektedir.
+Windows için hafif, reklamsız ve telemetrisiz bir Minecraft Java Edition launcher'ı.
 
-> **Durum:** Faz 9 (sertleştirme) tamamlandı — 0.1.0 sürüm adayı. Yalnızca offline hesaplar.
+## ⬇️ İndir
+
+**[En son sürümü indir (Releases)](https://github.com/Mehbur07/MehburMC-Launcher/releases/latest)**
+→ sayfadaki **`MehburMC-Launcher_<sürüm>_x64-setup.exe`** dosyasını indirip çalıştır.
+
+"Source code" dosyaları launcher değildir, kaynak koddur; oynamak için gerekmez. Launcher kendini
+güncel tutar: yeni sürüm çıkınca başlık çubuğunda **Güncelle** butonu belirir.
+
+---
+
+Tauri 2 (Rust) + React + TypeScript ile geliştirilmektedir.
 
 - **Kullanım kılavuzu:** [docs/KULLANIM.md](docs/KULLANIM.md)
 - **Sorun giderme:** [docs/SORUN_GIDERME.md](docs/SORUN_GIDERME.md)
@@ -49,9 +58,8 @@ $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = Get-Content -Raw "$HOME\.tauri\mehburm
 npm run package
 ```
 
-GitHub'da: `tauri.conf.json` sürümünü artır, `vX.Y.Z` tag'ini push'la → `Release` iş akışı taslak
-bir release oluşturur (kurulum, `latest.json`, portable zip). Taslağı yayınlayınca güncelleme kanalı
-onu görür — depo herkese açık olduğunda (private depoda kanal erişilemez).
+Yayınlamak için `node scripts/publish-release.mjs`: GitHub sürümüne yalnızca kurulum `.exe`'sini
+koyar, güncelleme bilgisini (`latest.json`) `updater` dalına yazar.
 
 ### Çekirdek CLI (`mehbur-cli`)
 

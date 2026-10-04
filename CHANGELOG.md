@@ -3,6 +3,13 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.2.2] — 2026-10-04
+
+### Değişti
+- İndirme sayfası sadeleşti: sürümlerde yalnızca kurulum dosyası (`setup.exe`) var.
+- Güncelleme bilgisi artık ayrı bir yerden okunuyor. **0.2.1 ve öncesinden** gelenler bu sürümü
+  bir kez elle kurmalı; sonraki güncellemeler yine Güncelle butonuyla gelir.
+
 ## [0.2.1] — 2026-10-04
 
 ### Değişti

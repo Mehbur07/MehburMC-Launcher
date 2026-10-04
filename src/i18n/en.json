@@ -621,7 +621,7 @@
       "upToDate": "The launcher is up to date.",
       "available": "Version {{version}} is available.",
       "unavailable": "Update channel unreachable (offline or no release yet).",
-      "portable": "Portable copies do not self-update; download the new portable zip and extract it over this folder."
+      "portable": "Portable copies do not update themselves; install the new version with the setup file from GitHub."
     },
     "button": "Update to {{version}}",
     "installing": "Downloading {{pct}}%"

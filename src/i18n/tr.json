@@ -621,7 +621,7 @@
       "upToDate": "Launcher güncel.",
       "available": "{{version}} sürümü mevcut.",
       "unavailable": "Güncelleme kanalına ulaşılamadı (çevrimdışı veya henüz yayın yok).",
-      "portable": "Portable sürümde otomatik güncelleme yok; yeni portable zip'i indirip klasörün üzerine çıkar."
+      "portable": "Portable sürüm kendini güncellemez; yeni sürümü GitHub'dan kurulum dosyasıyla kur."
     },
     "button": "Güncelle · v{{version}}",
     "installing": "İndiriliyor %{{pct}}"
