@@ -1,6 +1,6 @@
-//! Signed self-update (tauri-plugin-updater). The channel is a GitHub
-//! release `latest.json`; while the repository is private it is unreachable
-//! and the check reports `unavailable` instead of failing (ARCHITECTURE R7).
+//! Signed self-update (tauri-plugin-updater). The channel is the public
+//! GitHub release `latest.json`; when it is unreachable (offline) the check
+//! reports `unavailable` instead of failing (ARCHITECTURE R7, K62).
 
 use launcher_core::CoreError;
 use serde::Serialize;
