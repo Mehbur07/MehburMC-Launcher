@@ -117,7 +117,8 @@ describe("pixel ops", () => {
 
 describe("presets", () => {
   it("draw valid, opaque skins and capes", () => {
-    const ids = new Set<string>();
+    const skinIds = new Set<string>();
+    const capeIds = new Set<string>();
     for (const s of SKIN_PRESETS) {
       const p = s.draw();
       expect([p.width, p.height]).toEqual([64, 64]);
@@ -127,15 +128,16 @@ describe("presets", () => {
         for (let y = f.y; y < f.y + f.h; y++)
           for (let x = f.x; x < f.x + f.w; x++) expect(getPx(p, x, y)[3]).toBe(255);
       }
-      ids.add(s.id);
+      skinIds.add(s.id);
     }
     for (const c of CAPE_PRESETS) {
       const p = c.draw();
       expect([p.width, p.height]).toEqual([64, 32]);
       expect(getPx(p, 1, 1)[3]).toBe(255);
-      ids.add(c.id);
+      capeIds.add(c.id);
     }
-    expect(ids.size).toBe(SKIN_PRESETS.length + CAPE_PRESETS.length);
+    expect(skinIds.size).toBe(SKIN_PRESETS.length);
+    expect(capeIds.size).toBe(CAPE_PRESETS.length);
   });
 
   it("are deterministic", () => {

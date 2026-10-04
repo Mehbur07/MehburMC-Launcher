@@ -32,6 +32,7 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sür
 - **Skin stüdyosu (Faz 10):** hazır skin ve pelerinler (oyunun varsayılan skinleri kurulu
   sürümden okunur + 11 skin / 10 pelerinlik özgün MehburMC koleksiyonu); canlı 3B önizlemeli
   piksel editörü (kalem, silgi, kova, damlalık, çizgi, ayna modu, katmanlar, geri al/ileri al).
+  MehburMC skin'i ve pelerini her kullanıcının kütüphanesine hazır gelir.
 
 ### Kaldırıldı
 - Premium kavramı (Faz 10): "premium değil" rozeti ve oyuncu adından skin kopyalama.

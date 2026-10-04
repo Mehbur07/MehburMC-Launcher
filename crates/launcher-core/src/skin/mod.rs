@@ -82,7 +82,37 @@ struct Library {
     capes: Vec<CapeEntry>,
     /// Account id → chosen textures.
     assignments: BTreeMap<String, Assignment>,
+    /// Built-in textures already offered once; deleting one keeps it gone.
+    builtin: Vec<String>,
 }
+
+/// A texture every library starts with.
+struct Builtin {
+    key: &'static str,
+    kind: TextureKind,
+    name: &'static str,
+    model: Option<SkinModel>,
+    png: &'static [u8],
+}
+
+/// Exported from the "mehbur" presets in `src/features/skins/presets`
+/// (`builtin.test.ts` keeps them in sync).
+const BUILTINS: &[Builtin] = &[
+    Builtin {
+        key: "mehbur-skin",
+        kind: TextureKind::Skin,
+        name: "MehburMC",
+        model: Some(SkinModel::Classic),
+        png: include_bytes!("../../assets/builtin/mehbur-skin.png"),
+    },
+    Builtin {
+        key: "mehbur-cape",
+        kind: TextureKind::Cape,
+        name: "MehburMC",
+        model: None,
+        png: include_bytes!("../../assets/builtin/mehbur-cape.png"),
+    },
+];
 
 #[derive(Debug, Clone, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -237,6 +267,33 @@ impl SkinStore {
             write_atomic(&path, bytes)?;
         }
         Ok(id)
+    }
+
+    /// Adds the built-in MehburMC textures the first time this library is
+    /// seen (new and existing installs alike); never re-adds deleted ones.
+    pub fn seed_builtins(&self) -> Result<()> {
+        let seen = self.read().builtin;
+        let missing: Vec<_> = BUILTINS
+            .iter()
+            .filter(|b| !seen.iter().any(|s| s == b.key))
+            .collect();
+        if missing.is_empty() {
+            return Ok(());
+        }
+        for b in &missing {
+            match b.kind {
+                TextureKind::Skin => drop(self.add_skin(b.png, b.name, b.model)?),
+                TextureKind::Cape => drop(self.add_cape(b.png, b.name)?),
+            }
+        }
+        let _g = self.lock.lock().expect("skins lock");
+        let mut lib = self.read();
+        for b in missing {
+            if !lib.builtin.iter().any(|s| s == b.key) {
+                lib.builtin.push(b.key.to_owned());
+            }
+        }
+        self.write(&lib)
     }
 
     /// Validates and adds a skin; the same image twice returns the existing
@@ -492,6 +549,21 @@ mod tests {
         let paths = Paths::at(tmp.path().join("MehburMC"));
         paths.ensure_layout().unwrap();
         (tmp, SkinStore::new(paths))
+    }
+
+    #[test]
+    fn seeds_builtins_once() {
+        let (_tmp, s) = store();
+        s.seed_builtins().unwrap();
+        let v = s.view();
+        assert_eq!(v.skins.len(), 1);
+        assert_eq!(v.skins[0].entry.name, "MehburMC");
+        assert_eq!(v.capes.len(), 1);
+        // Deleted built-ins stay deleted.
+        s.delete(TextureKind::Skin, &v.skins[0].entry.id).unwrap();
+        s.seed_builtins().unwrap();
+        assert!(s.view().skins.is_empty());
+        assert_eq!(s.view().capes.len(), 1);
     }
 
     #[test]

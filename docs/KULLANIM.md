@@ -96,6 +96,7 @@ tıkla kurulur (profil → Genel → **Tek tıkla kur**).
 
 **Skin & Cape** ekranı:
 - **Dosyadan ekle**: 64×64 veya 64×32 (ya da HD katları) PNG skin, 64×32 pelerin.
+- Kütüphanende **MehburMC** skin'i ve pelerini hazır gelir (silersen geri eklenmez).
 - **Hazırlar**: oyunun varsayılan skinleri (Steve, Alex… — kurulu bir sürümün oyun dosyasından
   okunur) ve MehburMC koleksiyonundaki özgün skin/pelerinler. Tıkla önizle, **+** ile kütüphaneye ekle.
 - **Tasarla**: kendi skin'ini (64×64) veya pelerinini (64×32) çiz; soldaki 3B önizleme anında

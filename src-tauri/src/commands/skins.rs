@@ -11,7 +11,13 @@ use crate::state::AppState;
 #[tauri::command]
 pub async fn list_skins(state: State<'_, AppState>) -> CmdResult<LibraryView> {
     let launcher = state.launcher()?.clone();
-    blocking(move || Ok(launcher.skins.view())).await
+    blocking(move || {
+        if let Err(e) = launcher.skins.seed_builtins() {
+            tracing::warn!(error = %e, "could not add the built-in skins");
+        }
+        Ok(launcher.skins.view())
+    })
+    .await
 }
 
 /// Imports a PNG picked in the file dialog; returns the texture id.
