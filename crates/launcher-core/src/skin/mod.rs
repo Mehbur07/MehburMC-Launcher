@@ -6,8 +6,8 @@
 //! instances with CustomSkinLoader, in game (see [`csl`], ARCHITECTURE.md R12).
 
 pub mod csl;
+pub mod defaults;
 pub mod image;
-pub mod mojang;
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -118,15 +118,6 @@ pub struct LibraryView {
 pub enum TextureKind {
     Skin,
     Cape,
-}
-
-#[derive(Debug, Clone, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export)]
-pub struct PlayerImport {
-    pub player: String,
-    pub skin: Option<SkinEntry>,
-    pub cape: Option<CapeEntry>,
 }
 
 /// Textures handed to the game for one account.
@@ -325,6 +316,28 @@ impl SkinStore {
         })
     }
 
+    /// Adds a texture drawn in the editor or picked from the presets, sent
+    /// as base64 PNG (no `data:` prefix). Returns the texture id.
+    pub fn add_base64(
+        &self,
+        kind: TextureKind,
+        name: &str,
+        model: Option<SkinModel>,
+        png_base64: &str,
+    ) -> Result<String> {
+        // 4 base64 chars encode 3 bytes; reject before decoding.
+        if png_base64.len() > image::MAX_FILE_BYTES / 3 * 4 + 4 {
+            return Err(CoreError::SkinInvalid("file is too large".into()));
+        }
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(png_base64.trim())
+            .map_err(|_| CoreError::SkinInvalid("not a PNG file".into()))?;
+        Ok(match kind {
+            TextureKind::Skin => self.add_skin(&bytes, name, model)?.id,
+            TextureKind::Cape => self.add_cape(&bytes, name)?.id,
+        })
+    }
+
     pub fn update_skin(
         &self,
         id: &str,
@@ -469,28 +482,6 @@ impl SkinStore {
     }
 }
 
-/// Adds a premium player's public skin and cape to the library.
-pub async fn import_player(
-    ctx: &crate::Ctx,
-    store: &SkinStore,
-    name: &str,
-) -> Result<PlayerImport> {
-    let p = mojang::fetch_player(ctx, name).await?;
-    let skin = match &p.skin {
-        Some((bytes, model)) => Some(store.add_skin(bytes, &p.name, Some(*model))?),
-        None => None,
-    };
-    let cape = match &p.cape {
-        Some(bytes) => Some(store.add_cape(bytes, &format!("{} cape", p.name))?),
-        None => None,
-    };
-    Ok(PlayerImport {
-        player: p.name,
-        skin,
-        cape,
-    })
-}
-
 #[cfg(test)]
 mod tests {
     use super::image::tests::png;
@@ -501,6 +492,48 @@ mod tests {
         let paths = Paths::at(tmp.path().join("MehburMC"));
         paths.ensure_layout().unwrap();
         (tmp, SkinStore::new(paths))
+    }
+
+    #[test]
+    fn adds_base64_textures() {
+        let (_tmp, s) = store();
+        let b64 = |b: &[u8]| base64::engine::general_purpose::STANDARD.encode(b);
+        let id = s
+            .add_base64(
+                TextureKind::Skin,
+                "Drawn",
+                Some(SkinModel::Slim),
+                &b64(&png(64, 64, |_, _| false)),
+            )
+            .unwrap();
+        let v = s.view();
+        assert_eq!(v.skins[0].entry.id, id);
+        assert_eq!(v.skins[0].entry.model, SkinModel::Slim);
+        s.add_base64(
+            TextureKind::Cape,
+            "c",
+            None,
+            &b64(&png(64, 32, |_, _| false)),
+        )
+        .unwrap();
+        assert_eq!(s.view().capes.len(), 1);
+
+        for bad in ["%%%".to_owned(), b64(b"not a png"), "A".repeat(3_000_000)] {
+            let e = s
+                .add_base64(TextureKind::Skin, "x", None, &bad)
+                .unwrap_err();
+            assert_eq!(e.code(), "skin.invalid");
+        }
+        // A cape-sized image is not a valid skin.
+        let e = s
+            .add_base64(
+                TextureKind::Cape,
+                "x",
+                None,
+                &b64(&png(64, 64, |_, _| false)),
+            )
+            .unwrap_err();
+        assert_eq!(e.code(), "skin.invalid");
     }
 
     #[test]

@@ -89,10 +89,7 @@ export function AccountsPage() {
                 className="h-10 w-10 rounded-md bg-surface-3"
               />
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 font-semibold">
-                  {a.name}
-                  <Badge tone="warn">{t("accounts.notPremium")}</Badge>
-                </div>
+                <div className="font-semibold">{a.name}</div>
                 <div data-selectable className="truncate font-mono text-xs text-muted">
                   {a.uuid}
                 </div>

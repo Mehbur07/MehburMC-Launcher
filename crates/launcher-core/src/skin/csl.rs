@@ -5,7 +5,7 @@
 //! Two `ExtraList` entries (one per arm model, since a CSL "Legacy" source has
 //! a fixed model) point there; CSL prepends ExtraList sources to its load list,
 //! so they win over the Mojang API source for names that also exist as
-//! premium accounts. CSL deletes each ExtraList file once it has merged it
+//! registered Mojang accounts. CSL deletes each ExtraList file once it has merged it
 //! into `CustomSkinLoader.json`.
 
 use std::path::{Path, PathBuf};

@@ -174,9 +174,7 @@
     },
     "skin": {
       "invalid": "Invalid skin/cape image: {{reason}}",
-      "notFound": "Skin or cape not found.",
-      "playerNotFound": "No Minecraft player named \"{{name}}\" was found.",
-      "noTextures": "This player has no custom skin or cape."
+      "notFound": "Skin or cape not found."
     }
   },
   "instances": {
@@ -328,7 +326,6 @@
     "namePlaceholder": "Player name",
     "add": "Add",
     "nameRules": "3–16 characters; letters, digits and _ only.",
-    "notPremium": "not premium",
     "active": "Active",
     "use": "Use",
     "offlineServers": "Offline accounts cannot join online-mode servers. Skins only show in game in instances with CustomSkinLoader.",
@@ -431,14 +428,11 @@
     "tabCapes": "Capes ({{count}})",
     "importSkin": "Add skin from file",
     "importCape": "Add cape from file",
-    "playerPlaceholder": "Premium player name (e.g. jeb_)",
-    "fetchPlayer": "Get skin",
-    "playerHint": "Copies a premium player's public skin and cape into your library.",
     "noCape": "No cape",
     "emptySkins": "No skins yet",
-    "emptySkinsHint": "Add a 64×64 or 64×32 PNG, or get a skin from a player name.",
+    "emptySkinsHint": "Add a 64×64 or 64×32 PNG, pick a preset or design your own skin.",
     "emptyCapes": "No capes yet",
-    "emptyCapesHint": "Add a 64×32 cape PNG. Capes fetched from premium players show up here too.",
+    "emptyCapesHint": "Add a 64×32 cape PNG, pick a preset cape or design your own.",
     "preview": "Preview {{name}}",
     "toggleModel": "Switch arm model (Classic / Slim)",
     "rename": "Rename",
@@ -453,6 +447,100 @@
       "install": "Install CustomSkinLoader",
       "vanillaNote": "In Vanilla, OptiFine and Legacy Fabric instances the skin only shows in the launcher preview. Other players only see your skin if they also run CustomSkinLoader and have the same file.",
       "syncNote": "The skin is refreshed on every launch; restart the game after changing it."
+    },
+    "modes": "Skin sections",
+    "kind": "Type",
+    "mode": {
+      "library": "My library",
+      "presets": "Presets",
+      "editor": "Design"
+    },
+    "editInEditor": "Edit in editor",
+    "presets": {
+      "gameDefaults": "The game's default skins",
+      "gameDefaultsHint": "Read from the installed {{version}} game files.",
+      "noDefaults": "Download a Minecraft Java version first to see the default skins (launching any instance once is enough).",
+      "collection": "MehburMC collection",
+      "collectionHint": "Drawn for the launcher; click to preview, + to add to your library.",
+      "edit": "Open {{name}} in the editor",
+      "add": "Add {{name}} to the library",
+      "items": {
+        "explorer": "Explorer",
+        "knight": "Knight",
+        "ninja": "Ninja",
+        "astronaut": "Astronaut",
+        "robot": "Robot",
+        "hoodieBlue": "Blue Hoodie",
+        "hoodiePink": "Pink Hoodie",
+        "pirate": "Pirate",
+        "wizard": "Wizard",
+        "cyber": "Cyber Neon",
+        "footballer": "Footballer",
+        "mehbur": "MehburMC",
+        "turkey": "Crescent & Star",
+        "sunset": "Sunset",
+        "flame": "Flame",
+        "galaxy": "Galaxy",
+        "checker": "Checker",
+        "rainbow": "Rainbow",
+        "forest": "Forest",
+        "ice": "Ice",
+        "gold": "Gold Diamond"
+      }
+    },
+    "editor": {
+      "title": "Design",
+      "tools": "Tools",
+      "tool": {
+        "pencil": "Pencil",
+        "eraser": "Eraser",
+        "fill": "Bucket",
+        "picker": "Eyedropper",
+        "line": "Line"
+      },
+      "size": "Brush",
+      "mirror": "Mirror (left ↔ right)",
+      "grid": "Grid",
+      "guides": "Part guides",
+      "undo": "Undo",
+      "redo": "Redo",
+      "clear": "Clear layer",
+      "layer": "Layer",
+      "layers": {
+        "all": "All",
+        "base": "Base",
+        "overlay": "Outer layer"
+      },
+      "showOverlay": "Show outer layer",
+      "arms": "Arms",
+      "canvas": "Drawing area",
+      "hint": "Left click: draw · Right click: erase · Alt+click: pick colour",
+      "unused": "unused area",
+      "part": {
+        "head": "Head",
+        "body": "Body",
+        "rightArm": "Right arm",
+        "leftArm": "Left arm",
+        "rightLeg": "Right leg",
+        "leftLeg": "Left leg",
+        "cape": "Cape",
+        "elytra": "Elytra"
+      },
+      "face": {
+        "top": "top",
+        "bottom": "bottom",
+        "right": "right",
+        "front": "front",
+        "left": "left",
+        "back": "back"
+      },
+      "color": "Colour",
+      "recent": "Recent",
+      "template": "Start from template",
+      "blank": "Blank canvas",
+      "namePlaceholder": "Name",
+      "save": "Save to library",
+      "saved": "Saved"
     }
   },
   "crash": {

@@ -164,9 +164,6 @@ pub enum CoreError {
     #[error("skin or cape {0} was not found")]
     SkinNotFound(String),
 
-    #[error("no Minecraft player named {0}")]
-    PlayerNotFound(String),
-
     #[error("cannot move the data folder: {0}")]
     DataMove(String),
 }
@@ -223,7 +220,6 @@ impl CoreError {
             Self::CurseForgeKey => "content.curseforgeKey",
             Self::SkinInvalid(_) => "skin.invalid",
             Self::SkinNotFound(_) => "skin.notFound",
-            Self::PlayerNotFound(_) => "skin.playerNotFound",
             Self::DataMove(_) => "paths.moveFailed",
         }
     }
@@ -309,7 +305,6 @@ impl CoreError {
                 put("reason", reason.clone())
             }
             Self::SkinNotFound(id) => put("id", id.clone()),
-            Self::PlayerNotFound(name) => put("name", name.clone()),
             Self::NoDataDir | Self::Cancelled | Self::NoAccount | Self::CurseForgeKey => {}
         }
         p

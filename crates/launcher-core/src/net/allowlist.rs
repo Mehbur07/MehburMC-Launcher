@@ -13,9 +13,6 @@ const DEFAULT_RULES: &[(&str, Option<&str>)] = &[
     ("libraries.minecraft.net", None),
     ("resources.download.minecraft.net", None),
     ("launchercontent.mojang.com", None),
-    ("textures.minecraft.net", None),
-    ("sessionserver.mojang.com", None),
-    ("api.minecraftservices.com", None),
     // Fabric / Quilt / Legacy Fabric
     ("meta.fabricmc.net", None),
     ("maven.fabricmc.net", None),

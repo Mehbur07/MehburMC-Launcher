@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const ipcMock = vi.hoisted(() => ({
   listSkins: vi.fn(),
   importSkinFile: vi.fn(),
-  importPlayerSkin: vi.fn(),
+  addSkinBytes: vi.fn(),
   assignSkin: vi.fn(),
 }));
 vi.mock("../lib/ipc", async (orig) => ({
@@ -54,10 +54,16 @@ describe("skins store", () => {
     expect(useApp.getState().notice?.code).toBe("skin.invalid");
   });
 
-  it("returns player import errors instead of showing them", async () => {
-    const err = { code: "skin.playerNotFound", params: { name: "x" }, detail: "" };
-    ipcMock.importPlayerSkin.mockRejectedValueOnce(err);
-    expect(await useSkins.getState().importPlayer("x")).toEqual(err);
-    expect(useApp.getState().notice).toBeNull();
+  it("adds drawn textures without the data: prefix", async () => {
+    ipcMock.addSkinBytes.mockResolvedValueOnce("s9");
+    expect(
+      await useSkins.getState().addTexture("skin", "Mine", "data:image/png;base64,QUJD", "slim"),
+    ).toBe("s9");
+    expect(ipcMock.addSkinBytes).toHaveBeenCalledWith("skin", "Mine", "QUJD", "slim");
+    expect(ipcMock.listSkins).toHaveBeenCalled();
+
+    ipcMock.addSkinBytes.mockRejectedValueOnce({ code: "skin.invalid", params: {}, detail: "" });
+    expect(await useSkins.getState().addTexture("cape", "x", "QUJD")).toBeNull();
+    expect(useApp.getState().notice?.code).toBe("skin.invalid");
   });
 });

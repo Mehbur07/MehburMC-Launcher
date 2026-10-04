@@ -1,7 +1,7 @@
 # MehburMC Launcher — Kullanım Kılavuzu
 
 MehburMC Launcher, Minecraft: Java Edition için hafif, reklamsız ve telemetrisiz bir launcher'dır.
-Yalnızca **offline (premium olmayan) hesaplarla** çalışır.
+Yalnızca **offline hesaplarla** çalışır.
 
 ## İçindekiler
 
@@ -41,7 +41,7 @@ Birden fazla hesap ekleyip **Kullan** ile aralarında geçiş yapabilirsin.
 
 Offline hesaplar:
 - Tek oyunculu oyunda ve `online-mode=false` olan sunucularda çalışır.
-- Premium (online-mode) sunuculara giremez.
+- Çevrimiçi (online-mode) sunuculara giremez.
 
 ## 3. Profil (instance) oluşturma
 
@@ -96,7 +96,13 @@ tıkla kurulur (profil → Genel → **Tek tıkla kur**).
 
 **Skin & Cape** ekranı:
 - **Dosyadan ekle**: 64×64 veya 64×32 (ya da HD katları) PNG skin, 64×32 pelerin.
-- **Oyuncu adından al**: bir premium oyuncunun herkese açık skin'ini ve pelerinini kopyalar.
+- **Hazırlar**: oyunun varsayılan skinleri (Steve, Alex… — kurulu bir sürümün oyun dosyasından
+  okunur) ve MehburMC koleksiyonundaki özgün skin/pelerinler. Tıkla önizle, **+** ile kütüphaneye ekle.
+- **Tasarla**: kendi skin'ini (64×64) veya pelerinini (64×32) çiz; soldaki 3B önizleme anında
+  güncellenir. Araçlar: kalem (B), silgi (E), kova (G), damlalık (I), çizgi (L), ayna modu (M);
+  sağ tık siler, Alt+tık renk alır, Ctrl+Z / Ctrl+Y geri/ileri alır. **Katman** ile yalnızca
+  taban veya dış katmana (şapka, ceket, kol/paça) çizebilirsin. Kütüphanedeki ya da hazır bir
+  skin'i fırça simgesiyle editörde açıp değiştirebilirsin; **Kütüphaneye kaydet** ile eklenir.
 - Karta tıklayınca 3B önizlemede görürsün (yürüme/koşma animasyonu, pelerin/elytra);
   **… için uygula** ile seçili hesaba atarsın. Kol modeli (Klasik/İnce) otomatik algılanır,
   karttan değiştirilebilir.

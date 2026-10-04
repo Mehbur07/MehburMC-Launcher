@@ -35,6 +35,7 @@ export function SkinViewer3D({
   back,
   pose,
   name,
+  outerLayer = true,
   className = "",
 }: {
   skin: string | null;
@@ -43,6 +44,8 @@ export function SkinViewer3D({
   back: BackItem;
   pose: Pose;
   name: string | null;
+  /** Hat/jacket/sleeve/pants layer; the editor can hide it. */
+  outerLayer?: boolean;
   className?: string;
 }) {
   const host = useRef<HTMLDivElement>(null);
@@ -97,6 +100,10 @@ export function SkinViewer3D({
     const v = viewer.current;
     if (v) v.animation = makeAnimation(pose);
   }, [pose]);
+
+  useEffect(() => {
+    viewer.current?.playerObject.skin.setOuterLayerVisible(outerLayer);
+  }, [outerLayer]);
 
   useEffect(() => {
     const v = viewer.current;

@@ -32,7 +32,7 @@ webview'da çalışabilecek kötü niyetli içerik (XSS).
   içe aktarılan profillerden Java yolu ve bu seçenekler silinir.
 
 **Gizlilik**
-- Telemetri yok. Microsoft/premium girişi yok; offline hesaplarda parola/token tutulmaz.
+- Telemetri yok. Microsoft girişi yok; offline hesaplarda parola/token tutulmaz.
 - Loglarda token, parola, `x-api-key` ve CurseForge anahtarları maskelenir.
 - CurseForge API anahtarı (kullanıcı girerse) `settings.json`'da düz metin durur — yalnızca
   bu bilgisayarda ve yalnızca `api.curseforge.com` isteklerinde kullanılır.

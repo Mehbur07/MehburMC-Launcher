@@ -174,9 +174,7 @@
     },
     "skin": {
       "invalid": "Geçersiz skin/pelerin görseli: {{reason}}",
-      "notFound": "Skin veya pelerin bulunamadı.",
-      "playerNotFound": "\"{{name}}\" adında bir Minecraft oyuncusu bulunamadı.",
-      "noTextures": "Bu oyuncunun özel bir skin'i veya pelerini yok."
+      "notFound": "Skin veya pelerin bulunamadı."
     }
   },
   "instances": {
@@ -328,7 +326,6 @@
     "namePlaceholder": "Oyuncu adı",
     "add": "Ekle",
     "nameRules": "3–16 karakter; yalnızca harf, rakam ve _.",
-    "notPremium": "premium değil",
     "active": "Aktif",
     "use": "Kullan",
     "offlineServers": "Offline hesaplar çevrimiçi (online-mode) sunuculara giremez. Skin'ler oyunda yalnızca CustomSkinLoader kurulu profillerde görünür.",
@@ -431,14 +428,11 @@
     "tabCapes": "Pelerinler ({{count}})",
     "importSkin": "Dosyadan skin ekle",
     "importCape": "Dosyadan pelerin ekle",
-    "playerPlaceholder": "Premium oyuncu adı (ör. jeb_)",
-    "fetchPlayer": "Skin'i al",
-    "playerHint": "Bir premium oyuncunun herkese açık skin'ini ve pelerinini kütüphaneye kopyalar.",
     "noCape": "Pelerinsiz",
     "emptySkins": "Henüz skin yok",
-    "emptySkinsHint": "64×64 veya 64×32 PNG ekle ya da bir oyuncu adından skin al.",
+    "emptySkinsHint": "64×64 veya 64×32 PNG ekle, hazırlardan birini seç ya da kendi skin'ini tasarla.",
     "emptyCapes": "Henüz pelerin yok",
-    "emptyCapesHint": "64×32 pelerin PNG'si ekle. Premium oyuncudan alınan pelerinler de burada görünür.",
+    "emptyCapesHint": "64×32 pelerin PNG'si ekle, hazır pelerinlerden birini seç ya da kendin tasarla.",
     "preview": "{{name}} önizle",
     "toggleModel": "Kol modelini değiştir (Klasik / İnce)",
     "rename": "Yeniden adlandır",
@@ -453,6 +447,100 @@
       "install": "CustomSkinLoader kur",
       "vanillaNote": "Vanilla, OptiFine ve Legacy Fabric profillerinde skin yalnızca launcher önizlemesinde görünür. Diğer oyuncular skin'ini yalnızca onlarda da CustomSkinLoader varsa ve aynı dosya kendilerinde bulunuyorsa görür.",
       "syncNote": "Skin her başlatmada güncellenir; değişiklik için oyunu yeniden başlat."
+    },
+    "modes": "Skin bölümleri",
+    "kind": "Tür",
+    "mode": {
+      "library": "Kütüphanem",
+      "presets": "Hazırlar",
+      "editor": "Tasarla"
+    },
+    "editInEditor": "Editörde düzenle",
+    "presets": {
+      "gameDefaults": "Oyunun varsayılan skinleri",
+      "gameDefaultsHint": "Kurulu {{version}} sürümünün oyun dosyasından okundu.",
+      "noDefaults": "Varsayılan skinleri göstermek için önce bir Minecraft Java sürümü indir (herhangi bir profili bir kez başlatmak yeterli).",
+      "collection": "MehburMC koleksiyonu",
+      "collectionHint": "Launcher için özel çizildi; önizlemek için tıkla, + ile kütüphanene ekle.",
+      "edit": "{{name}} editörde aç",
+      "add": "{{name}} kütüphaneye ekle",
+      "items": {
+        "explorer": "Kaşif",
+        "knight": "Şövalye",
+        "ninja": "Ninja",
+        "astronaut": "Astronot",
+        "robot": "Robot",
+        "hoodieBlue": "Mavi Kapüşonlu",
+        "hoodiePink": "Pembe Kapüşonlu",
+        "pirate": "Korsan",
+        "wizard": "Büyücü",
+        "cyber": "Siber Neon",
+        "footballer": "Futbolcu",
+        "mehbur": "MehburMC",
+        "turkey": "Ay Yıldız",
+        "sunset": "Gün Batımı",
+        "flame": "Alev",
+        "galaxy": "Galaksi",
+        "checker": "Dama",
+        "rainbow": "Gökkuşağı",
+        "forest": "Orman",
+        "ice": "Buz",
+        "gold": "Altın Elmas"
+      }
+    },
+    "editor": {
+      "title": "Tasarım",
+      "tools": "Araçlar",
+      "tool": {
+        "pencil": "Kalem",
+        "eraser": "Silgi",
+        "fill": "Kova",
+        "picker": "Damlalık",
+        "line": "Çizgi"
+      },
+      "size": "Fırça",
+      "mirror": "Ayna modu (sol ↔ sağ)",
+      "grid": "Izgara",
+      "guides": "Bölge kılavuzu",
+      "undo": "Geri al",
+      "redo": "İleri al",
+      "clear": "Katmanı temizle",
+      "layer": "Katman",
+      "layers": {
+        "all": "Hepsi",
+        "base": "Taban",
+        "overlay": "Dış katman"
+      },
+      "showOverlay": "Dış katmanı göster",
+      "arms": "Kollar",
+      "canvas": "Çizim alanı",
+      "hint": "Sol tık: çiz · Sağ tık: sil · Alt+tık: renk al",
+      "unused": "kullanılmayan alan",
+      "part": {
+        "head": "Baş",
+        "body": "Gövde",
+        "rightArm": "Sağ kol",
+        "leftArm": "Sol kol",
+        "rightLeg": "Sağ bacak",
+        "leftLeg": "Sol bacak",
+        "cape": "Pelerin",
+        "elytra": "Elytra"
+      },
+      "face": {
+        "top": "üst",
+        "bottom": "alt",
+        "right": "sağ",
+        "front": "ön",
+        "left": "sol",
+        "back": "arka"
+      },
+      "color": "Renk",
+      "recent": "Son",
+      "template": "Şablondan başla",
+      "blank": "Boş tuval",
+      "namePlaceholder": "Ad",
+      "save": "Kütüphaneye kaydet",
+      "saved": "Kaydedildi"
     }
   },
   "crash": {

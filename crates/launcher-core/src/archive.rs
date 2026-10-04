@@ -128,6 +128,30 @@ pub fn read_entry(archive: &Path, name: &str) -> Result<Option<Vec<u8>>> {
     Ok(Some(buf))
 }
 
+/// Reads several entries with one pass over the central directory; missing
+/// entries are `None`. Much faster than repeated [`read_entry`] on big jars.
+pub fn read_entries(archive: &Path, names: &[String]) -> Result<Vec<Option<Vec<u8>>>> {
+    let mut zip = open(archive)?;
+    names
+        .iter()
+        .map(|name| {
+            let mut entry = match zip.by_name(name) {
+                Ok(e) => e,
+                Err(zip::result::ZipError::FileNotFound) => return Ok(None),
+                Err(source) => {
+                    return Err(CoreError::Archive {
+                        path: archive.to_owned(),
+                        source,
+                    });
+                }
+            };
+            let mut buf = Vec::with_capacity(entry.size() as usize);
+            io::copy(&mut entry, &mut buf).map_err(|e| CoreError::io(archive, e))?;
+            Ok(Some(buf))
+        })
+        .collect()
+}
+
 /// Copies one entry to `dest` (atomically). Returns `false` if it is missing.
 pub fn extract_entry(archive: &Path, name: &str, dest: &Path) -> Result<bool> {
     match read_entry(archive, name)? {

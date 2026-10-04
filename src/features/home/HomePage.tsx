@@ -106,7 +106,6 @@ export function HomePage() {
                 className="h-4 w-4 rounded-sm"
               />
               {account ? account.name : t("home.noAccount")}
-              {account?.kind === "offline" && <Badge tone="warn">{t("accounts.notPremium")}</Badge>}
             </button>
 
             {playing ? (

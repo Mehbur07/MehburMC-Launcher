@@ -3,8 +3,6 @@ import { create } from "zustand";
 import { ipc, toErrorPayload } from "../lib/ipc";
 import type { Assignment } from "../lib/ipc/bindings/Assignment";
 import type { CapeItem } from "../lib/ipc/bindings/CapeItem";
-import type { ErrorPayload } from "../lib/ipc/bindings/ErrorPayload";
-import type { PlayerImport } from "../lib/ipc/bindings/PlayerImport";
 import type { SkinItem } from "../lib/ipc/bindings/SkinItem";
 import type { SkinModel } from "../lib/ipc/bindings/SkinModel";
 import type { TextureKind } from "../lib/ipc/bindings/TextureKind";
@@ -21,8 +19,16 @@ interface SkinsStore {
    * id, or null on failure (notice shown).
    */
   importFile: (kind: TextureKind) => Promise<string | null>;
-  /** Returns the error instead of showing it, so the form can render it inline. */
-  importPlayer: (name: string) => Promise<PlayerImport | ErrorPayload>;
+  /**
+   * Adds a PNG drawn in the editor or taken from the presets (`data:` URI or
+   * bare base64). Returns the texture id, or null on failure (notice shown).
+   */
+  addTexture: (
+    kind: TextureKind,
+    name: string,
+    png: string,
+    model?: SkinModel,
+  ) => Promise<string | null>;
   update: (kind: TextureKind, id: string, name?: string, model?: SkinModel) => Promise<void>;
   remove: (kind: TextureKind, id: string) => Promise<void>;
   assign: (accountId: string, kind: TextureKind, id: string | null) => Promise<void>;
@@ -56,13 +62,14 @@ export const useSkins = create<SkinsStore>((set, get) => ({
     }
   },
 
-  importPlayer: async (name) => {
+  addTexture: async (kind, name, png, model) => {
     try {
-      const r = await ipc.importPlayerSkin(name);
+      const id = await ipc.addSkinBytes(kind, name, png.replace(/^data:[^,]*,/, ""), model);
       await get().load();
-      return r;
+      return id;
     } catch (e) {
-      return toErrorPayload(e);
+      notify(e);
+      return null;
     }
   },
 

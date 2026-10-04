@@ -22,13 +22,13 @@ import type { JavaInstall } from "./bindings/JavaInstall";
 import type { LibraryView } from "./bindings/LibraryView";
 import type { LoaderKind } from "./bindings/LoaderKind";
 import type { LoaderVersion } from "./bindings/LoaderVersion";
+import type { DefaultSkin } from "./bindings/DefaultSkin";
 import type { ManifestEntry } from "./bindings/ManifestEntry";
 import type { MoveProgress } from "./bindings/MoveProgress";
 import type { NewInstance } from "./bindings/NewInstance";
 import type { NewsItem } from "./bindings/NewsItem";
 import type { OptifineInfo } from "./bindings/OptifineInfo";
 import type { PickPurpose } from "./bindings/PickPurpose";
-import type { PlayerImport } from "./bindings/PlayerImport";
 import type { ProjectType } from "./bindings/ProjectType";
 import type { SearchPage } from "./bindings/SearchPage";
 import type { SearchQuery } from "./bindings/SearchQuery";
@@ -107,7 +107,9 @@ export const ipc = {
   listSkins: () => invoke<LibraryView>("list_skins"),
   importSkinFile: (kind: TextureKind, model?: SkinModel) =>
     invoke<string>("import_skin_file", { kind, model }),
-  importPlayerSkin: (name: string) => invoke<PlayerImport>("import_player_skin", { name }),
+  addSkinBytes: (kind: TextureKind, name: string, pngBase64: string, model?: SkinModel) =>
+    invoke<string>("add_skin_bytes", { kind, name, model, pngBase64 }),
+  listDefaultSkins: () => invoke<DefaultSkin[]>("list_default_skins"),
   updateSkin: (kind: TextureKind, id: string, name?: string, model?: SkinModel) =>
     invoke<void>("update_skin", { kind, id, name, model }),
   deleteSkin: (kind: TextureKind, id: string) => invoke<void>("delete_skin", { kind, id }),
