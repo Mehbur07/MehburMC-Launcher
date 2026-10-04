@@ -6,7 +6,8 @@
     "minimize": "Küçült",
     "maximize": "Büyüt",
     "restore": "Önceki boyut",
-    "close": "Kapat"
+    "close": "Kapat",
+    "version": "Yüklü sürüm"
   },
   "nav": {
     "home": "Oyna",

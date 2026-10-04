@@ -27,7 +27,7 @@ export function UpdateButton() {
           disabled={busy}
           onClick={() => void install()}
           title={t("update.available", { version: info.version, current: info.current })}
-          className="relative ml-3 flex h-6 items-center gap-1.5 overflow-hidden rounded-full border border-accent/60 bg-accent/15 px-2.5 text-[11px] font-bold tracking-wide text-accent shadow-[0_0_12px_rgb(var(--mc-accent-rgb)/0.35)] transition-colors not-disabled:hover:bg-accent not-disabled:hover:text-on-accent disabled:cursor-progress"
+          className="relative ml-2 flex h-6 items-center gap-1.5 overflow-hidden rounded-full border border-accent/60 bg-accent/15 px-2.5 text-[11px] font-bold tracking-wide text-accent shadow-[0_0_12px_rgb(var(--mc-accent-rgb)/0.35)] transition-colors not-disabled:hover:bg-accent not-disabled:hover:text-on-accent disabled:cursor-progress"
         >
           {busy && (
             // Download progress fills the pill from the left.
