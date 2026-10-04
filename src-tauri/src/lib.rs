@@ -6,7 +6,7 @@ use tauri::window::Color;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 use crate::commands::{
-    accounts, content, data, files, home, instances, loaders, play, skins, update,
+    accounts, content, data, dialogs, files, home, instances, loaders, play, skins, update,
 };
 use crate::state::AppState;
 
@@ -114,6 +114,7 @@ pub fn run() {
             data::restart_app,
             update::check_app_update,
             update::install_app_update,
+            dialogs::pick_path,
         ])
         .run(tauri::generate_context!())
         .expect("error while running MehburMC Launcher");

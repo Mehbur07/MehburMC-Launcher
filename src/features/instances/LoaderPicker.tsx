@@ -1,4 +1,3 @@
-import { open } from "@tauri-apps/plugin-dialog";
 import { FileUp, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -105,15 +104,11 @@ export function LoaderPicker({
   useEffect(() => onReady?.(ready), [ready, onReady]);
 
   const importOptifine = async () => {
-    const picked = await open({
-      multiple: false,
-      directory: false,
-      filters: [{ name: "OptiFine", extensions: ["jar"] }],
-    });
-    if (typeof picked !== "string") return;
+    const picked = await ipc.pickPath("optifine").catch(() => null);
+    if (!picked) return;
     setImporting(true);
     try {
-      const info = await ipc.importOptifine(picked);
+      const info = await ipc.importOptifine();
       setMismatch(null);
       if (mc && info.mcVersion !== mc) {
         if (onMcVersion) onMcVersion(info.mcVersion);

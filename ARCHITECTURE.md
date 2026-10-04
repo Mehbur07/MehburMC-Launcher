@@ -1,6 +1,6 @@
 # MehburMC Launcher — Mimari
 
-> Durum: **Onaylandı (2026-10-03). Faz 8 tamamlandı; Faz 5 iptal edildi (K39).** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
+> Durum: **Onaylandı (2026-10-03). Faz 9 tamamlandı (0.1.0 sürüm adayı); Faz 5 iptal edildi (K39).** Bu belge yaşayan bir belgedir; her fazda alınan kararlar "Karar Kaydı" bölümüne eklenir.
 
 MehburMC Launcher; Windows öncelikli (Linux/macOS'a taşınabilir), açık mimarili, reklamsız, telemetrisiz bir Minecraft Java Edition launcher'ıdır. SKLauncher'ın özellik zenginliğini (offline hesaplar, skin/cape, modpack, loader desteği, portable) ve Legacy Launcher'ın hafifliğini / izole profil yapısını birleştirir.
 
@@ -38,7 +38,7 @@ MehburMC Launcher; Windows öncelikli (Linux/macOS'a taşınabilir), açık mima
 | Paket | Tauri bundler → **NSIS** installer + portable zip | |
 | Güncelleme | `tauri-plugin-updater` (imzalı) | Bkz. Risk R7. |
 
-Tauri eklentileri (en az yetki): `dialog` (dosya seçici), `opener` (yalnızca veri klasörünü açma, kapsam sınırlı), `updater`, `single-instance`, `process` (yeniden başlatma). **`shell` eklentisi kullanılmaz**; oyun/Java/installer süreçleri yalnızca Rust tarafından, sabit argüman şablonlarıyla başlatılır.
+Tauri eklentileri (en az yetki): `dialog` (dosya seçici; yalnızca Rust'tan çağrılır, K54), `opener` (yalnızca veri klasörünü açma, kapsam sınırlı), `updater`, `single-instance`, `process` (yeniden başlatma). **`shell` eklentisi kullanılmaz**; oyun/Java/installer süreçleri yalnızca Rust tarafından, sabit argüman şablonlarıyla başlatılır.
 
 ---
 
@@ -245,7 +245,9 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 - Tauri capabilities en az yetkiyle tanımlanır; `shell` eklentisi yoktur. `opener` yalnızca `Paths` köküne kapsamlıdır.
 - CSP: `default-src 'self'; img-src 'self' asset: data:; connect-src ipc: http://ipc.localhost; style-src 'self' 'unsafe-inline'`. Uzak görseller (mod ikonları, haber görselleri) Rust tarafından `cache\`'e indirilir ve `asset:` protokolüyle sunulur. Asset kapsamı yalnızca `cache\` ve `skins\` klasörleridir. Webview hiçbir dış adrese doğrudan bağlanmaz.
 - Zip çıkarma: her girdi normalleştirilir; mutlak yol, `..` ve sembolik bağlantı içeren girdiler reddedilir; hedef köke göre `starts_with` kontrolü yapılır.
-- Süreç başlatma: yalnızca bilinen Java ikilileri, argümanlar dizi olarak verilir (shell yorumlaması yok).
+- Süreç başlatma: yalnızca Java ikilileri (`java(w).exe` adı doğrulanır, K55), argümanlar dizi olarak verilir (shell yorumlaması yok); komut çalıştıran JVM seçenekleri reddedilir.
+- Dosya yolları webview'dan gelmez: diyaloglar Rust'ta açılır, seçilen yol amaç bazında saklanıp komutça bir kez tüketilir (K54). Webview'a `dialog`/`fs`/`shell`/`http` izni yok.
+- Belleğe okunan HTTP yanıtları 64 MB ile sınırlı (K56). Ayrıntılı tehdit modeli: [SECURITY.md](SECURITY.md).
 - Tek uygulama örneği (`single-instance`); instance başına dosya kilidi; loader kurulumları global kilitle sıraya alınır.
 - Telemetri yok, varsayılan olarak hiçbir veri gönderilmez.
 
@@ -256,7 +258,9 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 - **Birim (core):** rules, inheritsFrom birleştirme, argüman üretimi (snapshot), sürüm karşılaştırma (`1.8.9` < `1.21.11` < `26.1` < `26.3`, snapshot/pre/rc), NeoForge↔MC eşleme, offline UUID, `Paths` çözümleme (normal/portable/redirect), zip-slip, allowlist.
 - **Entegrasyon:** `wiremock` ile manifest/indirici/retry/devam senaryoları; loader başına komut satırı üretimi.
 - **Uçtan uca (yerel, yarı otomatik):** her loader için kur → başlat → log'da ana menü kalıbını (ör. `Sound engine started` / `Created: …atlas`) bekle → kapat.
-- **Frontend:** Vitest + Testing Library (sihirbaz, hesap ekleme, ayarlar).
+- **Entegrasyon (çekirdek, `crates/launcher-core/tests/`):** sahte Mojang'a karşı tam OYNA hazırlığı (manifest → jar/kütüphane/asset → komut satırı, önbellekten ikinci başlatma, çevrimdışı), Modrinth kurulumu (bağımlılık, hash reddi), Adoptium Java kurulumu.
+- **Frontend:** Vitest + Testing Library (store'lar, olay köprüsü, Ana sayfa, Hesaplar, Profiller, Ayarlar, çöküş penceresi, veri taşıma, güncelleme şeridi).
+- **Kapsam (Faz 9 sonu):** çekirdek satır %79,8 (`cargo llvm-cov`), frontend satır %33 (`npm run coverage`).
 - **Lint:** `cargo fmt --check`, `cargo clippy -- -D warnings`, ESLint, Prettier.
 - **CI (GitHub Actions, windows-latest):** lint → test → `tauri build` (NSIS + portable zip artefaktları).
 
@@ -357,3 +361,8 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 | 2026-10-04 | K51: Updater — `tauri-plugin-updater` (Rust tarafından çağrılır, webview'a izin yok), uç nokta `github.com/Mehbur07/MehburMC-Launcher/releases/latest/download/latest.json`, minisign açık anahtarı `tauri.conf.json`'da, NSIS `passive` kurulum. Ağ erişimi eklentinin kendi istemcisiyle yapılır (sabit GitHub adresi ve imza doğrulaması). Ulaşılamayan kanal hata değil `unavailable`; portable kopyada `portable` (zip'i elle değiştir). Açılışta denetim ayardan kapatılabilir (`checkUpdates`). |
 | 2026-10-04 | K52: Paketleme/CI — `npm run package` = `tauri build` (NSIS + `.sig`) + `scripts/package-portable.mjs` (exe + `portable.flag` + PORTABLE.txt → zip). `ci.yml`: main push/PR'da fmt, clippy, test, üretilmiş TS tiplerinin commit'li olduğu, prettier/eslint/tsc/vitest. `release.yml`: `v*` tag'i veya elle; `tauri-action` ile taslak release + `latest.json`, portable zip eklenir. Tam derleme her push'ta yapılmaz (R14). |
 | 2026-10-04 | K53: Animasyon — liste girişleri CSS `rise-in` (`--i` ile kademeli, `animation-fill-mode: backwards` → dnd-kit'in inline `transform`'unu ezmez), sayaç rozeti `pop-in`, butonlarda basma ölçeği, crash/haber/güncelleme bileşenlerinde Framer Motion. Hepsi `prefers-reduced-motion` ile kapanır. Ayarlara "Oyun" bölümü (başlatma davranışı, varsayılan RAM, eşzamanlı indirme) eklendi. |
+| 2026-10-04 | K54: Dosya diyalogları Rust'ta — `pick_path(purpose)` (modpack, profil arşivi, OptiFine, skin, pelerin, Java, veri klasörü, dışa aktarma hedefleri) sabit filtrelerle native diyalog açar; seçilen yol `AppState.picks`'te amaç anahtarıyla saklanır ve ilgili komut `take_pick` ile bir kez alır. Komutlar artık yol parametresi almaz; webview capability'sinden `dialog:allow-open/save` kaldırıldı, JS `plugin-dialog` bağımlılığı silindi. Kaydetme önerisindeki dosya adı temizlenir. |
+| 2026-10-04 | K55: Çalıştırılabilir doğrulaması — profil `javaPath` yalnızca mutlak ve adı `java.exe`/`javaw.exe` (Unix: `java`) olan yol; oluşturma, güncelleme ve başlatmada (`java::resolve`) denetlenir. `-XX:OnError`/`-XX:OnOutOfMemoryError` (büyük/küçük harf duyarsız) reddedilir. İçe aktarılan profil arşivlerinde `javaPath` silinir, bu seçenekler ayıklanır. |
+| 2026-10-04 | K56: `Http::get_bytes`/`request_json` yanıtları `read_limited` ile en fazla 64 MB (önce `Content-Length`, sonra akış sırasında); aşımda `net.tooLarge`. Büyük dosyalar zaten akışlı indiriciden geçer. Log maskelemesi `x-api-key`, `api_key`, `curseforgeApiKey` ve bcrypt biçimli CurseForge anahtarlarını kapsar. |
+| 2026-10-04 | K57: Performans — Ana sayfa dışındaki tüm ekranlar ve sihirbaz `React.lazy` ile ilk kullanımda yüklenir; paylaşılan küçük yardımcılar (`loaderLabels.ts`, `console/lineClass.ts`) sayfa modüllerinden ayrıldı. Başlangıç JS'i 645 KB → ~504 KB (gzip 200 → 163 KB). Önbellekli OYNA hazırlığı ölçüldü: 0,2–0,3 sn (26.2 / 1.20.1, CLI `--dry-run`); çekirdekte iyileştirme gerekmedi. |
+| 2026-10-04 | K58: Test altyapısı — Vitest kurulumunda global `cleanup` (globals kapalı), `src/test/fixtures.ts`; `@vitest/coverage-v8` + `npm run coverage`. `cargo audit`: açık yok (2 uyarı, yalnızca Linux GTK bağımlılıkları). Belgeler: `docs/KULLANIM.md`, `docs/SORUN_GIDERME.md`, `docs/GELISTIRME.md`, `SECURITY.md`, `CHANGELOG.md`. |

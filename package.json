@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "package": "tauri build && node scripts/package-portable.mjs",
-    "package:portable": "node scripts/package-portable.mjs"
+    "package:portable": "node scripts/package-portable.mjs",
+    "coverage": "vitest run --coverage --coverage.include=src/** --coverage.exclude=src/lib/ipc/bindings/** --coverage.exclude=src/test/**"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -24,7 +25,6 @@
     "@fontsource/rajdhani": "^5.3.0",
     "@tanstack/react-virtual": "^3.14.13",
     "@tauri-apps/api": "^2.12.1",
-    "@tauri-apps/plugin-dialog": "^2.8.1",
     "i18next": "^26.4.2",
     "lucide-react": "^1.51.0",
     "motion": "^14.0.0",
@@ -44,6 +44,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
+    "@vitest/coverage-v8": "^5.0.3",
     "eslint": "^10.12.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",

@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use launcher_core::CoreError;
 use launcher_core::content::install::InstallResult;
 use launcher_core::instance::LoaderKind;
@@ -22,8 +20,8 @@ pub async fn list_loader_versions(
 
 /// Copies an OptiFine jar the user picked into the loader cache.
 #[tauri::command]
-pub async fn import_optifine(state: State<'_, AppState>, path: String) -> CmdResult<OptifineInfo> {
-    let src = PathBuf::from(path);
+pub async fn import_optifine(state: State<'_, AppState>) -> CmdResult<OptifineInfo> {
+    let src = super::dialogs::take_pick(&state, super::dialogs::PickPurpose::Optifine)?;
     let is_jar = src
         .extension()
         .and_then(|e| e.to_str())

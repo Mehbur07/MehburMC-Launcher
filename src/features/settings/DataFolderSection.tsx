@@ -1,4 +1,3 @@
-import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { FolderInput, FolderOpen, RotateCcw, Undo2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,8 +24,8 @@ export function DataFolderSection() {
   if (!boot) return null;
 
   const pick = async () => {
-    const dest = await openDialog({ directory: true, multiple: false });
-    if (typeof dest === "string") setPhase({ step: "confirm", dest });
+    const dest = await ipc.pickPath("dataFolder").catch(() => null);
+    if (dest) setPhase({ step: "confirm", dest });
   };
 
   const moveBack = async () => {
@@ -43,7 +42,7 @@ export function DataFolderSection() {
       setPhase({ step: "moving", dest, done: p.done, total: p.total }),
     );
     try {
-      const leftovers = await ipc.moveDataFolder(dest);
+      const leftovers = await ipc.moveDataFolder();
       setPhase({ step: "done", leftovers });
     } catch (e) {
       setPhase({ step: "error", error: toErrorPayload(e) });

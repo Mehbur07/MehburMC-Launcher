@@ -113,9 +113,13 @@ pub fn import(store: &InstanceStore, src: &Path) -> Result<Instance> {
     for sub in SUBDIRS {
         let _ = std::fs::create_dir_all(target.join(sub));
     }
+    // An archive may come from anyone: never trust a Java path or
+    // command-running JVM options from it.
     let inst = Instance {
         id: id.clone(),
         created_at: now_secs(),
+        java_path: None,
+        jvm_args: super::strip_unsafe_jvm_args(&imported.jvm_args),
         ..imported
     };
     store.save(&inst)?;
@@ -128,6 +132,25 @@ pub fn import(store: &InstanceStore, src: &Path) -> Result<Instance> {
 mod tests {
     use super::super::tests::{new, store};
     use super::*;
+
+    #[test]
+    fn import_drops_untrusted_launch_settings() {
+        let (tmp, s) = store();
+        let a = s.create(new("Shared")).unwrap();
+        // Simulate a tampered archive: edit instance.json by hand.
+        let file = s.dir(&a.id).unwrap().join(INSTANCE_FILE);
+        let mut v: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(&file).unwrap()).unwrap();
+        v["javaPath"] = r"C:\Windows\System32\cmd.exe".into();
+        v["jvmArgs"] = "-Xss2M -XX:OnOutOfMemoryError=calc.exe".into();
+        std::fs::write(&file, serde_json::to_vec(&v).unwrap()).unwrap();
+
+        let zip = tmp.path().join("shared.zip");
+        export(&s, &a.id, &zip).unwrap();
+        let b = import(&s, &zip).unwrap();
+        assert_eq!(b.java_path, None);
+        assert_eq!(b.jvm_args, "-Xss2M");
+    }
 
     #[test]
     fn export_import_roundtrip() {

@@ -8,7 +8,6 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
 import {
   Boxes,
   Copy,
@@ -43,26 +42,10 @@ import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { ImportResult } from "../../lib/ipc/bindings/ImportResult";
 import type { Instance } from "../../lib/ipc/bindings/Instance";
 import { useApp } from "../../stores/app";
+import { loaderLabel, usePlayTimeUnits } from "./loaderLabels";
 import { useInstances } from "../../stores/instances";
 import { ImportResultDialog } from "../browse/ImportResultDialog";
 import { activeTaskFor, useTasks } from "../../stores/tasks";
-
-export function loaderLabel(kind: Instance["loader"]["kind"]) {
-  return {
-    vanilla: "Vanilla",
-    fabric: "Fabric",
-    quilt: "Quilt",
-    legacyFabric: "Legacy Fabric",
-    forge: "Forge",
-    neoForge: "NeoForge",
-    optifine: "OptiFine",
-  }[kind];
-}
-
-export function usePlayTimeUnits() {
-  const { t } = useTranslation();
-  return { h: t("units.h"), m: t("units.m"), s: t("units.s") };
-}
 
 export function InstancesPage() {
   const { t } = useTranslation();
@@ -84,14 +67,11 @@ export function InstancesPage() {
   const [importing, setImporting] = useState(false);
 
   const importPack = async () => {
-    const src = await openDialog({
-      multiple: false,
-      filters: [{ name: "Modpack", extensions: ["mrpack", "zip"] }],
-    });
-    if (typeof src !== "string") return;
+    const src = await ipc.pickPath("modpack").catch(() => null);
+    if (!src) return;
     setImporting(true);
     try {
-      const r = await ipc.importModpack(src);
+      const r = await ipc.importModpack();
       await load();
       setImported(r);
     } catch (e) {
@@ -102,13 +82,10 @@ export function InstancesPage() {
   };
 
   const importZip = async () => {
-    const src = await openDialog({
-      multiple: false,
-      filters: [{ name: "Zip", extensions: ["zip"] }],
-    });
-    if (typeof src !== "string") return;
     try {
-      await ipc.importInstance(src);
+      const src = await ipc.pickPath("instanceArchive");
+      if (!src) return;
+      await ipc.importInstance();
       await load();
     } catch (e) {
       useApp.setState({ notice: toErrorPayload(e) });
@@ -186,13 +163,10 @@ function InstanceCard({ inst, index }: { inst: Instance; index: number }) {
   }, [menu]);
 
   const exportZip = async () => {
-    const dest = await saveDialog({
-      defaultPath: `${inst.name}.mehbur.zip`,
-      filters: [{ name: "Zip", extensions: ["zip"] }],
-    });
-    if (!dest) return;
     try {
-      await ipc.exportInstance(inst.id, dest);
+      const dest = await ipc.pickPath("instanceExport", `${inst.name}.mehbur.zip`);
+      if (!dest) return;
+      await ipc.exportInstance(inst.id);
     } catch (e) {
       useApp.setState({ notice: toErrorPayload(e) });
     }

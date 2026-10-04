@@ -27,10 +27,15 @@ static SECRET_PATTERNS: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| 
             Regex::new(r"\bM\.[A-Z0-9]{1,6}_[A-Za-z0-9!*$.\-_]{16,}").unwrap(),
             "***",
         ),
+        // CurseForge API keys (bcrypt-shaped: `$2a$10$` + 53 chars).
+        (
+            Regex::new(r"\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}").unwrap(),
+            "***",
+        ),
         // key=value / key: value / --key value forms.
         (
             Regex::new(
-                r#"(?i)((?:--)?(?:access_?token|refresh_?token|auth_access_token|xuid|clientsecret|client_secret|password)["']?\s*[:= ]\s*["']?)[^\s"',}&]+"#,
+                r#"(?i)((?:--)?(?:access_?token|refresh_?token|auth_access_token|xuid|clientsecret|client_secret|password|x-api-key|api_?key|curseforge_?api_?key)["']?\s*[:= ]\s*["']?)[^\s"',}&]+"#,
             )
             .unwrap(),
             "${1}***",
@@ -152,6 +157,17 @@ mod tests {
             mask_secrets("access_token=xyz&foo=1"),
             "access_token=***&foo=1"
         );
+    }
+
+    #[test]
+    fn masks_api_keys() {
+        let key = "$2a$10$abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0";
+        assert_eq!(mask_secrets(&format!("key {key} used")), "key *** used");
+        assert_eq!(
+            mask_secrets(r#"{"curseforgeApiKey":"anything","x":1}"#),
+            r#"{"curseforgeApiKey":"***","x":1}"#
+        );
+        assert_eq!(mask_secrets("x-api-key: abc123"), "x-api-key: ***");
     }
 
     #[test]

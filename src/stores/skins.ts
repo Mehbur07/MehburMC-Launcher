@@ -16,8 +16,11 @@ interface SkinsStore {
   assignments: Record<string, Assignment>;
   loaded: boolean;
   load: () => Promise<void>;
-  /** Returns the new texture id, or null if cancelled / failed (notice shown). */
-  importFile: (kind: TextureKind, path: string) => Promise<string | null>;
+  /**
+   * Imports the file chosen with `pickPath(kind)`. Returns the new texture
+   * id, or null on failure (notice shown).
+   */
+  importFile: (kind: TextureKind) => Promise<string | null>;
   /** Returns the error instead of showing it, so the form can render it inline. */
   importPlayer: (name: string) => Promise<PlayerImport | ErrorPayload>;
   update: (kind: TextureKind, id: string, name?: string, model?: SkinModel) => Promise<void>;
@@ -42,9 +45,9 @@ export const useSkins = create<SkinsStore>((set, get) => ({
     }
   },
 
-  importFile: async (kind, path) => {
+  importFile: async (kind) => {
     try {
-      const id = await ipc.importSkinFile(kind, path);
+      const id = await ipc.importSkinFile(kind);
       await get().load();
       return id;
     } catch (e) {

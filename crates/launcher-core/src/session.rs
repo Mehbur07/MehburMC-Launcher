@@ -381,3 +381,63 @@ impl Launcher {
         self.instances.delete(id)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::events::NullSink;
+    use crate::instance::tests::new;
+
+    fn launcher() -> (tempfile::TempDir, Arc<Launcher>) {
+        let tmp = tempfile::tempdir().unwrap();
+        let paths = Paths::at(tmp.path().join("MehburMC"));
+        paths.ensure_layout().unwrap();
+        (tmp, Launcher::new(paths, Arc::new(NullSink), 2).unwrap())
+    }
+
+    #[tokio::test]
+    async fn start_reports_user_fixable_errors_directly() {
+        let (_tmp, l) = launcher();
+        let inst = l.instances.create(new("A")).unwrap();
+        let play = |id: &str| l.start(id, Settings::default(), StartMode::Play, Arc::new(NoHooks));
+
+        assert_eq!(play(&inst.id).unwrap_err().code(), "account.none");
+        l.accounts.add_offline("Steve").unwrap();
+        assert_eq!(play("missing").unwrap_err().code(), "instance.notFound");
+
+        // An instance that is already claimed (running or preparing) is busy.
+        let _claim = l.running.try_claim(&inst).unwrap();
+        assert_eq!(play(&inst.id).unwrap_err().code(), "instance.busy");
+        assert_eq!(
+            l.delete_instance(&inst.id).unwrap_err().code(),
+            "instance.busy"
+        );
+        assert!(
+            l.tasks.list().is_empty(),
+            "no task is created for rejected starts"
+        );
+    }
+
+    #[test]
+    fn skin_sync_only_touches_instances_with_customskinloader() {
+        let (tmp, l) = launcher();
+        let acc = l.accounts.add_offline("Steve").unwrap();
+        let png = crate::skin::image::tests::png(64, 64, |_, _| false);
+        let skin = l.skins.add_skin(&png, "s", None).unwrap();
+        l.skins
+            .assign(&acc.id, crate::skin::TextureKind::Skin, Some(&skin.id))
+            .unwrap();
+
+        let game = tmp.path().join("game");
+        std::fs::create_dir_all(game.join("mods")).unwrap();
+        l.sync_skin(&game, &acc.id, "Steve");
+        assert!(!game.join("CustomSkinLoader").exists());
+
+        std::fs::write(game.join("mods/CustomSkinLoader_Fabric-14.28.jar"), b"").unwrap();
+        l.sync_skin(&game, &acc.id, "Steve");
+        assert_eq!(
+            std::fs::read(game.join("CustomSkinLoader/MehburMC/classic/Steve.png")).unwrap(),
+            png
+        );
+    }
+}

@@ -18,7 +18,7 @@ import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { Instance } from "../../lib/ipc/bindings/Instance";
 import { useApp } from "../../stores/app";
 import { activeTaskFor, useTasks } from "../../stores/tasks";
-import { loaderLabel, usePlayTimeUnits } from "../instances/InstancesPage";
+import { loaderLabel, usePlayTimeUnits } from "../instances/loaderLabels";
 import { SHADER_LOADERS } from "../instances/LoaderPicker";
 import { forgeLabel } from "../instances/loaderLabels";
 

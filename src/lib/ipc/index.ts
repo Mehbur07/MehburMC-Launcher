@@ -27,6 +27,7 @@ import type { MoveProgress } from "./bindings/MoveProgress";
 import type { NewInstance } from "./bindings/NewInstance";
 import type { NewsItem } from "./bindings/NewsItem";
 import type { OptifineInfo } from "./bindings/OptifineInfo";
+import type { PickPurpose } from "./bindings/PickPurpose";
 import type { PlayerImport } from "./bindings/PlayerImport";
 import type { ProjectType } from "./bindings/ProjectType";
 import type { SearchPage } from "./bindings/SearchPage";
@@ -44,8 +45,8 @@ export const ipc = {
   openDataDir: () => invoke<void>("open_data_dir"),
   listVersions: () => invoke<ManifestEntry[]>("list_versions"),
   listJava: () => invoke<JavaInstall[]>("list_java"),
-  saveTextFile: (path: string, contents: string) =>
-    invoke<void>("save_text_file", { path, contents }),
+  /** Writes to the path chosen with `pickPath("consoleLog")`. */
+  saveTextFile: (contents: string) => invoke<void>("save_text_file", { contents }),
 
   listInstances: () => invoke<InstancesView>("list_instances"),
   createInstance: (req: NewInstance) => invoke<Instance>("create_instance", { req }),
@@ -55,8 +56,8 @@ export const ipc = {
   copyInstance: (id: string, name: string) => invoke<Instance>("copy_instance", { id, name }),
   reorderInstances: (ids: string[]) => invoke<void>("reorder_instances", { ids }),
   selectInstance: (id: string) => invoke<void>("select_instance", { id }),
-  exportInstance: (id: string, dest: string) => invoke<void>("export_instance", { id, dest }),
-  importInstance: (src: string) => invoke<Instance>("import_instance", { src }),
+  exportInstance: (id: string) => invoke<void>("export_instance", { id }),
+  importInstance: () => invoke<Instance>("import_instance"),
   openInstanceFolder: (id: string, folder?: Folder) =>
     invoke<void>("open_instance_folder", { id, folder }),
 
@@ -85,7 +86,7 @@ export const ipc = {
 
   listLoaderVersions: (kind: LoaderKind, mc: string) =>
     invoke<LoaderVersion[]>("list_loader_versions", { kind, mc }),
-  importOptifine: (path: string) => invoke<OptifineInfo>("import_optifine", { path }),
+  importOptifine: () => invoke<OptifineInfo>("import_optifine"),
   installShaderSupport: (id: string) => invoke<InstallResult>("install_shader_support", { id }),
 
   searchModrinth: (query: SearchQuery) => invoke<SearchPage>("search_modrinth", { query }),
@@ -97,32 +98,39 @@ export const ipc = {
     invoke<InstalledItem[]>("scan_content", { id, folder, checkUpdates }),
   updateContent: (id: string, folder: Folder, files: string[]) =>
     invoke<string[]>("update_content", { id, folder, files }),
-  importModpack: (path: string) => invoke<ImportResult>("import_modpack", { path }),
+  importModpack: () => invoke<ImportResult>("import_modpack"),
   installModrinthModpack: (versionId: string) =>
     invoke<ImportResult>("install_modrinth_modpack", { versionId }),
   contentIcon: (url: string) => invoke<string>("content_icon", { url }),
   openExternal: (url: string) => invoke<void>("open_external", { url }),
 
   listSkins: () => invoke<LibraryView>("list_skins"),
-  importSkinFile: (kind: TextureKind, path: string, model?: SkinModel) =>
-    invoke<string>("import_skin_file", { kind, path, model }),
+  importSkinFile: (kind: TextureKind, model?: SkinModel) =>
+    invoke<string>("import_skin_file", { kind, model }),
   importPlayerSkin: (name: string) => invoke<PlayerImport>("import_player_skin", { name }),
   updateSkin: (kind: TextureKind, id: string, name?: string, model?: SkinModel) =>
     invoke<void>("update_skin", { kind, id, name, model }),
   deleteSkin: (kind: TextureKind, id: string) => invoke<void>("delete_skin", { kind, id }),
   assignSkin: (accountId: string, kind: TextureKind, id: string | null) =>
     invoke<Record<string, Assignment>>("assign_skin", { accountId, kind, id }),
-  exportSkin: (id: string, dest: string) => invoke<void>("export_skin", { id, dest }),
+  exportSkin: (id: string) => invoke<void>("export_skin", { id }),
 
   listNews: () => invoke<NewsItem[]>("list_news"),
   analyzeCrashReport: (id: string, name: string) =>
     invoke<CrashInfo>("analyze_crash_report", { id, name }),
   openDataFile: (path: string) => invoke<void>("open_data_file", { path }),
-  moveDataFolder: (dest: string) => invoke<number>("move_data_folder", { dest }),
+  moveDataFolder: () => invoke<number>("move_data_folder"),
   defaultDataFolder: () => invoke<string>("default_data_folder"),
   restartApp: () => invoke<void>("restart_app"),
   checkAppUpdate: () => invoke<AppUpdate>("check_app_update"),
   installAppUpdate: () => invoke<void>("install_app_update"),
+
+  /**
+   * Opens a native file dialog in Rust. Returns the chosen path for display
+   * (null = cancelled); the command that needs it reads it on the Rust side.
+   */
+  pickPath: (purpose: PickPurpose, defaultName?: string, title?: string) =>
+    invoke<string | null>("pick_path", { purpose, defaultName, title }),
 };
 
 /** Progress of "Move data folder". */

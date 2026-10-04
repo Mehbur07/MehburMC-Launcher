@@ -168,6 +168,8 @@ pub async fn resolve(
     cancel: &CancellationToken,
 ) -> Result<JavaInstall> {
     if let Some(exe) = override_exe {
+        // Defence in depth: instance.json may have been edited by hand.
+        crate::instance::validate_java_path(&exe.display().to_string())?;
         let home = exe.parent().and_then(Path::parent);
         if let Some(found) = home.and_then(|h| read_release(h, false)) {
             if found.major != major {

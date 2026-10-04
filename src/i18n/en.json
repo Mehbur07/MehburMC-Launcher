@@ -124,7 +124,8 @@
       "timeout": "The connection timed out: {{url}}",
       "unreachable": "The server could not be reached. Check your internet connection.",
       "httpStatus": "The server returned HTTP {{status}}: {{url}}",
-      "notAllowed": "Security: blocked an address that is not on the allowlist: {{url}}"
+      "notAllowed": "Security: blocked an address that is not on the allowlist: {{url}}",
+      "tooLarge": "The server response is unexpectedly large: {{url}}"
     },
     "download": {
       "hashMismatch": "The downloaded file is corrupt (checksum mismatch): {{path}}"

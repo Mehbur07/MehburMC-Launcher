@@ -210,6 +210,63 @@ fn validate_name(name: &str) -> Result<String> {
     Ok(n.to_owned())
 }
 
+/// JVM options that make the JVM run an arbitrary shell command.
+const UNSAFE_JVM_ARGS: &[&str] = &["-XX:OnError", "-XX:OnOutOfMemoryError"];
+
+fn is_unsafe_jvm_arg(arg: &str) -> bool {
+    UNSAFE_JVM_ARGS
+        .iter()
+        .any(|p| arg.len() >= p.len() && arg[..p.len()].eq_ignore_ascii_case(p))
+}
+
+/// Rejects JVM options that execute commands (see [`UNSAFE_JVM_ARGS`]).
+pub fn validate_jvm_args(args: &str) -> Result<String> {
+    match split_args(args).into_iter().find(|a| is_unsafe_jvm_arg(a)) {
+        Some(bad) => Err(CoreError::InvalidInstance(format!(
+            "jvmArgs: {} is not allowed",
+            bad.split('=').next().unwrap_or(&bad)
+        ))),
+        None => Ok(args.trim().to_owned()),
+    }
+}
+
+/// Drops unsafe options instead of failing (imported instances).
+pub fn strip_unsafe_jvm_args(args: &str) -> String {
+    split_args(args)
+        .into_iter()
+        .filter(|a| !is_unsafe_jvm_arg(a))
+        .map(|a| {
+            if a.contains(' ') {
+                format!("\"{a}\"")
+            } else {
+                a
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// The launcher only ever starts a Java executable: an absolute path whose
+/// file name is `java`/`javaw` (`.exe` on Windows).
+pub fn validate_java_path(path: &str) -> Result<String> {
+    let p = std::path::Path::new(path.trim());
+    let name = p
+        .file_name()
+        .and_then(|n| n.to_str())
+        .map(str::to_ascii_lowercase)
+        .unwrap_or_default();
+    let ok_name = if cfg!(windows) {
+        matches!(name.as_str(), "java.exe" | "javaw.exe")
+    } else {
+        name == "java"
+    };
+    if p.is_absolute() && ok_name {
+        Ok(p.display().to_string())
+    } else {
+        Err(CoreError::InvalidInstance("javaPath".into()))
+    }
+}
+
 fn validate_memory(mb: Option<u32>) -> Result<Option<u32>> {
     match mb {
         Some(m) if !crate::settings::MEMORY_MB_RANGE.contains(&m) => {
@@ -393,9 +450,13 @@ impl InstanceStore {
             icon: req.icon.unwrap_or_else(default_icon),
             mc_version: req.mc_version.trim().to_owned(),
             loader: validate_loader(req.loader.unwrap_or_default())?,
-            java_path: req.java_path.filter(|p| !p.trim().is_empty()),
+            java_path: req
+                .java_path
+                .filter(|p| !p.trim().is_empty())
+                .map(|p| validate_java_path(&p))
+                .transpose()?,
             memory_mb: validate_memory(req.memory_mb)?,
-            jvm_args: req.jvm_args.unwrap_or_default(),
+            jvm_args: validate_jvm_args(&req.jvm_args.unwrap_or_default())?,
             resolution: req.resolution,
             fullscreen: req.fullscreen.unwrap_or(false),
             created_at: now_secs(),
@@ -423,7 +484,7 @@ impl InstanceStore {
         if patch.clear_java_path == Some(true) {
             inst.java_path = None;
         } else if let Some(p) = patch.java_path.filter(|p| !p.trim().is_empty()) {
-            inst.java_path = Some(p);
+            inst.java_path = Some(validate_java_path(&p)?);
         }
         if patch.clear_memory == Some(true) {
             inst.memory_mb = None;
@@ -431,7 +492,7 @@ impl InstanceStore {
             inst.memory_mb = validate_memory(Some(m))?;
         }
         if let Some(a) = patch.jvm_args {
-            inst.jvm_args = a;
+            inst.jvm_args = validate_jvm_args(&a)?;
         }
         if patch.clear_resolution == Some(true) {
             inst.resolution = None;
@@ -569,8 +630,51 @@ impl Running {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
+
+    #[test]
+    fn java_path_must_be_a_java_executable() {
+        let ok = if cfg!(windows) {
+            [r"C:\Java\bin\java.exe", r"C:\Java\bin\JAVAW.EXE"]
+        } else {
+            ["/usr/lib/jvm/bin/java", "/opt/java/bin/java"]
+        };
+        for p in ok {
+            validate_java_path(p).unwrap();
+        }
+        let bad = if cfg!(windows) {
+            [
+                r"C:\Windows\System32\cmd.exe",
+                r"java.exe",
+                r"C:\evil\java.exe.bat",
+            ]
+        } else {
+            ["/bin/sh", "java", "/tmp/java.sh"]
+        };
+        for p in bad {
+            assert_eq!(
+                validate_java_path(p).unwrap_err().code(),
+                "instance.invalid",
+                "{p}"
+            );
+        }
+    }
+
+    #[test]
+    fn command_running_jvm_args_are_rejected() {
+        validate_jvm_args("-XX:+UseG1GC -Dfoo=\"a b\"").unwrap();
+        for bad in [
+            "-XX:OnOutOfMemoryError=calc.exe",
+            "-Xmx2G -xx:onerror=\"cmd /c x\"",
+        ] {
+            assert!(validate_jvm_args(bad).is_err(), "{bad}");
+        }
+        assert_eq!(
+            strip_unsafe_jvm_args("-XX:+UseG1GC -XX:OnError=\"cmd /c x\" -Dk=\"a b\""),
+            "-XX:+UseG1GC \"-Dk=a b\""
+        );
+    }
 
     pub(crate) fn store() -> (tempfile::TempDir, InstanceStore) {
         let tmp = tempfile::tempdir().unwrap();

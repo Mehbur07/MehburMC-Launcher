@@ -10,7 +10,7 @@ import type { TaskInfo } from "../../lib/ipc/bindings/TaskInfo";
 import type { TaskStatus } from "../../lib/ipc/bindings/TaskStatus";
 import { useApp } from "../../stores/app";
 import { eta, fraction, isActive, useTasks } from "../../stores/tasks";
-import { usePlayTimeUnits } from "../instances/InstancesPage";
+import { usePlayTimeUnits } from "../instances/loaderLabels";
 
 const TONE: Record<TaskStatus, "accent" | "success" | "warn" | "danger" | "neutral"> = {
   preparing: "accent",

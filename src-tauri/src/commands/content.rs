@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use launcher_core::CoreError;
 use launcher_core::content::icons;
 use launcher_core::content::install::{self, InstallRequest, InstallResult};
@@ -82,8 +80,8 @@ pub async fn update_content(
 
 /// Imports a `.mrpack` or CurseForge `.zip` the user picked.
 #[tauri::command]
-pub async fn import_modpack(state: State<'_, AppState>, path: String) -> CmdResult<ImportResult> {
-    let p = PathBuf::from(&path);
+pub async fn import_modpack(state: State<'_, AppState>) -> CmdResult<ImportResult> {
+    let p = super::dialogs::take_pick(&state, super::dialogs::PickPurpose::Modpack)?;
     let ext_ok = p
         .extension()
         .and_then(|e| e.to_str())

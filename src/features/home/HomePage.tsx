@@ -11,7 +11,7 @@ import { useApp } from "../../stores/app";
 import { selectedInstance, useInstances } from "../../stores/instances";
 import { accountSkin, useSkins } from "../../stores/skins";
 import { activeTaskFor, fraction, useTasks } from "../../stores/tasks";
-import { loaderLabel, usePlayTimeUnits } from "../instances/InstancesPage";
+import { loaderLabel, usePlayTimeUnits } from "../instances/loaderLabels";
 import { SkinThumb } from "../skins/SkinThumb";
 import { NewsFeed } from "./NewsFeed";
 

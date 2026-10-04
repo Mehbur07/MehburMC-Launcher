@@ -1,6 +1,7 @@
 //! Process-wide state built before the window opens.
 
-use std::path::Path;
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use launcher_core::events::CoreEvent;
@@ -10,6 +11,7 @@ use tokio::sync::mpsc;
 use tracing_appender::non_blocking::WorkerGuard;
 
 use crate::bridge;
+use crate::commands::dialogs::PickPurpose;
 
 pub struct AppState {
     /// `None` only if the platform data directory could not be determined.
@@ -23,6 +25,9 @@ pub struct AppState {
     pub events_rx: Mutex<Option<mpsc::UnboundedReceiver<CoreEvent>>>,
     /// Result of the last successful update check, installed on request.
     pub pending_update: Mutex<Option<tauri_plugin_updater::Update>>,
+    /// Paths chosen in native dialogs, waiting for the command that uses
+    /// them (see `commands::dialogs`).
+    pub picks: Mutex<HashMap<PickPurpose, PathBuf>>,
     _log_guard: Option<WorkerGuard>,
 }
 
@@ -72,6 +77,7 @@ impl AppState {
             launcher: Some(launcher),
             events_rx: Mutex::new(Some(rx)),
             pending_update: Mutex::new(None),
+            picks: Mutex::new(HashMap::new()),
             _log_guard: log_guard,
         }
     }
@@ -85,6 +91,7 @@ impl AppState {
             launcher: None,
             events_rx: Mutex::new(None),
             pending_update: Mutex::new(None),
+            picks: Mutex::new(HashMap::new()),
             _log_guard: None,
         }
     }

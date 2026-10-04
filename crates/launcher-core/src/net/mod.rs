@@ -74,10 +74,11 @@ impl Http {
         check_status(url, resp)
     }
 
+    /// Whole body in memory (metadata, icons, skins); capped at
+    /// [`MAX_BODY_BYTES`]. Large files go through the streaming downloader.
     pub async fn get_bytes(&self, url: &str) -> Result<Vec<u8>> {
         let resp = self.get(url).await?;
-        let bytes = resp.bytes().await.map_err(|source| network(url, source))?;
-        Ok(bytes.to_vec())
+        read_limited(url, resp, MAX_BODY_BYTES).await
     }
 
     /// JSON request with extra headers; returns `(status, body)` without
@@ -104,8 +105,8 @@ impl Http {
         }
         let resp = req.send().await.map_err(|source| network(url, source))?;
         let status = resp.status().as_u16();
-        let bytes = resp.bytes().await.map_err(|source| network(url, source))?;
-        Ok((status, bytes.to_vec()))
+        let bytes = read_limited(url, resp, MAX_BODY_BYTES).await?;
+        Ok((status, bytes))
     }
 
     pub async fn post_json(&self, url: &str, body: &serde_json::Value) -> Result<(u16, Vec<u8>)> {
@@ -142,6 +143,35 @@ pub fn join_url(base: &str, segments: &[&str]) -> Result<String> {
     Ok(url.into())
 }
 
+/// Upper bound for responses read into memory.
+pub const MAX_BODY_BYTES: usize = 64 * 1024 * 1024;
+
+/// Reads a body, refusing anything larger than `max` (checked against
+/// `Content-Length` first, then while streaming).
+pub(crate) async fn read_limited(
+    url: &str,
+    resp: reqwest::Response,
+    max: usize,
+) -> Result<Vec<u8>> {
+    use futures_util::StreamExt;
+    let too_large = || CoreError::ResponseTooLarge {
+        url: url.to_owned(),
+    };
+    if resp.content_length().is_some_and(|n| n > max as u64) {
+        return Err(too_large());
+    }
+    let mut out = Vec::with_capacity(resp.content_length().unwrap_or(0) as usize);
+    let mut body = resp.bytes_stream();
+    while let Some(chunk) = body.next().await {
+        let chunk = chunk.map_err(|source| network(url, source))?;
+        if out.len() + chunk.len() > max {
+            return Err(too_large());
+        }
+        out.extend_from_slice(&chunk);
+    }
+    Ok(out)
+}
+
 pub(crate) fn network(url: &str, source: reqwest::Error) -> CoreError {
     CoreError::Network {
         url: url.to_owned(),
@@ -164,6 +194,24 @@ pub(crate) fn check_status(url: &str, resp: reqwest::Response) -> Result<reqwest
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn refuses_oversized_bodies() {
+        use wiremock::matchers::method;
+        use wiremock::{Mock, MockServer, ResponseTemplate};
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .respond_with(ResponseTemplate::new(200).set_body_bytes(vec![7u8; 2048]))
+            .mount(&server)
+            .await;
+        let http = Http::new(Allowlist::with_loopback()).unwrap();
+        let url = format!("{}/big", server.uri());
+        let resp = http.get(&url).await.unwrap();
+        let e = read_limited(&url, resp, 1024).await.unwrap_err();
+        assert_eq!(e.code(), "net.tooLarge");
+        let resp = http.get(&url).await.unwrap();
+        assert_eq!(read_limited(&url, resp, 4096).await.unwrap().len(), 2048);
+    }
 
     #[test]
     fn join_url_encodes_segments() {

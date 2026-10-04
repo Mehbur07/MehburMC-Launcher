@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use launcher_core::CoreError;
 use launcher_core::instance::files::{self, Folder};
 use launcher_core::instance::{Instance, InstancePatch, NewInstance, transfer};
@@ -89,12 +87,8 @@ pub fn select_instance(state: State<'_, AppState>, id: String) -> CmdResult<()> 
 }
 
 #[tauri::command]
-pub async fn export_instance(
-    state: State<'_, AppState>,
-    id: String,
-    dest: String,
-) -> CmdResult<()> {
-    let dest = PathBuf::from(dest);
+pub async fn export_instance(state: State<'_, AppState>, id: String) -> CmdResult<()> {
+    let dest = super::dialogs::take_pick(&state, super::dialogs::PickPurpose::InstanceExport)?;
     if !dest.is_absolute() || dest.extension().and_then(|e| e.to_str()) != Some("zip") {
         return Err(CoreError::InvalidInstance("export path must be a .zip".into()).into());
     }
@@ -103,8 +97,11 @@ pub async fn export_instance(
 }
 
 #[tauri::command]
-pub async fn import_instance(state: State<'_, AppState>, src: String) -> CmdResult<Instance> {
-    let src = PathBuf::from(src);
+pub async fn import_instance(state: State<'_, AppState>) -> CmdResult<Instance> {
+    let src = super::dialogs::take_pick(&state, super::dialogs::PickPurpose::InstanceArchive)?;
+    if src.extension().and_then(|e| e.to_str()) != Some("zip") {
+        return Err(CoreError::InvalidInstance("expected a .zip archive".into()).into());
+    }
     let l = state.launcher()?.clone();
     blocking(move || transfer::import(&l.instances, &src)).await
 }

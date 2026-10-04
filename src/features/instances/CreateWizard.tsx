@@ -8,7 +8,7 @@ import type { LoaderSpec } from "../../lib/ipc/bindings/LoaderSpec";
 import { useApp } from "../../stores/app";
 import { useInstances } from "../../stores/instances";
 import { InstanceOptionsFields, type InstanceOptions } from "./InstanceOptionsFields";
-import { loaderLabel } from "./InstancesPage";
+import { loaderLabel } from "./loaderLabels";
 import { LoaderPicker } from "./LoaderPicker";
 import { VersionPicker } from "./VersionPicker";
 

@@ -59,6 +59,9 @@ pub enum CoreError {
     #[error("download blocked: {url} is not on the allowlist")]
     UrlNotAllowed { url: String },
 
+    #[error("response from {url} is too large")]
+    ResponseTooLarge { url: String },
+
     #[error("checksum mismatch for {}: expected {expected}, got {actual}", path.display())]
     HashMismatch {
         path: PathBuf,
@@ -193,6 +196,7 @@ impl CoreError {
             Self::Network { .. } => "net.unreachable",
             Self::HttpStatus { .. } => "net.httpStatus",
             Self::UrlNotAllowed { .. } => "net.notAllowed",
+            Self::ResponseTooLarge { .. } => "net.tooLarge",
             Self::HashMismatch { .. } => "download.hashMismatch",
             Self::DiskFull { .. } => "io.diskFull",
             Self::Cancelled => "task.cancelled",
@@ -240,7 +244,9 @@ impl CoreError {
                 put("reason", reason.clone());
             }
             Self::InvalidSetting(what) => put("setting", what.clone()),
-            Self::Network { url, .. } | Self::UrlNotAllowed { url } => put("url", url.clone()),
+            Self::Network { url, .. }
+            | Self::UrlNotAllowed { url }
+            | Self::ResponseTooLarge { url } => put("url", url.clone()),
             Self::HttpStatus { url, status } => {
                 put("url", url.clone());
                 put("status", status.to_string());

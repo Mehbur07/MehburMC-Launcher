@@ -1,5 +1,5 @@
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ErrorNotice } from "../components/ErrorNotice";
@@ -7,15 +7,7 @@ import { Logo } from "../components/Logo";
 import { NeonBackground } from "../components/NeonBackground";
 import { Sidebar } from "../components/Sidebar";
 import { TitleBar } from "../components/TitleBar";
-import { AccountsPage } from "../features/accounts/AccountsPage";
-import { ConsolePage } from "../features/console/ConsolePage";
-import { DownloadsPage } from "../features/downloads/DownloadsPage";
 import { HomePage } from "../features/home/HomePage";
-import { InstanceDetail } from "../features/instance-detail/InstanceDetail";
-import { CreateWizard } from "../features/instances/CreateWizard";
-import { InstancesPage } from "../features/instances/InstancesPage";
-import { BrowsePage } from "../features/browse/BrowsePage";
-import { SettingsPage } from "../features/settings/SettingsPage";
 import { applyLanguage } from "../i18n";
 import { useAccounts } from "../stores/accounts";
 import { useApp, type View } from "../stores/app";
@@ -26,7 +18,21 @@ import { CrashDialog } from "../features/crash/CrashDialog";
 import { UpdateBanner } from "../features/update/UpdateBanner";
 import { connectEvents } from "./events";
 
-// three.js + skinview3d are only loaded when the skins screen opens.
+// Every screen except Home is loaded on first use (three.js for skins,
+// dnd-kit, the virtualised console, …), keeping the startup bundle small.
+const named = <K extends string>(load: () => Promise<Record<K, ComponentType>>, key: K) =>
+  lazy(() => load().then((m) => ({ default: m[key] })));
+const InstancesPage = named(() => import("../features/instances/InstancesPage"), "InstancesPage");
+const InstanceDetail = named(
+  () => import("../features/instance-detail/InstanceDetail"),
+  "InstanceDetail",
+);
+const AccountsPage = named(() => import("../features/accounts/AccountsPage"), "AccountsPage");
+const DownloadsPage = named(() => import("../features/downloads/DownloadsPage"), "DownloadsPage");
+const ConsolePage = named(() => import("../features/console/ConsolePage"), "ConsolePage");
+const SettingsPage = named(() => import("../features/settings/SettingsPage"), "SettingsPage");
+const BrowsePage = named(() => import("../features/browse/BrowsePage"), "BrowsePage");
+const CreateWizard = named(() => import("../features/instances/CreateWizard"), "CreateWizard");
 const SkinsPage = lazy(() => import("../features/skins/SkinsPage"));
 
 function Page({ view }: { view: View }) {
@@ -48,17 +54,15 @@ function Page({ view }: { view: View }) {
     case "browse":
       return <BrowsePage />;
     case "skins":
-      return (
-        <Suspense fallback={<Logo className="mx-auto mt-24 h-10 w-10 animate-pulse text-accent" />}>
-          <SkinsPage />
-        </Suspense>
-      );
+      return <SkinsPage />;
   }
 }
 
+const pageFallback = <Logo className="mx-auto mt-24 h-10 w-10 animate-pulse text-accent" />;
+
 export function App() {
   const { t } = useTranslation();
-  const { status, settings, view, notice, fatal, load, dismissNotice } = useApp();
+  const { status, settings, view, notice, fatal, load, dismissNotice, wizardOpen } = useApp();
   const loadInstances = useInstances((s) => s.load);
   const loadAccounts = useAccounts((s) => s.load);
   const loadSkins = useSkins((s) => s.load);
@@ -133,11 +137,17 @@ export function App() {
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.16, ease: "easeOut" }}
                 >
-                  <Page view={view} />
+                  <Suspense fallback={pageFallback}>
+                    <Page view={view} />
+                  </Suspense>
                 </motion.div>
               </AnimatePresence>
             </main>
-            <CreateWizard />
+            {wizardOpen && (
+              <Suspense fallback={null}>
+                <CreateWizard />
+              </Suspense>
+            )}
             <CrashDialog />
           </div>
         )}

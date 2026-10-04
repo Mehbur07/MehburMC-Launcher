@@ -1,9 +1,9 @@
 use std::collections::BTreeMap;
-use std::path::PathBuf;
 
 use launcher_core::skin::{self, Assignment, LibraryView, PlayerImport, SkinModel, TextureKind};
 use tauri::State;
 
+use super::dialogs::{PickPurpose, take_pick};
 use super::{CmdResult, blocking};
 use crate::state::AppState;
 
@@ -18,16 +18,15 @@ pub async fn list_skins(state: State<'_, AppState>) -> CmdResult<LibraryView> {
 pub async fn import_skin_file(
     state: State<'_, AppState>,
     kind: TextureKind,
-    path: String,
     model: Option<SkinModel>,
 ) -> CmdResult<String> {
+    let purpose = match kind {
+        TextureKind::Skin => PickPurpose::Skin,
+        TextureKind::Cape => PickPurpose::Cape,
+    };
+    let path = take_pick(&state, purpose)?;
     let launcher = state.launcher()?.clone();
-    blocking(move || {
-        launcher
-            .skins
-            .import_file(kind, &PathBuf::from(path), model)
-    })
-    .await
+    blocking(move || launcher.skins.import_file(kind, &path, model)).await
 }
 
 #[tauri::command]
@@ -97,7 +96,8 @@ pub async fn assign_skin(
 
 /// Saves a texture to a path picked in the save dialog.
 #[tauri::command]
-pub async fn export_skin(state: State<'_, AppState>, id: String, dest: String) -> CmdResult<()> {
+pub async fn export_skin(state: State<'_, AppState>, id: String) -> CmdResult<()> {
+    let dest = take_pick(&state, PickPurpose::SkinExport)?;
     let launcher = state.launcher()?.clone();
-    blocking(move || launcher.skins.export(&id, &PathBuf::from(dest))).await
+    blocking(move || launcher.skins.export(&id, &dest)).await
 }

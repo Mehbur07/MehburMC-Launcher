@@ -1,4 +1,3 @@
-import { open } from "@tauri-apps/plugin-dialog";
 import { FolderSearch } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -39,12 +38,8 @@ export function InstanceOptionsFields({
   const set = (patch: Partial<InstanceOptions>) => onChange({ ...value, ...patch });
 
   const browse = async () => {
-    const picked = await open({
-      multiple: false,
-      directory: false,
-      filters: [{ name: "Java", extensions: ["exe"] }],
-    });
-    if (typeof picked === "string") set({ javaPath: picked });
+    const picked = await ipc.pickPath("java").catch(() => null);
+    if (picked) set({ javaPath: picked });
   };
 
   const mem = value.memoryMb ?? defaultMemoryMb;

@@ -3,11 +3,14 @@
 Windows öncelikli, hafif, reklamsız ve telemetrisiz bir Minecraft Java Edition launcher'ı.
 Tauri 2 (Rust) + React + TypeScript ile geliştirilmektedir.
 
-> **Durum:** Faz 8 — haberler, crash analizi, gerçek "oyun açılınca kapat", veri klasörünü taşıma, imzalı otomatik güncelleme altyapısı, NSIS kurulum + portable zip, CI. Önceki fazlar: loader'lar, Modrinth/modpack, skin & cape yöneticisi (yalnızca offline hesaplar).
+> **Durum:** Faz 9 (sertleştirme) tamamlandı — 0.1.0 sürüm adayı. Yalnızca offline hesaplar.
 
-- Mimari ve kararlar: [ARCHITECTURE.md](ARCHITECTURE.md)
+- **Kullanım kılavuzu:** [docs/KULLANIM.md](docs/KULLANIM.md)
+- **Sorun giderme:** [docs/SORUN_GIDERME.md](docs/SORUN_GIDERME.md)
+- **Geliştirici rehberi:** [docs/GELISTIRME.md](docs/GELISTIRME.md)
+- Mimari ve kararlar: [ARCHITECTURE.md](ARCHITECTURE.md) · Güvenlik: [SECURITY.md](SECURITY.md) · [CHANGELOG.md](CHANGELOG.md)
 
-## Planlanan özellikler
+## Özellikler
 
 - Offline hesaplar (çoklu hesap); Microsoft/premium girişi yok
 - İzole instance'lar (her profil kendi `mods`, `saves`, `config` klasörüyle)
@@ -29,6 +32,7 @@ npm run tauri dev          # uygulamayı geliştirme modunda aç
 cargo test --workspace     # Rust testleri (+ src/lib/ipc/bindings TS tiplerini üretir)
 cargo clippy --workspace --all-targets -- -D warnings
 npm test                   # Vitest
+npm run coverage           # frontend kapsamı (Rust: cargo llvm-cov)
 npm run lint               # ESLint
 cargo run -p launcher-cli -- paths   # çekirdeği UI olmadan dene
 npm run package            # imzalı NSIS kurulum + portable zip (aşağıya bakın)

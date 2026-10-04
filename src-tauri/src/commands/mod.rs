@@ -4,6 +4,7 @@
 pub mod accounts;
 pub mod content;
 pub mod data;
+pub mod dialogs;
 pub mod files;
 pub mod home;
 pub mod instances;
@@ -98,10 +99,11 @@ pub async fn list_java(
     .await
 }
 
-/// Writes text (console export) to a path the user picked in a save dialog.
+/// Writes text (console export) to the path picked with
+/// `pick_path(consoleLog)`.
 #[tauri::command]
-pub async fn save_text_file(path: String, contents: String) -> CmdResult<()> {
-    let p = std::path::PathBuf::from(&path);
+pub async fn save_text_file(state: State<'_, AppState>, contents: String) -> CmdResult<()> {
+    let p = dialogs::take_pick(&state, dialogs::PickPurpose::ConsoleLog)?;
     let ext_ok = p
         .extension()
         .and_then(|e| e.to_str())

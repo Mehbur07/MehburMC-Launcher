@@ -6,7 +6,7 @@ import { InstanceIcon } from "../../components/InstanceIcon";
 import { Badge, EmptyState } from "../../components/ui";
 import { useApp } from "../../stores/app";
 import { useInstances } from "../../stores/instances";
-import { loaderLabel } from "../instances/InstancesPage";
+import { loaderLabel } from "../instances/loaderLabels";
 import { ContentTab } from "./ContentTab";
 import { FilesTab } from "./FilesTab";
 import { GeneralTab } from "./GeneralTab";

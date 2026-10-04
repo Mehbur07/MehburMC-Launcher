@@ -1,5 +1,4 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import {
   AlertOctagon,
   ArrowDownToLine,
@@ -17,6 +16,7 @@ import { openFolder } from "../../lib/actions";
 import { formatTime } from "../../lib/format";
 import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { LogLevel } from "../../lib/ipc/bindings/LogLevel";
+import { lineClass } from "./lineClass";
 import { useApp } from "../../stores/app";
 import { useInstances } from "../../stores/instances";
 import { severity, useLogs, type LogLine } from "../../stores/logs";
@@ -25,21 +25,6 @@ import { activeTaskFor, useTasks } from "../../stores/tasks";
 type Filter = "all" | "warn" | "error";
 const RANK: Record<LogLevel, number> = { trace: 0, debug: 1, info: 2, warn: 3, error: 4, fatal: 5 };
 const EMPTY: LogLine[] = [];
-
-export function lineClass(level: LogLevel) {
-  switch (level) {
-    case "fatal":
-    case "error":
-      return "text-danger";
-    case "warn":
-      return "text-warn";
-    case "debug":
-    case "trace":
-      return "text-muted";
-    default:
-      return "text-fg/90";
-  }
-}
 
 export function filterLines(lines: LogLine[], filter: Filter, query: string) {
   const min = filter === "all" ? 0 : RANK[filter];
@@ -90,13 +75,10 @@ export function ConsolePage() {
   const copyAll = () =>
     void navigator.clipboard.writeText(asText(visible, i18n.language)).catch(() => {});
   const saveLog = async () => {
-    const path = await saveDialog({
-      defaultPath: `mehbur-${instanceId ?? "console"}.log`,
-      filters: [{ name: "Log", extensions: ["log", "txt"] }],
-    });
-    if (!path) return;
     try {
-      await ipc.saveTextFile(path, asText(lines, i18n.language));
+      const path = await ipc.pickPath("consoleLog", `mehbur-${instanceId ?? "console"}.log`);
+      if (!path) return;
+      await ipc.saveTextFile(asText(lines, i18n.language));
     } catch (e) {
       useApp.setState({ notice: toErrorPayload(e) });
     }

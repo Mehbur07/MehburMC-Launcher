@@ -60,6 +60,7 @@ const COMMANDS: &[&str] = &[
     "restart_app",
     "check_app_update",
     "install_app_update",
+    "pick_path",
 ];
 
 fn main() {

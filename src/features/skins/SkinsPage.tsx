@@ -1,4 +1,3 @@
-import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
 import {
   Check,
   Download,
@@ -92,12 +91,9 @@ export function SkinsPage() {
   };
 
   const pickFile = async () => {
-    const path = await openDialog({
-      multiple: false,
-      filters: [{ name: "PNG", extensions: ["png"] }],
-    });
-    if (typeof path !== "string") return;
-    const id = await importFile(tab, path);
+    const path = await ipc.pickPath(tab).catch(() => null);
+    if (!path) return;
+    const id = await importFile(tab);
     if (!id) return;
     if (tab === "skin") setPreviewSkin(id);
     else setPreviewCape(id);
@@ -119,13 +115,10 @@ export function SkinsPage() {
   };
 
   const exportItem = async (it: Item) => {
-    const dest = await saveDialog({
-      defaultPath: `${it.item.name}.png`,
-      filters: [{ name: "PNG", extensions: ["png"] }],
-    });
-    if (!dest) return;
     try {
-      await ipc.exportSkin(it.item.id, dest);
+      const dest = await ipc.pickPath("skinExport", `${it.item.name}.png`);
+      if (!dest) return;
+      await ipc.exportSkin(it.item.id);
     } catch (e) {
       useApp.setState({ notice: toErrorPayload(e) });
     }

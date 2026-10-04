@@ -124,7 +124,8 @@
       "timeout": "Bağlantı zaman aşımına uğradı: {{url}}",
       "unreachable": "Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin.",
       "httpStatus": "Sunucu HTTP {{status}} döndürdü: {{url}}",
-      "notAllowed": "Güvenlik: izin listesinde olmayan adres engellendi: {{url}}"
+      "notAllowed": "Güvenlik: izin listesinde olmayan adres engellendi: {{url}}",
+      "tooLarge": "Sunucu yanıtı beklenenden çok büyük: {{url}}"
     },
     "download": {
       "hashMismatch": "İndirilen dosya bozuk (sağlama toplamı uyuşmuyor): {{path}}"

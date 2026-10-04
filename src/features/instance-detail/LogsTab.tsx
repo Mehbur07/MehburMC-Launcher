@@ -10,7 +10,7 @@ import type { Folder } from "../../lib/ipc/bindings/Folder";
 import type { Instance } from "../../lib/ipc/bindings/Instance";
 import { useApp } from "../../stores/app";
 import { useCrash } from "../../stores/crash";
-import { lineClass } from "../console/ConsolePage";
+import { lineClass } from "../console/lineClass";
 
 type LogFile = FileEntry & { folder: Folder };
 

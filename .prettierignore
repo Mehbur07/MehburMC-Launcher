@@ -5,3 +5,6 @@ src/lib/ipc/bindings
 package-lock.json
 *.md
 crates/**/tests/fixtures
+
+# Test coverage reports
+coverage/
