@@ -54,7 +54,11 @@ try {
   copyFileSync(built, join(work, asset));
   const notesFile = join(work, "notes.md");
   writeFileSync(notesFile, `${notes}\n\n**İndir:** \`${asset}\`\n`);
-  run("gh", ["release", "create", tag, "--repo", REPO, "--target", "main",
+  // Re-runs after a later step failed reuse the existing release.
+  const exists =
+    spawnSync("gh", ["release", "view", tag, "--repo", REPO], { stdio: "ignore" }).status === 0;
+  if (!exists)
+    run("gh", ["release", "create", tag, "--repo", REPO, "--target", "main",
     "--title", `MehburMC Launcher ${tag}`, "--notes-file", notesFile, join(work, asset)]); // prettier-ignore
 
   const platform = {
@@ -74,7 +78,12 @@ try {
     `https://github.com/${REPO}.git`, branch]); // prettier-ignore
   writeFileSync(join(branch, "latest.json"), `${JSON.stringify(latest, null, 2)}\n`);
   run("git", ["add", "latest.json"], { cwd: branch });
-  run("git", ["commit", "--quiet", "-m", `updater: ${tag}`], { cwd: branch });
+  // Commit as this repository's configured author (the clone has none).
+  const identity = ["user.name", "user.email"].flatMap((k) => [
+    "-c",
+    `${k}=${spawnSync("git", ["config", k], { encoding: "utf8" }).stdout.trim()}`,
+  ]);
+  run("git", [...identity, "commit", "--quiet", "-m", `updater: ${tag}`], { cwd: branch });
   run("git", ["push", "--quiet", "origin", "updater"], { cwd: branch });
   console.log(`published ${tag}: ${platform.url}`);
 } finally {
