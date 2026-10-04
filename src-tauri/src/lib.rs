@@ -81,6 +81,7 @@ pub fn run() {
             accounts::list_accounts,
             accounts::add_offline_account,
             accounts::remove_account,
+            accounts::rename_account,
             accounts::select_account,
             files::list_instance_files,
             files::instance_folder_path,

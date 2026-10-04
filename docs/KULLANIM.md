@@ -34,12 +34,16 @@ launcher, sürümün istediği Java'yı (8, 17, 21, 25 …) Eclipse Temurin'den 
 > İlk çalıştırmada Windows SmartScreen "tanınmayan uygulama" uyarısı verebilir (kod imzalama
 > sertifikası yok). **Ek bilgi → Yine de çalıştır** ile devam edebilirsin.
 
-## 2. İlk açılış: hesap ekle
+## 2. İlk açılış: hesap oluştur
 
-**Hesaplar** ekranında bir oyuncu adı yaz (3–16 karakter; harf, rakam, `_`) ve **Ekle**'ye bas.
-Birden fazla hesap ekleyip **Kullan** ile aralarında geçiş yapabilirsin.
+**Hesaplar → Yeni hesap oluştur** kısmına bir oyuncu adı yaz (3–16 karakter; harf, rakam, `_`)
+ve **Oluştur**'a bas. Birden fazla hesap oluşturup **Kullan** ile aralarında geçiş yapabilirsin.
 
-Offline hesaplar:
+**Adı değiştirmek** için hesabın yanındaki kalem simgesine bas, yeni adı yaz ve **Kaydet**'e bas.
+Yeni ad bir sonraki OYNA'da oyunda görünür. Oyuncu kimliği (UUID) yeni ada göre değişir; bu
+yüzden tek oyunculu dünyalarda karakter yeni oyuncu gibi başlar. Skin ve pelerin ataması korunur.
+
+Hesaplar:
 - Tek oyunculu oyunda ve `online-mode=false` olan sunucularda çalışır.
 - Çevrimiçi (online-mode) sunuculara giremez.
 

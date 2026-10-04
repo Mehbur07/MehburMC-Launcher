@@ -6,6 +6,7 @@ const ipcMock = vi.hoisted(() => ({
   addOfflineAccount: vi.fn(),
   removeAccount: vi.fn(),
   selectAccount: vi.fn(),
+  renameAccount: vi.fn(),
 }));
 vi.mock("../../lib/ipc", async (orig) => ({
   ...(await orig<typeof import("../../lib/ipc")>()),
@@ -40,7 +41,7 @@ describe("AccountsPage", () => {
   it("validates the name before adding and shows backend errors inline", async () => {
     render(<AccountsPage />);
     const input = screen.getByPlaceholderText("Player name");
-    const add = screen.getByRole("button", { name: "Add" });
+    const add = screen.getByRole("button", { name: "Create" });
     fireEvent.change(input, { target: { value: "ab" } });
     expect(add).toBeDisabled();
 
@@ -63,7 +64,7 @@ describe("AccountsPage", () => {
     render(<AccountsPage />);
     const input = screen.getByPlaceholderText("Player name") as HTMLInputElement;
     fireEvent.change(input, { target: { value: "Notch" } });
-    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create" }));
     expect(await screen.findByText("Notch")).toBeInTheDocument();
     expect(input.value).toBe("");
   });
@@ -80,6 +81,39 @@ describe("AccountsPage", () => {
 
     fireEvent.click(screen.getAllByRole("button", { name: "Edit skin" })[0]!);
     expect(useApp.getState().view).toBe("skins");
+  });
+
+  it("renames an account inline and shows a taken name as an error", async () => {
+    render(<AccountsPage />);
+    expect(screen.getByText("Create a new account")).toBeInTheDocument();
+    expect(screen.queryByText(/offline/i)).toBeNull();
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Rename" })[0]!);
+    const input = screen.getByRole("textbox", { name: "Rename" });
+    expect(input).toHaveValue("Steve");
+    fireEvent.change(input, { target: { value: "x" } });
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+
+    ipcMock.renameAccount.mockRejectedValueOnce({
+      code: "account.nameTaken",
+      params: { name: "Alex" },
+      detail: "",
+    });
+    fireEvent.change(input, { target: { value: "Alex" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(await screen.findByText(/named "Alex" already exists/)).toBeInTheDocument();
+
+    ipcMock.renameAccount.mockResolvedValueOnce({ ...acc("Mehbur"), id: "offline-Steve" });
+    ipcMock.listAccounts.mockResolvedValue({
+      accounts: [{ ...acc("Mehbur"), id: "offline-Steve" }, acc("Alex")],
+      selected: "offline-Steve",
+    });
+    fireEvent.change(input, { target: { value: "Mehbur" } });
+    expect(screen.getByText(/next PLAY/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(ipcMock.renameAccount).toHaveBeenLastCalledWith("offline-Steve", "Mehbur");
+    expect(await screen.findByText("Mehbur")).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "Rename" })).toBeNull();
   });
 
   it("asks before removing an account", async () => {

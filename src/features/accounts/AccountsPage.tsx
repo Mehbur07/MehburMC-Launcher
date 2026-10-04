@@ -1,4 +1,4 @@
-import { Check, Info, Shirt, Trash2, UserPlus } from "lucide-react";
+import { Check, Pencil, Shirt, Trash2, UserPlus, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -19,9 +19,14 @@ export function AccountsPage() {
   const addOffline = useAccounts((s) => s.addOffline);
   const select = useAccounts((s) => s.select);
   const remove = useAccounts((s) => s.remove);
+  const rename = useAccounts((s) => s.rename);
   const [name, setName] = useState("");
   const [error, setError] = useState<ErrorPayload | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Account | null>(null);
+  // Inline rename of one account.
+  const [editing, setEditing] = useState<string | null>(null);
+  const [newName, setNewName] = useState("");
+  const [renameError, setRenameError] = useState<ErrorPayload | null>(null);
   const skins = useSkins();
   const setView = useApp((s) => s.setView);
 
@@ -32,6 +37,18 @@ export function AccountsPage() {
     if (!err) setName("");
   };
 
+  const startRename = (a: Account) => {
+    setEditing(a.id);
+    setNewName(a.name);
+    setRenameError(null);
+  };
+  const newValid = NAME_RE.test(newName.trim());
+  const saveRename = async (id: string) => {
+    const err = await rename(id, newName.trim());
+    setRenameError(err);
+    if (!err) setEditing(null);
+  };
+
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-5 pb-6">
       <h1 className="font-display text-3xl font-bold tracking-wide">{t("nav.accounts")}</h1>
@@ -39,9 +56,8 @@ export function AccountsPage() {
       <section className="rounded-lg border border-line bg-surface-1/85 p-5 backdrop-blur">
         <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
           <UserPlus size={18} className="text-accent" />
-          {t("accounts.offlineTitle")}
+          {t("accounts.createTitle")}
         </h2>
-        <p className="mt-1 text-sm text-muted">{t("accounts.offlineBody")}</p>
         <form
           className="mt-4 flex gap-2"
           onSubmit={(e) => {
@@ -88,12 +104,54 @@ export function AccountsPage() {
                 unit={5}
                 className="h-10 w-10 rounded-md bg-surface-3"
               />
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold">{a.name}</div>
-                <div data-selectable className="truncate font-mono text-xs text-muted">
-                  {a.uuid}
+              {editing === a.id ? (
+                <form
+                  className="flex min-w-0 flex-1 flex-col gap-1"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (newValid) void saveRename(a.id);
+                  }}
+                >
+                  <div className="flex gap-2">
+                    <TextInput
+                      autoFocus
+                      value={newName}
+                      maxLength={16}
+                      spellCheck={false}
+                      aria-label={t("accounts.rename")}
+                      aria-invalid={!newValid}
+                      onChange={(e) => {
+                        setNewName(e.target.value);
+                        setRenameError(null);
+                      }}
+                      onKeyDown={(e) => e.key === "Escape" && setEditing(null)}
+                    />
+                    <Button type="submit" size="sm" variant="primary" disabled={!newValid}>
+                      {t("accounts.renameSave")}
+                    </Button>
+                    <IconButton label={t("common.cancel")} onClick={() => setEditing(null)}>
+                      <X size={15} />
+                    </IconButton>
+                  </div>
+                  <p className={`text-xs ${renameError || !newValid ? "text-warn" : "text-muted"}`}>
+                    {renameError
+                      ? t(`errors.${renameError.code}`, {
+                          ...renameError.params,
+                          defaultValue: renameError.detail,
+                        })
+                      : newValid
+                        ? t("accounts.renameHint")
+                        : t("accounts.nameRules")}
+                  </p>
+                </form>
+              ) : (
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold">{a.name}</div>
+                  <div data-selectable className="truncate font-mono text-xs text-muted">
+                    {a.uuid}
+                  </div>
                 </div>
-              </div>
+              )}
               {active ? (
                 <Badge tone="accent">
                   <Check size={12} />
@@ -103,6 +161,11 @@ export function AccountsPage() {
                 <Button size="sm" onClick={() => void select(a.id)}>
                   {t("accounts.use")}
                 </Button>
+              )}
+              {editing !== a.id && (
+                <IconButton label={t("accounts.rename")} onClick={() => startRename(a)}>
+                  <Pencil size={15} />
+                </IconButton>
               )}
               <IconButton label={t("accounts.editSkin")} onClick={() => setView("skins")}>
                 <Shirt size={15} />
@@ -118,11 +181,6 @@ export function AccountsPage() {
           );
         })}
       </section>
-
-      <p className="flex items-start gap-2 text-xs text-muted">
-        <Info size={14} className="mt-0.5 shrink-0" />
-        {t("accounts.offlineServers")}
-      </p>
 
       <ConfirmDialog
         open={pendingDelete !== null}

@@ -199,7 +199,7 @@ mod tests {
     async fn refuses_oversized_bodies() {
         use wiremock::matchers::method;
         use wiremock::{Mock, MockServer, ResponseTemplate};
-        let server = MockServer::start().await;
+        let server = MockServer::builder().start().await;
         Mock::given(method("GET"))
             .respond_with(ResponseTemplate::new(200).set_body_bytes(vec![7u8; 2048]))
             .mount(&server)

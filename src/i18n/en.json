@@ -159,7 +159,8 @@
     },
     "account": {
       "none": "Add or select an account first.",
-      "notFound": "Account not found: {{id}}"
+      "notFound": "Account not found: {{id}}",
+      "nameTaken": "An account named \"{{name}}\" already exists."
     },
     "loader": {
       "unavailable": "{{loader}} is not available for Minecraft {{mc}}.",
@@ -321,17 +322,18 @@
     "content": "Content"
   },
   "accounts": {
-    "offlineTitle": "Offline account",
-    "offlineBody": "To play without internet, singleplayer, or on offline-mode servers.",
+    "createTitle": "Create a new account",
     "namePlaceholder": "Player name",
-    "add": "Add",
+    "add": "Create",
     "nameRules": "3–16 characters; letters, digits and _ only.",
     "active": "Active",
     "use": "Use",
-    "offlineServers": "Offline accounts cannot join online-mode servers. Skins only show in game in instances with CustomSkinLoader.",
     "removeTitle": "Remove account?",
     "removeBody": "\"{{name}}\" will be removed from the list.",
-    "editSkin": "Edit skin"
+    "editSkin": "Edit skin",
+    "rename": "Rename",
+    "renameSave": "Save",
+    "renameHint": "The new name shows in game from the next PLAY."
   },
   "loader": {
     "version": "Loader version",
@@ -404,7 +406,7 @@
   },
   "skins": {
     "account": "Account",
-    "noAccount": "Add an offline account first to assign skins.",
+    "noAccount": "Create an account first to assign skins.",
     "noSkin": "No skin selected — the default skin is used in game.",
     "pose": {
       "idle": "Idle",
@@ -441,7 +443,7 @@
     "deleteBody": "\"{{name}}\" will be deleted from the library and removed from accounts using it.",
     "inGame": {
       "title": "Show in game",
-      "body": "Offline skins are invisible in the vanilla game. In instances with the CustomSkinLoader mod, the launcher hands the selected account's skin and cape to the game every time you press PLAY.",
+      "body": "Launcher skins are invisible in the vanilla game. In instances with the CustomSkinLoader mod, the launcher hands the selected account's skin and cape to the game every time you press PLAY.",
       "noModded": "You have no Fabric, Quilt, Forge or NeoForge instance. Create one to see your skin in game.",
       "installed": "CustomSkinLoader installed",
       "install": "Install CustomSkinLoader",

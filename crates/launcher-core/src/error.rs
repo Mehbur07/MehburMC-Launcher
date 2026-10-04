@@ -133,6 +133,9 @@ pub enum CoreError {
     #[error("account {0} was not found")]
     AccountNotFound(String),
 
+    #[error("an account named {0} already exists")]
+    AccountNameTaken(String),
+
     #[error("no {loader} version is available for Minecraft {mc}")]
     LoaderUnavailable { loader: String, mc: String },
 
@@ -211,6 +214,7 @@ impl CoreError {
             Self::InvalidInstance(_) => "instance.invalid",
             Self::NoAccount => "account.none",
             Self::AccountNotFound(_) => "account.notFound",
+            Self::AccountNameTaken(_) => "account.nameTaken",
             Self::LoaderUnavailable { .. } => "loader.unavailable",
             Self::LoaderInstall { .. } => "loader.installFailed",
             Self::OptifineInvalid { .. } => "loader.optifineInvalid",
@@ -274,7 +278,9 @@ impl CoreError {
                 put("path", path.display().to_string());
                 put("entry", entry.clone());
             }
-            Self::InvalidPlayerName(name) => put("name", name.clone()),
+            Self::InvalidPlayerName(name) | Self::AccountNameTaken(name) => {
+                put("name", name.clone())
+            }
             Self::Spawn { program, .. } => put("path", program.display().to_string()),
             Self::InstanceNotFound(id) | Self::AccountNotFound(id) => put("id", id.clone()),
             Self::InstanceBusy { name } => put("name", name.clone()),

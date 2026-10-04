@@ -27,6 +27,7 @@ const COMMANDS: &[&str] = &[
     "list_accounts",
     "add_offline_account",
     "remove_account",
+    "rename_account",
     "select_account",
     "list_instance_files",
     "instance_folder_path",

@@ -131,7 +131,7 @@ fn full_command(p: &launch::PreparedLaunch) -> String {
 
 #[tokio::test]
 async fn prepares_a_complete_launch_and_reuses_files() {
-    let server = MockServer::start().await;
+    let server = MockServer::builder().start().await;
     serve(&server, 1).await;
     let f = fixture(&server.uri());
     let cancel = CancellationToken::new();
@@ -184,7 +184,7 @@ async fn prepares_a_complete_launch_and_reuses_files() {
 
 #[tokio::test]
 async fn works_offline_after_the_first_start() {
-    let server = MockServer::start().await;
+    let server = MockServer::builder().start().await;
     serve(&server, 1).await;
     let f = fixture(&server.uri());
     let cancel = CancellationToken::new();
@@ -211,7 +211,7 @@ async fn works_offline_after_the_first_start() {
 
 #[tokio::test]
 async fn rejects_a_non_java_override() {
-    let server = MockServer::start().await;
+    let server = MockServer::builder().start().await;
     serve(&server, 1).await;
     let mut f = fixture(&server.uri());
     let evil = f

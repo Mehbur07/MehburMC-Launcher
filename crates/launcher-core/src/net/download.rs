@@ -373,7 +373,7 @@ mod tests {
 
     #[tokio::test]
     async fn downloads_verifies_and_reuses() {
-        let server = MockServer::start().await;
+        let server = MockServer::builder().start().await;
         Mock::given(method("GET"))
             .and(path("/file.bin"))
             .respond_with(ResponseTemplate::new(200).set_body_bytes(BODY))
@@ -403,7 +403,7 @@ mod tests {
 
     #[tokio::test]
     async fn retries_transient_errors() {
-        let server = MockServer::start().await;
+        let server = MockServer::builder().start().await;
         Mock::given(method("GET"))
             .respond_with(ResponseTemplate::new(503))
             .up_to_n_times(2)
@@ -429,7 +429,7 @@ mod tests {
 
     #[tokio::test]
     async fn does_not_retry_404() {
-        let server = MockServer::start().await;
+        let server = MockServer::builder().start().await;
         Mock::given(method("GET"))
             .respond_with(ResponseTemplate::new(404))
             .expect(1)
@@ -450,7 +450,7 @@ mod tests {
 
     #[tokio::test]
     async fn resumes_partial_file_with_range() {
-        let server = MockServer::start().await;
+        let server = MockServer::builder().start().await;
         Mock::given(method("GET"))
             .and(header("range", "bytes=6-"))
             .respond_with(ResponseTemplate::new(206).set_body_bytes(&BODY[6..]))
@@ -476,7 +476,7 @@ mod tests {
 
     #[tokio::test]
     async fn checksum_mismatch_fails_after_retries() {
-        let server = MockServer::start().await;
+        let server = MockServer::builder().start().await;
         Mock::given(method("GET"))
             .respond_with(ResponseTemplate::new(200).set_body_bytes(BODY))
             .expect(3)
@@ -521,7 +521,7 @@ mod tests {
     #[tokio::test]
     async fn cancellation_stops_work() {
         let dir = tempfile::tempdir().unwrap();
-        let server = MockServer::start().await;
+        let server = MockServer::builder().start().await;
         let c = CancellationToken::new();
         c.cancel();
         let err = downloader()

@@ -39,6 +39,7 @@
     "allow-list-accounts",
     "allow-add-offline-account",
     "allow-remove-account",
+    "allow-rename-account",
     "allow-select-account",
     "allow-list-instance-files",
     "allow-instance-folder-path",

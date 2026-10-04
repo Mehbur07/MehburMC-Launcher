@@ -50,7 +50,7 @@ fn fabric_instance() -> Instance {
 }
 
 async fn setup() -> (MockServer, tempfile::TempDir, Ctx, std::path::PathBuf) {
-    let server = MockServer::start().await;
+    let server = MockServer::builder().start().await;
     let tmp = tempfile::tempdir().unwrap();
     let paths = Paths::at(tmp.path().join("MehburMC"));
     paths.ensure_layout().unwrap();

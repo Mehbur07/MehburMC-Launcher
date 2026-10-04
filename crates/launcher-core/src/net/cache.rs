@@ -65,7 +65,7 @@ mod tests {
 
     #[tokio::test]
     async fn fresh_hit_then_stale_fallback() {
-        let server = MockServer::start().await;
+        let server = MockServer::builder().start().await;
         Mock::given(method("GET"))
             .respond_with(ResponseTemplate::new(200).set_body_string(r#"{"v":1}"#))
             .expect(1)

@@ -159,7 +159,8 @@
     },
     "account": {
       "none": "Önce bir hesap ekle veya seç.",
-      "notFound": "Hesap bulunamadı: {{id}}"
+      "notFound": "Hesap bulunamadı: {{id}}",
+      "nameTaken": "\"{{name}}\" adında bir hesap zaten var."
     },
     "loader": {
       "unavailable": "{{loader}}, Minecraft {{mc}} için mevcut değil.",
@@ -321,17 +322,18 @@
     "content": "İçerik"
   },
   "accounts": {
-    "offlineTitle": "Offline hesap",
-    "offlineBody": "İnternetsiz ve tek oyunculu oynamak ya da offline-mode sunuculara girmek için.",
+    "createTitle": "Yeni hesap oluştur",
     "namePlaceholder": "Oyuncu adı",
-    "add": "Ekle",
+    "add": "Oluştur",
     "nameRules": "3–16 karakter; yalnızca harf, rakam ve _.",
     "active": "Aktif",
     "use": "Kullan",
-    "offlineServers": "Offline hesaplar çevrimiçi (online-mode) sunuculara giremez. Skin'ler oyunda yalnızca CustomSkinLoader kurulu profillerde görünür.",
     "removeTitle": "Hesap kaldırılsın mı?",
     "removeBody": "\"{{name}}\" hesabı listeden kaldırılacak.",
-    "editSkin": "Skin'i düzenle"
+    "editSkin": "Skin'i düzenle",
+    "rename": "Adı değiştir",
+    "renameSave": "Kaydet",
+    "renameHint": "Yeni ad bir sonraki OYNA'da oyunda görünür."
   },
   "loader": {
     "version": "Loader sürümü",
@@ -404,7 +406,7 @@
   },
   "skins": {
     "account": "Hesap",
-    "noAccount": "Skin atamak için önce bir offline hesap ekle.",
+    "noAccount": "Skin atamak için önce bir hesap oluştur.",
     "noSkin": "Skin seçilmedi — oyunda varsayılan skin görünür.",
     "pose": {
       "idle": "Dur",
@@ -441,7 +443,7 @@
     "deleteBody": "\"{{name}}\" kütüphaneden silinecek ve onu kullanan hesaplardan kaldırılacak.",
     "inGame": {
       "title": "Oyunda göster",
-      "body": "Offline skin'ler vanilla oyunda görünmez. CustomSkinLoader modu kurulu profillerde launcher, OYNA'ya bastığında seçili hesabın skin'ini ve pelerinini otomatik olarak oyuna aktarır.",
+      "body": "Launcher skin'leri vanilla oyunda görünmez. CustomSkinLoader modu kurulu profillerde launcher, OYNA'ya bastığında seçili hesabın skin'ini ve pelerinini otomatik olarak oyuna aktarır.",
       "noModded": "Fabric, Quilt, Forge veya NeoForge profilin yok. Skin'ini oyunda görmek için böyle bir profil oluştur.",
       "installed": "CustomSkinLoader kurulu",
       "install": "CustomSkinLoader kur",

@@ -561,7 +561,7 @@ mod tests {
 
     #[tokio::test]
     async fn imports_mrpack_with_overrides() {
-        let server = MockServer::start().await;
+        let server = MockServer::builder().start().await;
         Mock::given(method("GET"))
             .and(path("/data/x/sodium.jar"))
             .respond_with(ResponseTemplate::new(200).set_body_bytes(b"jar".to_vec()))
@@ -606,7 +606,7 @@ mod tests {
 
     #[tokio::test]
     async fn failed_mrpack_leaves_no_instance() {
-        let server = MockServer::start().await;
+        let server = MockServer::builder().start().await;
         let (tmp, ctx, store) = setup(&server).await;
         let index = json!({
             "formatVersion": 1, "game": "minecraft", "versionId": "1", "name": "Evil",
@@ -625,7 +625,7 @@ mod tests {
 
     #[tokio::test]
     async fn imports_curseforge_and_reports_blocked_files() {
-        let server = MockServer::start().await;
+        let server = MockServer::builder().start().await;
         Mock::given(method("POST"))
             .and(path("/v1/mods/files"))
             .and(header("x-api-key", "k"))

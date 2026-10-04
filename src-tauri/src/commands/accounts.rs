@@ -24,6 +24,12 @@ pub fn remove_account(state: State<'_, AppState>, id: String) -> CmdResult<Accou
     Ok(view)
 }
 
+/// Renames an account; the next launch uses the new in-game name.
+#[tauri::command]
+pub fn rename_account(state: State<'_, AppState>, id: String, name: String) -> CmdResult<Account> {
+    Ok(state.launcher()?.accounts.rename(&id, &name)?)
+}
+
 #[tauri::command]
 pub fn select_account(state: State<'_, AppState>, id: String) -> CmdResult<AccountsView> {
     Ok(state.launcher()?.accounts.select(&id)?)

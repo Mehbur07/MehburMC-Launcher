@@ -112,6 +112,31 @@ impl AccountStore {
         Ok(account)
     }
 
+    /// Renames an account. The in-game name and the offline UUID follow the
+    /// new name; the id stays, so skin assignments and the selection survive.
+    pub fn rename(&self, id: &str, name: &str) -> Result<Account> {
+        let name = name.trim();
+        validate_name(name)?;
+        let _g = self.lock.lock().expect("accounts lock");
+        let mut v = self.view();
+        if v.accounts
+            .iter()
+            .any(|a| a.id != id && a.name.eq_ignore_ascii_case(name))
+        {
+            return Err(CoreError::AccountNameTaken(name.to_owned()));
+        }
+        let acc = v
+            .accounts
+            .iter_mut()
+            .find(|a| a.id == id)
+            .ok_or_else(|| CoreError::AccountNotFound(id.to_owned()))?;
+        acc.name = name.to_owned();
+        acc.uuid = offline_uuid(name);
+        let out = acc.clone();
+        self.write(&v)?;
+        Ok(out)
+    }
+
     pub fn remove(&self, id: &str) -> Result<AccountsView> {
         let _g = self.lock.lock().expect("accounts lock");
         let mut v = self.view();
@@ -179,6 +204,37 @@ mod tests {
         assert_eq!(v.selected.as_deref(), Some(b.id.as_str()));
         assert!(s.add_offline("x").is_err());
         assert!(s.select("nope").is_err());
+    }
+
+    #[test]
+    fn rename_changes_name_and_uuid_but_keeps_id() {
+        let tmp = tempfile::tempdir().unwrap();
+        let paths = Paths::at(tmp.path().join("MehburMC"));
+        paths.ensure_layout().unwrap();
+        let s = AccountStore::new(paths);
+        let a = s.add_offline("Steve").unwrap();
+        let b = s.add_offline("Alex").unwrap();
+
+        let r = s.rename(&a.id, " Notch ").unwrap();
+        assert_eq!(r.id, a.id);
+        assert_eq!(r.name, "Notch");
+        assert_eq!(r.uuid, offline_uuid("Notch"));
+        s.select(&a.id).unwrap();
+        let launch = s.launch_account().unwrap();
+        assert_eq!(launch.name, "Notch");
+        assert_eq!(launch.uuid, r.uuid);
+
+        // Case-only change of the same account is fine; another's name is not.
+        assert_eq!(s.rename(&a.id, "notch").unwrap().name, "notch");
+        assert_eq!(
+            s.rename(&a.id, "alex").unwrap_err().code(),
+            "account.nameTaken"
+        );
+        assert_eq!(s.rename(&b.id, "x").unwrap_err().code(), "auth.invalidName");
+        assert_eq!(
+            s.rename("nope", "Valid").unwrap_err().code(),
+            "account.notFound"
+        );
     }
 
     #[test]

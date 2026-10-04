@@ -39,7 +39,7 @@ fn jre_zip() -> Vec<u8> {
 }
 
 async fn setup(archive: Vec<u8>, advertised_sha: String) -> (MockServer, tempfile::TempDir, Ctx) {
-    let server = MockServer::start().await;
+    let server = MockServer::builder().start().await;
     let uri = server.uri();
     Mock::given(method("GET"))
         .and(path_regex(r"^/v3/assets/latest/21/hotspot$"))

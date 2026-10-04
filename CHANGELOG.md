@@ -33,6 +33,9 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sür
   sürümden okunur + 11 skin / 10 pelerinlik özgün MehburMC koleksiyonu); canlı 3B önizlemeli
   piksel editörü (kalem, silgi, kova, damlalık, çizgi, ayna modu, katmanlar, geri al/ileri al).
   MehburMC skin'i ve pelerini her kullanıcının kütüphanesine hazır gelir.
+- **Hesap adını değiştirme:** Hesaplar ekranında kalem simgesiyle; oyundaki ad ve UUID yeni
+  ada göre değişir, skin atamaları korunur. "Offline hesap" yazıları kaldırıldı, kutu artık
+  "Yeni hesap oluştur".
 
 ### Kaldırıldı
 - Premium kavramı (Faz 10): "premium değil" rozeti ve oyuncu adından skin kopyalama.

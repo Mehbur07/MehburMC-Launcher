@@ -336,7 +336,7 @@ mod tests {
 
     #[tokio::test]
     async fn scan_identifies_and_updates() {
-        let server = MockServer::start().await;
+        let server = MockServer::builder().start().await;
         let tmp = tempfile::tempdir().unwrap();
         let paths = Paths::at(tmp.path().join("MehburMC"));
         paths.ensure_layout().unwrap();

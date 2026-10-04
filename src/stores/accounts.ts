@@ -11,6 +11,8 @@ interface AccountsStore {
   load: () => Promise<void>;
   /** Returns the error instead of showing it, so forms can render it inline. */
   addOffline: (name: string) => Promise<ErrorPayload | null>;
+  /** Like addOffline, returns the error for inline display. */
+  rename: (id: string, name: string) => Promise<ErrorPayload | null>;
   remove: (id: string) => Promise<void>;
   select: (id: string) => Promise<void>;
 }
@@ -33,6 +35,16 @@ export const useAccounts = create<AccountsStore>((set, get) => ({
   addOffline: async (name) => {
     try {
       await ipc.addOfflineAccount(name);
+      await get().load();
+      return null;
+    } catch (e) {
+      return toErrorPayload(e);
+    }
+  },
+
+  rename: async (id, name) => {
+    try {
+      await ipc.renameAccount(id, name);
       await get().load();
       return null;
     } catch (e) {

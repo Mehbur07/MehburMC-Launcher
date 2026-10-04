@@ -71,6 +71,7 @@ export const ipc = {
   listAccounts: () => invoke<AccountsView>("list_accounts"),
   addOfflineAccount: (name: string) => invoke<Account>("add_offline_account", { name }),
   removeAccount: (id: string) => invoke<AccountsView>("remove_account", { id }),
+  renameAccount: (id: string, name: string) => invoke<Account>("rename_account", { id, name }),
   selectAccount: (id: string) => invoke<AccountsView>("select_account", { id }),
 
   listInstanceFiles: (id: string, folder: Folder) =>

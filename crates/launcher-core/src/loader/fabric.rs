@@ -154,7 +154,7 @@ mod tests {
 
     #[tokio::test]
     async fn installs_profile_with_our_id() {
-        let server = MockServer::start().await;
+        let server = MockServer::builder().start().await;
         Mock::given(method("GET"))
             .and(path("/v2/versions/loader/26.3"))
             .respond_with(ResponseTemplate::new(200).set_body_string(
