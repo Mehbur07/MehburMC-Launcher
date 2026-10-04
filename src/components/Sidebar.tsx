@@ -5,6 +5,7 @@ import {
   Play,
   Settings,
   Shirt,
+  Sparkles,
   SquareTerminal,
   UserRound,
   type LucideIcon,
@@ -29,6 +30,7 @@ export function Sidebar() {
   const { t } = useTranslation();
   const view = useApp((s) => s.view);
   const setView = useApp((s) => s.setView);
+  const whatsNewUnseen = useApp((s) => s.whatsNewUnseen);
   const busy = useTasks(
     (s) => Object.values(s.tasks).filter((t) => t.status === "preparing").length,
   );
@@ -66,6 +68,9 @@ export function Sidebar() {
               {busy}
             </span>
           )}
+          {v === "whatsNew" && whatsNewUnseen && (
+            <span className="relative ml-auto h-2 w-2 rounded-full bg-accent shadow-[0_0_8px_rgb(var(--mc-accent-rgb))]" />
+          )}
           {v === "console" && playing && (
             <span className="relative ml-auto h-2 w-2 animate-pulse rounded-full bg-success" />
           )}
@@ -78,6 +83,7 @@ export function Sidebar() {
     <nav className="relative z-10 flex w-56 shrink-0 flex-col border-r border-line bg-surface-1/80 p-3 backdrop-blur">
       <ul className="flex flex-col gap-1">{ITEMS.map(({ view: v, icon }) => item(v, icon))}</ul>
       <ul className="mt-auto flex flex-col gap-1 border-t border-line pt-3">
+        {item("whatsNew", Sparkles)}
         {item("settings", Settings)}
       </ul>
     </nav>

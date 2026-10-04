@@ -3,6 +3,7 @@ import { Copy, Minus, Square, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
+import { UpdateButton } from "../features/update/UpdateButton";
 import { Logo } from "./Logo";
 
 export function TitleBar() {
@@ -31,6 +32,7 @@ export function TitleBar() {
       <span className="pointer-events-none ml-2 font-brand text-[13px] font-bold tracking-wider">
         MehburMC <span className="text-accent">Launcher</span>
       </span>
+      <UpdateButton />
 
       <div className="ml-auto flex h-full">
         <WindowButton label={t("titlebar.minimize")} onClick={() => void win().minimize()}>

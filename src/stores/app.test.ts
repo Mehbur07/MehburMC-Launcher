@@ -33,6 +33,7 @@ const boot: Bootstrap = {
   paths: null,
   settings,
   startupError: null,
+  updatedFrom: null,
 };
 
 describe("app store", () => {
@@ -58,6 +59,19 @@ describe("app store", () => {
 
     expect(useApp.getState().settings?.accent).toBe("cyan");
     expect(useApp.getState().notice?.code).toBe("io.diskFull");
+  });
+
+  it("opens the release notes on the first start after an update", async () => {
+    useApp.setState({ view: "home", whatsNewUnseen: false });
+    ipcMock.getBootstrap.mockResolvedValue(boot);
+    await useApp.getState().load();
+    expect(useApp.getState().view).toBe("home");
+
+    ipcMock.getBootstrap.mockResolvedValue({ ...boot, updatedFrom: "0.1.0" });
+    await useApp.getState().load();
+    expect(useApp.getState()).toMatchObject({ view: "whatsNew", whatsNewUnseen: true });
+    useApp.getState().markWhatsNewSeen();
+    expect(useApp.getState().whatsNewUnseen).toBe(false);
   });
 
   it("keeps saved settings on success", async () => {

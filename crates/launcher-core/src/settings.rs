@@ -152,9 +152,48 @@ impl Settings {
     }
 }
 
+/// Records the running launcher version in `launcher/last-version` and
+/// returns the previous one if it differs: `Some("")` for an install that
+/// predates the marker (settings exist, no marker), `None` on a fresh
+/// install or a normal start. Used to show "What's new" once per update.
+pub fn note_launcher_version(paths: &Paths, current: &str) -> Option<String> {
+    let marker = paths.launcher_dir().join("last-version");
+    let previous = match fs::read_to_string(&marker) {
+        Ok(v) => Some(v.trim().to_owned()),
+        Err(_) if paths.settings_file().is_file() => Some(String::new()),
+        Err(_) => None,
+    };
+    if previous.as_deref() != Some(current)
+        && let Err(e) = crate::fsutil::write_atomic(&marker, current.as_bytes())
+    {
+        tracing::warn!(error = %e.detail(), "could not record the launcher version");
+    }
+    previous.filter(|p| p != current)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn notes_version_changes_once() {
+        let tmp = tempfile::tempdir().unwrap();
+        let paths = Paths::at(tmp.path().join("MehburMC"));
+        paths.ensure_layout().unwrap();
+        // Fresh install: nothing to announce.
+        assert_eq!(note_launcher_version(&paths, "0.2.0"), None);
+        assert_eq!(note_launcher_version(&paths, "0.2.0"), None);
+        // Update: announced exactly once.
+        assert_eq!(
+            note_launcher_version(&paths, "0.3.0").as_deref(),
+            Some("0.2.0")
+        );
+        assert_eq!(note_launcher_version(&paths, "0.3.0"), None);
+        // Install from before the marker existed.
+        std::fs::remove_file(paths.launcher_dir().join("last-version")).unwrap();
+        Settings::default().save(&paths).unwrap();
+        assert_eq!(note_launcher_version(&paths, "0.3.0").as_deref(), Some(""));
+    }
 
     fn temp_paths() -> (tempfile::TempDir, Paths) {
         let tmp = tempfile::tempdir().unwrap();

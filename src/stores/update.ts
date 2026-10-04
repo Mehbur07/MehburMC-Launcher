@@ -9,23 +9,20 @@ interface UpdateStore {
   checking: boolean;
   /** Download progress 0..1 while installing, else null. */
   installing: number | null;
-  dismissed: boolean;
   check: () => Promise<void>;
   install: () => Promise<void>;
-  dismiss: () => void;
 }
 
 export const useUpdate = create<UpdateStore>((set, get) => ({
   info: null,
   checking: false,
   installing: null,
-  dismissed: false,
 
   check: async () => {
     if (get().checking) return;
     set({ checking: true });
     try {
-      set({ info: await ipc.checkAppUpdate(), dismissed: false });
+      set({ info: await ipc.checkAppUpdate() });
     } catch (e) {
       useApp.setState({ notice: toErrorPayload(e) });
     } finally {
@@ -48,6 +45,4 @@ export const useUpdate = create<UpdateStore>((set, get) => ({
       unlisten();
     }
   },
-
-  dismiss: () => set({ dismissed: true }),
 }));

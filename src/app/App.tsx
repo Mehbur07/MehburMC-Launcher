@@ -15,7 +15,6 @@ import { useInstances } from "../stores/instances";
 import { useSkins } from "../stores/skins";
 import { useUpdate } from "../stores/update";
 import { CrashDialog } from "../features/crash/CrashDialog";
-import { UpdateBanner } from "../features/update/UpdateBanner";
 import { connectEvents } from "./events";
 
 // Every screen except Home is loaded on first use (three.js for skins,
@@ -34,6 +33,7 @@ const SettingsPage = named(() => import("../features/settings/SettingsPage"), "S
 const BrowsePage = named(() => import("../features/browse/BrowsePage"), "BrowsePage");
 const CreateWizard = named(() => import("../features/instances/CreateWizard"), "CreateWizard");
 const SkinsPage = lazy(() => import("../features/skins/SkinsPage"));
+const WhatsNewPage = named(() => import("../features/whatsnew/WhatsNewPage"), "WhatsNewPage");
 
 function Page({ view }: { view: View }) {
   switch (view) {
@@ -55,6 +55,8 @@ function Page({ view }: { view: View }) {
       return <BrowsePage />;
     case "skins":
       return <SkinsPage />;
+    case "whatsNew":
+      return <WhatsNewPage />;
   }
 }
 
@@ -122,7 +124,6 @@ export function App() {
             {settings.backgroundEffects && <NeonBackground accent={settings.accent} />}
             <Sidebar />
             <main className="relative z-0 flex min-w-0 flex-1 flex-col overflow-y-auto p-6">
-              <UpdateBanner />
               {notice && (
                 <div className="mb-4">
                   <ErrorNotice error={notice} onDismiss={dismissNotice} />

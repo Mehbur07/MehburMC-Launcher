@@ -20,6 +20,9 @@ pub struct AppState {
     /// Fatal startup problem (e.g. data folder not writable) shown by the UI
     /// instead of the normal shell.
     pub startup_error: Option<ErrorPayload>,
+    /// Previous launcher version when this is the first start after an
+    /// update (`""` if it predates version tracking).
+    pub updated_from: Option<String>,
     pub launcher: Option<Arc<Launcher>>,
     /// Taken once by `setup` to start the event forwarder.
     pub events_rx: Mutex<Option<mpsc::UnboundedReceiver<CoreEvent>>>,
@@ -41,6 +44,8 @@ impl AppState {
             return Self::failed(Some(paths), e);
         }
 
+        let updated_from =
+            launcher_core::settings::note_launcher_version(&paths, launcher_core::LAUNCHER_VERSION);
         let (settings, settings_err) = match Settings::load(&paths) {
             Ok(s) => (s, None),
             Err(e) => (Settings::default(), Some(e)),
@@ -74,6 +79,7 @@ impl AppState {
             paths: Some(paths),
             settings: Mutex::new(settings),
             startup_error: None,
+            updated_from,
             launcher: Some(launcher),
             events_rx: Mutex::new(Some(rx)),
             pending_update: Mutex::new(None),
@@ -88,6 +94,7 @@ impl AppState {
             paths,
             settings: Mutex::new(Settings::default()),
             startup_error: Some(err.to_payload()),
+            updated_from: None,
             launcher: None,
             events_rx: Mutex::new(None),
             pending_update: Mutex::new(None),

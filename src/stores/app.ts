@@ -15,6 +15,7 @@ export type View =
   | "skins"
   | "downloads"
   | "console"
+  | "whatsNew"
   | "settings";
 
 type Status = "loading" | "ready" | "fatal";
@@ -34,6 +35,8 @@ interface AppStore {
   browseTarget: string | null;
   browseType: ProjectType;
   wizardOpen: boolean;
+  /** Release notes not looked at yet (first start after an update). */
+  whatsNewUnseen: boolean;
   /** Last non-fatal error, shown as a dismissible notice. */
   notice: ErrorPayload | null;
   /** Fatal startup error (data folder unusable). */
@@ -47,6 +50,7 @@ interface AppStore {
   setWizard: (open: boolean) => void;
   updateSettings: (patch: Partial<Settings>) => Promise<void>;
   dismissNotice: () => void;
+  markWhatsNewSeen: () => void;
 }
 
 export const useApp = create<AppStore>((set, get) => ({
@@ -60,17 +64,21 @@ export const useApp = create<AppStore>((set, get) => ({
   browseTarget: null,
   browseType: "mod",
   wizardOpen: false,
+  whatsNewUnseen: false,
   notice: null,
   fatal: null,
 
   load: async () => {
     try {
       const boot = await ipc.getBootstrap();
+      const updated = boot.updatedFrom !== null;
       set({
         boot,
         settings: boot.settings,
         status: boot.startupError ? "fatal" : "ready",
         fatal: boot.startupError,
+        // First start after an update opens the release notes.
+        ...(updated ? { view: "whatsNew" as const, whatsNewUnseen: true } : {}),
       });
     } catch (e) {
       set({ status: "fatal", fatal: toErrorPayload(e) });
@@ -99,4 +107,5 @@ export const useApp = create<AppStore>((set, get) => ({
   },
 
   dismissNotice: () => set({ notice: null }),
+  markWhatsNewSeen: () => set({ whatsNewUnseen: false }),
 }));

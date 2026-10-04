@@ -16,6 +16,7 @@
     "skins": "Skin & Cape",
     "downloads": "İndirmeler",
     "console": "Konsol",
+    "whatsNew": "Yenilikler",
     "settings": "Ayarlar"
   },
   "home": {
@@ -620,6 +621,14 @@
       "available": "{{version}} sürümü mevcut.",
       "unavailable": "Güncelleme kanalına ulaşılamadı (çevrimdışı veya henüz yayın yok).",
       "portable": "Portable sürümde otomatik güncelleme yok; yeni portable zip'i indirip klasörün üzerine çıkar."
-    }
+    },
+    "button": "Güncelle · v{{version}}",
+    "installing": "İndiriliyor %{{pct}}"
+  },
+  "whatsNew": {
+    "title": "Yenilikler",
+    "running": "Şu an MehburMC Launcher {{version}} kullanıyorsun.",
+    "older": "Önceki sürümler",
+    "empty": "Bu sürüm için not yok."
   }
 }

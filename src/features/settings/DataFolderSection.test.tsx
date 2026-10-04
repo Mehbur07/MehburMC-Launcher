@@ -40,6 +40,7 @@ const boot = (redirected: boolean): Bootstrap =>
     },
     settings: {} as Bootstrap["settings"],
     startupError: null,
+    updatedFrom: null,
   }) as Bootstrap;
 
 describe("DataFolderSection", () => {

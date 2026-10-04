@@ -6,4 +6,8 @@ import type { Settings } from "./Settings";
 /**
  * Everything the UI needs for its first render, in one round trip.
  */
-export type Bootstrap = { appName: string, version: string, paths: PathsInfo | null, settings: Settings, startupError: ErrorPayload | null, };
+export type Bootstrap = { appName: string, version: string, paths: PathsInfo | null, settings: Settings, startupError: ErrorPayload | null, 
+/**
+ * Set on the first start after an update (see `note_launcher_version`).
+ */
+updatedFrom: string | null, };

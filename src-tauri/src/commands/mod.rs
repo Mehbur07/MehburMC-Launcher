@@ -49,6 +49,8 @@ pub struct Bootstrap {
     pub paths: Option<PathsInfo>,
     pub settings: Settings,
     pub startup_error: Option<ErrorPayload>,
+    /// Set on the first start after an update (see `note_launcher_version`).
+    pub updated_from: Option<String>,
 }
 
 #[tauri::command]
@@ -60,6 +62,7 @@ pub fn get_bootstrap(state: State<'_, AppState>) -> Bootstrap {
         paths: state.paths.as_ref().map(|p| p.info()),
         settings,
         startup_error: state.startup_error.clone(),
+        updated_from: state.updated_from.clone(),
     }
 }
 

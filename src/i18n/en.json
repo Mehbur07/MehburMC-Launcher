@@ -16,6 +16,7 @@
     "skins": "Skin & Cape",
     "downloads": "Downloads",
     "console": "Console",
+    "whatsNew": "What's new",
     "settings": "Settings"
   },
   "home": {
@@ -620,6 +621,14 @@
       "available": "Version {{version}} is available.",
       "unavailable": "Update channel unreachable (offline or no release yet).",
       "portable": "Portable copies do not self-update; download the new portable zip and extract it over this folder."
-    }
+    },
+    "button": "Update to {{version}}",
+    "installing": "Downloading {{pct}}%"
+  },
+  "whatsNew": {
+    "title": "What's new",
+    "running": "You are running MehburMC Launcher {{version}}.",
+    "older": "Earlier versions",
+    "empty": "No notes for this version."
   }
 }

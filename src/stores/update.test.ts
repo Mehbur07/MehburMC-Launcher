@@ -21,13 +21,12 @@ import { useUpdate } from "./update";
 
 describe("update store", () => {
   beforeEach(() => {
-    useUpdate.setState({ info: null, checking: false, installing: null, dismissed: false });
+    useUpdate.setState({ info: null, checking: false, installing: null });
     useApp.setState({ notice: null });
     vi.clearAllMocks();
   });
 
-  it("stores the check result and resets dismissal", async () => {
-    useUpdate.setState({ dismissed: true });
+  it("stores the check result", async () => {
     ipcMock.checkAppUpdate.mockResolvedValue({
       status: "available",
       current: "0.1.0",
@@ -37,7 +36,6 @@ describe("update store", () => {
     await useUpdate.getState().check();
     expect(useUpdate.getState()).toMatchObject({
       checking: false,
-      dismissed: false,
       info: { status: "available", version: "0.2.0" },
     });
   });

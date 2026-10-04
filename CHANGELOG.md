@@ -3,9 +3,32 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
-## [Yayınlanmadı] — 0.1.0
+## [0.2.0] — 2026-10-04
 
-İlk sürüm adayı. Geliştirme fazları ve kararlar için [ARCHITECTURE.md](ARCHITECTURE.md).
+### Eklendi
+- **Güncelle butonu:** yeni sürüm çıktığında başlık çubuğunda, "MehburMC Launcher" yazısının
+  yanında görünür. Tıklayınca güncelleme indirilir, kurulum açılır ve launcher yeni sürümle
+  yeniden başlar.
+- **Yenilikler sekmesi:** güncellemeden sonraki ilk açılışta bu sayfa kendiliğinden açılır;
+  önceki sürümlerin notları da burada.
+- **Skin stüdyosu:** hazır skin ve pelerinler (oyunun varsayılan skinleri kurulu sürümden
+  okunur + 12 skin / 10 pelerinlik özgün MehburMC koleksiyonu) ve canlı 3B önizlemeli piksel
+  editörü (kalem, silgi, kova, damlalık, çizgi, ayna modu, katmanlar, geri al/ileri al).
+- **MehburMC skin'i ve pelerini** her kullanıcının kütüphanesine hazır gelir.
+- **Hesap adını değiştirme:** Hesaplar ekranında kalem simgesiyle; oyundaki ad yeni ada göre
+  değişir, skin atamaları korunur.
+
+### Değişti
+- Hesaplar ekranında "Offline hesap" yazıları kaldırıldı; kutu artık "Yeni hesap oluştur".
+- Kurulum dosyası (setup .exe) artık MehburMC logosunu taşıyor.
+- Proje GitHub'da herkese açık; otomatik güncelleme bu sürümle çalışmaya başladı.
+
+### Kaldırıldı
+- Premium kavramı: "premium değil" rozeti ve oyuncu adından skin kopyalama.
+
+## [0.1.0] — 2026-10-04
+
+İlk sürüm. Geliştirme fazları ve kararlar için [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ### Eklendi
 - **Temel (Faz 1):** Tauri 2 + React kabuğu, neon tema ve vurgu renkleri, çerçevesiz pencere,
@@ -29,14 +52,5 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sür
   kod bölme (başlangıç JS'i −%19); uçtan uca hazırlık/içerik/Java entegrasyon testleri;
   kullanım kılavuzu, sorun giderme, geliştirici rehberi, güvenlik politikası.
 
-- **Skin stüdyosu (Faz 10):** hazır skin ve pelerinler (oyunun varsayılan skinleri kurulu
-  sürümden okunur + 11 skin / 10 pelerinlik özgün MehburMC koleksiyonu); canlı 3B önizlemeli
-  piksel editörü (kalem, silgi, kova, damlalık, çizgi, ayna modu, katmanlar, geri al/ileri al).
-  MehburMC skin'i ve pelerini her kullanıcının kütüphanesine hazır gelir.
-- **Hesap adını değiştirme:** Hesaplar ekranında kalem simgesiyle; oyundaki ad ve UUID yeni
-  ada göre değişir, skin atamaları korunur. "Offline hesap" yazıları kaldırıldı, kutu artık
-  "Yeni hesap oluştur".
-
 ### Kaldırıldı
-- Premium kavramı (Faz 10): "premium değil" rozeti ve oyuncu adından skin kopyalama.
 - Microsoft girişi — kullanıcı isteğiyle (yalnızca offline hesaplar).

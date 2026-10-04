@@ -34,7 +34,7 @@ describe("SettingsPage", () => {
   beforeEach(() => {
     applyLanguage("en");
     vi.clearAllMocks();
-    useUpdate.setState({ info: null, checking: false, installing: null, dismissed: false });
+    useUpdate.setState({ info: null, checking: false, installing: null });
     useApp.setState({
       settings,
       boot: {
@@ -49,6 +49,7 @@ describe("SettingsPage", () => {
         },
         settings,
         startupError: null,
+        updatedFrom: null,
       } as Bootstrap,
     });
   });
