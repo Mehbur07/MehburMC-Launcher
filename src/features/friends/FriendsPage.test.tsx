@@ -33,6 +33,7 @@ const ali: Friend = {
   incoming: false,
   requestId: 1,
   unread: 2,
+  avatar: null,
 };
 
 describe("FriendsPage", () => {

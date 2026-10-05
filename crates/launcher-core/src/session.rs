@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use tokio_util::sync::CancellationToken;
 
+use crate::auth::avatar::{self, AvatarStore};
 use crate::auth::store::AccountStore;
 use crate::content::install::{self, InstallRequest, InstallResult};
 use crate::content::installed::{self, InstalledItem};
@@ -45,11 +46,23 @@ pub enum StartMode {
     Repair,
 }
 
+/// Faces of the launcher accounts for the UI (`account id → data: URI`).
+#[derive(Debug, Clone, Default, serde::Serialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct AccountFaces {
+    /// Chosen profile photos.
+    pub photos: std::collections::HashMap<String, String>,
+    /// Game default skin of accounts that have no skin assigned.
+    pub default_skins: std::collections::HashMap<String, String>,
+}
+
 pub struct Launcher {
     pub ctx: Ctx,
     pub instances: InstanceStore,
     pub accounts: AccountStore,
     pub skins: SkinStore,
+    pub avatars: AvatarStore,
     pub friends: FriendsClient,
     pub tasks: Arc<TaskRegistry>,
     pub running: Running,
@@ -68,6 +81,7 @@ impl Launcher {
             ctx,
             instances: InstanceStore::new(paths.clone()),
             accounts: AccountStore::new(paths.clone()),
+            avatars: AvatarStore::new(paths.clone()),
             skins: SkinStore::new(paths),
             tasks,
             running: Running::default(),
@@ -283,6 +297,84 @@ impl Launcher {
             &CancellationToken::new(),
         )
         .await
+    }
+
+    /// Skin texture shown for an account: its own, else the game default
+    /// for its UUID (from an installed client jar, if any).
+    fn account_skin_png(
+        &self,
+        acc: &crate::auth::store::Account,
+        defaults: &[skin::defaults::DefaultSkin],
+    ) -> Option<Vec<u8>> {
+        if let Some((png, _)) = self.skins.textures_for(&acc.id).skin {
+            return Some(png);
+        }
+        let uri = &skin::defaults::for_uuid(defaults, &acc.uuid)?.data_uri;
+        use base64::Engine;
+        base64::engine::general_purpose::STANDARD
+            .decode(uri.split_once(',')?.1)
+            .ok()
+    }
+
+    /// Photos of all accounts, plus the default skin of accounts without a
+    /// skin of their own (so the UI can draw its head).
+    pub fn account_faces(&self) -> AccountFaces {
+        let v = self.accounts.view();
+        let defaults = skin::defaults::list(&self.ctx.paths);
+        let default_skins = v
+            .accounts
+            .iter()
+            .filter(|a| self.skins.textures_for(&a.id).skin.is_none())
+            .filter_map(|a| {
+                let d = skin::defaults::for_uuid(&defaults, &a.uuid)?;
+                Some((a.id.clone(), d.data_uri.clone()))
+            })
+            .collect();
+        AccountFaces {
+            photos: self
+                .avatars
+                .data_uris(v.accounts.iter().map(|a| a.id.as_str())),
+            default_skins,
+        }
+    }
+
+    /// What friends see: the selected account's name (or "Player") and its
+    /// photo, or the head of its skin, as a small PNG.
+    pub fn friend_identity(&self) -> (String, Option<Vec<u8>>) {
+        let v = self.accounts.view();
+        let Some(acc) = v
+            .selected
+            .and_then(|id| v.accounts.into_iter().find(|a| a.id == id))
+        else {
+            return ("Player".into(), None);
+        };
+        let size = crate::friends::avatar::PUBLIC_SIZE;
+        let image = match self.avatars.bytes(&acc.id) {
+            Some(png) => skin::image::decode_limited(&png, avatar::MAX_FILE_BYTES, 4096)
+                .ok()
+                .map(|img| avatar::square_downscale(&img, size)),
+            None => self
+                .account_skin_png(&acc, &skin::defaults::list(&self.ctx.paths))
+                .and_then(|png| skin::image::decode(&png).ok())
+                .map(|img| skin::image::head(&img, size)),
+        };
+        (
+            acc.name,
+            image.and_then(|img| skin::image::encode(&img).ok()),
+        )
+    }
+
+    /// Re-sends name and photo to the friends service, if friends are on.
+    /// Errors are logged: this runs after unrelated changes (photo, skin,
+    /// account selection) that must not fail because of the network.
+    pub async fn refresh_friend_profile(&self) {
+        if !self.friends.is_enabled().await {
+            return;
+        }
+        let (name, png) = self.friend_identity();
+        if let Err(e) = self.friends.sync_profile(&name, png.as_deref()).await {
+            tracing::debug!(error = %e.detail(), "friend profile refresh failed");
+        }
     }
 
     /// Shares an instance's mods with friends.

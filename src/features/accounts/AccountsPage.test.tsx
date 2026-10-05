@@ -7,6 +7,10 @@ const ipcMock = vi.hoisted(() => ({
   removeAccount: vi.fn(),
   selectAccount: vi.fn(),
   renameAccount: vi.fn(),
+  accountAvatars: vi.fn(),
+  pickPath: vi.fn(),
+  setAccountAvatar: vi.fn(),
+  clearAccountAvatar: vi.fn(),
 }));
 vi.mock("../../lib/ipc", async (orig) => ({
   ...(await orig<typeof import("../../lib/ipc")>()),
@@ -33,8 +37,13 @@ describe("AccountsPage", () => {
   beforeEach(() => {
     applyLanguage("en");
     vi.clearAllMocks();
+    ipcMock.accountAvatars.mockResolvedValue({ photos: {}, defaultSkins: {} });
     useSkins.setState({ skins: [], capes: [], assignments: {}, loaded: true });
-    useAccounts.setState({ accounts: [acc("Steve"), acc("Alex")], selected: "offline-Steve" });
+    useAccounts.setState({
+      accounts: [acc("Steve"), acc("Alex")],
+      selected: "offline-Steve",
+      avatars: {},
+    });
     useApp.setState({ view: "accounts" });
   });
 
@@ -124,5 +133,30 @@ describe("AccountsPage", () => {
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(dialog.querySelector("footer button:last-child")!);
     expect(ipcMock.removeAccount).toHaveBeenCalledWith("offline-Steve");
+  });
+
+  it("sets a photo with the + button and goes back to the skin head", async () => {
+    const photo = "data:image/png;base64,UE5H";
+    ipcMock.pickPath.mockResolvedValueOnce(null).mockResolvedValueOnce("C:/me.png");
+    ipcMock.setAccountAvatar.mockResolvedValue(photo);
+    ipcMock.clearAccountAvatar.mockResolvedValue(undefined);
+    const { container } = render(<AccountsPage />);
+    expect(container.querySelector("img")).toBeNull();
+    const plus = screen.getByRole("button", { name: /profile photo for Steve/ });
+
+    // Cancelled picker: nothing changes.
+    fireEvent.click(plus);
+    await vi.waitFor(() => expect(ipcMock.pickPath).toHaveBeenCalledTimes(1));
+    expect(ipcMock.pickPath.mock.calls[0]?.[0]).toBe("avatar");
+    expect(ipcMock.setAccountAvatar).not.toHaveBeenCalled();
+
+    fireEvent.click(plus);
+    await vi.waitFor(() => expect(container.querySelector("img")).toHaveAttribute("src", photo));
+    expect(ipcMock.setAccountAvatar).toHaveBeenCalledWith("offline-Steve");
+
+    fireEvent.click(screen.getByRole("button", { name: "Back to skin head" }));
+    await vi.waitFor(() => expect(container.querySelector("img")).toBeNull());
+    expect(ipcMock.clearAccountAvatar).toHaveBeenCalledWith("offline-Steve");
+    expect(screen.queryByRole("button", { name: "Back to skin head" })).toBeNull();
   });
 });

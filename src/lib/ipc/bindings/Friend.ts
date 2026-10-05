@@ -5,4 +5,8 @@ export type Friend = { id: string, friendCode: string, displayName: string, stat
 /**
  * For pending requests: sent to me (true) or by me (false).
  */
-incoming: boolean, requestId: number, unread: number, };
+incoming: boolean, requestId: number, unread: number, 
+/**
+ * Profile photo as a `data:` URI (accepted friends only).
+ */
+avatar: string | null, };

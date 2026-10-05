@@ -15,6 +15,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Avatar } from "../../components/Avatar";
 import {
   Badge,
   Button,
@@ -356,6 +357,7 @@ export function FriendsPage() {
                         active ? "bg-accent/10 text-accent neon-ring" : "hover:bg-surface-2"
                       }`}
                     >
+                      <Avatar photo={f.avatar} className="h-7 w-7 shrink-0 rounded" />
                       <span className="min-w-0 flex-1 truncate font-semibold">{f.displayName}</span>
                       {f.unread > 0 && (
                         <span className="rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-accent">
@@ -396,6 +398,7 @@ export function FriendsPage() {
               ) : (
                 <>
                   <div className="flex flex-wrap items-center gap-2 border-b border-line px-3 py-2">
+                    <Avatar photo={current.avatar} className="h-8 w-8 rounded" />
                     <span className="font-display text-lg font-semibold">
                       {current.displayName}
                     </span>

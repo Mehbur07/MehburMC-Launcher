@@ -213,6 +213,19 @@ impl FriendsClient {
         let known = modrinth::versions_by_sha1(self.ctx(), &sha1s)
             .await
             .unwrap_or_default();
+        // Version names read like "v7.2.2 for 1.20.1"; show project titles.
+        let project_ids: Vec<String> = known
+            .values()
+            .map(|v| v.project_id.clone())
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect();
+        let titles: HashMap<String, String> = modrinth::projects(self.ctx(), &project_ids)
+            .await
+            .unwrap_or_default()
+            .into_iter()
+            .map(|p| (p.id, p.title))
+            .collect();
         let stored = self.stored_objects(&me).await?;
 
         let mut items = Vec::with_capacity(files.len());
@@ -253,7 +266,12 @@ impl FriendsClient {
                 sha1,
                 size,
                 enabled,
-                title: version.map(|v| v.name.clone()),
+                title: version.map(|v| {
+                    titles
+                        .get(&v.project_id)
+                        .cloned()
+                        .unwrap_or_else(|| v.name.clone())
+                }),
                 version_number: version.map(|v| v.version_number.clone()),
                 source,
             });
@@ -541,6 +559,13 @@ mod tests {
             .mount(&server)
             .await;
 
+        Mock::given(method("GET"))
+            .and(path("/v2/projects"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!([
+                { "id": "AANobbMI", "slug": "sodium", "title": "Sodium" }
+            ])))
+            .mount(&server)
+            .await;
         let c = signed_in(&tmp, &server).await;
         let list = c.share_instance(&instance(), &inst_dir).await.unwrap();
         let by_name: HashMap<_, _> = list
@@ -552,7 +577,7 @@ mod tests {
             by_name["sodium.jar"].source,
             ItemSource::Modrinth { .. }
         ));
-        assert_eq!(by_name["sodium.jar"].title.as_deref(), Some("Sodium 0.6"));
+        assert_eq!(by_name["sodium.jar"].title.as_deref(), Some("Sodium"));
         let own_item = by_name["own.jar.disabled"];
         assert!(!own_item.enabled);
         assert_eq!(

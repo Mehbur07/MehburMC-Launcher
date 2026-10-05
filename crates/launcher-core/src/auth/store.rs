@@ -145,6 +145,9 @@ impl AccountStore {
         if v.accounts.len() == before {
             return Err(CoreError::AccountNotFound(id.to_owned()));
         }
+        if let Err(e) = super::avatar::AvatarStore::new(self.paths.clone()).clear(id) {
+            tracing::warn!(error = %e.detail(), "could not delete the profile photo");
+        }
         if v.selected.as_deref() == Some(id) {
             v.selected = v.accounts.first().map(|a| a.id.clone());
         }

@@ -1,14 +1,14 @@
-import { Check, Pencil, Shirt, Trash2, UserPlus, X } from "lucide-react";
-import { useState } from "react";
+import { Check, ImageOff, Pencil, Plus, Shirt, Trash2, UserPlus, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Avatar } from "../../components/Avatar";
 import { Badge, Button, ConfirmDialog, IconButton, TextInput } from "../../components/ui";
 import type { Account } from "../../lib/ipc/bindings/Account";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
 import { useAccounts } from "../../stores/accounts";
 import { useApp } from "../../stores/app";
 import { accountSkin, useSkins } from "../../stores/skins";
-import { SkinThumb } from "../skins/SkinThumb";
 
 const NAME_RE = /^[A-Za-z0-9_]{3,16}$/;
 
@@ -20,6 +20,11 @@ export function AccountsPage() {
   const select = useAccounts((s) => s.select);
   const remove = useAccounts((s) => s.remove);
   const rename = useAccounts((s) => s.rename);
+  const avatars = useAccounts((s) => s.avatars);
+  const pickPhoto = useAccounts((s) => s.pickPhoto);
+  const resetPhoto = useAccounts((s) => s.resetPhoto);
+  const defaultSkins = useAccounts((s) => s.defaultSkins);
+  const load = useAccounts((s) => s.load);
   const [name, setName] = useState("");
   const [error, setError] = useState<ErrorPayload | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Account | null>(null);
@@ -29,6 +34,11 @@ export function AccountsPage() {
   const [renameError, setRenameError] = useState<ErrorPayload | null>(null);
   const skins = useSkins();
   const setView = useApp((s) => s.setView);
+
+  // Skin assignments may have changed on the Skins page.
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const valid = NAME_RE.test(name);
   const add = async () => {
@@ -98,12 +108,23 @@ export function AccountsPage() {
                 active ? "border-accent/60 neon-ring" : "border-line"
               }`}
             >
-              <SkinThumb
-                src={accountSkin(skins, a.id)?.dataUri ?? null}
-                variant="head"
-                unit={5}
-                className="h-10 w-10 rounded-md bg-surface-3"
-              />
+              <div className="relative shrink-0">
+                <Avatar
+                  photo={avatars[a.id]}
+                  skin={accountSkin(skins, a.id)?.dataUri ?? defaultSkins[a.id] ?? null}
+                  unit={7}
+                  className="h-14 w-14 rounded-md bg-surface-3"
+                />
+                <button
+                  type="button"
+                  aria-label={t("accounts.photoAdd", { name: a.name })}
+                  title={t("accounts.photoAdd", { name: a.name })}
+                  onClick={() => void pickPhoto(a.id, t("accounts.photoAdd", { name: a.name }))}
+                  className="absolute -bottom-1.5 -left-1.5 grid h-6 w-6 place-items-center rounded-full border-2 border-surface-1 bg-accent text-on-accent shadow transition-transform hover:scale-110"
+                >
+                  <Plus size={13} strokeWidth={3} />
+                </button>
+              </div>
               {editing === a.id ? (
                 <form
                   className="flex min-w-0 flex-1 flex-col gap-1"
@@ -165,6 +186,11 @@ export function AccountsPage() {
               {editing !== a.id && (
                 <IconButton label={t("accounts.rename")} onClick={() => startRename(a)}>
                   <Pencil size={15} />
+                </IconButton>
+              )}
+              {avatars[a.id] && (
+                <IconButton label={t("accounts.photoReset")} onClick={() => void resetPhoto(a.id)}>
+                  <ImageOff size={15} />
                 </IconButton>
               )}
               <IconButton label={t("accounts.editSkin")} onClick={() => setView("skins")}>

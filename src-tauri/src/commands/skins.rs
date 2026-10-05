@@ -108,7 +108,10 @@ pub async fn assign_skin(
         {
             return Err(launcher_core::CoreError::AccountNotFound(account_id));
         }
-        launcher.skins.assign(&account_id, kind, id.as_deref())
+        let out = launcher.skins.assign(&account_id, kind, id.as_deref())?;
+        // The skin head is the photo friends see when there is none.
+        super::accounts::refresh_friend_profile(&launcher);
+        Ok(out)
     })
     .await
 }

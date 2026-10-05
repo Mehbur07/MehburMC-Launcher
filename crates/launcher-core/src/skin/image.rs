@@ -36,35 +36,46 @@ fn invalid(reason: &str) -> CoreError {
     CoreError::SkinInvalid(reason.to_owned())
 }
 
-/// Decodes any PNG colour type into RGBA8.
+/// Decodes a skin or cape PNG into RGBA8.
 pub fn decode(bytes: &[u8]) -> Result<Rgba> {
-    if bytes.len() > MAX_FILE_BYTES {
-        return Err(invalid("file is too large"));
+    decode_limited(bytes, MAX_FILE_BYTES, MAX_SIDE).map_err(|r| invalid(&r))
+}
+
+/// Decodes any PNG colour type into RGBA8 within the given limits. The error
+/// is a reason for the caller's own error variant.
+pub fn decode_limited(
+    bytes: &[u8],
+    max_bytes: usize,
+    max_side: u32,
+) -> std::result::Result<Rgba, String> {
+    let fail = |r: &str| r.to_owned();
+    if bytes.len() > max_bytes {
+        return Err(fail("file is too large"));
     }
     if !bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
-        return Err(invalid("not a PNG image"));
+        return Err(fail("not a PNG image"));
     }
+    let side = max_side as usize;
     let mut decoder = png::Decoder::new_with_limits(
         Cursor::new(bytes),
         png::Limits {
-            bytes: 16 * 1024 * 1024,
+            // Room for a 16-bit RGBA image of the largest allowed size.
+            bytes: (side * side * 8).max(16 * 1024 * 1024),
         },
     );
     decoder.set_transformations(png::Transformations::EXPAND | png::Transformations::STRIP_16);
-    let mut reader = decoder.read_info().map_err(|e| invalid(&e.to_string()))?;
+    let mut reader = decoder.read_info().map_err(|e| e.to_string())?;
     let (w, h) = (reader.info().width, reader.info().height);
-    if w == 0 || h == 0 || w > MAX_SIDE || h > MAX_SIDE {
-        return Err(invalid("unsupported size"));
+    if w == 0 || h == 0 || w > max_side || h > max_side {
+        return Err(fail("unsupported size"));
     }
     let mut buf = vec![
         0;
         reader
             .output_buffer_size()
-            .ok_or_else(|| invalid("image too large"))?
+            .ok_or_else(|| fail("image too large"))?
     ];
-    let frame = reader
-        .next_frame(&mut buf)
-        .map_err(|e| invalid(&e.to_string()))?;
+    let frame = reader.next_frame(&mut buf).map_err(|e| e.to_string())?;
     buf.truncate(frame.buffer_size());
 
     use png::ColorType as C;
@@ -83,16 +94,65 @@ pub fn decode(bytes: &[u8]) -> Result<Rgba> {
             .flat_map(|&[g, a]| [g, g, g, a])
             .collect(),
         C::Grayscale => buf.iter().flat_map(|&g| [g, g, g, 255]).collect(),
-        C::Indexed => return Err(invalid("unexpanded palette")),
+        C::Indexed => return Err(fail("unexpanded palette")),
     };
     if pixels.len() != (w * h * 4) as usize {
-        return Err(invalid("unexpected pixel layout"));
+        return Err(fail("unexpected pixel layout"));
     }
     Ok(Rgba {
         width: w,
         height: h,
         pixels,
     })
+}
+
+/// Encodes RGBA8 as PNG.
+pub fn encode(img: &Rgba) -> Result<Vec<u8>> {
+    let mut out = Vec::new();
+    let mut enc = png::Encoder::new(&mut out, img.width, img.height);
+    enc.set_color(png::ColorType::Rgba);
+    enc.set_depth(png::BitDepth::Eight);
+    enc.write_header()
+        .and_then(|mut w| w.write_image_data(&img.pixels))
+        .map_err(|e| invalid(&e.to_string()))?;
+    Ok(out)
+}
+
+/// Front of the head (face + hat layer) of a skin, scaled up to `size`×`size`
+/// with nearest-neighbour sampling so the pixel art stays crisp.
+pub fn head(skin: &Rgba, size: u32) -> Rgba {
+    let s = (skin.width / 64).max(1);
+    let px = |x: u32, y: u32| {
+        let i = ((y * skin.width + x) * 4) as usize;
+        [
+            skin.pixels[i],
+            skin.pixels[i + 1],
+            skin.pixels[i + 2],
+            skin.pixels[i + 3],
+        ]
+    };
+    let mut pixels = Vec::with_capacity((size * size * 4) as usize);
+    for y in 0..size {
+        for x in 0..size {
+            let (u, v) = (x * 8 * s / size, y * 8 * s / size);
+            let face = px(8 * s + u, 8 * s + v);
+            let hat = px(40 * s + u, 8 * s + v);
+            // Hat over face; the face itself is drawn opaque like in game.
+            let a = u32::from(hat[3]);
+            let mix = |f: u8, h: u8| ((u32::from(h) * a + u32::from(f) * (255 - a)) / 255) as u8;
+            pixels.extend([
+                mix(face[0], hat[0]),
+                mix(face[1], hat[1]),
+                mix(face[2], hat[2]),
+                255,
+            ]);
+        }
+    }
+    Rgba {
+        width: size,
+        height: size,
+        pixels,
+    }
 }
 
 /// 64×64 (1.8+), legacy 64×32, and HD multiples of both.
@@ -203,6 +263,33 @@ pub(crate) mod tests {
         broken.truncate(60);
         assert!(decode(&broken).is_err());
         assert!(decode(&vec![0u8; MAX_FILE_BYTES + 1]).is_err());
+    }
+
+    #[test]
+    fn head_composites_hat_over_face_and_scales() {
+        // Face pixel (8,8) red; hat pixel (40,8) half-transparent blue.
+        let mut img = decode(&png(64, 64, |_, _| true)).unwrap();
+        let set = |img: &mut Rgba, x: u32, y: u32, c: [u8; 4]| {
+            let i = ((y * 64 + x) * 4) as usize;
+            img.pixels[i..i + 4].copy_from_slice(&c);
+        };
+        set(&mut img, 8, 8, [255, 0, 0, 255]);
+        set(&mut img, 40, 8, [0, 0, 255, 255]);
+        set(&mut img, 9, 8, [255, 0, 0, 255]);
+        let h = head(&img, 16);
+        assert_eq!((h.width, h.height), (16, 16));
+        assert_eq!(&h.pixels[0..4], &[0, 0, 255, 255]); // hat wins
+        assert_eq!(&h.pixels[8..12], &[255, 0, 0, 255]); // (2,0) → skin (9,8)
+        let round = decode(&encode(&h).unwrap()).unwrap();
+        assert_eq!(round.pixels, h.pixels);
+    }
+
+    #[test]
+    fn limited_decode_allows_bigger_images() {
+        let big = png(2048, 16, |_, _| false);
+        assert!(decode(&big).is_err());
+        assert_eq!(decode_limited(&big, 10 << 20, 4096).unwrap().width, 2048);
+        assert!(decode_limited(&big, 10, 4096).is_err());
     }
 
     #[test]

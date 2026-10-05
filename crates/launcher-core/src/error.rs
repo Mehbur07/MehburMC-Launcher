@@ -136,6 +136,9 @@ pub enum CoreError {
     #[error("an account named {0} already exists")]
     AccountNameTaken(String),
 
+    #[error("invalid profile photo: {0}")]
+    AvatarInvalid(String),
+
     #[error("no {loader} version is available for Minecraft {mc}")]
     LoaderUnavailable { loader: String, mc: String },
 
@@ -223,6 +226,7 @@ impl CoreError {
             Self::NoAccount => "account.none",
             Self::AccountNotFound(_) => "account.notFound",
             Self::AccountNameTaken(_) => "account.nameTaken",
+            Self::AvatarInvalid(_) => "account.avatarInvalid",
             Self::LoaderUnavailable { .. } => "loader.unavailable",
             Self::LoaderInstall { .. } => "loader.installFailed",
             Self::OptifineInvalid { .. } => "loader.optifineInvalid",
@@ -317,9 +321,10 @@ impl CoreError {
                 put("loader", loader.clone());
                 put("mc", mc.clone());
             }
-            Self::ModpackInvalid(reason) | Self::SkinInvalid(reason) | Self::DataMove(reason) => {
-                put("reason", reason.clone())
-            }
+            Self::ModpackInvalid(reason)
+            | Self::SkinInvalid(reason)
+            | Self::AvatarInvalid(reason)
+            | Self::DataMove(reason) => put("reason", reason.clone()),
             Self::SkinNotFound(id) => put("id", id.clone()),
             Self::FriendsServer { reason, .. } => put("reason", reason.clone()),
             Self::NoDataDir

@@ -1,6 +1,7 @@
 //! Accounts as seen by the launch pipeline. Only offline accounts exist;
 //! Microsoft sign-in was removed on request (see ARCHITECTURE.md K35).
 
+pub mod avatar;
 pub mod offline;
 pub mod store;
 

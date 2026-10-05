@@ -12,7 +12,7 @@ import { selectedInstance, useInstances } from "../../stores/instances";
 import { accountSkin, useSkins } from "../../stores/skins";
 import { activeTaskFor, fraction, useTasks } from "../../stores/tasks";
 import { loaderLabel, usePlayTimeUnits } from "../instances/loaderLabels";
-import { SkinThumb } from "../skins/SkinThumb";
+import { Avatar } from "../../components/Avatar";
 import { NewsFeed } from "./NewsFeed";
 
 export function HomePage() {
@@ -23,6 +23,8 @@ export function HomePage() {
   const select = useInstances((s) => s.select);
   const account = useAccounts(selectedAccount);
   const skin = useSkins((s) => accountSkin(s, account?.id));
+  const photo = useAccounts((s) => (account ? s.avatars[account.id] : undefined));
+  const defaultSkin = useAccounts((s) => (account ? s.defaultSkins[account.id] : undefined));
   const defaultMem = useApp((s) => s.settings?.defaultMemoryMb ?? 4096);
   const setView = useApp((s) => s.setView);
   const setWizard = useApp((s) => s.setWizard);
@@ -99,9 +101,9 @@ export function HomePage() {
               onClick={() => setView("accounts")}
               className="flex items-center justify-end gap-2 text-xs text-muted hover:text-accent"
             >
-              <SkinThumb
-                src={skin?.dataUri ?? null}
-                variant="head"
+              <Avatar
+                photo={photo}
+                skin={skin?.dataUri ?? defaultSkin ?? null}
                 unit={2}
                 className="h-4 w-4 rounded-sm"
               />

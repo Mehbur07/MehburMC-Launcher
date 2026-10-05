@@ -29,6 +29,7 @@ const friend = (over: Partial<Friend> = {}): Friend => ({
   incoming: false,
   requestId: 1,
   unread: 0,
+  avatar: null,
   ...over,
 });
 

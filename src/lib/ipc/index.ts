@@ -4,6 +4,7 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import type { Account } from "./bindings/Account";
 import type { AppUpdate } from "./bindings/AppUpdate";
 import type { Assignment } from "./bindings/Assignment";
+import type { AccountFaces } from "./bindings/AccountFaces";
 import type { AccountsView } from "./bindings/AccountsView";
 import type { Bootstrap } from "./bindings/Bootstrap";
 import type { CoreEvent } from "./bindings/CoreEvent";
@@ -79,6 +80,11 @@ export const ipc = {
   removeAccount: (id: string) => invoke<AccountsView>("remove_account", { id }),
   renameAccount: (id: string, name: string) => invoke<Account>("rename_account", { id, name }),
   selectAccount: (id: string) => invoke<AccountsView>("select_account", { id }),
+  /** Profile photos and default-skin textures of the accounts. */
+  accountAvatars: () => invoke<AccountFaces>("account_avatars"),
+  /** Sets the photo chosen with `pickPath("avatar")`; returns it as a URI. */
+  setAccountAvatar: (id: string) => invoke<string>("set_account_avatar", { id }),
+  clearAccountAvatar: (id: string) => invoke<void>("clear_account_avatar", { id }),
 
   listInstanceFiles: (id: string, folder: Folder) =>
     invoke<FileEntry[]>("list_instance_files", { id, folder }),

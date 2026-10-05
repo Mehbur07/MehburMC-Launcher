@@ -120,6 +120,46 @@ pub fn list(paths: &Paths) -> Vec<DefaultSkin> {
         .unwrap_or_default()
 }
 
+/// Java `UUID.hashCode()` of a hyphenated UUID.
+fn java_uuid_hash(uuid: &str) -> Option<i32> {
+    let hex: String = uuid.chars().filter(|c| *c != '-').collect();
+    if hex.len() != 32 {
+        return None;
+    }
+    let msb = u64::from_str_radix(&hex[..16], 16).ok()?;
+    let lsb = u64::from_str_radix(&hex[16..], 16).ok()?;
+    let hilo = msb ^ lsb;
+    Some(((hilo >> 32) as i32) ^ (hilo as i32))
+}
+
+/// Order of `DefaultPlayerSkin.DEFAULT_SKINS` (1.19.3+): slim first, then
+/// wide, each alphabetical.
+const MODERN_ORDER: &[&str] = &[
+    "Alex", "Ari", "Efe", "Kai", "Makena", "Noor", "Steve", "Sunny", "Zuri",
+];
+
+/// The skin the game shows for `uuid` when the account has none of its own:
+/// one of 18 by `floorMod(uuid.hashCode(), 18)` on 1.19.3+, Steve or Alex by
+/// the lowest hash bit before that.
+pub fn for_uuid<'a>(defaults: &'a [DefaultSkin], uuid: &str) -> Option<&'a DefaultSkin> {
+    let hash = java_uuid_hash(uuid)?;
+    let find =
+        |name: &str, model: SkinModel| defaults.iter().find(|d| d.name == name && d.model == model);
+    let modern: Vec<&DefaultSkin> = [SkinModel::Slim, SkinModel::Classic]
+        .into_iter()
+        .flat_map(|m| MODERN_ORDER.iter().map(move |n| (*n, m)))
+        .filter_map(|(n, m)| find(n, m))
+        .collect();
+    if modern.len() == MODERN_ORDER.len() * 2 {
+        return Some(modern[hash.rem_euclid(modern.len() as i32) as usize]);
+    }
+    if hash & 1 == 1 {
+        find("Alex", SkinModel::Slim)
+    } else {
+        find("Steve", SkinModel::Classic)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::io::Write;
@@ -136,6 +176,58 @@ mod tests {
             w.write_all(data).unwrap();
         }
         w.finish().unwrap();
+    }
+
+    fn skin(name: &str, model: SkinModel) -> DefaultSkin {
+        DefaultSkin {
+            name: name.into(),
+            model,
+            data_uri: String::new(),
+            source: String::new(),
+        }
+    }
+
+    #[test]
+    fn picks_the_default_skin_like_the_game() {
+        // Java: UUID.fromString(..).hashCode()
+        assert_eq!(
+            java_uuid_hash("00000000-0000-0001-0000-000000000000"),
+            Some(1)
+        );
+        assert_eq!(
+            java_uuid_hash("ffffffff-ffff-ffff-0000-000000000000"),
+            Some(0)
+        );
+        assert_eq!(java_uuid_hash("nope"), None);
+
+        let legacy = [
+            skin("Steve", SkinModel::Classic),
+            skin("Alex", SkinModel::Slim),
+        ];
+        let even = "00000000-0000-0002-0000-000000000000";
+        let odd = "00000000-0000-0001-0000-000000000000";
+        assert_eq!(for_uuid(&legacy, even).unwrap().name, "Steve");
+        assert_eq!(for_uuid(&legacy, odd).unwrap().name, "Alex");
+
+        let modern: Vec<DefaultSkin> = [SkinModel::Classic, SkinModel::Slim]
+            .into_iter()
+            .flat_map(|m| MODERN_ORDER.iter().map(move |n| skin(n, m)))
+            .collect();
+        // hash 1 → index 1 = slim Ari; hash 9 → wide Alex; hash -1 → wide Zuri.
+        let pick = |u: &str| {
+            let s = for_uuid(&modern, u).unwrap();
+            (s.name.clone(), s.model)
+        };
+        assert_eq!(pick(odd), ("Ari".into(), SkinModel::Slim));
+        assert_eq!(
+            pick("00000000-0000-0009-0000-000000000000"),
+            ("Alex".into(), SkinModel::Classic)
+        );
+        assert_eq!(
+            pick("00000000-ffff-ffff-0000-000000000000"),
+            ("Zuri".into(), SkinModel::Classic)
+        );
+        assert!(for_uuid(&[], odd).is_none());
     }
 
     #[test]

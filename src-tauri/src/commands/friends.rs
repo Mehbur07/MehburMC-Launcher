@@ -7,28 +7,20 @@ use tauri::State;
 use super::CmdResult;
 use crate::state::AppState;
 
-/// Name friends see: the selected launcher account, or "Player".
-fn display_name(state: &AppState) -> CmdResult<String> {
-    let v = state.launcher()?.accounts.view();
-    Ok(v.selected
-        .and_then(|id| v.accounts.into_iter().find(|a| a.id == id))
-        .map(|a| a.name)
-        .unwrap_or_else(|| "Player".into()))
-}
-
+/// Name and photo friends see come from the selected launcher account.
 #[tauri::command]
 pub async fn friends_status(state: State<'_, AppState>) -> CmdResult<FriendsStatus> {
-    let name = display_name(&state)?;
     let launcher = state.launcher()?.clone();
-    Ok(launcher.friends.status(&name).await?)
+    let (name, avatar) = launcher.friend_identity();
+    Ok(launcher.friends.status(&name, avatar.as_deref()).await?)
 }
 
 /// Creates the anonymous identity after the user agreed to the notice.
 #[tauri::command]
 pub async fn friends_enable(state: State<'_, AppState>) -> CmdResult<Profile> {
-    let name = display_name(&state)?;
     let launcher = state.launcher()?.clone();
-    Ok(launcher.friends.enable(&name).await?)
+    let (name, avatar) = launcher.friend_identity();
+    Ok(launcher.friends.enable(&name, avatar.as_deref()).await?)
 }
 
 /// Deletes all server-side data and forgets the identity.

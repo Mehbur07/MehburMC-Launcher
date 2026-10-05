@@ -2,6 +2,7 @@
 //! project (ARCHITECTURE K64). Server rules live in `supabase/schema.sql`;
 //! this client only holds an anonymous identity in `launcher/friends.json`.
 
+pub mod avatar;
 pub mod share;
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -81,6 +82,8 @@ pub struct Friend {
     pub request_id: i64,
     #[ts(type = "number")]
     pub unread: i64,
+    /// Profile photo as a `data:` URI (accepted friends only).
+    pub avatar: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -115,6 +118,8 @@ struct FriendRow {
     incoming: bool,
     request_id: i64,
     unread: i64,
+    #[serde(default)]
+    avatar_sha1: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -122,6 +127,8 @@ struct ProfileRow {
     id: String,
     friend_code: String,
     display_name: String,
+    #[serde(default)]
+    avatar_sha1: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -386,21 +393,25 @@ impl FriendsClient {
     }
 
     /// Creates the anonymous identity (once) and the profile shown to
-    /// friends under `display_name`.
-    pub async fn enable(&self, display_name: &str) -> Result<Profile> {
+    /// friends under `display_name` with the photo `avatar` (PNG).
+    pub async fn enable(&self, display_name: &str, avatar: Option<&[u8]>) -> Result<Profile> {
         if !self.is_enabled().await {
             let s = self.auth_call("/auth/v1/signup", json!({})).await?;
             self.save(&s)?;
             *self.session.lock().await = Some(s);
         }
-        self.sync_profile(display_name).await
+        self.sync_profile(display_name, avatar).await
     }
 
-    /// Creates or renames the caller's profile.
-    pub async fn sync_profile(&self, display_name: &str) -> Result<Profile> {
+    /// Creates or renames the caller's profile and updates its photo. A
+    /// failed photo upload does not fail the profile.
+    pub async fn sync_profile(&self, display_name: &str, avatar: Option<&[u8]>) -> Result<Profile> {
         let p: ProfileRow = self
             .rpc("ensure_profile", json!({ "name": display_name }))
             .await?;
+        if let Err(e) = self.sync_avatar(p.avatar_sha1.as_deref(), avatar).await {
+            tracing::warn!(error = %e.detail(), "could not update the profile photo");
+        }
         Ok(Profile {
             id: p.id,
             friend_code: p.friend_code,
@@ -408,7 +419,7 @@ impl FriendsClient {
         })
     }
 
-    pub async fn status(&self, display_name: &str) -> Result<FriendsStatus> {
+    pub async fn status(&self, display_name: &str, avatar: Option<&[u8]>) -> Result<FriendsStatus> {
         if !self.is_enabled().await {
             return Ok(FriendsStatus {
                 enabled: false,
@@ -417,16 +428,21 @@ impl FriendsClient {
         }
         Ok(FriendsStatus {
             enabled: true,
-            profile: Some(self.sync_profile(display_name).await?),
+            profile: Some(self.sync_profile(display_name, avatar).await?),
         })
     }
 
     /// Deletes everything on the server, then forgets the identity locally.
     pub async fn disable_and_delete(&self) -> Result<()> {
         if self.is_enabled().await {
-            match self.delete_all_uploads().await {
-                Ok(()) | Err(CoreError::FriendsServer { status: 401, .. }) => {}
-                Err(e) => return Err(e),
+            for deleted in [
+                self.delete_all_uploads().await,
+                self.delete_all_avatars().await,
+            ] {
+                match deleted {
+                    Ok(()) | Err(CoreError::FriendsServer { status: 401, .. }) => {}
+                    Err(e) => return Err(e),
+                }
             }
             match self.rpc_void("delete_me", json!({})).await {
                 // An identity the server already forgot is fine to drop.
@@ -444,9 +460,13 @@ impl FriendsClient {
 
     pub async fn friends(&self) -> Result<Vec<Friend>> {
         let rows: Vec<FriendRow> = self.rpc("my_friends", json!({})).await?;
-        Ok(rows
-            .into_iter()
-            .map(|r| Friend {
+        let mut out = Vec::with_capacity(rows.len());
+        for r in rows {
+            let avatar = match (&r.avatar_sha1, r.status) {
+                (Some(sha), FriendStatus::Accepted) => self.friend_avatar(&r.id, sha).await,
+                _ => None,
+            };
+            out.push(Friend {
                 id: r.id,
                 friend_code: r.friend_code,
                 display_name: r.display_name,
@@ -454,8 +474,10 @@ impl FriendsClient {
                 incoming: r.incoming,
                 request_id: r.request_id,
                 unread: r.unread,
-            })
-            .collect())
+                avatar,
+            });
+        }
+        Ok(out)
     }
 
     /// Returns `"pending"` or `"accepted"` (when they had asked me already).
@@ -630,8 +652,8 @@ pub(crate) mod tests {
             .await;
         let tmp = tempfile::tempdir().unwrap();
         let c = FriendsClient::new(ctx(&tmp, &server));
-        assert!(!c.status("Mehbur").await.unwrap().enabled);
-        let p = c.enable("Mehbur").await.unwrap();
+        assert!(!c.status("Mehbur", None).await.unwrap().enabled);
+        let p = c.enable("Mehbur", None).await.unwrap();
         assert_eq!(p.friend_code, "MEHBUR-7K3Q");
         // A new client (next launcher start) reuses the stored identity.
         let again = FriendsClient::new(c.ctx().clone());
@@ -709,7 +731,7 @@ pub(crate) mod tests {
         let tmp2 = tempfile::tempdir().unwrap();
         let fresh = FriendsClient::new(ctx(&tmp2, &server));
         assert_eq!(
-            fresh.enable("A").await.unwrap_err().code(),
+            fresh.enable("A", None).await.unwrap_err().code(),
             "friends.unavailable"
         );
         assert_eq!(
@@ -753,6 +775,11 @@ pub(crate) mod tests {
     async fn delete_forgets_the_identity() {
         let server = MockServer::builder().start().await;
         // Uploads go first, through the Storage API.
+        Mock::given(method("POST"))
+            .and(path("/storage/v1/object/list/avatars"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!([])))
+            .mount(&server)
+            .await;
         Mock::given(method("POST"))
             .and(path("/storage/v1/object/list/mods"))
             .respond_with(ResponseTemplate::new(200).set_body_json(json!([{ "name": "a.jar" }])))

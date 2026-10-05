@@ -163,7 +163,8 @@
     "account": {
       "none": "Önce bir hesap ekle veya seç.",
       "notFound": "Hesap bulunamadı: {{id}}",
-      "nameTaken": "\"{{name}}\" adında bir hesap zaten var."
+      "nameTaken": "\"{{name}}\" adında bir hesap zaten var.",
+      "avatarInvalid": "Geçersiz profil fotoğrafı: {{reason}}"
     },
     "loader": {
       "unavailable": "{{loader}}, Minecraft {{mc}} için mevcut değil.",
@@ -349,7 +350,9 @@
     "editSkin": "Skin'i düzenle",
     "rename": "Adı değiştir",
     "renameSave": "Kaydet",
-    "renameHint": "Yeni ad bir sonraki OYNA'da oyunda görünür."
+    "renameHint": "Yeni ad bir sonraki OYNA'da oyunda görünür.",
+    "photoAdd": "{{name}} için profil fotoğrafı seç (.png)",
+    "photoReset": "Skin kafasına dön"
   },
   "loader": {
     "version": "Loader sürümü",
@@ -649,7 +652,7 @@
   "friends": {
     "consentTitle": "Arkadaşlar özelliğini aç",
     "consentBody": "Arkadaşlarınla mesajlaşmak ve modlarını paylaşmak için launcher MehburMC sunucusunda (Supabase) senin için anonim bir kimlik oluşturur. E-posta veya şifre gerekmez.",
-    "consentStored": "Sunucuda saklananlar: arkadaş kodun, görünen adın (seçili hesabının adı), arkadaşlıkların, mesajların ve paylaştığın mod listeleri/dosyaları.",
+    "consentStored": "Sunucuda saklananlar: arkadaş kodun, görünen adın ve profil fotoğrafın (seçili hesabının adı ve fotoğrafı, yoksa skin kafası), arkadaşlıkların, mesajların ve paylaştığın mod listeleri/dosyaları.",
     "consentPrivate": "Mesajlarını yalnızca sen ve konuştuğun kişi görebilir; mod listelerini yalnızca arkadaşların görür.",
     "consentDelete": "İstediğin an \"Arkadaşları kapat ve verilerimi sil\" ile sunucudaki her şey silinir.",
     "enable": "Kabul et ve aç",

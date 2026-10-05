@@ -163,7 +163,8 @@
     "account": {
       "none": "Add or select an account first.",
       "notFound": "Account not found: {{id}}",
-      "nameTaken": "An account named \"{{name}}\" already exists."
+      "nameTaken": "An account named \"{{name}}\" already exists.",
+      "avatarInvalid": "Invalid profile photo: {{reason}}"
     },
     "loader": {
       "unavailable": "{{loader}} is not available for Minecraft {{mc}}.",
@@ -349,7 +350,9 @@
     "editSkin": "Edit skin",
     "rename": "Rename",
     "renameSave": "Save",
-    "renameHint": "The new name shows in game from the next PLAY."
+    "renameHint": "The new name shows in game from the next PLAY.",
+    "photoAdd": "Choose a profile photo for {{name}} (.png)",
+    "photoReset": "Back to skin head"
   },
   "loader": {
     "version": "Loader version",
@@ -649,7 +652,7 @@
   "friends": {
     "consentTitle": "Turn on Friends",
     "consentBody": "To chat with friends and share mods, the launcher creates an anonymous identity for you on the MehburMC server (Supabase). No e-mail or password needed.",
-    "consentStored": "Stored on the server: your friend code, display name (your selected account's name), friendships, messages and the mod lists/files you share.",
+    "consentStored": "Stored on the server: your friend code, display name and profile photo (your selected account's name and photo, or its skin head), friendships, messages and the mod lists/files you share.",
     "consentPrivate": "Only you and the person you talk to can read your messages; only your friends can see your mod lists.",
     "consentDelete": "\"Turn off friends and delete my data\" removes everything from the server at any time.",
     "enable": "Agree and turn on",

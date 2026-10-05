@@ -74,9 +74,9 @@ async fn friends_end_to_end() {
         client(&tmp.path().join("b")),
         client(&tmp.path().join("c")),
     );
-    let pa = a.enable("LiveA").await.expect("A enable");
-    let pb = b.enable("LiveB").await.expect("B enable");
-    let pc = c.enable("LiveC").await.expect("C enable");
+    let pa = a.enable("LiveA", None).await.expect("A enable");
+    let pb = b.enable("LiveB", None).await.expect("B enable");
+    let pc = c.enable("LiveC", None).await.expect("C enable");
     println!(
         "codes: {} {} {}",
         pa.friend_code, pb.friend_code, pc.friend_code
@@ -97,7 +97,7 @@ async fn friends_end_to_end() {
     assert!(failed.is_empty(), "{failed:?}");
     // Deleted identity is really gone: a fresh client with A's code cannot be found.
     let d = client(&tmp.path().join("d"));
-    d.enable("LiveD").await.unwrap();
+    d.enable("LiveD", None).await.unwrap();
     let gone = d.send_request(&pa.friend_code).await.unwrap_err();
     d.disable_and_delete().await.unwrap();
     assert_eq!(code(&gone), "friends.codeNotFound");
@@ -161,6 +161,33 @@ async fn scenario(
     b.mark_read(&pa.id).await.unwrap();
     assert_eq!(b.friends().await.unwrap()[0].unread, 0);
     println!("chat ok");
+
+    // Profile photo: friend B sees it, stranger C cannot fetch it, a new
+    // photo replaces the old one, and clearing it hides it again.
+    let photo = |shade: u8| {
+        let img = launcher_core::skin::image::Rgba {
+            width: 16,
+            height: 16,
+            pixels: [shade, 40, 200, 255].repeat(256),
+        };
+        launcher_core::skin::image::encode(&img).unwrap()
+    };
+    let sha = |b: &[u8]| {
+        use sha1::Digest;
+        hex::encode(sha1::Sha1::digest(b))
+    };
+    let (p1, p2) = (photo(10), photo(240));
+    a.sync_profile("LiveA", Some(&p1)).await.unwrap();
+    let seen = b.friends().await.unwrap()[0].avatar.clone();
+    assert_eq!(seen, Some(launcher_core::auth::avatar::data_uri(&p1)));
+    assert!(c.friend_avatar(&pa.id, &sha(&p1)).await.is_none());
+    a.sync_profile("LiveA", Some(&p2)).await.unwrap();
+    let seen = b.friends().await.unwrap()[0].avatar.clone();
+    assert_eq!(seen, Some(launcher_core::auth::avatar::data_uri(&p2)));
+    a.sync_profile("LiveA", None).await.unwrap();
+    assert!(b.friends().await.unwrap()[0].avatar.is_none());
+    a.sync_profile("LiveA", Some(&p1)).await.unwrap();
+    println!("avatar ok");
 
     // C is a stranger: cannot message A, cannot see A/B's chat.
     assert!(c.send_message(&pa.id, "spam").await.is_err());
@@ -251,7 +278,22 @@ async fn peer() {
     let target = std::env::var("MEHBUR_PEER_CODE").expect("MEHBUR_PEER_CODE");
     let tmp = tempfile::tempdir().unwrap();
     let me = client(&tmp.path().join("peer"));
-    me.enable("TestArkadas").await.unwrap();
+    // A recognisable photo: lime/teal checkerboard.
+    let photo = launcher_core::skin::image::encode(&launcher_core::skin::image::Rgba {
+        width: 8,
+        height: 8,
+        pixels: (0..64)
+            .flat_map(|i| {
+                if (i / 8 + i % 8) % 2 == 0 {
+                    [180, 255, 30, 255]
+                } else {
+                    [0, 180, 200, 255]
+                }
+            })
+            .collect(),
+    })
+    .unwrap();
+    me.enable("TestArkadas", Some(&photo)).await.unwrap();
     let outcome = futures_util::FutureExt::catch_unwind(std::panic::AssertUnwindSafe(async {
         println!("request: {}", me.send_request(&target).await.unwrap());
         let wait = |secs: u64| tokio::time::sleep(std::time::Duration::from_secs(secs));
@@ -267,7 +309,11 @@ async fn peer() {
             }
             wait(2).await;
         };
-        println!("accepted by {}", friend.display_name);
+        println!(
+            "accepted by {} (their photo visible: {})",
+            friend.display_name,
+            friend.avatar.is_some()
+        );
         let inst = tmp.path().join("peer-inst");
         std::fs::create_dir_all(inst.join("mods")).unwrap();
         let (name, bytes) = modrinth_jar(&net_ctx(tmp.path())).await;

@@ -207,6 +207,10 @@ impl Paths {
     pub fn accounts_file(&self) -> PathBuf {
         self.launcher_dir().join("accounts.json")
     }
+    /// Account profile photos (`<account id>.png`).
+    pub fn avatars(&self) -> PathBuf {
+        self.launcher_dir().join("avatars")
+    }
     pub fn state_file(&self) -> PathBuf {
         self.launcher_dir().join("state.json")
     }
