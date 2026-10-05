@@ -1,15 +1,15 @@
 {
-  "version": "0.3.0",
-  "notes": "### Eklendi\n- **Arkadaşlar:** arkadaş koduyla (`MEHBUR-XXXX`) arkadaş ekle, mesajlaş, okunmamış mesajları\n  kenar çubuğunda gör. İsteğe bağlıdır; ilk açışta onay istenir.\n- **Mod paylaşma:** bir profilin mod listesini arkadaşlarınla paylaş; arkadaşının modlarını\n  seçip kendi profiline tek tıkla kur. Modrinth'teki modlar Modrinth'ten indirilir, diğerleri\n  arkadaşının yüklediği dosyadan doğrulanarak gelir.\n- Arkadaşları kapatınca tüm verilerin sunucudan silinir.\n\n### Değişti\n- Yeni MehburMC logosu (uygulama ikonu, kurulum ve başlık çubuğu).",
-  "pub_date": "2026-10-05T19:44:21Z",
+  "version": "0.4.0",
+  "notes": "### Eklendi\n- **Profil fotoğrafı:** Hesaplar'da her hesabın fotoğrafı var. Başta skininin kafası (skin\n  yoksa oyunun o hesaba verdiği varsayılan skin); sol alttaki **+** ile bilgisayarından `.png`\n  seçebilirsin. **Skin kafasına dön** ile geri alırsın.\n- Arkadaşların seçili hesabının fotoğrafını Arkadaşlar listesinde ve sohbette görür.\n\n### Düzeltildi\n- Arkadaşın paylaştığı Modrinth modları artık sürüm adı yerine mod adıyla görünüyor.",
+  "pub_date": "2026-10-05T20:44:16Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYVBLL1RSVUhQcCtDMjF6MW84T1o3QmFUZ3FPbEI0RXdSNU5pTGVWbjlsK1pienVUcTFBVjhMM1IzZ0U0NzRyTTMzd3cxREVsVHBnOGFwOUZrbHpoeWdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMjI5NDQ5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4zLjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuMy4wCmxYTTBvNXowWEVvYkVERlIyS1B6dzNQY1hzajJkeFRhN1hBd3k4WnBueGJjcEIxUEhpOHI2OTBERkhyRU5wL0FWSjAwZ2ZCMkxjcmZOd3AvaEpwMUJRPT0K",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.3.0/MehburMC-Launcher_0.3.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUx4amE2NkZEZWJaQWM4aWxpV3NpVkFhTzFwNU1aZXcyV2VhS2NBeFVNS3E3VHQyQ0dPNkpTdG50ZDQ2WEcrRzJxb2hjNi9qTG5rYUJCSW5ZZ241SFFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMjMzMDQ4CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC40LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuNC4wCmdEOFZZNVYzb3B6eG0yMWlkQXdxRlFmY0taa2pPa2x5a0RiSisrZXg4bHhKSVFaZVM1YmJ5eVV2ZDhEK29ZbzQ1MTBPdXpVMXFldEErT3lCZEs1REN3PT0K",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.4.0/MehburMC-Launcher_0.4.0_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYVBLL1RSVUhQcCtDMjF6MW84T1o3QmFUZ3FPbEI0RXdSNU5pTGVWbjlsK1pienVUcTFBVjhMM1IzZ0U0NzRyTTMzd3cxREVsVHBnOGFwOUZrbHpoeWdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMjI5NDQ5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4zLjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuMy4wCmxYTTBvNXowWEVvYkVERlIyS1B6dzNQY1hzajJkeFRhN1hBd3k4WnBueGJjcEIxUEhpOHI2OTBERkhyRU5wL0FWSjAwZ2ZCMkxjcmZOd3AvaEpwMUJRPT0K",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.3.0/MehburMC-Launcher_0.3.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUx4amE2NkZEZWJaQWM4aWxpV3NpVkFhTzFwNU1aZXcyV2VhS2NBeFVNS3E3VHQyQ0dPNkpTdG50ZDQ2WEcrRzJxb2hjNi9qTG5rYUJCSW5ZZ241SFFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMjMzMDQ4CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC40LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuNC4wCmdEOFZZNVYzb3B6eG0yMWlkQXdxRlFmY0taa2pPa2x5a0RiSisrZXg4bHhKSVFaZVM1YmJ5eVV2ZDhEK29ZbzQ1MTBPdXpVMXFldEErT3lCZEs1REN3PT0K",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.4.0/MehburMC-Launcher_0.4.0_x64-setup.exe"
     }
   }
 }
