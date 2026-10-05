@@ -131,7 +131,12 @@ function MyCode() {
               setResult(null);
             }}
           />
-          <Button type="submit" variant="primary" disabled={!code.trim()}>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={!code.trim()}
+            className="shrink-0 whitespace-nowrap"
+          >
             <UserPlus size={14} />
             {t("friends.send")}
           </Button>

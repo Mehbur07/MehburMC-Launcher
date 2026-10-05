@@ -424,6 +424,10 @@ impl FriendsClient {
     /// Deletes everything on the server, then forgets the identity locally.
     pub async fn disable_and_delete(&self) -> Result<()> {
         if self.is_enabled().await {
+            match self.delete_all_uploads().await {
+                Ok(()) | Err(CoreError::FriendsServer { status: 401, .. }) => {}
+                Err(e) => return Err(e),
+            }
             match self.rpc_void("delete_me", json!({})).await {
                 // An identity the server already forgot is fine to drop.
                 Ok(()) | Err(CoreError::FriendsServer { status: 401, .. }) => {}
@@ -748,6 +752,21 @@ pub(crate) mod tests {
     #[tokio::test]
     async fn delete_forgets_the_identity() {
         let server = MockServer::builder().start().await;
+        // Uploads go first, through the Storage API.
+        Mock::given(method("POST"))
+            .and(path("/storage/v1/object/list/mods"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!([{ "name": "a.jar" }])))
+            .mount(&server)
+            .await;
+        Mock::given(method("DELETE"))
+            .and(path("/storage/v1/object/mods"))
+            .and(wiremock::matchers::body_json(
+                json!({ "prefixes": [format!("{ME}/a.jar")] }),
+            ))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!([])))
+            .expect(1)
+            .mount(&server)
+            .await;
         Mock::given(method("POST"))
             .and(path("/rest/v1/rpc/delete_me"))
             .respond_with(ResponseTemplate::new(204))

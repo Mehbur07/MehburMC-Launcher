@@ -303,6 +303,23 @@ impl FriendsClient {
         self.prune_uploads(&me).await
     }
 
+    /// Deletes every jar the caller uploaded. Storage objects can only be
+    /// removed through the Storage API, not from SQL (`delete_me`).
+    pub(crate) async fn delete_all_uploads(&self) -> Result<()> {
+        let me = self.user_id().await?;
+        let all: Vec<String> = self.stored_objects(&me).await?.into_iter().collect();
+        if !all.is_empty() {
+            self.send(
+                Method::DELETE,
+                &format!("/storage/v1/object/{BUCKET}"),
+                Some(&json!({ "prefixes": all })),
+                &[],
+            )
+            .await?;
+        }
+        Ok(())
+    }
+
     /// Deletes uploaded jars no shared list references any more.
     async fn prune_uploads(&self, me: &str) -> Result<()> {
         let used: HashSet<String> = self

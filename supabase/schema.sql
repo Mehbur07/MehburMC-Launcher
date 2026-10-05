@@ -205,14 +205,15 @@ returns table (
    order by p.display_name;
 $$;
 
--- Deletes everything of the caller (profile, friendships, messages, lists,
--- uploaded files) and the anonymous auth user itself.
+-- Deletes everything of the caller (profile, friendships, messages, lists)
+-- and the anonymous auth user itself. Uploaded files are removed by the
+-- launcher through the Storage API first: Supabase forbids deleting
+-- storage.objects rows from SQL.
 create or replace function public.delete_me()
-returns void language plpgsql security definer set search_path = public, storage as $$
+returns void language plpgsql security definer set search_path = public as $$
 declare me uuid := auth.uid();
 begin
   if me is null then return; end if;
-  delete from storage.objects where bucket_id = 'mods' and (storage.foldername(name))[1] = me::text;
   delete from profiles where id = me;
   delete from auth.users where id = me;
 end;
