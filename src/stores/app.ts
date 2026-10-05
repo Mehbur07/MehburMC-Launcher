@@ -13,6 +13,7 @@ export type View =
   | "browse"
   | "accounts"
   | "skins"
+  | "friends"
   | "downloads"
   | "console"
   | "whatsNew"

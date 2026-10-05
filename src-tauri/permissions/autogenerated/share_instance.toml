@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-share-instance"
+description = "Enables the share_instance command without any pre-configured scope."
+commands.allow = ["share_instance"]
+
+[[permission]]
+identifier = "deny-share-instance"
+description = "Denies the share_instance command without any pre-configured scope."
+commands.deny = ["share_instance"]

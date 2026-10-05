@@ -6,6 +6,7 @@ pub mod content;
 pub mod data;
 pub mod dialogs;
 pub mod files;
+pub mod friends;
 pub mod home;
 pub mod instances;
 pub mod loaders;

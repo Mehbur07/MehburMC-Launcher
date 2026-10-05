@@ -26,6 +26,8 @@ pub struct Endpoints {
     pub curseforge: String,
     /// Official launcher news feed and its images.
     pub launcher_content: String,
+    /// MehburMC friends service (Supabase project URL).
+    pub friends: String,
 }
 
 impl Default for Endpoints {
@@ -44,6 +46,7 @@ impl Default for Endpoints {
             modrinth: "https://api.modrinth.com".into(),
             curseforge: "https://api.curseforge.com".into(),
             launcher_content: "https://launchercontent.mojang.com".into(),
+            friends: "https://rcaifwsiutoxilpkceht.supabase.co".into(),
         }
     }
 }

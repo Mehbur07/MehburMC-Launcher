@@ -8,12 +8,14 @@ import {
   Sparkles,
   SquareTerminal,
   UserRound,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 
 import { useApp, type View } from "../stores/app";
+import { totalUnread, useFriends } from "../stores/friends";
 import { isActive, useTasks } from "../stores/tasks";
 
 const ITEMS: { view: View; icon: LucideIcon }[] = [
@@ -22,6 +24,7 @@ const ITEMS: { view: View; icon: LucideIcon }[] = [
   { view: "browse", icon: Compass },
   { view: "accounts", icon: UserRound },
   { view: "skins", icon: Shirt },
+  { view: "friends", icon: Users },
   { view: "downloads", icon: Download },
   { view: "console", icon: SquareTerminal },
 ];
@@ -31,6 +34,7 @@ export function Sidebar() {
   const view = useApp((s) => s.view);
   const setView = useApp((s) => s.setView);
   const whatsNewUnseen = useApp((s) => s.whatsNewUnseen);
+  const unread = useFriends((s) => totalUnread(s.friends));
   const busy = useTasks(
     (s) => Object.values(s.tasks).filter((t) => t.status === "preparing").length,
   );
@@ -66,6 +70,14 @@ export function Sidebar() {
               className="pop-in relative ml-auto rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-accent"
             >
               {busy}
+            </span>
+          )}
+          {v === "friends" && unread > 0 && (
+            <span
+              key={unread}
+              className="pop-in relative ml-auto rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-accent"
+            >
+              {unread}
             </span>
           )}
           {v === "whatsNew" && whatsNewUnseen && (

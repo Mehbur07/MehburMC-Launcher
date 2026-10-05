@@ -37,6 +37,19 @@ webview'da çalışabilecek kötü niyetli içerik (XSS).
 - CurseForge API anahtarı (kullanıcı girerse) `settings.json`'da düz metin durur — yalnızca
   bu bilgisayarda ve yalnızca `api.curseforge.com` isteklerinde kullanılır.
 
+**Arkadaşlar (isteğe bağlı, varsayılan kapalı)**
+- Sunucu Supabase; kimlik parolasız anonim hesaptır. Oturum token'ları yalnızca
+  `launcher/friends.json`'da durur ve loglarda maskelenir. Uygulamaya gömülü anahtar
+  Supabase'in herkese açık `anon` anahtarıdır; tüm yetki veritabanındaki satır düzeyi
+  güvenlik (RLS) kurallarından gelir: mesajları yalnızca iki taraf, paylaşılan listeleri ve
+  dosyaları yalnızca sahibi ile kabul edilmiş arkadaşları okuyabilir; engellenen kişi yazamaz.
+- Sunucuda saklananlar: arkadaş kodu, görünen ad, arkadaşlıklar, mesajlar, paylaşılan mod
+  listeleri ve Modrinth'te bulunmayan mod dosyaları (≤50 MB). "Kapat ve verilerimi sil"
+  bunların hepsini siler.
+- Arkadaştan kurulan her dosya SHA-1 ile doğrulanır (paylaşılan listedeki özetle aynı değilse
+  kurulmaz). Modrinth'te bulunmayan dosyalar "doğrulanmamış" olarak işaretlenir ve ayrıca
+  onay ister — modlar tam yetkiyle çalışan Java kodudur.
+
 **Güncellemeler**
 - Güncellemeler minisign ile imzalanır; açık anahtar uygulamaya gömülüdür, imzasız veya
   değiştirilmiş paket kurulmaz. Özel anahtar repoda değildir.

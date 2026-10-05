@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-chat-messages"
+description = "Enables the chat_messages command without any pre-configured scope."
+commands.allow = ["chat_messages"]
+
+[[permission]]
+identifier = "deny-chat-messages"
+description = "Denies the chat_messages command without any pre-configured scope."
+commands.deny = ["chat_messages"]

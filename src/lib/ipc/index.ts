@@ -7,9 +7,15 @@ import type { Assignment } from "./bindings/Assignment";
 import type { AccountsView } from "./bindings/AccountsView";
 import type { Bootstrap } from "./bindings/Bootstrap";
 import type { CoreEvent } from "./bindings/CoreEvent";
+import type { ChatMessage } from "./bindings/ChatMessage";
 import type { CrashInfo } from "./bindings/CrashInfo";
 import type { ErrorPayload } from "./bindings/ErrorPayload";
 import type { FileEntry } from "./bindings/FileEntry";
+import type { Friend } from "./bindings/Friend";
+import type { FriendInstallResult } from "./bindings/FriendInstallResult";
+import type { FriendsStatus } from "./bindings/FriendsStatus";
+import type { Profile } from "./bindings/Profile";
+import type { SharedList } from "./bindings/SharedList";
 import type { ImportResult } from "./bindings/ImportResult";
 import type { InstallRequest } from "./bindings/InstallRequest";
 import type { InstallResult } from "./bindings/InstallResult";
@@ -104,6 +110,26 @@ export const ipc = {
     invoke<ImportResult>("install_modrinth_modpack", { versionId }),
   contentIcon: (url: string) => invoke<string>("content_icon", { url }),
   openExternal: (url: string) => invoke<void>("open_external", { url }),
+
+  friendsStatus: () => invoke<FriendsStatus>("friends_status"),
+  friendsEnable: () => invoke<Profile>("friends_enable"),
+  friendsDisable: () => invoke<void>("friends_disable"),
+  friendsList: () => invoke<Friend[]>("friends_list"),
+  friendRequest: (code: string) => invoke<string>("friend_request", { code }),
+  friendRespond: (requestId: number, accept: boolean) =>
+    invoke<void>("friend_respond", { requestId, accept }),
+  friendRemove: (friend: string) => invoke<void>("friend_remove", { friend }),
+  friendBlock: (friend: string) => invoke<void>("friend_block", { friend }),
+  chatMessages: (friend: string, after?: number) =>
+    invoke<ChatMessage[]>("chat_messages", { friend, after }),
+  chatSend: (friend: string, body: string) => invoke<ChatMessage>("chat_send", { friend, body }),
+  chatMarkRead: (friend: string) => invoke<void>("chat_mark_read", { friend }),
+  myShares: () => invoke<SharedList[]>("my_shares"),
+  shareInstance: (id: string) => invoke<SharedList>("share_instance", { id }),
+  unshareInstance: (id: string) => invoke<void>("unshare_instance", { id }),
+  friendSharedLists: (friend: string) => invoke<SharedList[]>("friend_shared_lists", { friend }),
+  installFriendMods: (listId: number, instanceId: string, files: string[]) =>
+    invoke<FriendInstallResult>("install_friend_mods", { listId, instanceId, files }),
 
   listSkins: () => invoke<LibraryView>("list_skins"),
   importSkinFile: (kind: TextureKind, model?: SkinModel) =>

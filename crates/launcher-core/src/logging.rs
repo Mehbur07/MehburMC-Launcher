@@ -32,10 +32,16 @@ static SECRET_PATTERNS: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| 
             Regex::new(r"\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}").unwrap(),
             "***",
         ),
+        // HTTP authorization headers, including the scheme word.
+        (
+            Regex::new(r#"(?i)(authorization["']?\s*[:=]\s*["']?)(?:bearer\s+)?[^\s"',}&]+"#)
+                .unwrap(),
+            "${1}***",
+        ),
         // key=value / key: value / --key value forms.
         (
             Regex::new(
-                r#"(?i)((?:--)?(?:access_?token|refresh_?token|auth_access_token|xuid|clientsecret|client_secret|password|x-api-key|api_?key|curseforge_?api_?key)["']?\s*[:= ]\s*["']?)[^\s"',}&]+"#,
+                r#"(?i)((?:--)?(?:access_?token|refresh_?token|refreshToken|bearer|auth_access_token|xuid|clientsecret|client_secret|password|x-api-key|api_?key|curseforge_?api_?key)["']?\s*[:= ]\s*["']?)[^\s"',}&]+"#,
             )
             .unwrap(),
             "${1}***",
@@ -168,6 +174,18 @@ mod tests {
             r#"{"curseforgeApiKey":"***","x":1}"#
         );
         assert_eq!(mask_secrets("x-api-key: abc123"), "x-api-key: ***");
+    }
+
+    #[test]
+    fn masks_friends_session() {
+        assert_eq!(
+            mask_secrets(r#"{"refreshToken":"q1w2e3r4t5","userId":"u"}"#),
+            r#"{"refreshToken":"***","userId":"u"}"#
+        );
+        assert_eq!(
+            mask_secrets("Authorization: Bearer abc"),
+            "Authorization: ***"
+        );
     }
 
     #[test]

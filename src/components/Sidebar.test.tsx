@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import "../i18n";
 import { applyLanguage } from "../i18n";
 import { useApp } from "../stores/app";
+import { useFriends } from "../stores/friends";
 import { useTasks } from "../stores/tasks";
 import { task } from "../test/fixtures";
 import { Sidebar } from "./Sidebar";
@@ -44,5 +45,23 @@ describe("Sidebar", () => {
     });
     render(<Sidebar />);
     expect(screen.getByRole("button", { name: /Downloads/ })).toHaveTextContent("2");
+  });
+
+  it("shows unread messages on Friends", () => {
+    useFriends.setState({
+      friends: [
+        {
+          id: "f1",
+          friendCode: "MEHBUR-AAAA",
+          displayName: "Ali",
+          status: "accepted",
+          incoming: false,
+          requestId: 1,
+          unread: 3,
+        },
+      ],
+    });
+    render(<Sidebar />);
+    expect(screen.getByRole("button", { name: /Friends/ })).toHaveTextContent("3");
   });
 });

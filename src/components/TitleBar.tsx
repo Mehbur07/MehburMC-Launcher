@@ -30,7 +30,7 @@ export function TitleBar() {
     >
       {/* Thin neon line under the title bar. */}
       <div className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-accent/70 to-transparent" />
-      <Logo className="pointer-events-none h-5 w-5 text-accent neon-drop" />
+      <Logo className="pointer-events-none h-6 w-6 rounded" />
       <span className="pointer-events-none ml-2 font-brand text-[13px] font-bold tracking-wider">
         MehburMC <span className="text-accent">Launcher</span>
       </span>

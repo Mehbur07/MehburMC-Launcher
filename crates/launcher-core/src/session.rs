@@ -15,6 +15,8 @@ use crate::ctx::Ctx;
 use crate::error::{CoreError, Result};
 use crate::events::{CoreEvent, EventSink};
 use crate::events::{Progress, Stage};
+use crate::friends::FriendsClient;
+use crate::friends::share::{FriendInstallResult, SharedList};
 use crate::instance::files::Folder;
 use crate::instance::{Instance, InstancePatch, InstanceStore, LoaderSpec, Running, split_args};
 use crate::launch::process::GameExit;
@@ -48,6 +50,7 @@ pub struct Launcher {
     pub instances: InstanceStore,
     pub accounts: AccountStore,
     pub skins: SkinStore,
+    pub friends: FriendsClient,
     pub tasks: Arc<TaskRegistry>,
     pub running: Running,
 }
@@ -59,8 +62,10 @@ impl Launcher {
             tasks: tasks.clone(),
             inner: ui_sink,
         });
+        let ctx = Ctx::new(paths.clone(), sink, concurrency)?;
         Ok(Arc::new(Self {
-            ctx: Ctx::new(paths.clone(), sink, concurrency)?,
+            friends: FriendsClient::new(ctx.clone()),
+            ctx,
             instances: InstanceStore::new(paths.clone()),
             accounts: AccountStore::new(paths.clone()),
             skins: SkinStore::new(paths),
@@ -278,6 +283,27 @@ impl Launcher {
             &CancellationToken::new(),
         )
         .await
+    }
+
+    /// Shares an instance's mods with friends.
+    pub async fn share_instance(&self, instance_id: &str) -> Result<SharedList> {
+        let inst = self.instances.get(instance_id)?;
+        let dir = self.instances.dir(&inst.id)?;
+        self.friends.share_instance(&inst, &dir).await
+    }
+
+    /// Installs mods from a friend's shared list; the instance is reserved
+    /// meanwhile so it cannot start.
+    pub async fn install_friend_mods(
+        &self,
+        list_id: i64,
+        instance_id: &str,
+        files: &[String],
+    ) -> Result<FriendInstallResult> {
+        let inst = self.instances.get(instance_id)?;
+        let _claim = self.running.try_claim(&inst)?;
+        let dir = self.instances.dir(&inst.id)?;
+        self.friends.install_from_list(list_id, &dir, files).await
     }
 
     /// Lists a content folder with Modrinth metadata (and updates).

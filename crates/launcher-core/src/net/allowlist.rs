@@ -38,6 +38,10 @@ const DEFAULT_RULES: &[(&str, Option<&str>)] = &[
     ("api.curseforge.com", None),
     ("edge.forgecdn.net", None),
     ("mediafilez.forgecdn.net", None),
+    // MehburMC friends service (Supabase; ARCHITECTURE K64)
+    ("rcaifwsiutoxilpkceht.supabase.co", Some("/auth/v1/")),
+    ("rcaifwsiutoxilpkceht.supabase.co", Some("/rest/v1/")),
+    ("rcaifwsiutoxilpkceht.supabase.co", Some("/storage/v1/")),
     // Adoptium (binaries are GitHub release assets)
     ("api.adoptium.net", None),
     ("objects.githubusercontent.com", None),

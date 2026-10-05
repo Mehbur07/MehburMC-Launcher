@@ -6,7 +6,7 @@ use tauri::window::Color;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 use crate::commands::{
-    accounts, content, data, dialogs, files, home, instances, loaders, play, skins, update,
+    accounts, content, data, dialogs, files, friends, home, instances, loaders, play, skins, update,
 };
 use crate::state::AppState;
 
@@ -100,6 +100,22 @@ pub fn run() {
             content::install_modrinth_modpack,
             content::content_icon,
             content::open_external,
+            friends::friends_status,
+            friends::friends_enable,
+            friends::friends_disable,
+            friends::friends_list,
+            friends::friend_request,
+            friends::friend_respond,
+            friends::friend_remove,
+            friends::friend_block,
+            friends::chat_messages,
+            friends::chat_send,
+            friends::chat_mark_read,
+            friends::my_shares,
+            friends::share_instance,
+            friends::unshare_instance,
+            friends::friend_shared_lists,
+            friends::install_friend_mods,
             skins::list_skins,
             skins::import_skin_file,
             skins::add_skin_bytes,

@@ -15,6 +15,7 @@ Yalnızca **offline hesaplarla** çalışır.
 8. [Ayarlar](#8-ayarlar)
 9. [Veri klasörü, taşıma ve portable kullanım](#9-veri-klasörü-taşıma-ve-portable-kullanım)
 10. [Güncellemeler](#10-güncellemeler)
+11. [Arkadaşlar](#11-arkadaşlar)
 
 ---
 
@@ -166,5 +167,32 @@ belleğe kopyalayıp başka bir bilgisayarda kullanabilirsin.
 Kurulu sürüm açılışta yeni sürüm olup olmadığına bakar (Ayarlar'dan kapatılabilir). Yeni
 sürüm varsa üstte bir şerit çıkar; **Güncelle ve yeniden başlat** imzalı güncellemeyi indirir,
 doğrular ve kurar. Portable sürüm kendini güncellemez.
+
+## 11. Arkadaşlar
+
+Kenar çubuğundaki **Arkadaşlar** ile arkadaşlarınla mesajlaşabilir ve birbirinizin mod
+listelerini görüp tek tıkla kurabilirsiniz. Özellik **varsayılan olarak kapalıdır**; ilk
+açışta neyin saklandığını anlatan bir onay ekranı çıkar.
+
+- **Arkadaş kodu:** açtığında sana `MEHBUR-XXXX` biçiminde bir kod verilir. Kodunu arkadaşına
+  gönder; o da **Kodla arkadaş ekle** kutusuna yazar. İstek sende **Arkadaşlık istekleri** bölümünde
+  görünür; **Kabul et** dersen arkadaş olursunuz.
+- **Sohbet:** listeden arkadaşını seç. Enter gönderir, Shift+Enter yeni satır; mesajlar en
+  fazla 2000 karakter. Okunmamış mesaj sayısı kenar çubuğunda görünür.
+- **Mod paylaşma:** sayfanın altındaki **Paylaştığım profiller** bölümünde bir profili
+  **Paylaş**. Modrinth'te bulunan modlar yalnızca bağlantı olarak, diğer jar'lar (≤50 MB)
+  dosya olarak paylaşılır. Modları değiştirdikten sonra **Güncelle**, bırakmak için **Kaldır**.
+- **Arkadaşın modlarını kurma:** arkadaşını seç → **Modları** sekmesi → paylaştığı profil →
+  istediğin modları işaretle, hedef profilini seç → **Seçilenleri kur**. "Modrinth ✓" olanlar
+  Modrinth'ten indirilir; "Doğrulanmamış" olanlar arkadaşının yüklediği dosyalardır, yalnızca
+  güvendiğin kişilerden kur. Zaten kurulu olan dosyalar atlanır.
+- **Sil / engelle:** sohbetin üstündeki simgelerle. Engellenen kişi sana mesaj ve istek
+  gönderemez; engeli listedeki **Engeli kaldır** ile açabilirsin.
+- **Kapatma:** **Arkadaşları kapat ve verilerimi sil** hesabını, mesajlarını, arkadaşlıklarını
+  ve yüklediğin dosyaları sunucudan siler.
+
+Saklanan veriler: arkadaş kodun, görünen adın (seçili hesabının adı), mesajların ve paylaştığın
+mod listeleri/dosyaları. Bunları yalnızca sen ve arkadaşların görebilir. Arkadaşlar internet
+gerektirir; bağlantı yoksa sayfada "çevrimdışı" yazar, launcher'ın geri kalanı etkilenmez.
 
 Sorun mu yaşıyorsun? → [Sorun giderme](SORUN_GIDERME.md)

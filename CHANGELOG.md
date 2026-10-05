@@ -3,6 +3,19 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.3.0] — 2026-10-05
+
+### Eklendi
+- **Arkadaşlar:** arkadaş koduyla (`MEHBUR-XXXX`) arkadaş ekle, mesajlaş, okunmamış mesajları
+  kenar çubuğunda gör. İsteğe bağlıdır; ilk açışta onay istenir.
+- **Mod paylaşma:** bir profilin mod listesini arkadaşlarınla paylaş; arkadaşının modlarını
+  seçip kendi profiline tek tıkla kur. Modrinth'teki modlar Modrinth'ten indirilir, diğerleri
+  arkadaşının yüklediği dosyadan doğrulanarak gelir.
+- Arkadaşları kapatınca tüm verilerin sunucudan silinir.
+
+### Değişti
+- Yeni MehburMC logosu (uygulama ikonu, kurulum ve başlık çubuğu).
+
 ## [0.2.2] — 2026-10-04
 
 ### Değişti

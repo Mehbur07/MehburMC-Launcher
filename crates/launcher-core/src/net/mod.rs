@@ -109,6 +109,35 @@ impl Http {
         Ok((status, bytes))
     }
 
+    /// Request with a raw body (file uploads); same contract as
+    /// [`Self::request_json`]. Uploads may take longer than the read timeout
+    /// of a normal response, so the whole request gets `timeout`.
+    pub async fn request_bytes(
+        &self,
+        method: reqwest::Method,
+        url: &str,
+        body: Vec<u8>,
+        content_type: &str,
+        headers: &[(&str, &str)],
+        timeout: Duration,
+    ) -> Result<(u16, Vec<u8>)> {
+        let parsed = self.allowlist.check(url)?;
+        let mut req = self
+            .client
+            .request(method, parsed)
+            .timeout(timeout)
+            .header(reqwest::header::ACCEPT, "application/json")
+            .header(reqwest::header::CONTENT_TYPE, content_type)
+            .body(body);
+        for (k, v) in headers {
+            req = req.header(*k, *v);
+        }
+        let resp = req.send().await.map_err(|source| network(url, source))?;
+        let status = resp.status().as_u16();
+        let bytes = read_limited(url, resp, MAX_BODY_BYTES).await?;
+        Ok((status, bytes))
+    }
+
     pub async fn post_json(&self, url: &str, body: &serde_json::Value) -> Result<(u16, Vec<u8>)> {
         self.request_json(reqwest::Method::POST, url, Some(body), &[])
             .await

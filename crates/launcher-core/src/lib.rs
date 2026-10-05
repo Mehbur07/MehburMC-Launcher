@@ -12,6 +12,7 @@ pub mod ctx;
 pub mod datamove;
 pub mod error;
 pub mod events;
+pub mod friends;
 pub mod fsutil;
 pub mod hash;
 pub mod instance;

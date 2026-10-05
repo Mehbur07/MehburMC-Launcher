@@ -169,6 +169,14 @@ pub enum CoreError {
 
     #[error("cannot move the data folder: {0}")]
     DataMove(String),
+
+    /// A refusal from the friends service with a stable code (e.g.
+    /// `friends.codeNotFound`, see [`crate::friends::FRIEND_ERRORS`]).
+    #[error("friends: {0}")]
+    Friends(&'static str),
+
+    #[error("friends service error (HTTP {status}): {reason}")]
+    FriendsServer { status: u16, reason: String },
 }
 
 impl CoreError {
@@ -225,6 +233,8 @@ impl CoreError {
             Self::SkinInvalid(_) => "skin.invalid",
             Self::SkinNotFound(_) => "skin.notFound",
             Self::DataMove(_) => "paths.moveFailed",
+            Self::Friends(code) => code,
+            Self::FriendsServer { .. } => "friends.server",
         }
     }
 
@@ -311,7 +321,12 @@ impl CoreError {
                 put("reason", reason.clone())
             }
             Self::SkinNotFound(id) => put("id", id.clone()),
-            Self::NoDataDir | Self::Cancelled | Self::NoAccount | Self::CurseForgeKey => {}
+            Self::FriendsServer { reason, .. } => put("reason", reason.clone()),
+            Self::NoDataDir
+            | Self::Cancelled
+            | Self::NoAccount
+            | Self::CurseForgeKey
+            | Self::Friends(_) => {}
         }
         p
     }

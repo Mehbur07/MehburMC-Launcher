@@ -12,6 +12,7 @@ import { applyLanguage } from "../i18n";
 import { useAccounts } from "../stores/accounts";
 import { useApp, type View } from "../stores/app";
 import { useInstances } from "../stores/instances";
+import { useFriends } from "../stores/friends";
 import { useSkins } from "../stores/skins";
 import { useUpdate } from "../stores/update";
 import { CrashDialog } from "../features/crash/CrashDialog";
@@ -33,6 +34,7 @@ const SettingsPage = named(() => import("../features/settings/SettingsPage"), "S
 const BrowsePage = named(() => import("../features/browse/BrowsePage"), "BrowsePage");
 const CreateWizard = named(() => import("../features/instances/CreateWizard"), "CreateWizard");
 const SkinsPage = lazy(() => import("../features/skins/SkinsPage"));
+const FriendsPage = named(() => import("../features/friends/FriendsPage"), "FriendsPage");
 const WhatsNewPage = named(() => import("../features/whatsnew/WhatsNewPage"), "WhatsNewPage");
 
 function Page({ view }: { view: View }) {
@@ -55,12 +57,14 @@ function Page({ view }: { view: View }) {
       return <BrowsePage />;
     case "skins":
       return <SkinsPage />;
+    case "friends":
+      return <FriendsPage />;
     case "whatsNew":
       return <WhatsNewPage />;
   }
 }
 
-const pageFallback = <Logo className="mx-auto mt-24 h-10 w-10 animate-pulse text-accent" />;
+const pageFallback = <Logo className="mx-auto mt-24 h-12 w-12 animate-pulse rounded-lg" />;
 
 export function App() {
   const { t } = useTranslation();
@@ -93,6 +97,16 @@ export function App() {
     };
   }, [status, loadInstances, loadAccounts, loadSkins, checkUpdate]);
 
+  // Friend list (unread badge) every 20 s once friends are on.
+  const friendsStatus = useFriends((s) => s.status);
+  const refreshFriends = useFriends((s) => s.refresh);
+  useEffect(() => {
+    if (status !== "ready") return;
+    void friendsStatus();
+    const id = window.setInterval(() => void refreshFriends(), 20_000);
+    return () => window.clearInterval(id);
+  }, [status, friendsStatus, refreshFriends]);
+
   // Apply theme + language whenever settings change.
   useEffect(() => {
     if (!settings) return;
@@ -107,7 +121,7 @@ export function App() {
 
         {status === "loading" && (
           <div className="grid flex-1 place-items-center">
-            <Logo className="h-14 w-14 animate-pulse text-accent neon-drop" />
+            <Logo className="h-20 w-20 animate-pulse rounded-xl" />
           </div>
         )}
 

@@ -64,7 +64,7 @@ impl Downloader {
         }
     }
 
-    #[cfg(test)]
+    /// Shorter retry policy (tests; downloads where a retry rarely helps).
     pub fn with_backoff(mut self, base: Duration, attempts: u32) -> Self {
         self.base_backoff = base;
         self.max_attempts = attempts;

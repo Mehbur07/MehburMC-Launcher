@@ -199,6 +199,11 @@ impl Paths {
     pub fn settings_file(&self) -> PathBuf {
         self.launcher_dir().join("settings.json")
     }
+    /// Friends-service session (anonymous identity + refresh token).
+    pub fn friends_file(&self) -> PathBuf {
+        self.launcher_dir().join("friends.json")
+    }
+
     pub fn accounts_file(&self) -> PathBuf {
         self.launcher_dir().join("accounts.json")
     }
