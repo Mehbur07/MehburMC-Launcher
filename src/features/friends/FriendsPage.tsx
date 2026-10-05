@@ -310,7 +310,10 @@ export function FriendsPage() {
     void status();
   }, [status]);
 
-  const accepted = friends.filter((f) => f.status === "accepted");
+  // Online friends first; the server already sorts by name.
+  const accepted = friends
+    .filter((f) => f.status === "accepted")
+    .sort((a, b) => Number(b.online) - Number(a.online));
   const blocked = friends.filter((f) => f.status === "blocked");
   const current = accepted.find((f) => f.id === chatWith) ?? null;
 
@@ -357,7 +360,12 @@ export function FriendsPage() {
                         active ? "bg-accent/10 text-accent neon-ring" : "hover:bg-surface-2"
                       }`}
                     >
-                      <Avatar photo={f.avatar} className="h-7 w-7 shrink-0 rounded" />
+                      <Avatar
+                        photo={f.avatar}
+                        className="h-7 w-7 shrink-0 rounded"
+                        online={f.online}
+                        dot="sm"
+                      />
                       <span className="min-w-0 flex-1 truncate font-semibold">{f.displayName}</span>
                       {f.unread > 0 && (
                         <span className="rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-accent">
@@ -398,7 +406,11 @@ export function FriendsPage() {
               ) : (
                 <>
                   <div className="flex flex-wrap items-center gap-2 border-b border-line px-3 py-2">
-                    <Avatar photo={current.avatar} className="h-8 w-8 rounded" />
+                    <Avatar
+                      photo={current.avatar}
+                      className="h-8 w-8 rounded"
+                      online={current.online}
+                    />
                     <span className="font-display text-lg font-semibold">
                       {current.displayName}
                     </span>

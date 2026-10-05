@@ -20,6 +20,8 @@ interface FriendsStore {
   messages: Record<string, ChatMessage[]>;
   /** Last error of the background refresh (shown once, not repeated). */
   offline: boolean;
+  /** Friends see us online (our heartbeat reaches the server). */
+  online: boolean;
 
   status: () => Promise<void>;
   /** Returns the error for inline display (consent screen). */
@@ -48,11 +50,12 @@ export const useFriends = create<FriendsStore>((set, get) => ({
   chatWith: null,
   messages: {},
   offline: false,
+  online: false,
 
   status: async () => {
     try {
       const s = await ipc.friendsStatus();
-      set({ enabled: s.enabled, profile: s.profile, offline: false });
+      set({ enabled: s.enabled, profile: s.profile, offline: false, online: s.online });
       if (s.enabled) await get().refresh();
     } catch (e) {
       const p = toErrorPayload(e);
@@ -65,7 +68,7 @@ export const useFriends = create<FriendsStore>((set, get) => ({
   enable: async () => {
     try {
       const profile = await ipc.friendsEnable();
-      set({ enabled: true, profile, offline: false });
+      set({ enabled: true, profile, offline: false, online: true });
       await get().refresh();
       return null;
     } catch (e) {
@@ -76,7 +79,14 @@ export const useFriends = create<FriendsStore>((set, get) => ({
   disable: async () => {
     try {
       await ipc.friendsDisable();
-      set({ enabled: false, profile: null, friends: [], messages: {}, chatWith: null });
+      set({
+        enabled: false,
+        profile: null,
+        friends: [],
+        messages: {},
+        chatWith: null,
+        online: false,
+      });
     } catch (e) {
       notify(e);
     }
@@ -85,8 +95,11 @@ export const useFriends = create<FriendsStore>((set, get) => ({
   refresh: async () => {
     if (!get().enabled) return;
     try {
-      const friends = await ipc.friendsList();
-      set({ friends, offline: false });
+      const [friends, online] = await Promise.all([
+        ipc.friendsList(),
+        ipc.friendsOnline().catch(() => get().online),
+      ]);
+      set({ friends, offline: false, online });
     } catch (e) {
       if (toErrorPayload(e).code.startsWith("net.")) set({ offline: true });
       else notify(e);

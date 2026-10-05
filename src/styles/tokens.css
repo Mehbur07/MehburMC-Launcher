@@ -17,6 +17,9 @@
   --mc-warn: #ffb800;
   --mc-danger: #ff3b5c;
   --mc-success: #00ffa3;
+  /* Online dot (neon lime), the same for every accent preset. */
+  --mc-online: #b6ff1a;
+  --mc-online-rgb: 182 255 26;
 
   /* Accent preset: cyan (default). `--mc-accent-rgb` feeds glows. */
   --mc-accent: #00f0ff;

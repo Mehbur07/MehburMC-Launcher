@@ -9,4 +9,8 @@ incoming: boolean, requestId: number, unread: number,
 /**
  * Profile photo as a `data:` URI (accepted friends only).
  */
-avatar: string | null, };
+avatar: string | null, 
+/**
+ * Launcher open right now (accepted friends only).
+ */
+online: boolean, };

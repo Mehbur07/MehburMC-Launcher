@@ -652,7 +652,7 @@
   "friends": {
     "consentTitle": "Turn on Friends",
     "consentBody": "To chat with friends and share mods, the launcher creates an anonymous identity for you on the MehburMC server (Supabase). No e-mail or password needed.",
-    "consentStored": "Stored on the server: your friend code, display name and profile photo (your selected account's name and photo, or its skin head), friendships, messages and the mod lists/files you share.",
+    "consentStored": "Stored on the server: your friend code, display name and profile photo (your selected account's name and photo, or its skin head), friendships, messages and the mod lists/files you share. While the launcher is open, your friends see you online.",
     "consentPrivate": "Only you and the person you talk to can read your messages; only your friends can see your mod lists.",
     "consentDelete": "\"Turn off friends and delete my data\" removes everything from the server at any time.",
     "enable": "Agree and turn on",
@@ -722,6 +722,7 @@
       "refresh": "Update",
       "stop": "Stop sharing",
       "working": "Uploading…"
-    }
+    },
+    "online": "Online"
   }
 }

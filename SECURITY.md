@@ -44,7 +44,9 @@ webview'da çalışabilecek kötü niyetli içerik (XSS).
   güvenlik (RLS) kurallarından gelir: mesajları yalnızca iki taraf, paylaşılan listeleri ve
   dosyaları yalnızca sahibi ile kabul edilmiş arkadaşları okuyabilir; engellenen kişi yazamaz.
 - Sunucuda saklananlar: arkadaş kodu, görünen ad, profil fotoğrafı (seçili hesabın fotoğrafı
-  ya da skin kafası, 128 px PNG; yalnızca arkadaşlar okuyabilir), arkadaşlıklar, mesajlar, paylaşılan mod
+  ya da skin kafası, 128 px PNG; yalnızca arkadaşlar okuyabilir), son görülme zamanı (launcher
+  açıkken dakikada bir güncellenir, kapanınca silinir; arkadaşlar yalnızca "çevrimiçi" bilgisini
+  görür), arkadaşlıklar, mesajlar, paylaşılan mod
   listeleri ve Modrinth'te bulunmayan mod dosyaları (≤50 MB). "Kapat ve verilerimi sil"
   bunların hepsini siler.
 - Arkadaştan kurulan her dosya SHA-1 ile doğrulanır (paylaşılan listedeki özetle aynı değilse

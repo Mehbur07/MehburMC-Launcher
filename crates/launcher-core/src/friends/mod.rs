@@ -3,6 +3,7 @@
 //! this client only holds an anonymous identity in `launcher/friends.json`.
 
 pub mod avatar;
+pub mod presence;
 pub mod share;
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -84,6 +85,8 @@ pub struct Friend {
     pub unread: i64,
     /// Profile photo as a `data:` URI (accepted friends only).
     pub avatar: Option<String>,
+    /// Launcher open right now (accepted friends only).
+    pub online: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -106,6 +109,8 @@ pub struct FriendsStatus {
     /// The user turned friends on (an identity exists).
     pub enabled: bool,
     pub profile: Option<Profile>,
+    /// Friends see us online (the last heartbeat succeeded).
+    pub online: bool,
 }
 
 /// Row returned by `my_friends()` (snake_case from SQL).
@@ -120,6 +125,8 @@ struct FriendRow {
     unread: i64,
     #[serde(default)]
     avatar_sha1: Option<String>,
+    #[serde(default)]
+    online: bool,
 }
 
 #[derive(Deserialize)]
@@ -204,6 +211,7 @@ fn server_error(status: u16, body: &[u8]) -> CoreError {
 pub struct FriendsClient {
     ctx: Ctx,
     session: Mutex<Option<Session>>,
+    online: std::sync::atomic::AtomicBool,
 }
 
 impl FriendsClient {
@@ -214,6 +222,7 @@ impl FriendsClient {
         Self {
             ctx,
             session: Mutex::new(session),
+            online: std::sync::atomic::AtomicBool::new(false),
         }
     }
 
@@ -400,7 +409,12 @@ impl FriendsClient {
             self.save(&s)?;
             *self.session.lock().await = Some(s);
         }
-        self.sync_profile(display_name, avatar).await
+        let profile = self.sync_profile(display_name, avatar).await?;
+        // Online right away instead of after the first timer tick.
+        if let Err(e) = self.heartbeat().await {
+            tracing::debug!(error = %e.detail(), "first heartbeat failed");
+        }
+        Ok(profile)
     }
 
     /// Creates or renames the caller's profile and updates its photo. A
@@ -424,11 +438,14 @@ impl FriendsClient {
             return Ok(FriendsStatus {
                 enabled: false,
                 profile: None,
+                online: false,
             });
         }
+        let profile = self.sync_profile(display_name, avatar).await?;
         Ok(FriendsStatus {
             enabled: true,
-            profile: Some(self.sync_profile(display_name, avatar).await?),
+            profile: Some(profile),
+            online: self.is_online(),
         })
     }
 
@@ -451,6 +468,8 @@ impl FriendsClient {
             }
         }
         *self.session.lock().await = None;
+        self.online
+            .store(false, std::sync::atomic::Ordering::Relaxed);
         match std::fs::remove_file(self.ctx.paths.friends_file()) {
             Ok(()) => Ok(()),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
@@ -475,6 +494,7 @@ impl FriendsClient {
                 request_id: r.request_id,
                 unread: r.unread,
                 avatar,
+                online: r.online && r.status == FriendStatus::Accepted,
             });
         }
         Ok(out)

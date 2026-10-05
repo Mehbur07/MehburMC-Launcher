@@ -7,6 +7,7 @@ import { play, stop } from "../../lib/actions";
 import { formatBytes, formatDate, formatDuration } from "../../lib/format";
 import { ipc } from "../../lib/ipc";
 import { selectedAccount, useAccounts } from "../../stores/accounts";
+import { useFriends } from "../../stores/friends";
 import { useApp } from "../../stores/app";
 import { selectedInstance, useInstances } from "../../stores/instances";
 import { accountSkin, useSkins } from "../../stores/skins";
@@ -25,6 +26,7 @@ export function HomePage() {
   const skin = useSkins((s) => accountSkin(s, account?.id));
   const photo = useAccounts((s) => (account ? s.avatars[account.id] : undefined));
   const defaultSkin = useAccounts((s) => (account ? s.defaultSkins[account.id] : undefined));
+  const online = useFriends((s) => s.enabled === true && s.online);
   const defaultMem = useApp((s) => s.settings?.defaultMemoryMb ?? 4096);
   const setView = useApp((s) => s.setView);
   const setWizard = useApp((s) => s.setWizard);
@@ -106,6 +108,8 @@ export function HomePage() {
                 skin={skin?.dataUri ?? defaultSkin ?? null}
                 unit={2}
                 className="h-4 w-4 rounded-sm"
+                online={account !== null && online}
+                dot="sm"
               />
               {account ? account.name : t("home.noAccount")}
             </button>

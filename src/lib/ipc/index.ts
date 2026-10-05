@@ -119,6 +119,8 @@ export const ipc = {
 
   friendsStatus: () => invoke<FriendsStatus>("friends_status"),
   friendsEnable: () => invoke<Profile>("friends_enable"),
+  /** Friends see us online (last heartbeat succeeded); no network call. */
+  friendsOnline: () => invoke<boolean>("friends_online"),
   friendsDisable: () => invoke<void>("friends_disable"),
   friendsList: () => invoke<Friend[]>("friends_list"),
   friendRequest: (code: string) => invoke<string>("friend_request", { code }),

@@ -5,4 +5,8 @@ export type FriendsStatus = {
 /**
  * The user turned friends on (an identity exists).
  */
-enabled: boolean, profile: Profile | null, };
+enabled: boolean, profile: Profile | null, 
+/**
+ * Friends see us online (the last heartbeat succeeded).
+ */
+online: boolean, };

@@ -16,6 +16,7 @@
   --color-warn: var(--mc-warn);
   --color-danger: var(--mc-danger);
   --color-success: var(--mc-success);
+  --color-online: var(--mc-online);
 
   --font-sans: "Inter Variable", "Segoe UI", system-ui, sans-serif;
   /* Rajdhani ships latin-ext (ğ, ş, İ); Orbitron is latin-only → brand text only. */
@@ -139,6 +140,29 @@
     box-shadow:
       0 0 0 1px rgb(var(--mc-accent-rgb) / 0.9),
       0 0 34px rgb(var(--mc-accent-rgb) / 0.55);
+  }
+}
+
+/* Neon lime "online" dot on profile photos (bottom-right). */
+@utility online-dot {
+  background: var(--mc-online);
+  box-shadow:
+    0 0 0 2px var(--mc-surface-1),
+    0 0 8px rgb(var(--mc-online-rgb) / 0.8);
+  animation: online-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes online-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px var(--mc-surface-1),
+      0 0 6px rgb(var(--mc-online-rgb) / 0.6);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px var(--mc-surface-1),
+      0 0 12px rgb(var(--mc-online-rgb) / 0.95);
   }
 }
 

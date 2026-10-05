@@ -189,6 +189,16 @@ async fn scenario(
     a.sync_profile("LiveA", Some(&p1)).await.unwrap();
     println!("avatar ok");
 
+    // Online status: enable() already sent a heartbeat for A.
+    assert!(a.is_online());
+    assert!(b.friends().await.unwrap()[0].online);
+    a.go_offline().await.unwrap();
+    assert!(!a.is_online());
+    assert!(!b.friends().await.unwrap()[0].online);
+    a.heartbeat().await.unwrap();
+    assert!(b.friends().await.unwrap()[0].online);
+    println!("presence ok");
+
     // C is a stranger: cannot message A, cannot see A/B's chat.
     assert!(c.send_message(&pa.id, "spam").await.is_err());
     assert!(c.messages(&pa.id, None).await.unwrap().is_empty());

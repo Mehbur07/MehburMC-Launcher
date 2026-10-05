@@ -62,6 +62,7 @@
     "allow-content-icon",
     "allow-open-external",
     "allow-friends-status",
+    "allow-friends-online",
     "allow-friends-enable",
     "allow-friends-disable",
     "allow-friends-list",

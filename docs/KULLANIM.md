@@ -192,6 +192,10 @@ açışta neyin saklandığını anlatan bir onay ekranı çıkar.
   istediğin modları işaretle, hedef profilini seç → **Seçilenleri kur**. "Modrinth ✓" olanlar
   Modrinth'ten indirilir; "Doğrulanmamış" olanlar arkadaşının yüklediği dosyalardır, yalnızca
   güvendiğin kişilerden kur. Zaten kurulu olan dosyalar atlanır.
+- **Çevrimiçi:** launcher açıkken arkadaşların seni çevrimiçi görür; çevrimiçi olanların
+  fotoğrafının sağ altında **neon lime bir daire** yanar ve listenin en üstünde dururlar. Senin
+  aktif hesabının fotoğrafında da daire, arkadaşlarına çevrimiçi göründüğünü gösterir.
+  Launcher'ı kapatınca (ya da internet gidince en geç ~1,5 dakikada) çevrimdışı görünürsün.
 - **Sil / engelle:** sohbetin üstündeki simgelerle. Engellenen kişi sana mesaj ve istek
   gönderemez; engeli listedeki **Engeli kaldır** ile açabilirsin.
 - **Kapatma:** **Arkadaşları kapat ve verilerimi sil** hesabını, mesajlarını, arkadaşlıklarını

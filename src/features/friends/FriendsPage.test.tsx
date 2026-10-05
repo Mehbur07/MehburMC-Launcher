@@ -5,6 +5,7 @@ const ipcMock = vi.hoisted(() => ({
   friendsStatus: vi.fn(),
   friendsEnable: vi.fn(),
   friendsList: vi.fn(),
+  friendsOnline: vi.fn(),
   friendRequest: vi.fn(),
   friendRespond: vi.fn(),
   chatMessages: vi.fn(),
@@ -34,6 +35,7 @@ const ali: Friend = {
   requestId: 1,
   unread: 2,
   avatar: null,
+  online: false,
 };
 
 describe("FriendsPage", () => {
@@ -50,6 +52,7 @@ describe("FriendsPage", () => {
     });
     useInstances.setState({ instances: [] });
     ipcMock.friendsList.mockResolvedValue([]);
+    ipcMock.friendsOnline.mockResolvedValue(false);
     ipcMock.myShares.mockResolvedValue([]);
     ipcMock.chatMarkRead.mockResolvedValue(undefined);
   });
@@ -122,5 +125,21 @@ describe("FriendsPage", () => {
     await waitFor(() => expect(ipcMock.chatSend).toHaveBeenCalledWith("f1", "naber"));
     expect(await screen.findByText("naber")).toBeInTheDocument();
     expect(box).toHaveValue("");
+  });
+
+  it("lists online friends first with the online dot", async () => {
+    ipcMock.friendsStatus.mockResolvedValue({ enabled: true, profile, online: true });
+    ipcMock.friendsList.mockResolvedValue([
+      ali,
+      { ...ali, id: "f2", displayName: "Zeynep", friendCode: "MEHBUR-ZZZZ", online: true },
+    ]);
+    render(<FriendsPage />);
+    await screen.findByRole("button", { name: /Zeynep/ });
+    const names = screen
+      .getAllByRole("button")
+      .map((b) => b.textContent ?? "")
+      .filter((t) => t.includes("Ali") || t.includes("Zeynep"));
+    expect(names[0]).toContain("Zeynep");
+    expect(screen.getAllByRole("img", { name: "Online" })).toHaveLength(1);
   });
 });

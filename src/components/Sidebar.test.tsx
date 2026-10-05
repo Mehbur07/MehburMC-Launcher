@@ -59,6 +59,7 @@ describe("Sidebar", () => {
           requestId: 1,
           unread: 3,
           avatar: null,
+          online: false,
         },
       ],
     });

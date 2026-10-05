@@ -5,6 +5,7 @@ const ipcMock = vi.hoisted(() => ({
   friendsEnable: vi.fn(),
   friendsDisable: vi.fn(),
   friendsList: vi.fn(),
+  friendsOnline: vi.fn(),
   friendRequest: vi.fn(),
   friendRemove: vi.fn(),
   chatMessages: vi.fn(),
@@ -30,6 +31,7 @@ const friend = (over: Partial<Friend> = {}): Friend => ({
   requestId: 1,
   unread: 0,
   avatar: null,
+  online: false,
   ...over,
 });
 
@@ -57,6 +59,7 @@ describe("friends store", () => {
     useApp.setState({ notice: null });
     vi.clearAllMocks();
     ipcMock.friendsList.mockResolvedValue([]);
+    ipcMock.friendsOnline.mockResolvedValue(false);
     ipcMock.chatMarkRead.mockResolvedValue(undefined);
   });
 
@@ -161,5 +164,15 @@ describe("friends store", () => {
     expect(s.profile).toBeNull();
     expect(s.friends).toEqual([]);
     expect(s.chatWith).toBeNull();
+  });
+
+  it("tracks whether friends see us online", async () => {
+    ipcMock.friendsStatus.mockResolvedValue({ enabled: true, profile, online: true });
+    ipcMock.friendsOnline.mockResolvedValue(true);
+    await useFriends.getState().status();
+    expect(useFriends.getState().online).toBe(true);
+    ipcMock.friendsOnline.mockResolvedValue(false);
+    await useFriends.getState().refresh();
+    expect(useFriends.getState().online).toBe(false);
   });
 });

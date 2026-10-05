@@ -3,6 +3,14 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.5.0] — 2026-10-06
+
+### Eklendi
+- **Çevrimiçi göstergesi:** launcher açıkken arkadaşların seni çevrimiçi görür. Çevrimiçi
+  olanların profil fotoğrafının sağ altında neon lime bir daire yanar ve listenin en üstüne
+  çıkarlar. Kendi aktif hesabının fotoğrafındaki daire, arkadaşlarına çevrimiçi göründüğünü
+  gösterir; launcher'ı kapatınca çevrimdışı olursun.
+
 ## [0.4.0] — 2026-10-05
 
 ### Eklendi

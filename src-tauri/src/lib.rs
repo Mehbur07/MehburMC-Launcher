@@ -52,6 +52,9 @@ pub fn run() {
             if let Some(rx) = app_state.events_rx.lock().expect("events lock").take() {
                 tauri::async_runtime::spawn(bridge::forward(app.handle().clone(), rx));
             }
+            if let Some(launcher) = app_state.launcher.clone() {
+                tauri::async_runtime::spawn(friends::heartbeat_loop(launcher));
+            }
             app.manage(app_state);
             Ok(())
         })
@@ -104,6 +107,7 @@ pub fn run() {
             content::content_icon,
             content::open_external,
             friends::friends_status,
+            friends::friends_online,
             friends::friends_enable,
             friends::friends_disable,
             friends::friends_list,
@@ -137,6 +141,11 @@ pub fn run() {
             update::install_app_update,
             dialogs::pick_path,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running MehburMC Launcher");
+        .build(tauri::generate_context!())
+        .expect("error while building MehburMC Launcher")
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                friends::go_offline_on_exit(app);
+            }
+        });
 }

@@ -50,6 +50,7 @@ const COMMANDS: &[&str] = &[
     "content_icon",
     "open_external",
     "friends_status",
+    "friends_online",
     "friends_enable",
     "friends_disable",
     "friends_list",

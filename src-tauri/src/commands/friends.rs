@@ -2,7 +2,11 @@
 
 use launcher_core::friends::share::{FriendInstallResult, SharedList};
 use launcher_core::friends::{ChatMessage, Friend, FriendsStatus, Profile};
-use tauri::State;
+use std::sync::Arc;
+
+use launcher_core::friends::presence;
+use launcher_core::session::Launcher;
+use tauri::{Manager, State};
 
 use super::CmdResult;
 use crate::state::AppState;
@@ -13,6 +17,37 @@ pub async fn friends_status(state: State<'_, AppState>) -> CmdResult<FriendsStat
     let launcher = state.launcher()?.clone();
     let (name, avatar) = launcher.friend_identity();
     Ok(launcher.friends.status(&name, avatar.as_deref()).await?)
+}
+
+/// Whether friends see us online right now (cheap, no network).
+#[tauri::command]
+pub fn friends_online(state: State<'_, AppState>) -> CmdResult<bool> {
+    Ok(state.launcher()?.friends.is_online())
+}
+
+/// Keeps us online for friends while the launcher runs (K66).
+pub async fn heartbeat_loop(launcher: Arc<Launcher>) {
+    let period = std::time::Duration::from_secs(presence::HEARTBEAT_SECS);
+    loop {
+        if let Err(e) = launcher.friends.heartbeat().await {
+            tracing::debug!(error = %e.detail(), "heartbeat failed");
+        }
+        tokio::time::sleep(period).await;
+    }
+}
+
+/// Last chance to tell friends we left; bounded so closing never hangs.
+pub fn go_offline_on_exit(app: &tauri::AppHandle) {
+    let Some(launcher) = app.try_state::<AppState>().and_then(|s| s.launcher.clone()) else {
+        return;
+    };
+    tauri::async_runtime::block_on(async move {
+        let _ = tokio::time::timeout(
+            std::time::Duration::from_secs(2),
+            launcher.friends.go_offline(),
+        )
+        .await;
+    });
 }
 
 /// Creates the anonymous identity after the user agreed to the notice.

@@ -8,6 +8,7 @@ import type { Account } from "../../lib/ipc/bindings/Account";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
 import { useAccounts } from "../../stores/accounts";
 import { useApp } from "../../stores/app";
+import { useFriends } from "../../stores/friends";
 import { accountSkin, useSkins } from "../../stores/skins";
 
 const NAME_RE = /^[A-Za-z0-9_]{3,16}$/;
@@ -25,6 +26,7 @@ export function AccountsPage() {
   const resetPhoto = useAccounts((s) => s.resetPhoto);
   const defaultSkins = useAccounts((s) => s.defaultSkins);
   const load = useAccounts((s) => s.load);
+  const online = useFriends((s) => s.enabled === true && s.online);
   const [name, setName] = useState("");
   const [error, setError] = useState<ErrorPayload | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Account | null>(null);
@@ -114,6 +116,7 @@ export function AccountsPage() {
                   skin={accountSkin(skins, a.id)?.dataUri ?? defaultSkins[a.id] ?? null}
                   unit={7}
                   className="h-14 w-14 rounded-md bg-surface-3"
+                  online={active && online}
                 />
                 <button
                   type="button"
