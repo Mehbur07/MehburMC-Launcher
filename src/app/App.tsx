@@ -10,6 +10,8 @@ import { TitleBar } from "../components/TitleBar";
 import { HomePage } from "../features/home/HomePage";
 import { applyLanguage } from "../i18n";
 import { useAccounts } from "../stores/accounts";
+import { canUse, useAuth } from "../stores/auth";
+import { AuthScreen, BanScreen } from "../features/auth/AuthScreen";
 import { useApp, type View } from "../stores/app";
 import { useInstances } from "../stores/instances";
 import { useFriends } from "../stores/friends";
@@ -38,6 +40,7 @@ const FriendsPage = named(() => import("../features/friends/FriendsPage"), "Frie
 const ModTogglePage = named(() => import("../features/modtoggle/ModTogglePage"), "ModTogglePage");
 const ServersPage = named(() => import("../features/servers/ServersPage"), "ServersPage");
 const WhatsNewPage = named(() => import("../features/whatsnew/WhatsNewPage"), "WhatsNewPage");
+const AdminPage = named(() => import("../features/admin/AdminPage"), "AdminPage");
 
 function Page({ view }: { view: View }) {
   switch (view) {
@@ -67,6 +70,8 @@ function Page({ view }: { view: View }) {
       return <ServersPage />;
     case "whatsNew":
       return <WhatsNewPage />;
+    case "admin":
+      return <AdminPage />;
   }
 }
 
@@ -103,15 +108,27 @@ export function App() {
     };
   }, [status, loadInstances, loadAccounts, loadSkins, checkUpdate]);
 
+  // MehburMC account (K73): saved state first (works offline), then the
+  // server's view of rank and ban; re-checked every 5 minutes.
+  const auth = useAuth((s) => s.status);
+  const loadAuth = useAuth((s) => s.load);
+  const usable = canUse(auth);
+  useEffect(() => {
+    if (status !== "ready") return;
+    void loadAuth(false).then(() => loadAuth(true));
+    const id = window.setInterval(() => void loadAuth(true), 5 * 60_000);
+    return () => window.clearInterval(id);
+  }, [status, loadAuth]);
+
   // Friend list (unread badge) every 20 s once friends are on.
   const friendsStatus = useFriends((s) => s.status);
   const refreshFriends = useFriends((s) => s.refresh);
   useEffect(() => {
-    if (status !== "ready") return;
+    if (status !== "ready" || !usable) return;
     void friendsStatus();
     const id = window.setInterval(() => void refreshFriends(), 20_000);
     return () => window.clearInterval(id);
-  }, [status, friendsStatus, refreshFriends]);
+  }, [status, usable, friendsStatus, refreshFriends]);
 
   // Apply theme + language whenever settings change.
   useEffect(() => {
@@ -139,7 +156,22 @@ export function App() {
           </div>
         )}
 
-        {status === "ready" && settings && (
+        {status === "ready" && settings && !usable && (
+          <div className="relative flex min-h-0 flex-1">
+            {settings.backgroundEffects && <NeonBackground accent={settings.accent} />}
+            {auth === null ? (
+              <div className="grid flex-1 place-items-center">
+                <Logo className="h-20 w-20 animate-pulse rounded-xl" />
+              </div>
+            ) : auth.signedIn ? (
+              <BanScreen status={auth} />
+            ) : (
+              <AuthScreen status={auth} />
+            )}
+          </div>
+        )}
+
+        {status === "ready" && settings && usable && (
           <div className="relative flex min-h-0 flex-1">
             {settings.backgroundEffects && <NeonBackground accent={settings.accent} />}
             <Sidebar />

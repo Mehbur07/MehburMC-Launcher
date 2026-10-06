@@ -1,7 +1,8 @@
 # MehburMC Launcher — Kullanım Kılavuzu
 
 MehburMC Launcher, Minecraft: Java Edition için hafif, reklamsız ve telemetrisiz bir launcher'dır.
-Yalnızca **offline hesaplarla** çalışır.
+Minecraft'a **offline hesaplarla** girer; launcher'ın kendisi için ücretsiz bir
+**MehburMC hesabı** (e-posta + şifre) gerekir.
 
 ## İçindekiler
 
@@ -16,6 +17,7 @@ Yalnızca **offline hesaplarla** çalışır.
 9. [Veri klasörü, taşıma ve portable kullanım](#9-veri-klasörü-taşıma-ve-portable-kullanım)
 10. [Güncellemeler](#10-güncellemeler)
 11. [Arkadaşlar](#11-arkadaşlar)
+12. [MehburMC hesabı](#12-mehburmc-hesabı)
 
 ---
 
@@ -224,5 +226,24 @@ açışta neyin saklandığını anlatan bir onay ekranı çıkar.
 Saklanan veriler: arkadaş kodun, görünen adın (seçili hesabının adı), mesajların ve paylaştığın
 mod listeleri/dosyaları. Bunları yalnızca sen ve arkadaşların görebilir. Arkadaşlar internet
 gerektirir; bağlantı yoksa sayfada "çevrimdışı" yazar, launcher'ın geri kalanı etkilenmez.
+
+## 12. MehburMC hesabı
+
+Launcher açılınca MehburMC hesabınla giriş yapman istenir.
+
+- **Hesap oluştur:** e-posta ve şifre (en az 8 karakter) yaz. E-postana gelen **6 haneli kodu**
+  launcher'a gir. Kod gelmezse spam klasörüne bak veya **Kodu tekrar gönder**.
+- Launcher'ın eski bir sürümünde arkadaşları ya da hesap adlarını kullandıysan, hesap oluşturmak
+  bu bilgisayardaki kimliğini hesaba **dönüştürür**: arkadaşların, ayrılmış adların ve
+  paylaşımların korunur. (Bunun yerine başka bir hesaba giriş yaparsan o eski kimlik silinir.)
+- **Şifremi unuttum:** e-postanı yaz, gelen kodu ve yeni şifreni gir.
+- Bir kez giriş yaptıktan sonra internet yokken de oynayabilirsin.
+- **Ayarlar → MehburMC hesabı → Çıkış yap** bu bilgisayardan çıkış yapar; profillerin, modların ve
+  dünyaların silinmez.
+- Kurallara uymayan hesaplar yöneticiler tarafından süreli ya da kalıcı **yasaklanabilir**;
+  yasaklıyken launcher kullanılamaz, ekranda bitiş tarihi ve sebep yazar.
+
+**Yöneticiler** kenar çubuğunda **Admin** sayfasını görür: Kütüphane'ye yüklenen modların onayı
+(mod önce yöneticinin launcher'ında yeniden taranır), bildirilen içerik, banlar ve yönetici atama.
 
 Sorun mu yaşıyorsun? → [Sorun giderme](SORUN_GIDERME.md)

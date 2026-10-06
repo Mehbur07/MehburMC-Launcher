@@ -21,7 +21,8 @@
     "downloads": "İndirmeler",
     "console": "Konsol",
     "whatsNew": "Yenilikler",
-    "settings": "Ayarlar"
+    "settings": "Ayarlar",
+    "admin": "Admin"
   },
   "home": {
     "play": "OYNA",
@@ -85,7 +86,13 @@
     "moveConfirm": "Tüm oyun dosyaları, profiller ve önbellek bu klasöre kopyalanacak, doğrulanacak ve eski konumdan silinecek. Klasör boş olmalı. Ayarlar ve hesaplar yerinde kalır.",
     "moving": "Taşınıyor… Bu sırada launcher'ı kapatma.",
     "moved": "Taşıma tamamlandı. Yeni konumu kullanmak için launcher'ı yeniden başlat.",
-    "movedLeftovers": "Taşıma tamamlandı; eski konumdaki {{n}} dosya (kullanımda olduğu için) silinemedi, sonra elle silebilirsin. Launcher'ı yeniden başlat."
+    "movedLeftovers": "Taşıma tamamlandı; eski konumdaki {{n}} dosya (kullanımda olduğu için) silinemedi, sonra elle silebilirsin. Launcher'ı yeniden başlat.",
+    "account": {
+      "title": "MehburMC hesabı",
+      "hint": "Bu bilgisayarda bu hesapla giriş yaptın.",
+      "signOutTitle": "Çıkış yapılsın mı?",
+      "signOutMessage": "Launcher'ı kullanmak için tekrar giriş yapman gerekecek. Profillerin, modların ve dünyaların bu bilgisayarda kalır."
+    }
   },
   "startup": {
     "title": "Launcher başlatılamadı",
@@ -151,7 +158,19 @@
       "unsafe": "Güvenlik: arşivde tehlikeli bir girdi var ({{entry}}): {{path}}"
     },
     "auth": {
-      "invalidName": "Geçersiz oyuncu adı \"{{name}}\": 3–16 karakter, yalnızca harf, rakam ve _."
+      "invalidName": "Geçersiz oyuncu adı \"{{name}}\": 3–16 karakter, yalnızca harf, rakam ve _.",
+      "required": "Önce MehburMC hesabınla giriş yap.",
+      "banned": "Hesabın yasaklandı.",
+      "invalidCredentials": "E-posta veya şifre yanlış (ya da e-posta henüz doğrulanmadı).",
+      "emailTaken": "Bu e-posta zaten kayıtlı. Giriş yapmayı dene.",
+      "codeInvalid": "Kod yanlış veya süresi doldu. Yeni kod iste.",
+      "weakPassword": "Şifre en az 8 karakter olmalı (ve çok kolay tahmin edilmemeli).",
+      "emailInvalid": "Geçerli bir e-posta adresi yaz.",
+      "rateLimited": "Çok fazla deneme yapıldı. Birkaç dakika sonra tekrar dene.",
+      "emailNotConfirmed": "E-postan henüz doğrulanmadı. Hesap oluştur ekranından kodu tekrar iste.",
+      "signupDisabled": "Şu an yeni hesap açılamıyor. Daha sonra tekrar dene.",
+      "samePassword": "Yeni şifre eskisiyle aynı olamaz.",
+      "sessionExpired": "Oturumun sona erdi; tekrar giriş yap."
     },
     "launch": {
       "commandTooLong": "Komut satırı Java {{major}} için çok uzun.",
@@ -223,6 +242,13 @@
       "changed": "Dosya kontrol edildikten sonra değişti; yeniden seç.",
       "conflict": "Profilde aynı adlı başka bir dosya var.",
       "wrongLoader": "Bu mod seçili profilin mod loader'ıyla uyumlu değil."
+    },
+    "admin": {
+      "forbidden": "Bu işlem için yetkin yok.",
+      "self": "Kendini banlayamazsın.",
+      "targetAdmin": "Adminler banlanamaz ve kurucunun rütbesi değiştirilemez.",
+      "userNotFound": "Kullanıcı bulunamadı (yalnızca e-postalı hesaplar).",
+      "badUntil": "Geçersiz ban süresi."
     }
   },
   "instances": {
@@ -953,6 +979,128 @@
       "obfuscated": "Kod karartılmış (obfuscated) görünüyor",
       "badClass": "Okunamayan sınıf dosyası",
       "deepNesting": "Çok derin iç içe jar"
+    }
+  },
+  "auth": {
+    "email": "E-posta",
+    "password": "Şifre",
+    "passwordAgain": "Şifre (tekrar)",
+    "newPassword": "Yeni şifre",
+    "passwordRule": "En az {{min}} karakter.",
+    "mismatch": "Şifreler aynı değil.",
+    "signOut": "Çıkış yap",
+    "createAccount": "Hesap oluştur",
+    "haveAccount": "Zaten hesabım var",
+    "toSignIn": "Girişe dön",
+    "signIn": {
+      "title": "Giriş yap",
+      "hint": "MehburMC Launcher'ı kullanmak için MehburMC hesabınla giriş yap.",
+      "submit": "Giriş yap",
+      "anonymousWarning": "Bu bilgisayarda hesaba bağlanmamış eski bir kimlik var. Başka bir hesaba giriş yaparsan o kimliğin arkadaşları ve ayrılmış adları silinir. Korumak için \"Hesap oluştur\" ile bu kimliği hesaba dönüştür."
+    },
+    "signUp": {
+      "title": "Hesap oluştur",
+      "hint": "E-postana 6 haneli bir doğrulama kodu göndereceğiz.",
+      "upgrade": "Bu bilgisayardaki arkadaşların, ayrılmış hesap adların ve paylaşımların yeni hesabına taşınır. E-postana 6 haneli bir doğrulama kodu göndereceğiz.",
+      "submit": "Hesap oluştur"
+    },
+    "code": {
+      "title": "E-postanı doğrula",
+      "sent": "{{email}} adresine 6 haneli bir kod gönderdik.",
+      "label": "Doğrulama kodu",
+      "submit": "Doğrula",
+      "resend": "Kodu tekrar gönder",
+      "resent": "Yeni kod gönderildi.",
+      "spam": "Kod gelmediyse spam klasörüne bak. Bu e-posta zaten kayıtlıysa kod gelmez; giriş yapmayı dene."
+    },
+    "forgot": {
+      "link": "Şifremi unuttum",
+      "title": "Şifre sıfırlama",
+      "hint": "Hesabının e-postasını yaz; sıfırlama kodu göndereceğiz.",
+      "submit": "Kod gönder"
+    },
+    "ban": {
+      "title": "Hesabın yasaklandı",
+      "until": "Yasak bitişi: {{date}}",
+      "permanent": "Bu yasak kalıcı.",
+      "reason": "Sebep: {{reason}}",
+      "recheck": "Tekrar kontrol et"
+    }
+  },
+  "admin": {
+    "rank": {
+      "1": "Kurucu",
+      "2": "Admin"
+    },
+    "note": "Not (yükleyen görür)",
+    "noteHint": "Not isteğe bağlıdır; yükleyen kişi modunun neden kaldırıldığını görür.",
+    "tabs": {
+      "queue": "Onay kuyruğu",
+      "published": "Yayındaki modlar",
+      "reports": "Bildirimler",
+      "bans": "Banlar",
+      "admins": "Yöneticiler"
+    },
+    "queue": {
+      "hint": "Onaylamadan önce \"İndir ve tara\" ile mod senin launcher'ında yeniden taranır; yalnızca kendi taramanın engellemediği modlar onaylanabilir.",
+      "empty": "Onay bekleyen mod yok",
+      "scan": "İndir ve tara",
+      "scanFirst": "Önce indirip tara",
+      "approve": "Onayla",
+      "reject": "Reddet",
+      "rejectTitle": "\"{{name}}\" reddedilsin mi?",
+      "myScan": "Senin taraman",
+      "uploaderScan": "Yükleyenin taraması: {{count}} bulgu"
+    },
+    "published": {
+      "hint": "Kütüphanede herkese açık modlar. Kaldırılan mod yalnızca yükleyene \"Reddedildi\" olarak görünür.",
+      "empty": "Yayında mod yok",
+      "remove": "Kaldır",
+      "removeTitle": "\"{{name}}\" kütüphaneden kaldırılsın mı?"
+    },
+    "reports": {
+      "hint": "Bildirilen modlar, skinler ve pelerinler (en çok bildirilen üstte).",
+      "hintRank2": "Bildirilen modlar (en çok bildirilen üstte).",
+      "empty": "Açık bildirim yok",
+      "kind": {
+        "mod": "Mod",
+        "texture": "Skin/pelerin"
+      },
+      "hide": "Gizle",
+      "dismiss": "Bildirimleri kapat",
+      "banOwner": "Paylaşanı banla"
+    },
+    "bans": {
+      "title": "{{name}} banlansın mı?",
+      "new": "Kullanıcı banla",
+      "list": "Ban listesi",
+      "empty": "Ban yok",
+      "submit": "Banla",
+      "unban": "Banı kaldır",
+      "duration": "Süre",
+      "durations": {
+        "day": "1 gün",
+        "week": "7 gün",
+        "month": "30 gün",
+        "permanent": "Kalıcı"
+      },
+      "reason": "Sebep (kullanıcı görür)",
+      "hint": "Banlanan hesap launcher'a giriş yapamaz ve sunucu özelliklerini kullanamaz. Adminler banlanamaz.",
+      "active": "Banlı",
+      "expired": "Süresi doldu",
+      "until": "Bitiş: {{date}}",
+      "by": "banlayan {{name}}"
+    },
+    "users": {
+      "search": "Hesap adı veya arkadaş kodu",
+      "find": "Ara",
+      "none": "Kullanıcı bulunamadı."
+    },
+    "admins": {
+      "hint": "Adminler (rütbe 2) kullanıcıları banlayabilir ve yayındaki modları kaldırabilir. Onay kuyruğu ve yönetici atama yalnızca kurucuya aittir.",
+      "add": "Admin ekle",
+      "make": "Admin yap",
+      "remove": "Adminlikten çıkar"
     }
   }
 }

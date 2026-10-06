@@ -2,6 +2,8 @@
 //! project (ARCHITECTURE K64). Server rules live in `supabase/schema.sql`;
 //! this client only holds an anonymous identity in `launcher/friends.json`.
 
+pub mod account;
+pub mod admin;
 pub mod avatar;
 pub mod library;
 pub mod names;
@@ -56,6 +58,15 @@ struct Session {
     /// friends off. Sessions saved before that were always friends-on.
     #[serde(default = "yes")]
     friends_enabled: bool,
+    /// Email of the MehburMC account (K73); `None` for anonymous identities.
+    #[serde(default)]
+    email: Option<String>,
+    /// Anonymous identity of launchers before K73 (upgraded on sign-up).
+    #[serde(default = "yes")]
+    anonymous: bool,
+    /// Last rank/ban the server reported, for offline starts.
+    #[serde(default)]
+    account: account::AccountCache,
 }
 
 fn yes() -> bool {
@@ -194,8 +205,13 @@ fn server_error(status: u16, body: &[u8]) -> CoreError {
         .chain(names::NAME_ERRORS)
         .chain(textures::TEXTURE_ERRORS)
         .chain(library::LIBRARY_ERRORS)
+        .chain(account::AUTH_ERRORS)
+        .chain(admin::ADMIN_ERRORS)
         .find(|c| **c == message)
     {
+        return CoreError::Friends(code);
+    }
+    if let Some(code) = account::auth_error(v["error_code"].as_str().unwrap_or(""), &message) {
         return CoreError::Friends(code);
     }
     let pg_code = v["code"].as_str().unwrap_or("");
@@ -229,6 +245,9 @@ pub struct FriendsClient {
     ctx: Ctx,
     session: Mutex<Option<Session>>,
     online: std::sync::atomic::AtomicBool,
+    /// Live tests may still create anonymous identities (K73); the
+    /// launcher never does.
+    allow_anonymous: std::sync::atomic::AtomicBool,
 }
 
 impl FriendsClient {
@@ -240,6 +259,7 @@ impl FriendsClient {
             ctx,
             session: Mutex::new(session),
             online: std::sync::atomic::AtomicBool::new(false),
+            allow_anonymous: std::sync::atomic::AtomicBool::new(false),
         }
     }
 
@@ -265,10 +285,25 @@ impl FriendsClient {
         self.session.lock().await.is_some()
     }
 
-    /// Creates the anonymous identity once (friends stay as they are).
+    /// Lets [`Self::ensure_identity`] create an anonymous identity. Only for
+    /// tests: the server refuses them once anonymous sign-ins are off, and
+    /// the launcher signs in with an email account instead (K73).
+    pub fn allow_anonymous(&self) {
+        self.allow_anonymous
+            .store(true, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    /// The signed-in identity; without one `auth.required` (the launcher
+    /// shows the sign-in screen).
     pub(crate) async fn ensure_identity(&self) -> Result<()> {
         if self.has_identity().await {
             return Ok(());
+        }
+        if !self
+            .allow_anonymous
+            .load(std::sync::atomic::Ordering::Relaxed)
+        {
+            return Err(CoreError::Friends("auth.required"));
         }
         let s = self.auth_call("/auth/v1/signup", json!({})).await?;
         self.save(&s)?;
@@ -323,6 +358,12 @@ impl FriendsClient {
             field("refresh_token"),
         ) {
             (Some(id), Some(access), Some(refresh)) => Ok(Session {
+                email: v["user"]["email"]
+                    .as_str()
+                    .filter(|e| !e.is_empty())
+                    .map(str::to_owned),
+                anonymous: v["user"]["is_anonymous"].as_bool().unwrap_or(false),
+                account: account::AccountCache::default(),
                 user_id: id.to_owned(),
                 access_token: access,
                 refresh_token: refresh,
@@ -355,6 +396,8 @@ impl FriendsClient {
             .await?;
         let refreshed = Session {
             friends_enabled: s.friends_enabled,
+            account: s.account.clone(),
+            email: refreshed.email.or_else(|| s.email.clone()),
             ..refreshed
         };
         self.save(&refreshed)?;
@@ -730,6 +773,9 @@ pub(crate) mod tests {
             refresh_token: "refresh-1".into(),
             expires_at: now_secs() + 3600,
             friends_enabled: true,
+            email: Some("me@example.com".into()),
+            anonymous: false,
+            account: account::AccountCache::default(),
         });
         c
     }
@@ -756,6 +802,7 @@ pub(crate) mod tests {
             .await;
         let tmp = tempfile::tempdir().unwrap();
         let c = FriendsClient::new(ctx(&tmp, &server));
+        c.allow_anonymous();
         assert!(!c.status("Mehbur", None).await.unwrap().enabled);
         let p = c.enable("Mehbur", None).await.unwrap();
         assert_eq!(p.friend_code, "MEHBUR-7K3Q");
@@ -834,6 +881,7 @@ pub(crate) mod tests {
 
         let tmp2 = tempfile::tempdir().unwrap();
         let fresh = FriendsClient::new(ctx(&tmp2, &server));
+        fresh.allow_anonymous();
         assert_eq!(
             fresh.enable("A", None).await.unwrap_err().code(),
             "friends.unavailable"

@@ -1,12 +1,13 @@
-import { Check, RefreshCw, ShieldCheck } from "lucide-react";
+import { Check, LogOut, RefreshCw, ShieldCheck } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Button, TextInput, Toggle } from "../../components/ui";
+import { Badge, Button, ConfirmDialog, TextInput, Toggle } from "../../components/ui";
 import type { Accent } from "../../lib/ipc/bindings/Accent";
 import type { Language } from "../../lib/ipc/bindings/Language";
 import type { LaunchBehavior } from "../../lib/ipc/bindings/LaunchBehavior";
 import { useApp } from "../../stores/app";
+import { useAuth } from "../../stores/auth";
 import { useUpdate } from "../../stores/update";
 import { DataFolderSection } from "./DataFolderSection";
 
@@ -38,6 +39,8 @@ export function SettingsPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 pb-8">
       <h1 className="font-display text-3xl font-bold tracking-wide">{t("settings.title")}</h1>
+
+      <AccountSection />
 
       <Section title={t("settings.appearance")}>
         <Row label={t("settings.language")}>
@@ -217,6 +220,36 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       </h2>
       <div className="divide-y divide-line">{children}</div>
     </section>
+  );
+}
+
+/** The MehburMC account the launcher is signed in with (K73). */
+function AccountSection() {
+  const { t } = useTranslation();
+  const auth = useAuth((s) => s.status);
+  const signOut = useAuth((s) => s.signOut);
+  const [confirm, setConfirm] = useState(false);
+  if (!auth?.signedIn) return null;
+  return (
+    <Section title={t("settings.account.title")}>
+      <Row label={auth.email ?? ""} hint={t("settings.account.hint")}>
+        <div className="flex items-center gap-2">
+          {auth.rank > 0 && <Badge tone="accent">{t(`admin.rank.${auth.rank}`)}</Badge>}
+          <Button variant="ghost" onClick={() => setConfirm(true)}>
+            <LogOut size={14} />
+            {t("auth.signOut")}
+          </Button>
+        </div>
+      </Row>
+      <ConfirmDialog
+        open={confirm}
+        title={t("settings.account.signOutTitle")}
+        message={t("settings.account.signOutMessage")}
+        confirmLabel={t("auth.signOut")}
+        onClose={() => setConfirm(false)}
+        onConfirm={() => void signOut()}
+      />
+    </Section>
   );
 }
 

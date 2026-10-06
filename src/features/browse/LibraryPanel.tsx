@@ -62,7 +62,7 @@ function ErrorLine({ error }: { error: ErrorPayload | null }) {
   );
 }
 
-function FindingList({ findings }: { findings: Finding[] }) {
+export function FindingList({ findings }: { findings: Finding[] }) {
   const { t } = useTranslation();
   if (findings.length === 0) return null;
   return (
@@ -97,7 +97,13 @@ function StatusBadge({ status }: { status: LibraryStatus }) {
   return <Badge tone={tone}>{t(`library.status.${status}`)}</Badge>;
 }
 
-function LoaderBadges({ loaders, gameVersions }: { loaders: ModLoader[]; gameVersions: string }) {
+export function LoaderBadges({
+  loaders,
+  gameVersions,
+}: {
+  loaders: ModLoader[];
+  gameVersions: string;
+}) {
   const { t } = useTranslation();
   return (
     <div className="mt-1 flex flex-wrap gap-1.5">

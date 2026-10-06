@@ -19,7 +19,8 @@ export type View =
   | "downloads"
   | "console"
   | "whatsNew"
-  | "settings";
+  | "settings"
+  | "admin";
 
 type Status = "loading" | "ready" | "fatal";
 

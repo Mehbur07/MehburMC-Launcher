@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-auth-resend"
+description = "Enables the auth_resend command without any pre-configured scope."
+commands.allow = ["auth_resend"]
+
+[[permission]]
+identifier = "deny-auth-resend"
+description = "Denies the auth_resend command without any pre-configured scope."
+commands.deny = ["auth_resend"]

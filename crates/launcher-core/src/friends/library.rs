@@ -113,9 +113,9 @@ pub struct LibraryMod {
 }
 
 #[derive(Debug, Deserialize)]
-struct Row {
-    id: i64,
-    owner: String,
+pub(crate) struct Row {
+    pub(crate) id: i64,
+    pub(crate) owner: String,
     author: String,
     name: String,
     #[serde(default)]
@@ -133,6 +133,7 @@ struct Row {
     scan: Value,
     review_note: Option<String>,
     created_at: String,
+    #[serde(default)]
     mine: bool,
 }
 
@@ -275,7 +276,7 @@ fn findings_from(scan: &Value) -> Vec<Finding> {
 }
 
 impl Row {
-    fn into_mod(self) -> Option<LibraryMod> {
+    pub(crate) fn into_mod(self) -> Option<LibraryMod> {
         if !is_uuid(&self.owner) || !is_sha1(&self.sha1) {
             return None;
         }
@@ -505,7 +506,7 @@ impl FriendsClient {
     }
 
     /// The jar from the cache or the server, verified against `sha1`.
-    async fn library_jar(&self, owner: &str, sha1: &str) -> Result<Vec<u8>> {
+    pub(crate) async fn library_jar(&self, owner: &str, sha1: &str) -> Result<Vec<u8>> {
         let cached = self
             .ctx()
             .paths

@@ -3,6 +3,20 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.12.0] — 2026-10-06
+
+### Eklendi
+- **MehburMC hesabı (zorunlu):** launcher artık e-posta ve şifreyle giriş istiyor. Hesap
+  oluştururken ve şifre sıfırlarken e-postana gelen 6 haneli kodu launcher'a yazman yeterli.
+  Daha önce arkadaşlar özelliğini ya da hesap adlarını kullandıysan **Hesap oluştur** mevcut
+  kimliğini hesaba dönüştürür: arkadaşların, ayrılmış adların ve paylaşımların kaybolmaz.
+  Bir kez giriş yaptıktan sonra internet yokken de oynayabilirsin.
+- **Ayarlar → MehburMC hesabı:** hangi e-postayla girdiğini gör, **Çıkış yap**.
+- **Admin bildirimleri** (yalnızca yöneticilere görünür): MehburMC Kütüphanesi onay kuyruğu
+  (mod, onaylayan adminin launcher'ında yeniden taranır), yayındaki modlar, bildirilen
+  mod/skin/pelerinler, süreli veya kalıcı ban, yönetici atama.
+- Yasaklanan hesap launcher'ı kullanamaz; ekranda bitiş tarihi ve sebep görünür.
+
 ## [0.11.0] — 2026-10-06
 
 ### Eklendi

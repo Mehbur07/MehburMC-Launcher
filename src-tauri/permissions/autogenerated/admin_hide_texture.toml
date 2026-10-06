@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-admin-hide-texture"
+description = "Enables the admin_hide_texture command without any pre-configured scope."
+commands.allow = ["admin_hide_texture"]
+
+[[permission]]
+identifier = "deny-admin-hide-texture"
+description = "Denies the admin_hide_texture command without any pre-configured scope."
+commands.deny = ["admin_hide_texture"]

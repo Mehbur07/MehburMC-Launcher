@@ -15,7 +15,10 @@ use serde_json::{Value, json};
 fn client(root: &Path) -> FriendsClient {
     let paths = Paths::at(root.join("MehburMC"));
     paths.ensure_layout().unwrap();
-    FriendsClient::new(Ctx::new(paths, Arc::new(NullSink), 4).unwrap())
+    let c = FriendsClient::new(Ctx::new(paths, Arc::new(NullSink), 4).unwrap());
+    // Throwaway identities need anonymous sign-ins on (Supabase → Auth).
+    c.allow_anonymous();
+    c
 }
 
 fn instance() -> Instance {

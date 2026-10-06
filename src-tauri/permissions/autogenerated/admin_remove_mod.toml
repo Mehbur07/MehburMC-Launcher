@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-admin-remove-mod"
+description = "Enables the admin_remove_mod command without any pre-configured scope."
+commands.allow = ["admin_remove_mod"]
+
+[[permission]]
+identifier = "deny-admin-remove-mod"
+description = "Denies the admin_remove_mod command without any pre-configured scope."
+commands.deny = ["admin_remove_mod"]

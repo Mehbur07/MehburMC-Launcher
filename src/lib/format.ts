@@ -28,6 +28,13 @@ export function formatDate(unixSecs: number, locale: string): string {
   });
 }
 
+/** An RFC 3339 timestamp from the server, in the user's locale. */
+export function formatIso(iso: string, locale: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" });
+}
+
 export function formatTime(ms: number, locale: string): string {
   return new Date(ms).toLocaleTimeString(locale, { hour12: false });
 }

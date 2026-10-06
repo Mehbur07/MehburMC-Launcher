@@ -87,6 +87,21 @@ fn start(
         .start_with(id, settings, mode, hooks, join)?)
 }
 
+/// Playing needs a signed-in, unbanned MehburMC account (K73). The server
+/// enforces bans on everything it serves; this keeps the UI rule honest.
+async fn require_account(state: &AppState) -> CmdResult<()> {
+    let friends = &state.launcher()?.friends;
+    if friends.can_play().await {
+        return Ok(());
+    }
+    let code = if friends.auth_status(false).await.ban.is_some() {
+        "auth.banned"
+    } else {
+        "auth.required"
+    };
+    Err(launcher_core::CoreError::Friends(code).to_payload())
+}
+
 /// Must be async: the task is spawned on the Tokio runtime.
 #[tauri::command]
 pub async fn launch_instance(
@@ -94,6 +109,7 @@ pub async fn launch_instance(
     state: State<'_, AppState>,
     id: String,
 ) -> CmdResult<String> {
+    require_account(&state).await?;
     start(app, &state, &id, StartMode::Play, None)
 }
 
@@ -106,6 +122,7 @@ pub async fn join_server(
     address: String,
 ) -> CmdResult<String> {
     let addr = ServerAddress::parse(&address)?;
+    require_account(&state).await?;
     start(app, &state, &id, StartMode::Play, Some(addr))
 }
 

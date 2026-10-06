@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-admin-library"
+description = "Enables the admin_library command without any pre-configured scope."
+commands.allow = ["admin_library"]
+
+[[permission]]
+identifier = "deny-admin-library"
+description = "Denies the admin_library command without any pre-configured scope."
+commands.deny = ["admin_library"]

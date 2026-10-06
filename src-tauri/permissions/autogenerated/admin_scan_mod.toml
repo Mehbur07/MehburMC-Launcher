@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-admin-scan-mod"
+description = "Enables the admin_scan_mod command without any pre-configured scope."
+commands.allow = ["admin_scan_mod"]
+
+[[permission]]
+identifier = "deny-admin-scan-mod"
+description = "Denies the admin_scan_mod command without any pre-configured scope."
+commands.deny = ["admin_scan_mod"]

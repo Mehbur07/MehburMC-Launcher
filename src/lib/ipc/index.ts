@@ -3,6 +3,17 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
 import type { Account } from "./bindings/Account";
 import type { AppUpdate } from "./bindings/AppUpdate";
+import type { AdminBan } from "./bindings/AdminBan";
+import type { AdminEntry } from "./bindings/AdminEntry";
+import type { AdminMod } from "./bindings/AdminMod";
+import type { AdminModStatus } from "./bindings/AdminModStatus";
+import type { AdminReport } from "./bindings/AdminReport";
+import type { AdminUser } from "./bindings/AdminUser";
+import type { AuthStatus } from "./bindings/AuthStatus";
+import type { CodePurpose } from "./bindings/CodePurpose";
+import type { ReportKind } from "./bindings/ReportKind";
+import type { ScanReport } from "./bindings/ScanReport";
+import type { SignUpResult } from "./bindings/SignUpResult";
 import type { Assignment } from "./bindings/Assignment";
 import type { AccountFaces } from "./bindings/AccountFaces";
 import type { AccountsView } from "./bindings/AccountsView";
@@ -154,6 +165,41 @@ export const ipc = {
   unshareTexture: (shareId: number) => invoke<void>("unshare_texture", { shareId }),
   reportTexture: (shareId: number, reason: ReportReason, note: string) =>
     invoke<void>("report_texture", { shareId, reason, note }),
+
+  /** MehburMC account; `check` asks the server for rank and ban. */
+  authStatus: (check: boolean) => invoke<AuthStatus>("auth_status", { check }),
+  authSignUp: (email: string, password: string) =>
+    invoke<SignUpResult>("auth_sign_up", { email, password }),
+  /** Confirms the emailed code; `password` is set for upgrades and resets. */
+  authVerify: (email: string, code: string, purpose: CodePurpose, password: string) =>
+    invoke<void>("auth_verify", { email, code, purpose, password }),
+  authResend: (email: string, purpose: CodePurpose) =>
+    invoke<void>("auth_resend", { email, purpose }),
+  authRequestReset: (email: string) => invoke<void>("auth_request_reset", { email }),
+  authSignIn: (email: string, password: string) =>
+    invoke<void>("auth_sign_in", { email, password }),
+  authSignOut: () => invoke<void>("auth_sign_out"),
+
+  adminLibrary: (status: AdminModStatus) => invoke<AdminMod[]>("admin_library", { status }),
+  /** Downloads a library mod and scans it in this launcher. */
+  adminScanMod: (id: number, status: AdminModStatus) =>
+    invoke<ScanReport>("admin_scan_mod", { id, status }),
+  adminReviewMod: (id: number, status: AdminModStatus, approve: boolean, note: string) =>
+    invoke<void>("admin_review_mod", { id, status, approve, note }),
+  adminRemoveMod: (id: number, note: string) => invoke<void>("admin_remove_mod", { id, note }),
+  adminReports: () => invoke<AdminReport[]>("admin_reports"),
+  adminDismissReports: (kind: ReportKind, id: number) =>
+    invoke<void>("admin_dismiss_reports", { kind, id }),
+  adminHideTexture: (id: number) => invoke<void>("admin_hide_texture", { id }),
+  adminFindUsers: (query: string) => invoke<AdminUser[]>("admin_find_users", { query }),
+  /** `hours` null = permanent. */
+  adminBan: (userId: string, hours: number | null, reason: string) =>
+    invoke<void>("admin_ban", { userId, hours, reason }),
+  adminUnban: (userId: string) => invoke<void>("admin_unban", { userId }),
+  adminBans: () => invoke<AdminBan[]>("admin_bans"),
+  adminList: () => invoke<AdminEntry[]>("admin_list"),
+  adminSetRank: (userId: string, admin: boolean) =>
+    invoke<void>("admin_set_rank", { userId, admin }),
 
   /** Scans the jar chosen with `pickPath("libraryMod")`. */
   libraryScanPick: () => invoke<LibraryScan>("library_scan_pick"),

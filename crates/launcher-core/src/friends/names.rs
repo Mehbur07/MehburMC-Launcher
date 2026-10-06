@@ -180,6 +180,7 @@ mod tests {
             .await;
         let tmp = tempfile::tempdir().unwrap();
         let c = FriendsClient::new(ctx(&tmp, &server));
+        c.allow_anonymous();
         c.claim_name("Mehbur").await.unwrap();
         assert!(c.has_identity().await);
         assert!(!c.is_enabled().await);
@@ -203,6 +204,7 @@ mod tests {
             .await;
         let tmp = tempfile::tempdir().unwrap();
         let c = FriendsClient::new(ctx(&tmp, &server));
+        c.allow_anonymous();
         let e = c.claim_name("Mehbur").await.unwrap_err();
         assert_eq!(e.code(), "account.nameServiceUnavailable");
 
@@ -210,6 +212,7 @@ mod tests {
         let mut offline = ctx(&tmp, &server);
         offline.endpoints.friends = "http://127.0.0.1:9".into();
         let c = FriendsClient::new(offline);
+        c.allow_anonymous();
         let e = c.claim_name("Mehbur").await.unwrap_err();
         assert_eq!(e.code(), "account.nameCheckOffline");
     }

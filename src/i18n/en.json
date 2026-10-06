@@ -21,7 +21,8 @@
     "downloads": "Downloads",
     "console": "Console",
     "whatsNew": "What's new",
-    "settings": "Settings"
+    "settings": "Settings",
+    "admin": "Admin"
   },
   "home": {
     "play": "PLAY",
@@ -85,7 +86,13 @@
     "moveConfirm": "All game files, instances and caches will be copied to this folder, verified and deleted from the old location. The folder must be empty. Settings and accounts stay where they are.",
     "moving": "Moving… Do not close the launcher.",
     "moved": "Move complete. Restart the launcher to use the new location.",
-    "movedLeftovers": "Move complete; {{n}} old file(s) were in use and could not be deleted — remove them later. Restart the launcher."
+    "movedLeftovers": "Move complete; {{n}} old file(s) were in use and could not be deleted — remove them later. Restart the launcher.",
+    "account": {
+      "title": "MehburMC account",
+      "hint": "This computer is signed in with this account.",
+      "signOutTitle": "Sign out?",
+      "signOutMessage": "You will need to sign in again to use the launcher. Your instances, mods and worlds stay on this computer."
+    }
   },
   "startup": {
     "title": "The launcher could not start",
@@ -151,7 +158,19 @@
       "unsafe": "Security: the archive contains an unsafe entry ({{entry}}): {{path}}"
     },
     "auth": {
-      "invalidName": "Invalid player name \"{{name}}\": 3–16 characters, letters, digits and _ only."
+      "invalidName": "Invalid player name \"{{name}}\": 3–16 characters, letters, digits and _ only.",
+      "required": "Sign in with your MehburMC account first.",
+      "banned": "Your account is banned.",
+      "invalidCredentials": "Wrong email or password (or the email is not verified yet).",
+      "emailTaken": "This email is already registered. Try signing in.",
+      "codeInvalid": "The code is wrong or expired. Request a new one.",
+      "weakPassword": "The password needs at least 8 characters (and must not be too easy to guess).",
+      "emailInvalid": "Enter a valid email address.",
+      "rateLimited": "Too many attempts. Try again in a few minutes.",
+      "emailNotConfirmed": "Your email is not verified yet. Request the code again from Create account.",
+      "signupDisabled": "New accounts cannot be created right now. Try again later.",
+      "samePassword": "The new password must differ from the old one.",
+      "sessionExpired": "Your session ended; please sign in again."
     },
     "launch": {
       "commandTooLong": "The command line is too long for Java {{major}}.",
@@ -223,6 +242,13 @@
       "changed": "The file changed after it was checked; choose it again.",
       "conflict": "The instance already has a different file with the same name.",
       "wrongLoader": "This mod does not match the selected instance's mod loader."
+    },
+    "admin": {
+      "forbidden": "You are not allowed to do this.",
+      "self": "You cannot ban yourself.",
+      "targetAdmin": "Admins cannot be banned and the founder's rank cannot change.",
+      "userNotFound": "User not found (email accounts only).",
+      "badUntil": "Invalid ban duration."
     }
   },
   "instances": {
@@ -953,6 +979,128 @@
       "obfuscated": "Code looks obfuscated",
       "badClass": "Unreadable class file",
       "deepNesting": "Jar nested too deeply"
+    }
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "passwordAgain": "Password (again)",
+    "newPassword": "New password",
+    "passwordRule": "At least {{min}} characters.",
+    "mismatch": "The passwords do not match.",
+    "signOut": "Sign out",
+    "createAccount": "Create account",
+    "haveAccount": "I already have an account",
+    "toSignIn": "Back to sign-in",
+    "signIn": {
+      "title": "Sign in",
+      "hint": "Sign in with your MehburMC account to use MehburMC Launcher.",
+      "submit": "Sign in",
+      "anonymousWarning": "This computer has an older identity that is not linked to an account. Signing in to another account deletes its friends and reserved names. To keep them, turn it into an account with \"Create account\"."
+    },
+    "signUp": {
+      "title": "Create account",
+      "hint": "We will email you a 6-digit verification code.",
+      "upgrade": "Your friends, reserved account names and shares on this computer move to the new account. We will email you a 6-digit verification code.",
+      "submit": "Create account"
+    },
+    "code": {
+      "title": "Verify your email",
+      "sent": "We sent a 6-digit code to {{email}}.",
+      "label": "Verification code",
+      "submit": "Verify",
+      "resend": "Send the code again",
+      "resent": "A new code is on its way.",
+      "spam": "No code? Check your spam folder. If this email is already registered no code is sent; try signing in."
+    },
+    "forgot": {
+      "link": "Forgot password",
+      "title": "Reset password",
+      "hint": "Enter your account's email and we will send you a reset code.",
+      "submit": "Send code"
+    },
+    "ban": {
+      "title": "Your account is banned",
+      "until": "Ban ends: {{date}}",
+      "permanent": "This ban is permanent.",
+      "reason": "Reason: {{reason}}",
+      "recheck": "Check again"
+    }
+  },
+  "admin": {
+    "rank": {
+      "1": "Founder",
+      "2": "Admin"
+    },
+    "note": "Note (shown to the uploader)",
+    "noteHint": "Optional; the uploader sees why their mod was taken down.",
+    "tabs": {
+      "queue": "Approval queue",
+      "published": "Published mods",
+      "reports": "Reports",
+      "bans": "Bans",
+      "admins": "Admins"
+    },
+    "queue": {
+      "hint": "Before approving, \"Download and scan\" checks the mod again in your launcher; only mods your own scan does not block can be approved.",
+      "empty": "No mods awaiting approval",
+      "scan": "Download and scan",
+      "scanFirst": "Download and scan first",
+      "approve": "Approve",
+      "reject": "Reject",
+      "rejectTitle": "Reject \"{{name}}\"?",
+      "myScan": "Your scan",
+      "uploaderScan": "Uploader's scan: {{count}} findings"
+    },
+    "published": {
+      "hint": "Mods everyone can see in the library. A removed mod shows as \"Rejected\" to its uploader only.",
+      "empty": "No published mods",
+      "remove": "Remove",
+      "removeTitle": "Remove \"{{name}}\" from the library?"
+    },
+    "reports": {
+      "hint": "Reported mods, skins and capes (most reported first).",
+      "hintRank2": "Reported mods (most reported first).",
+      "empty": "No open reports",
+      "kind": {
+        "mod": "Mod",
+        "texture": "Skin/cape"
+      },
+      "hide": "Hide",
+      "dismiss": "Dismiss reports",
+      "banOwner": "Ban the sharer"
+    },
+    "bans": {
+      "title": "Ban {{name}}?",
+      "new": "Ban a user",
+      "list": "Bans",
+      "empty": "No bans",
+      "submit": "Ban",
+      "unban": "Lift ban",
+      "duration": "Duration",
+      "durations": {
+        "day": "1 day",
+        "week": "7 days",
+        "month": "30 days",
+        "permanent": "Permanent"
+      },
+      "reason": "Reason (shown to the user)",
+      "hint": "A banned account cannot sign in to the launcher or use its online features. Admins cannot be banned.",
+      "active": "Banned",
+      "expired": "Expired",
+      "until": "Ends: {{date}}",
+      "by": "by {{name}}"
+    },
+    "users": {
+      "search": "Account name or friend code",
+      "find": "Search",
+      "none": "No users found."
+    },
+    "admins": {
+      "hint": "Admins (rank 2) can ban users and take published mods down. The approval queue and appointing admins belong to the founder.",
+      "add": "Add an admin",
+      "make": "Make admin",
+      "remove": "Remove admin"
     }
   }
 }

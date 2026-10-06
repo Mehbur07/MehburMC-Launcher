@@ -6,8 +6,8 @@ use tauri::window::Color;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 use crate::commands::{
-    accounts, content, data, dialogs, files, friends, home, instances, library, loaders, play,
-    servers, skins, textures, update,
+    accounts, admin, auth, content, data, dialogs, files, friends, home, instances, library,
+    loaders, play, servers, skins, textures, update,
 };
 use crate::state::AppState;
 
@@ -154,6 +154,26 @@ pub fn run() {
             library::library_withdraw,
             library::library_report,
             library::library_install,
+            auth::auth_status,
+            auth::auth_sign_up,
+            auth::auth_verify,
+            auth::auth_resend,
+            auth::auth_request_reset,
+            auth::auth_sign_in,
+            auth::auth_sign_out,
+            admin::admin_library,
+            admin::admin_scan_mod,
+            admin::admin_review_mod,
+            admin::admin_remove_mod,
+            admin::admin_reports,
+            admin::admin_dismiss_reports,
+            admin::admin_hide_texture,
+            admin::admin_find_users,
+            admin::admin_ban,
+            admin::admin_unban,
+            admin::admin_bans,
+            admin::admin_list,
+            admin::admin_set_rank,
             home::list_news,
             home::analyze_crash_report,
             home::open_data_file,

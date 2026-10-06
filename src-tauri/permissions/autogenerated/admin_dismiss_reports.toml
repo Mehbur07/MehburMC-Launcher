@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-admin-dismiss-reports"
+description = "Enables the admin_dismiss_reports command without any pre-configured scope."
+commands.allow = ["admin_dismiss_reports"]
+
+[[permission]]
+identifier = "deny-admin-dismiss-reports"
+description = "Denies the admin_dismiss_reports command without any pre-configured scope."
+commands.deny = ["admin_dismiss_reports"]
