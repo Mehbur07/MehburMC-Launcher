@@ -1,15 +1,15 @@
 {
-  "version": "0.7.0",
-  "notes": "### Eklendi\n- **Sunucular sayfası:** favori sunucuların ve her profilin oyun içi Çok Oyunculu listesi\n  tek yerde. Her sunucunun simgesi, renkli açıklaması (MOTD), oyuncu sayısı ve pingi canlı\n  görünür; **Yenile** ile tekrar sorgulanır.\n- **Bağlan:** seçili profili başlatır ve oyun açılınca sunucuya doğrudan bağlanır\n  (1.20+ Hızlı Oyun, eski sürümlerde `--server`).\n- Sunucu ekle (favorilere ya da profilin oyun içi listesine), yıldızla favorile, adresi\n  kopyala, onaylayarak sil. Oyun çalışırken oyunun listesi değiştirilemez.\n- `play.ornek.com` gibi portsuz adreslerde SRV kayıtları oyundaki gibi kullanılır.",
-  "pub_date": "2026-10-06T16:59:41Z",
+  "version": "0.8.0",
+  "notes": "### Eklendi\n- **Mod Tarayıcı'da kurulu olanlar:** hedef profilde zaten kurulu olan mod, resource pack ve\n  shader'lar aramada **Kurulu** olarak görünür (kapalı olanlar \"Kurulu (kapalı)\").\n- **Kurulu** düğmesine basınca **Sil** seçeneği çıkar; \"Silmek istediğinize emin misiniz?\"\n  sorusunu **Sil** ile onaylarsan projenin profildeki tüm dosyaları silinir, **İptal** ile\n  vazgeçersin. Kurduktan hemen sonra da düğme **Kurulu** olur.\n\n### Değişti\n- Oyun çalışırken profilin mod, resource pack ve shader dosyaları silinemez (anlaşılır bir\n  uyarı verilir).",
+  "pub_date": "2026-10-06T17:22:43Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUpHNG84cW5HRExDcUFVUW1OV0tKb0s0ZDNOYzNZUXA4Z3BEZmxJVlUwakJ2UC9vWm1LSUZYUFJDUDR2bGpsWTk2Qm5Xb256b1duOWdHQXdnTU54MEFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzA1NjQ5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC43LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuNy4wCnpZYVZadGM1emVLQnB1L3BXRVkvR29QRCs3R2ZXbVRsQTYrVStFbEN0WmdONGtmKzNXUmh6d3hSbThza3dlNG1OREVINWJURklJWXRsSjhGRW9DMkRBPT0K",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.7.0/MehburMC-Launcher_0.7.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUpWM2xlK25xa2I5N2dINXVtWXpqeVo4aXlKNFBWTUNjdy8vMlJEeERXY0NjaUFlaUtHZ251eGplUmlpL2tIQWNxaHpHRC9Ub2pvV3pLcldOWGRLVXdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzA2OTI5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC44LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuOC4wCmZWaEdyVnhNditPODBHUU5kd3B0U3F5VG1ESVY3b3ROVHppaWJROXA2TXZzQVE1b1F0QkVGbXJwS0lITzNDMTlTY28yWFdmK3JzdUdIU1l4eHliMkN3PT0K",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.8.0/MehburMC-Launcher_0.8.0_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUpHNG84cW5HRExDcUFVUW1OV0tKb0s0ZDNOYzNZUXA4Z3BEZmxJVlUwakJ2UC9vWm1LSUZYUFJDUDR2bGpsWTk2Qm5Xb256b1duOWdHQXdnTU54MEFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzA1NjQ5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC43LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuNy4wCnpZYVZadGM1emVLQnB1L3BXRVkvR29QRCs3R2ZXbVRsQTYrVStFbEN0WmdONGtmKzNXUmh6d3hSbThza3dlNG1OREVINWJURklJWXRsSjhGRW9DMkRBPT0K",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.7.0/MehburMC-Launcher_0.7.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUpWM2xlK25xa2I5N2dINXVtWXpqeVo4aXlKNFBWTUNjdy8vMlJEeERXY0NjaUFlaUtHZ251eGplUmlpL2tIQWNxaHpHRC9Ub2pvV3pLcldOWGRLVXdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzA2OTI5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC44LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuOC4wCmZWaEdyVnhNditPODBHUU5kd3B0U3F5VG1ESVY3b3ROVHppaWJROXA2TXZzQVE1b1F0QkVGbXJwS0lITzNDMTlTY28yWFdmK3JzdUdIU1l4eHliMkN3PT0K",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.8.0/MehburMC-Launcher_0.8.0_x64-setup.exe"
     }
   }
 }
