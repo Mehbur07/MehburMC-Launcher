@@ -13,6 +13,7 @@ pub mod loaders;
 pub mod play;
 pub mod servers;
 pub mod skins;
+pub mod textures;
 pub mod update;
 
 use launcher_core::{CoreError, ErrorPayload, PathsInfo, Settings};

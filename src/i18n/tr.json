@@ -206,6 +206,13 @@
       "unreachable": "Sunucuya ulaşılamadı.",
       "timeout": "Sunucu zamanında yanıt vermedi.",
       "badResponse": "Bu adreste bir Minecraft sunucusu yanıt vermiyor (ya da çok eski bir sürüm)."
+    },
+    "textures": {
+      "authorInvalid": "Bu hesap adı bu kuruluma ait değil; paylaşmak için hesabı yeniden adlandır.",
+      "fileMissing": "Görsel yüklenemedi; tekrar dene.",
+      "quota": "En fazla 30 skin/pelerin paylaşabilirsin. Yenisi için birini geri çek.",
+      "notFound": "Bu paylaşım artık yok.",
+      "ownReport": "Kendi paylaşımını bildiremezsin."
     }
   },
   "instances": {
@@ -584,6 +591,52 @@
       "namePlaceholder": "Ad",
       "save": "Kütüphaneye kaydet",
       "saved": "Kaydedildi"
+    },
+    "share": {
+      "button": "Paylaş",
+      "manage": "Paylaşımı yönet",
+      "title": "Paylaş",
+      "manageTitle": "Paylaşım",
+      "name": "Görünecek ad",
+      "who": "Kimler görebilir?",
+      "visibility": {
+        "public": "Herkes",
+        "friends": "Arkadaşlara özel"
+      },
+      "hint": {
+        "public": "Tüm MehburMC kullanıcıları Hazır skinler → Topluluk bölümünde görür ve kullanabilir.",
+        "friends": "Yalnızca arkadaşların görür ve kullanabilir."
+      },
+      "friendsOff": "Arkadaşlar kapalı. Bu seçenek için Arkadaşlar sayfasından aç.",
+      "author": "Paylaşan olarak \"{{name}}\" adın görünecek.",
+      "noAccount": "Paylaşmak için önce bir hesap seç.",
+      "rules": "Yalnızca kendi yaptığın ya da paylaşma iznin olan skin ve pelerinleri paylaş. Uygunsuz içerik bildirilebilir ve kaldırılır.",
+      "submit": "Paylaş",
+      "withdraw": "Geri çek",
+      "withdrawTitle": "Paylaşım geri çekilsin mi?",
+      "withdrawBody": "{{name}} artık başkalarına görünmeyecek. Senin kütüphanende kalır."
+    },
+    "community": {
+      "title": "Topluluk",
+      "hint": "MehburMC kullanıcılarının paylaştığı skin ve pelerinler. Önizlemek için tıkla, + ile kütüphanene ekle.",
+      "empty": "Henüz paylaşılan bir şey yok. Kütüphanendeki bir kartta Paylaş düğmesine basarak ilk sen paylaş.",
+      "unavailable": "Topluluk şu an yüklenemedi.",
+      "by": "Paylaşan: {{name}}",
+      "mine": "Senin paylaşımın"
+    },
+    "report": {
+      "button": "Bildir",
+      "title": "Bildir: {{name}}",
+      "hint": "Bildirimin yöneticilere iletilir. Bildirdiğin paylaşım artık sana gösterilmez.",
+      "reasons": {
+        "inappropriate": "Uygunsuz içerik",
+        "stolen": "Başkasının eseri / izinsiz",
+        "spam": "Spam",
+        "other": "Diğer"
+      },
+      "note": "Not (isteğe bağlı)",
+      "submit": "Bildir",
+      "thanks": "Teşekkürler, bildirimin alındı."
     }
   },
   "crash": {

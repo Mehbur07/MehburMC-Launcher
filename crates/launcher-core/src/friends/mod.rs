@@ -6,6 +6,7 @@ pub mod avatar;
 pub mod names;
 pub mod presence;
 pub mod share;
+pub mod textures;
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -190,6 +191,7 @@ fn server_error(status: u16, body: &[u8]) -> CoreError {
     if let Some(code) = FRIEND_ERRORS
         .iter()
         .chain(names::NAME_ERRORS)
+        .chain(textures::TEXTURE_ERRORS)
         .find(|c| **c == message)
     {
         return CoreError::Friends(code);
@@ -530,6 +532,11 @@ impl FriendsClient {
     pub async fn delete_identity(&self) -> Result<()> {
         if self.has_identity().await {
             self.delete_files().await?;
+            // Shared skins/capes belong to the identity, not to friends.
+            match self.delete_all_textures().await {
+                Ok(()) | Err(CoreError::FriendsServer { status: 401, .. }) => {}
+                Err(e) => return Err(e),
+            }
             match self.rpc_void("delete_me", json!({})).await {
                 Ok(()) | Err(CoreError::FriendsServer { status: 401, .. }) => {}
                 Err(e) => return Err(e),
@@ -886,6 +893,22 @@ pub(crate) mod tests {
         Mock::given(method("POST"))
             .and(path("/rest/v1/rpc/delete_friend_data"))
             .respond_with(ResponseTemplate::new(204))
+            .expect(1)
+            .mount(&server)
+            .await;
+        // Shared skins/capes go only with the whole identity.
+        Mock::given(method("POST"))
+            .and(path("/storage/v1/object/list/textures"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!([{ "name": "s.png" }])))
+            .expect(1)
+            .mount(&server)
+            .await;
+        Mock::given(method("DELETE"))
+            .and(path("/storage/v1/object/textures"))
+            .and(wiremock::matchers::body_json(
+                json!({ "prefixes": [format!("{ME}/s.png")] }),
+            ))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!([])))
             .expect(1)
             .mount(&server)
             .await;

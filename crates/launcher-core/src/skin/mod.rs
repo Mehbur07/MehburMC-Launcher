@@ -142,7 +142,7 @@ pub struct LibraryView {
     pub assignments: BTreeMap<String, Assignment>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, TS)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub enum TextureKind {

@@ -633,6 +633,38 @@ impl Launcher {
         self.import_modpack(&dest, None).await
     }
 
+    /// Shares a library skin/cape under the selected account's name (its
+    /// name is reserved for this installation, K67). Returns the share id.
+    pub async fn share_texture(
+        &self,
+        kind: skin::TextureKind,
+        id: &str,
+        name: &str,
+        visibility: crate::friends::textures::Visibility,
+    ) -> Result<i64> {
+        let author = self.accounts.launch_account()?.name;
+        let view = self.skins.view();
+        let model = match kind {
+            skin::TextureKind::Skin => view
+                .skins
+                .iter()
+                .find(|s| s.entry.id == id)
+                .map(|s| s.entry.model)
+                .ok_or_else(|| CoreError::SkinNotFound(id.to_owned()))?,
+            skin::TextureKind::Cape => {
+                if !view.capes.iter().any(|c| c.entry.id == id) {
+                    return Err(CoreError::SkinNotFound(id.to_owned()));
+                }
+                skin::SkinModel::Classic
+            }
+        };
+        let path = self.skins.texture_path(id)?;
+        let png = std::fs::read(&path).map_err(|e| CoreError::io(&path, e))?;
+        self.friends
+            .share_texture(kind, model, name, &author, &png, visibility)
+            .await
+    }
+
     /// Deletes a file from an instance folder. Content (mods, resource and
     /// shader packs) is in use while the game runs, so it is refused then.
     pub fn delete_instance_file(&self, id: &str, folder: Folder, name: &str) -> Result<()> {
@@ -687,6 +719,30 @@ mod tests {
         assert!(
             l.tasks.list().is_empty(),
             "no task is created for rejected starts"
+        );
+    }
+
+    #[tokio::test]
+    async fn sharing_needs_an_account_and_a_library_texture() {
+        use crate::friends::textures::Visibility;
+        let (_tmp, l) = launcher();
+        let share = |id: &'static str| {
+            let l = l.clone();
+            async move {
+                l.share_texture(skin::TextureKind::Skin, id, "n", Visibility::Public)
+                    .await
+                    .unwrap_err()
+                    .code()
+            }
+        };
+        assert_eq!(
+            share("0000000000000000000000000000000000000000").await,
+            "account.none"
+        );
+        l.accounts.add_offline("Steve").unwrap();
+        assert_eq!(
+            share("0000000000000000000000000000000000000000").await,
+            "skin.notFound"
         );
     }
 

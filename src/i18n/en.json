@@ -206,6 +206,13 @@
       "unreachable": "Could not reach the server.",
       "timeout": "The server did not answer in time.",
       "badResponse": "No Minecraft server answers at this address (or it is a very old version)."
+    },
+    "textures": {
+      "authorInvalid": "This account name does not belong to this installation; rename the account to share.",
+      "fileMissing": "The image could not be uploaded; try again.",
+      "quota": "You can share at most 30 skins/capes. Withdraw one to share another.",
+      "notFound": "This share no longer exists.",
+      "ownReport": "You cannot report your own share."
     }
   },
   "instances": {
@@ -584,6 +591,52 @@
       "namePlaceholder": "Name",
       "save": "Save to library",
       "saved": "Saved"
+    },
+    "share": {
+      "button": "Share",
+      "manage": "Manage share",
+      "title": "Share",
+      "manageTitle": "Share",
+      "name": "Shown name",
+      "who": "Who can see it?",
+      "visibility": {
+        "public": "Everyone",
+        "friends": "Friends only"
+      },
+      "hint": {
+        "public": "Every MehburMC user sees it under Presets → Community and can use it.",
+        "friends": "Only your friends see and can use it."
+      },
+      "friendsOff": "Friends are off. Turn them on in Friends for this option.",
+      "author": "Your name \"{{name}}\" is shown as the sharer.",
+      "noAccount": "Select an account to share.",
+      "rules": "Only share skins and capes you made or are allowed to share. Inappropriate content can be reported and removed.",
+      "submit": "Share",
+      "withdraw": "Withdraw",
+      "withdrawTitle": "Withdraw this share?",
+      "withdrawBody": "{{name}} will no longer be visible to others. It stays in your library."
+    },
+    "community": {
+      "title": "Community",
+      "hint": "Skins and capes shared by MehburMC users. Click to preview, + to add to your library.",
+      "empty": "Nothing shared yet. Press Share on a card in your library to be the first.",
+      "unavailable": "The community could not be loaded right now.",
+      "by": "Shared by {{name}}",
+      "mine": "Your share"
+    },
+    "report": {
+      "button": "Report",
+      "title": "Report: {{name}}",
+      "hint": "Your report goes to the admins. A share you reported is no longer shown to you.",
+      "reasons": {
+        "inappropriate": "Inappropriate content",
+        "stolen": "Someone else's work / no permission",
+        "spam": "Spam",
+        "other": "Other"
+      },
+      "note": "Note (optional)",
+      "submit": "Report",
+      "thanks": "Thanks, your report was received."
     }
   },
   "crash": {

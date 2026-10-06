@@ -18,6 +18,9 @@ import type { FriendsStatus } from "./bindings/FriendsStatus";
 import type { FavoriteServer } from "./bindings/FavoriteServer";
 import type { GameServer } from "./bindings/GameServer";
 import type { ServerStatus } from "./bindings/ServerStatus";
+import type { ReportReason } from "./bindings/ReportReason";
+import type { SharedTexture } from "./bindings/SharedTexture";
+import type { Visibility } from "./bindings/Visibility";
 import type { Profile } from "./bindings/Profile";
 import type { SharedList } from "./bindings/SharedList";
 import type { ImportResult } from "./bindings/ImportResult";
@@ -135,6 +138,15 @@ export const ipc = {
   removeGameServer: (instanceId: string, index: number, address: string) =>
     invoke<GameServer[]>("remove_game_server", { instanceId, index, address }),
   pingServer: (address: string) => invoke<ServerStatus>("ping_server", { address }),
+
+  /** Shared skins/capes the caller can see (own first). */
+  communityTextures: () => invoke<SharedTexture[]>("community_textures"),
+  /** Shares a library texture; returns the share id. */
+  shareTexture: (kind: TextureKind, id: string, name: string, visibility: Visibility) =>
+    invoke<number>("share_texture", { kind, id, name, visibility }),
+  unshareTexture: (shareId: number) => invoke<void>("unshare_texture", { shareId }),
+  reportTexture: (shareId: number, reason: ReportReason, note: string) =>
+    invoke<void>("report_texture", { shareId, reason, note }),
 
   friendsStatus: () => invoke<FriendsStatus>("friends_status"),
   friendsEnable: () => invoke<Profile>("friends_enable"),

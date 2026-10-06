@@ -7,7 +7,7 @@ use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 use crate::commands::{
     accounts, content, data, dialogs, files, friends, home, instances, loaders, play, servers,
-    skins, update,
+    skins, textures, update,
 };
 use crate::state::AppState;
 
@@ -143,6 +143,10 @@ pub fn run() {
             skins::delete_skin,
             skins::assign_skin,
             skins::export_skin,
+            textures::community_textures,
+            textures::share_texture,
+            textures::unshare_texture,
+            textures::report_texture,
             home::list_news,
             home::analyze_crash_report,
             home::open_data_file,

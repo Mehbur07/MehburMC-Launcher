@@ -3,6 +3,17 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.9.0] — 2026-10-06
+
+### Eklendi
+- **Skin ve pelerin paylaşma:** kütüphanendeki her kartta **Paylaş** var. **Herkes** ya da
+  **Arkadaşlara özel** seçip paylaşırsın; paylaşan olarak seçili hesabının adı görünür.
+  Paylaşılan kartta küçük bir dünya/kişiler simgesi çıkar; aynı düğmeden **Geri çek**.
+- **Topluluk:** Hazır skinler'in en üstünde diğer MehburMC kullanıcılarının paylaştıkları.
+  Önizle, **+** ile kütüphanene ekle, istersen tasarımcıda düzenle.
+- **Bildir:** uygunsuz ya da izinsiz paylaşımları sebebiyle bildir; bildirdiğin paylaşım sana
+  artık gösterilmez (bildirimler yöneticiler için kaydedilir).
+
 ## [0.8.0] — 2026-10-06
 
 ### Eklendi

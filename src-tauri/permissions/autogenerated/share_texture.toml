@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-share-texture"
+description = "Enables the share_texture command without any pre-configured scope."
+commands.allow = ["share_texture"]
+
+[[permission]]
+identifier = "deny-share-texture"
+description = "Denies the share_texture command without any pre-configured scope."
+commands.deny = ["share_texture"]

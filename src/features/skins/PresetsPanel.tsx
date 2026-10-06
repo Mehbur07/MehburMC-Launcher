@@ -1,14 +1,18 @@
-import { Check, Paintbrush, Plus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Check, Flag, Paintbrush, Plus, RefreshCw, Undo2 } from "lucide-react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { IconButton } from "../../components/ui";
+import { Badge, Button, ConfirmDialog, IconButton } from "../../components/ui";
 import { ipc } from "../../lib/ipc";
 import type { DefaultSkin } from "../../lib/ipc/bindings/DefaultSkin";
+import type { SharedTexture } from "../../lib/ipc/bindings/SharedTexture";
 import type { SkinModel } from "../../lib/ipc/bindings/SkinModel";
 import type { TextureKind } from "../../lib/ipc/bindings/TextureKind";
 import { toDataUri } from "./editor/canvas";
 import { CAPE_PRESETS, SKIN_PRESETS } from "./presets";
+import { useApp } from "../../stores/app";
+import { useCommunity } from "../../stores/community";
+import { ReportDialog, VisibilityIcon } from "./ShareDialogs";
 import { CapeThumb, SkinThumb } from "./SkinThumb";
 
 /** A texture that is not (yet) in the library. */
@@ -18,6 +22,8 @@ export interface LooseTexture {
   name: string;
   model: SkinModel;
   dataUri: string;
+  /** Set for community shares. */
+  share?: SharedTexture;
 }
 
 // Defaults are read from a jar once per session.
@@ -45,6 +51,14 @@ export function PresetsPanel({
 }) {
   const { t } = useTranslation();
   const [defaults, setDefaults] = useState<DefaultSkin[] | null>(null);
+  const shares = useCommunity((s) => s.items);
+  const communityLoading = useCommunity((s) => s.loading);
+  const communityError = useCommunity((s) => s.error);
+  const loadCommunity = useCommunity((s) => s.load);
+  const unshare = useCommunity((s) => s.unshare);
+  const [reporting, setReporting] = useState<SharedTexture | null>(null);
+  const [withdrawing, setWithdrawing] = useState<SharedTexture | null>(null);
+  const [reported, setReported] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -85,6 +99,39 @@ export function PresetsPanel({
         }))
       : [];
 
+  const community: LooseTexture[] = (shares ?? [])
+    .filter((s) => s.kind === kind)
+    .map((s) => ({
+      key: `community:${s.id}`,
+      kind: s.kind,
+      name: s.name,
+      model: s.model,
+      dataUri: s.dataUri,
+      share: s,
+    }));
+
+  const shareActions = (it: LooseTexture): ReactNode => {
+    const s = it.share;
+    if (!s) return null;
+    return s.mine ? (
+      <IconButton
+        label={t("skins.share.withdraw")}
+        className="h-7 w-7 hover:text-danger"
+        onClick={() => setWithdrawing(s)}
+      >
+        <Undo2 size={13} />
+      </IconButton>
+    ) : (
+      <IconButton
+        label={t("skins.report.button")}
+        className="h-7 w-7 hover:text-danger"
+        onClick={() => setReporting(s)}
+      >
+        <Flag size={13} />
+      </IconButton>
+    );
+  };
+
   const grid = (items: LooseTexture[]) => (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(112px,1fr))] gap-3">
       {items.map((it) => {
@@ -108,9 +155,19 @@ export function PresetsPanel({
                 <CapeThumb src={it.dataUri} unit={6} className="h-24 w-[60px]" />
               )}
             </button>
-            <div className="truncate px-2 pt-1.5 text-xs font-semibold" title={it.name}>
-              {it.name}
+            <div className="flex items-center gap-1 px-2 pt-1.5">
+              <span className="min-w-0 flex-1 truncate text-xs font-semibold" title={it.name}>
+                {it.name}
+              </span>
+              {it.share && <VisibilityIcon visibility={it.share.visibility} />}
             </div>
+            {it.share && (
+              <div className="truncate px-2 text-[11px] text-muted" title={it.share.author}>
+                {it.share.mine
+                  ? t("skins.community.mine")
+                  : t("skins.community.by", { name: it.share.author })}
+              </div>
+            )}
             <div className="flex items-center justify-between px-1 pb-0.5">
               <span className="px-1 text-[11px] text-muted">
                 {it.kind === "skin" && !it.key.startsWith("default:")
@@ -118,6 +175,7 @@ export function PresetsPanel({
                   : ""}
               </span>
               <div className="flex">
+                {shareActions(it)}
                 <IconButton
                   label={t("skins.presets.edit", { name: it.name })}
                   className="h-7 w-7"
@@ -142,6 +200,45 @@ export function PresetsPanel({
 
   return (
     <div className="flex flex-col gap-4">
+      <section className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold">{t("skins.community.title")}</h3>
+          <Badge tone="accent">{community.length}</Badge>
+          <IconButton
+            label={t("common.refresh")}
+            className="ml-auto h-7 w-7"
+            disabled={communityLoading}
+            onClick={() => void loadCommunity()}
+          >
+            <RefreshCw size={13} className={communityLoading ? "animate-spin" : ""} />
+          </IconButton>
+        </div>
+        <p className="text-xs text-muted">{t("skins.community.hint")}</p>
+        {reported && (
+          <p role="status" className="text-xs text-success">
+            {t("skins.report.thanks")}
+          </p>
+        )}
+        {communityError && shares === null ? (
+          <div className="flex items-center gap-2 text-xs text-danger">
+            {communityError.code === "friends.server"
+              ? t("skins.community.unavailable")
+              : t(`errors.${communityError.code}`, {
+                  ...communityError.params,
+                  defaultValue: t("skins.community.unavailable"),
+                })}
+            <Button size="sm" onClick={() => void loadCommunity()}>
+              {t("common.retry")}
+            </Button>
+          </div>
+        ) : shares === null ? (
+          <p className="text-xs text-muted">{t("common.loading")}</p>
+        ) : community.length === 0 ? (
+          <p className="text-xs text-muted">{t("skins.community.empty")}</p>
+        ) : (
+          grid(community)
+        )}
+      </section>
       {kind === "skin" && (
         <section className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold">{t("skins.presets.gameDefaults")}</h3>
@@ -164,6 +261,24 @@ export function PresetsPanel({
         <p className="text-xs text-muted">{t("skins.presets.collectionHint")}</p>
         {grid(ours)}
       </section>
+
+      <ReportDialog
+        item={reporting}
+        onClose={() => setReporting(null)}
+        onReported={() => setReported(true)}
+      />
+      <ConfirmDialog
+        open={withdrawing !== null}
+        danger
+        title={t("skins.share.withdrawTitle")}
+        message={t("skins.share.withdrawBody", { name: withdrawing?.name ?? "" })}
+        confirmLabel={t("skins.share.withdraw")}
+        onClose={() => setWithdrawing(null)}
+        onConfirm={() => {
+          if (!withdrawing) return;
+          void unshare(withdrawing.id).then((e) => e && useApp.setState({ notice: e }));
+        }}
+      />
     </div>
   );
 }

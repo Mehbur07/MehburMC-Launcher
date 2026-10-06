@@ -5,6 +5,7 @@ import {
   Library,
   Paintbrush,
   Pencil,
+  Share2,
   Shirt,
   Sparkles,
   Trash2,
@@ -31,9 +32,11 @@ import type { SkinModel } from "../../lib/ipc/bindings/SkinModel";
 import type { TextureKind } from "../../lib/ipc/bindings/TextureKind";
 import { useAccounts } from "../../stores/accounts";
 import { useApp } from "../../stores/app";
+import { myShare, useCommunity } from "../../stores/community";
 import { accountCape, accountSkin, useSkins } from "../../stores/skins";
 import { type EditorSeed, SkinEditor } from "./editor/SkinEditor";
 import { InGamePanel } from "./InGamePanel";
+import { ShareDialog, type ShareTarget, VisibilityIcon } from "./ShareDialogs";
 import { type LooseTexture, PresetsPanel } from "./PresetsPanel";
 import { CapeThumb, SkinThumb } from "./SkinThumb";
 import { SkinViewer3D, type BackItem, type Pose } from "./SkinViewer3D";
@@ -88,10 +91,18 @@ export function SkinsPage() {
   const [renaming, setRenaming] = useState<Item | null>(null);
   const [newName, setNewName] = useState("");
   const [pendingDelete, setPendingDelete] = useState<Item | null>(null);
+  const [sharing, setSharing] = useState<ShareTarget | null>(null);
+  const shares = useCommunity((s) => s.items);
+  const loadCommunity = useCommunity((s) => s.load);
 
   useEffect(() => {
     if (!loaded) void load();
   }, [loaded, load]);
+
+  // Own shares mark library cards; the community list fills "Presets".
+  useEffect(() => {
+    void loadCommunity();
+  }, [loadCommunity]);
 
   const resetPreview = () => {
     setPreviewSkin(null);
@@ -454,11 +465,12 @@ export function SkinsPage() {
                   </div>
                 </EmptyState>
               ) : (
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(132px,1fr))] gap-3">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3">
                   {list.map((it) => {
                     const active =
                       it.item.id === activeId && !(tab === "skin" ? looseSkin : looseCape);
                     const applied = it.item.id === appliedId;
+                    const shared = myShare(shares, it.kind, it.item.id);
                     return (
                       <div
                         key={it.item.id}
@@ -468,6 +480,21 @@ export function SkinsPage() {
                             : "border-line hover:border-accent/40"
                         }`}
                       >
+                        <IconButton
+                          label={shared ? t("skins.share.manage") : t("skins.share.button")}
+                          className={`absolute top-1 right-1 z-10 h-7 w-7 bg-surface-1/80 ${
+                            shared ? "text-accent" : "opacity-70 group-hover:opacity-100"
+                          }`}
+                          onClick={() =>
+                            setSharing({ kind: it.kind, id: it.item.id, name: it.item.name })
+                          }
+                        >
+                          {shared ? (
+                            <VisibilityIcon visibility={shared.visibility} size={14} />
+                          ) : (
+                            <Share2 size={14} />
+                          )}
+                        </IconButton>
                         <button
                           type="button"
                           onClick={() => previewLibrary(it.kind, it.item.id)}
@@ -607,6 +634,12 @@ export function SkinsPage() {
           }}
         />
       </Modal>
+
+      <ShareDialog
+        target={sharing}
+        existing={sharing ? myShare(shares, sharing.kind, sharing.id) : null}
+        onClose={() => setSharing(null)}
+      />
 
       <ConfirmDialog
         open={pendingDelete !== null}
