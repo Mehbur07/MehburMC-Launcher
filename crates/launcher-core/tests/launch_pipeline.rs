@@ -109,6 +109,7 @@ fn fixture(server_uri: &str) -> Fixture {
         extra_game_args: vec![],
         resolution: Some((1280, 720)),
         verify: Verify::Quick,
+        join_server: None,
     };
     Fixture {
         _tmp: tmp,

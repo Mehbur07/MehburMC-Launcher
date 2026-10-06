@@ -6,7 +6,8 @@ use tauri::window::Color;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 use crate::commands::{
-    accounts, content, data, dialogs, files, friends, home, instances, loaders, play, skins, update,
+    accounts, content, data, dialogs, files, friends, home, instances, loaders, play, servers,
+    skins, update,
 };
 use crate::state::AppState;
 
@@ -83,6 +84,15 @@ pub fn run() {
             play::list_tasks,
             play::cancel_task,
             play::clear_tasks,
+            play::join_server,
+            servers::list_favorite_servers,
+            servers::add_favorite_server,
+            servers::remove_favorite_server,
+            servers::reorder_favorite_servers,
+            servers::list_game_servers,
+            servers::add_game_server,
+            servers::remove_game_server,
+            servers::ping_server,
             accounts::list_accounts,
             accounts::add_offline_account,
             accounts::remove_account,

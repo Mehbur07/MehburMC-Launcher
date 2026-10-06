@@ -11,6 +11,7 @@ pub mod home;
 pub mod instances;
 pub mod loaders;
 pub mod play;
+pub mod servers;
 pub mod skins;
 pub mod update;
 

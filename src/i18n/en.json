@@ -16,6 +16,7 @@
     "accounts": "Accounts",
     "skins": "Skin & Cape",
     "friends": "Friends",
+    "servers": "Servers",
     "downloads": "Downloads",
     "console": "Console",
     "whatsNew": "What's new",
@@ -197,6 +198,14 @@
       "listNotFound": "This mod list is no longer shared.",
       "badItem": "The list contains an invalid file.",
       "server": "Friends server error: {{reason}}"
+    },
+    "server": {
+      "addressInvalid": "Invalid server address: {{address}}",
+      "notFound": "Server not found in the list (it may have changed; refresh).",
+      "listInvalid": "Could not read the game's server list ({{path}}): {{reason}}",
+      "unreachable": "Could not reach the server.",
+      "timeout": "The server did not answer in time.",
+      "badResponse": "No Minecraft server answers at this address (or it is a very old version)."
     }
   },
   "instances": {
@@ -731,5 +740,42 @@
       "working": "Uploading…"
     },
     "online": "Online"
+  },
+  "servers": {
+    "title": "Servers",
+    "subtitle": "Your favourite servers and each profile's in-game list, with live status, player count and ping.",
+    "add": "Add server",
+    "name": "Name",
+    "namePlaceholder": "My server",
+    "address": "Address",
+    "addressPlaceholder": "play.example.com or 1.2.3.4:25565",
+    "addTo": "Add to",
+    "toFavorites": "Favourites",
+    "toGame": "Game list ({{instance}})",
+    "favorites": "Favourites",
+    "favoritesEmpty": "No favourite servers yet. Use \"Add server\" or star a server from the game list.",
+    "gameList": "Game list",
+    "gameListHint": "This profile's in-game Multiplayer list (servers.dat).",
+    "gameListEmpty": "This profile's in-game list is empty.",
+    "profile": "Profile",
+    "noInstances": "Create a profile first to join servers.",
+    "join": "Join",
+    "joinTitle": "Start {{instance}} and join {{server}}",
+    "running": "Game running",
+    "favorite": "Add to favourites",
+    "unfavorite": "Remove from favourites",
+    "copy": "Copy address",
+    "copied": "Address copied",
+    "remove": "Remove",
+    "removeFavoriteTitle": "Remove from favourites?",
+    "removeGameTitle": "Delete from the game list?",
+    "removeMessage": "{{name}} ({{address}}) will be removed.",
+    "refresh": "Refresh status",
+    "pinging": "Pinging…",
+    "offline": "Offline",
+    "players": "{{online}} / {{max}} players",
+    "ping": "{{ms}} ms",
+    "version": "Version: {{version}}",
+    "lockedWhileRunning": "The game list cannot be changed while the game is running."
   }
 }

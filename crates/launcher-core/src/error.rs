@@ -180,6 +180,21 @@ pub enum CoreError {
 
     #[error("friends service error (HTTP {status}): {reason}")]
     FriendsServer { status: u16, reason: String },
+
+    #[error("invalid server address: {0}")]
+    ServerAddressInvalid(String),
+
+    #[error("server {0} was not found in the list")]
+    ServerNotFound(String),
+
+    #[error("server list {} is invalid: {reason}", path.display())]
+    ServerListInvalid { path: PathBuf, reason: String },
+
+    #[error("server {address} did not answer ({kind:?})")]
+    ServerPing {
+        address: String,
+        kind: crate::servers::ping::PingFailure,
+    },
 }
 
 impl CoreError {
@@ -239,6 +254,14 @@ impl CoreError {
             Self::DataMove(_) => "paths.moveFailed",
             Self::Friends(code) => code,
             Self::FriendsServer { .. } => "friends.server",
+            Self::ServerAddressInvalid(_) => "server.addressInvalid",
+            Self::ServerNotFound(_) => "server.notFound",
+            Self::ServerListInvalid { .. } => "server.listInvalid",
+            Self::ServerPing { kind, .. } => match kind {
+                crate::servers::ping::PingFailure::Unreachable => "server.unreachable",
+                crate::servers::ping::PingFailure::Timeout => "server.timeout",
+                crate::servers::ping::PingFailure::BadResponse => "server.badResponse",
+            },
         }
     }
 
@@ -327,6 +350,13 @@ impl CoreError {
             | Self::DataMove(reason) => put("reason", reason.clone()),
             Self::SkinNotFound(id) => put("id", id.clone()),
             Self::FriendsServer { reason, .. } => put("reason", reason.clone()),
+            Self::ServerAddressInvalid(address)
+            | Self::ServerNotFound(address)
+            | Self::ServerPing { address, .. } => put("address", address.clone()),
+            Self::ServerListInvalid { path, reason } => {
+                put("path", path.display().to_string());
+                put("reason", reason.clone());
+            }
             Self::NoDataDir
             | Self::Cancelled
             | Self::NoAccount

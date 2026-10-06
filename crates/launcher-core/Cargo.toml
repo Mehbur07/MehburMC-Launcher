@@ -12,6 +12,7 @@ directories.workspace = true
 fs4.workspace = true
 futures-util.workspace = true
 hex.workspace = true
+hickory-resolver.workspace = true
 md-5.workspace = true
 png.workspace = true
 regex.workspace = true

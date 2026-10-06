@@ -25,6 +25,7 @@ use crate::launch::{self, LaunchOptions, process};
 use crate::loader;
 use crate::net::download::Verify;
 use crate::paths::Paths;
+use crate::servers::{ServerAddress, ServerStore};
 use crate::settings::{LaunchBehavior, Settings};
 use crate::skin::{self, SkinStore};
 use crate::tasks::{TaskKind, TaskRegistry, TaskStatus, TrackingSink};
@@ -66,6 +67,7 @@ pub struct Launcher {
     pub skins: SkinStore,
     pub avatars: AvatarStore,
     pub friends: FriendsClient,
+    pub servers: ServerStore,
     pub tasks: Arc<TaskRegistry>,
     pub running: Running,
     /// Accounts whose name another MehburMC user reserved first (K67).
@@ -86,6 +88,7 @@ impl Launcher {
             instances: InstanceStore::new(paths.clone()),
             accounts: AccountStore::new(paths.clone()),
             avatars: AvatarStore::new(paths.clone()),
+            servers: ServerStore::new(paths.clone()),
             skins: SkinStore::new(paths),
             tasks,
             running: Running::default(),
@@ -101,6 +104,18 @@ impl Launcher {
         settings: Settings,
         mode: StartMode,
         hooks: Arc<dyn LaunchHooks>,
+    ) -> Result<String> {
+        self.start_with(instance_id, settings, mode, hooks, None)
+    }
+
+    /// [`Self::start`] that also joins `server` once the game is up.
+    pub fn start_with(
+        self: &Arc<Self>,
+        instance_id: &str,
+        settings: Settings,
+        mode: StartMode,
+        hooks: Arc<dyn LaunchHooks>,
+        join_server: Option<ServerAddress>,
     ) -> Result<String> {
         let inst = self.instances.get(instance_id)?;
         let account_id = self.accounts.view().selected;
@@ -136,6 +151,7 @@ impl Launcher {
                 StartMode::Play => Verify::Quick,
                 StartMode::Repair => Verify::Full,
             },
+            join_server,
         };
 
         let this = self.clone();

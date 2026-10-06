@@ -28,6 +28,7 @@ pub mod news;
 pub mod os;
 pub mod paths;
 pub mod rules;
+pub mod servers;
 pub mod session;
 pub mod settings;
 pub mod skin;

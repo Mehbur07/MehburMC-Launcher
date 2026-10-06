@@ -14,6 +14,7 @@ export type View =
   | "accounts"
   | "skins"
   | "friends"
+  | "servers"
   | "downloads"
   | "console"
   | "whatsNew"

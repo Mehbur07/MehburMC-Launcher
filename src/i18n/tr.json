@@ -16,6 +16,7 @@
     "accounts": "Hesaplar",
     "skins": "Skin & Cape",
     "friends": "Arkadaşlar",
+    "servers": "Sunucular",
     "downloads": "İndirmeler",
     "console": "Konsol",
     "whatsNew": "Yenilikler",
@@ -197,6 +198,14 @@
       "listNotFound": "Bu mod listesi artık paylaşılmıyor.",
       "badItem": "Listede geçersiz bir dosya var.",
       "server": "Arkadaş sunucusunda hata: {{reason}}"
+    },
+    "server": {
+      "addressInvalid": "Geçersiz sunucu adresi: {{address}}",
+      "notFound": "Sunucu listede bulunamadı (liste değişmiş olabilir; yenileyin).",
+      "listInvalid": "Oyunun sunucu listesi okunamadı ({{path}}): {{reason}}",
+      "unreachable": "Sunucuya ulaşılamadı.",
+      "timeout": "Sunucu zamanında yanıt vermedi.",
+      "badResponse": "Bu adreste bir Minecraft sunucusu yanıt vermiyor (ya da çok eski bir sürüm)."
     }
   },
   "instances": {
@@ -731,5 +740,42 @@
       "working": "Yükleniyor…"
     },
     "online": "Çevrimiçi"
+  },
+  "servers": {
+    "title": "Sunucular",
+    "subtitle": "Favori sunucuların ve profillerinin oyun içi listesi; durum, oyuncu sayısı ve ping canlı gösterilir.",
+    "add": "Sunucu ekle",
+    "name": "Ad",
+    "namePlaceholder": "Benim sunucum",
+    "address": "Adres",
+    "addressPlaceholder": "play.ornek.com veya 1.2.3.4:25565",
+    "addTo": "Nereye eklensin?",
+    "toFavorites": "Favoriler",
+    "toGame": "Oyunun listesi ({{instance}})",
+    "favorites": "Favoriler",
+    "favoritesEmpty": "Henüz favori sunucu yok. \"Sunucu ekle\" ile ya da oyunun listesindeki bir sunucunun yıldızına basarak ekleyebilirsin.",
+    "gameList": "Oyunun listesi",
+    "gameListHint": "Bu profilin oyun içindeki Çok Oyunculu listesi (servers.dat).",
+    "gameListEmpty": "Bu profilin oyun içi listesi boş.",
+    "profile": "Profil",
+    "noInstances": "Sunucuya bağlanmak için önce bir profil oluştur.",
+    "join": "Bağlan",
+    "joinTitle": "{{instance}} ile başlat ve {{server}} sunucusuna bağlan",
+    "running": "Oyun çalışıyor",
+    "favorite": "Favorilere ekle",
+    "unfavorite": "Favorilerden çıkar",
+    "copy": "Adresi kopyala",
+    "copied": "Adres kopyalandı",
+    "remove": "Kaldır",
+    "removeFavoriteTitle": "Favoriden çıkarılsın mı?",
+    "removeGameTitle": "Oyunun listesinden silinsin mi?",
+    "removeMessage": "{{name}} ({{address}}) kaldırılacak.",
+    "refresh": "Durumları yenile",
+    "pinging": "Sorgulanıyor…",
+    "offline": "Çevrim dışı",
+    "players": "{{online}} / {{max}} oyuncu",
+    "ping": "{{ms}} ms",
+    "version": "Sürüm: {{version}}",
+    "lockedWhileRunning": "Oyun çalışırken oyunun listesi değiştirilemez."
   }
 }

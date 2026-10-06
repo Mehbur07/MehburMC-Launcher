@@ -38,6 +38,8 @@ pub struct LaunchOptions {
     pub extra_game_args: Vec<String>,
     pub resolution: Option<(u32, u32)>,
     pub verify: Verify,
+    /// Join this multiplayer server once the game has started.
+    pub join_server: Option<crate::servers::ServerAddress>,
 }
 
 #[derive(Debug, Clone)]
@@ -264,6 +266,10 @@ pub async fn prepare(
         ]);
     }
     full.extend(opts.extra_game_args.iter().cloned());
+    if let Some(server) = &opts.join_server {
+        tracing::info!(%server, "joining server after start");
+        full.extend(args::join_server(v, server));
+    }
 
     let left = args::unresolved(&full);
     if !left.is_empty() {

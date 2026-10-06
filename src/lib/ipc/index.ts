@@ -15,6 +15,9 @@ import type { FileEntry } from "./bindings/FileEntry";
 import type { Friend } from "./bindings/Friend";
 import type { FriendInstallResult } from "./bindings/FriendInstallResult";
 import type { FriendsStatus } from "./bindings/FriendsStatus";
+import type { FavoriteServer } from "./bindings/FavoriteServer";
+import type { GameServer } from "./bindings/GameServer";
+import type { ServerStatus } from "./bindings/ServerStatus";
 import type { Profile } from "./bindings/Profile";
 import type { SharedList } from "./bindings/SharedList";
 import type { ImportResult } from "./bindings/ImportResult";
@@ -71,6 +74,8 @@ export const ipc = {
   launchInstance: (id: string) => invoke<string>("launch_instance", { id }),
   repairInstance: (id: string) => invoke<string>("repair_instance", { id }),
   stopInstance: (id: string) => invoke<boolean>("stop_instance", { id }),
+  /** Starts the instance and joins `address` from the main menu. */
+  joinServer: (id: string, address: string) => invoke<string>("join_server", { id, address }),
   listTasks: () => invoke<TaskInfo[]>("list_tasks"),
   cancelTask: (id: string, pause: boolean) => invoke<boolean>("cancel_task", { id, pause }),
   clearTasks: () => invoke<TaskInfo[]>("clear_tasks"),
@@ -116,6 +121,20 @@ export const ipc = {
     invoke<ImportResult>("install_modrinth_modpack", { versionId }),
   contentIcon: (url: string) => invoke<string>("content_icon", { url }),
   openExternal: (url: string) => invoke<void>("open_external", { url }),
+
+  listFavoriteServers: () => invoke<FavoriteServer[]>("list_favorite_servers"),
+  addFavoriteServer: (name: string, address: string) =>
+    invoke<FavoriteServer[]>("add_favorite_server", { name, address }),
+  removeFavoriteServer: (id: string) => invoke<FavoriteServer[]>("remove_favorite_server", { id }),
+  reorderFavoriteServers: (ids: string[]) =>
+    invoke<FavoriteServer[]>("reorder_favorite_servers", { ids }),
+  listGameServers: (instanceId: string) =>
+    invoke<GameServer[]>("list_game_servers", { instanceId }),
+  addGameServer: (instanceId: string, name: string, address: string) =>
+    invoke<GameServer[]>("add_game_server", { instanceId, name, address }),
+  removeGameServer: (instanceId: string, index: number, address: string) =>
+    invoke<GameServer[]>("remove_game_server", { instanceId, index, address }),
+  pingServer: (address: string) => invoke<ServerStatus>("ping_server", { address }),
 
   friendsStatus: () => invoke<FriendsStatus>("friends_status"),
   friendsEnable: () => invoke<Profile>("friends_enable"),

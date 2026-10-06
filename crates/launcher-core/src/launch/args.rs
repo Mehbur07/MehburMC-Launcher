@@ -7,6 +7,7 @@
 use std::collections::HashMap;
 
 use crate::rules::{RuleEnv, allowed};
+use crate::servers::ServerAddress;
 use crate::version::profile::{Argument, VersionJson};
 
 /// Placeholder → value map (`auth_player_name` → `Steve`).
@@ -139,6 +140,35 @@ pub fn build(version: &VersionJson, env: &RuleEnv, vars: &Vars) -> (Vec<String>,
     }
 }
 
+/// Arguments that make the client join `server` right after start:
+/// `--quickPlayMultiplayer host:port` where the version supports Quick Play
+/// (1.20+), otherwise the older `--server`/`--port` pair.
+pub fn join_server(version: &VersionJson, server: &ServerAddress) -> Vec<String> {
+    let quick_play = version.arguments.as_ref().is_some_and(|a| {
+        a.game.iter().any(|x| match x {
+            Argument::Plain(s) => s == "--quickPlayMultiplayer",
+            Argument::Conditional { value, .. } => {
+                value.values().contains(&"--quickPlayMultiplayer")
+            }
+        })
+    });
+    if quick_play {
+        vec!["--quickPlayMultiplayer".into(), server.connect_string()]
+    } else {
+        let host = if server.host.contains(':') {
+            format!("[{}]", server.host)
+        } else {
+            server.host.clone()
+        };
+        vec![
+            "--server".into(),
+            host,
+            "--port".into(),
+            server.port.to_string(),
+        ]
+    }
+}
+
 /// Placeholders that survived substitution (diagnostics).
 pub fn unresolved(args: &[String]) -> Vec<String> {
     let mut out = Vec::new();
@@ -251,6 +281,20 @@ mod tests {
         let (_, game) = build(&fixture("26.3.json"), &env, &vars());
         let w = game.iter().position(|a| a == "--width").unwrap();
         assert_eq!(game[w + 1], "1280");
+    }
+
+    #[test]
+    fn join_server_args() {
+        let a = ServerAddress::parse("Play.Example.org").unwrap();
+        assert_eq!(
+            join_server(&fixture("26.3.json"), &a),
+            ["--quickPlayMultiplayer", "play.example.org:25565"]
+        );
+        let a = ServerAddress::parse("1.2.3.4:25570").unwrap();
+        assert_eq!(
+            join_server(&fixture("1.12.2.json"), &a),
+            ["--server", "1.2.3.4", "--port", "25570"]
+        );
     }
 
     #[test]

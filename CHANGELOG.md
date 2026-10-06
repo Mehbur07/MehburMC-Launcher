@@ -3,6 +3,18 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.7.0] — 2026-10-06
+
+### Eklendi
+- **Sunucular sayfası:** favori sunucuların ve her profilin oyun içi Çok Oyunculu listesi
+  tek yerde. Her sunucunun simgesi, renkli açıklaması (MOTD), oyuncu sayısı ve pingi canlı
+  görünür; **Yenile** ile tekrar sorgulanır.
+- **Bağlan:** seçili profili başlatır ve oyun açılınca sunucuya doğrudan bağlanır
+  (1.20+ Hızlı Oyun, eski sürümlerde `--server`).
+- Sunucu ekle (favorilere ya da profilin oyun içi listesine), yıldızla favorile, adresi
+  kopyala, onaylayarak sil. Oyun çalışırken oyunun listesi değiştirilemez.
+- `play.ornek.com` gibi portsuz adreslerde SRV kayıtları oyundaki gibi kullanılır.
+
 ## [0.6.0] — 2026-10-06
 
 ### Eklendi

@@ -3,6 +3,7 @@ import {
   Compass,
   Download,
   Play,
+  Server,
   Settings,
   Shirt,
   Sparkles,
@@ -25,6 +26,7 @@ const ITEMS: { view: View; icon: LucideIcon }[] = [
   { view: "accounts", icon: UserRound },
   { view: "skins", icon: Shirt },
   { view: "friends", icon: Users },
+  { view: "servers", icon: Server },
   { view: "downloads", icon: Download },
   { view: "console", icon: SquareTerminal },
 ];

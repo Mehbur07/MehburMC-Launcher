@@ -4,6 +4,7 @@ use std::time::Duration;
 
 use launcher_core::instance::Instance;
 use launcher_core::launch::process::GameExit;
+use launcher_core::servers::ServerAddress;
 use launcher_core::session::{LaunchHooks, StartMode};
 use launcher_core::settings::LaunchBehavior;
 use launcher_core::tasks::TaskInfo;
@@ -68,14 +69,22 @@ impl LaunchHooks for WindowHooks {
     }
 }
 
-fn start(app: AppHandle, state: &AppState, id: &str, mode: StartMode) -> CmdResult<String> {
+fn start(
+    app: AppHandle,
+    state: &AppState,
+    id: &str,
+    mode: StartMode,
+    join: Option<ServerAddress>,
+) -> CmdResult<String> {
     let settings = state.settings();
     let hooks = Arc::new(WindowHooks {
         app,
         behavior: settings.launch_behavior,
         exited: Arc::new(AtomicBool::new(false)),
     });
-    Ok(state.launcher()?.start(id, settings, mode, hooks)?)
+    Ok(state
+        .launcher()?
+        .start_with(id, settings, mode, hooks, join)?)
 }
 
 /// Must be async: the task is spawned on the Tokio runtime.
@@ -85,7 +94,19 @@ pub async fn launch_instance(
     state: State<'_, AppState>,
     id: String,
 ) -> CmdResult<String> {
-    start(app, &state, &id, StartMode::Play)
+    start(app, &state, &id, StartMode::Play, None)
+}
+
+/// Starts the instance and joins `address` from the main menu.
+#[tauri::command]
+pub async fn join_server(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    id: String,
+    address: String,
+) -> CmdResult<String> {
+    let addr = ServerAddress::parse(&address)?;
+    start(app, &state, &id, StartMode::Play, Some(addr))
 }
 
 #[tauri::command]
@@ -94,7 +115,7 @@ pub async fn repair_instance(
     state: State<'_, AppState>,
     id: String,
 ) -> CmdResult<String> {
-    start(app, &state, &id, StartMode::Repair)
+    start(app, &state, &id, StartMode::Repair, None)
 }
 
 #[tauri::command]

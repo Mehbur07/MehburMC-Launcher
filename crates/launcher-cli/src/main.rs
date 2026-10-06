@@ -65,6 +65,11 @@ enum Command {
         #[command(subcommand)]
         action: LoaderAction,
     },
+    /// Ping a multiplayer server (status, players, latency) and print JSON.
+    Ping {
+        /// host[:port]
+        address: String,
+    },
     /// Download (if needed) and launch a version with an offline account.
     Launch {
         /// Version id, e.g. 26.3, 1.12.2 (default: latest release).
@@ -101,6 +106,9 @@ enum Command {
         width: Option<u32>,
         #[arg(long)]
         height: Option<u32>,
+        /// Join this server (host[:port]) once the game has started.
+        #[arg(long)]
+        server: Option<String>,
     },
 }
 
@@ -455,6 +463,13 @@ async fn run(command: Command, ctx: &Ctx, settings: &Settings, sink: Arc<CliSink
                 );
             }
         },
+        Command::Ping { address } => {
+            let a = launcher_core::servers::ServerAddress::parse(&address).map_err(core_err)?;
+            let status = launcher_core::servers::ping::ping(&a)
+                .await
+                .map_err(core_err)?;
+            println!("{}", serde_json::to_string_pretty(&status)?);
+        }
         Command::Loader { action } => match action {
             LoaderAction::List { kind, mc, limit } => {
                 let spec = parse_loader(&kind)?;
@@ -507,7 +522,13 @@ already present: {:?}",
             exit_when_ready,
             width,
             height,
+            server,
         } => {
+            let join_server = server
+                .as_deref()
+                .map(launcher_core::servers::ServerAddress::parse)
+                .transpose()
+                .map_err(core_err)?;
             let version_id = match version {
                 Some(v) => v,
                 None => {
@@ -553,6 +574,7 @@ already present: {:?}",
                 extra_game_args: vec![],
                 resolution: width.zip(height),
                 verify: if verify { Verify::Full } else { Verify::Quick },
+                join_server,
             };
             let started = std::time::Instant::now();
             let prepared = launch::prepare(ctx, &opts, &version_id, &cancel)
