@@ -33,6 +33,10 @@ import type { InstancePatch } from "./bindings/InstancePatch";
 import type { InstancesView } from "./bindings/InstancesView";
 import type { JavaInstall } from "./bindings/JavaInstall";
 import type { LibraryView } from "./bindings/LibraryView";
+import type { LibraryInstall } from "./bindings/LibraryInstall";
+import type { LibraryMod } from "./bindings/LibraryMod";
+import type { LibraryReportReason } from "./bindings/LibraryReportReason";
+import type { LibraryScan } from "./bindings/LibraryScan";
 import type { LoaderKind } from "./bindings/LoaderKind";
 import type { LoaderVersion } from "./bindings/LoaderVersion";
 import type { DefaultSkin } from "./bindings/DefaultSkin";
@@ -150,6 +154,19 @@ export const ipc = {
   unshareTexture: (shareId: number) => invoke<void>("unshare_texture", { shareId }),
   reportTexture: (shareId: number, reason: ReportReason, note: string) =>
     invoke<void>("report_texture", { shareId, reason, note }),
+
+  /** Scans the jar chosen with `pickPath("libraryMod")`. */
+  libraryScanPick: () => invoke<LibraryScan>("library_scan_pick"),
+  /** Uploads the scanned jar for review; returns its library id. */
+  librarySubmit: (name: string, description: string) =>
+    invoke<number>("library_submit", { name, description }),
+  /** Approved mods and own uploads (own first). */
+  libraryMods: () => invoke<LibraryMod[]>("library_mods"),
+  libraryWithdraw: (libraryId: number) => invoke<void>("library_withdraw", { libraryId }),
+  libraryReport: (libraryId: number, reason: LibraryReportReason, note: string) =>
+    invoke<void>("library_report", { libraryId, reason, note }),
+  libraryInstall: (libraryId: number, instanceId: string, acceptWarnings: boolean) =>
+    invoke<LibraryInstall>("library_install", { libraryId, instanceId, acceptWarnings }),
 
   friendsStatus: () => invoke<FriendsStatus>("friends_status"),
   friendsEnable: () => invoke<Profile>("friends_enable"),

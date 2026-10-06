@@ -36,7 +36,8 @@ interface AppStore {
   consoleInstance: string | null;
   /** Instance the content browser installs into (null = none / modpacks). */
   browseTarget: string | null;
-  browseType: ProjectType;
+  /** Modrinth project type, or the MehburMC Library tab. */
+  browseType: ProjectType | "library";
   wizardOpen: boolean;
   /** Release notes not looked at yet (first start after an update). */
   whatsNewUnseen: boolean;

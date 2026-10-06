@@ -3,6 +3,7 @@
 //! this client only holds an anonymous identity in `launcher/friends.json`.
 
 pub mod avatar;
+pub mod library;
 pub mod names;
 pub mod presence;
 pub mod share;
@@ -192,6 +193,7 @@ fn server_error(status: u16, body: &[u8]) -> CoreError {
         .iter()
         .chain(names::NAME_ERRORS)
         .chain(textures::TEXTURE_ERRORS)
+        .chain(library::LIBRARY_ERRORS)
         .find(|c| **c == message)
     {
         return CoreError::Friends(code);
@@ -532,10 +534,16 @@ impl FriendsClient {
     pub async fn delete_identity(&self) -> Result<()> {
         if self.has_identity().await {
             self.delete_files().await?;
-            // Shared skins/capes belong to the identity, not to friends.
-            match self.delete_all_textures().await {
-                Ok(()) | Err(CoreError::FriendsServer { status: 401, .. }) => {}
-                Err(e) => return Err(e),
+            // Shared skins/capes and library mods belong to the identity,
+            // not to friends.
+            for deleted in [
+                self.delete_all_textures().await,
+                self.delete_all_library_files().await,
+            ] {
+                match deleted {
+                    Ok(()) | Err(CoreError::FriendsServer { status: 401, .. }) => {}
+                    Err(e) => return Err(e),
+                }
             }
             match self.rpc_void("delete_me", json!({})).await {
                 Ok(()) | Err(CoreError::FriendsServer { status: 401, .. }) => {}
@@ -909,6 +917,15 @@ pub(crate) mod tests {
                 json!({ "prefixes": [format!("{ME}/s.png")] }),
             ))
             .respond_with(ResponseTemplate::new(200).set_body_json(json!([])))
+            .expect(1)
+            .mount(&server)
+            .await;
+        // No library bucket on this server: deleting still works.
+        Mock::given(method("POST"))
+            .and(path("/storage/v1/object/list/library"))
+            .respond_with(
+                ResponseTemplate::new(400).set_body_json(json!({ "error": "Bucket not found" })),
+            )
             .expect(1)
             .mount(&server)
             .await;

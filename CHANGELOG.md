@@ -3,6 +3,20 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.11.0] — 2026-10-06
+
+### Eklendi
+- **MehburMC Kütüphanesi:** Mod Tarayıcı'da yeni sekme. Kendi mod jar'ını **Mod yükle** ile
+  kütüphaneye gönder; launcher dosyayı önce **otomatik güvenlik kontrolünden** geçirir
+  (veri sızdırma adresleri, hesap/tarayıcı dosyalarına erişim, gizli kod yükleme, gömülü
+  .exe, zip bombası, geçersiz mod tanımı engellenir; ağ, program çalıştırma gibi davranışlar
+  uyarı olarak gösterilir). Geçen modlar **admin onayından sonra** herkese yayınlanır;
+  o zamana kadar **Yüklediklerim** bölümünde "Onay bekliyor" olarak görünür, istediğin an
+  **Geri çek**.
+- Onaylı modları tek tıkla kur: dosya indirildikten sonra SHA-1 ile doğrulanır ve senin
+  launcher'ında yeniden taranır; uyarı varsa kurmadan önce sorulur. Profilin mod loader'ına
+  uymayan modlar kurulamaz. Şüpheli modu **Bildir**.
+
 ## [0.10.0] — 2026-10-06
 
 ### Eklendi

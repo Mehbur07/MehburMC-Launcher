@@ -214,6 +214,15 @@
       "quota": "You can share at most 30 skins/capes. Withdraw one to share another.",
       "notFound": "This share no longer exists.",
       "ownReport": "You cannot report your own share."
+    },
+    "library": {
+      "blocked": "This mod failed the automatic check and cannot be uploaded or installed.",
+      "fileMissing": "The file could not be uploaded; try again.",
+      "quota": "At most 10 of your mods can await review at once.",
+      "notFound": "This mod is no longer in the library.",
+      "changed": "The file changed after it was checked; choose it again.",
+      "conflict": "The instance already has a different file with the same name.",
+      "wrongLoader": "This mod does not match the selected instance's mod loader."
     }
   },
   "instances": {
@@ -862,5 +871,88 @@
     "on": "On",
     "off": "Off",
     "switch": "Toggle {{name}}"
+  },
+  "library": {
+    "tab": "MehburMC Library",
+    "search": "Search the library…",
+    "intro": "Mods uploaded by the community. Every upload goes through an automatic safety check and is published only after an admin approves it. No scan is 100% safe; install only mods you trust.",
+    "scanning": "Checking…",
+    "mine": "My uploads",
+    "approved": "Approved mods",
+    "empty": "No approved mods yet",
+    "emptyHint": "Uploaded mods appear here after an admin approves them.",
+    "withdraw": "Withdraw",
+    "withdrawTitle": "Withdraw this mod?",
+    "withdrawMessage": "\"{{name}}\" will be removed from the library and the server.",
+    "warnings": "Warnings: {{count}}",
+    "wrongLoader": "This mod does not match the selected instance's mod loader.",
+    "locked": "Cannot install while the game is running.",
+    "reviewNote": "Admin note: {{note}}",
+    "confirmTitle": "Install \"{{name}}\"?",
+    "confirmMessage": "The launcher's own check found behaviour worth a look in this mod. Legitimate mods do this too (e.g. update checks), but only install it if you trust it.",
+    "confirmInstall": "Install anyway",
+    "status": {
+      "pending": "Awaiting approval",
+      "approved": "Published",
+      "rejected": "Rejected"
+    },
+    "loaders": {
+      "fabric": "Fabric",
+      "quilt": "Quilt",
+      "forge": "Forge",
+      "neoForge": "NeoForge"
+    },
+    "verdict": {
+      "pass": "Check clean: nothing suspicious found.",
+      "warn": "Check passed with warnings: an admin will review them.",
+      "block": "This file cannot be uploaded."
+    },
+    "upload": {
+      "button": "Upload mod",
+      "pick": "Choose the mod jar to upload",
+      "title": "Upload to the library: {{file}}",
+      "stats": "{{classes}} classes · {{size}}",
+      "name": "Name",
+      "description": "Description",
+      "author": "Shown as uploaded by \"{{name}}\".",
+      "noAccount": "Select an account to upload.",
+      "rules": "Only upload mods you are allowed to distribute. Accounts that upload malware are banned.",
+      "submit": "Submit for review"
+    },
+    "report": {
+      "button": "Report",
+      "title": "Report \"{{name}}\"",
+      "hint": "Reports go to the admins. A mod you report is no longer shown to you.",
+      "submit": "Report",
+      "note": "Note (optional)",
+      "reasons": {
+        "malware": "Malware / suspicious behaviour",
+        "broken": "Broken / crashes the game",
+        "stolen": "Someone else's mod, without permission",
+        "other": "Other"
+      }
+    },
+    "findings": {
+      "webhook": "Discord webhook or Telegram bot address (data exfiltration)",
+      "credentialPaths": "Paths to browser, Discord or launcher account files",
+      "hiddenPayload": "Loads classes from decoded/decrypted data (hidden code)",
+      "executable": "Embedded executable (.exe, .bat, …)",
+      "zipBomb": "Oversized or over-compressed content",
+      "tooManyFiles": "Too many files",
+      "tooLarge": "File is larger than the 25 MB limit",
+      "noDescriptor": "No mod descriptor (fabric.mod.json / mods.toml / quilt.mod.json)",
+      "notAJar": "Not a valid jar file",
+      "network": "Connects to the internet",
+      "processExec": "Runs other programs",
+      "nativeLoad": "Loads native libraries",
+      "nativeBinary": "Contains native library files (.dll, .so)",
+      "defineClass": "Defines classes at runtime",
+      "crypto": "Uses encryption",
+      "suspiciousUrl": "Suspicious address (pastebin, ngrok, IP loggers, …)",
+      "encodedBlob": "Long encoded data blob",
+      "obfuscated": "Code looks obfuscated",
+      "badClass": "Unreadable class file",
+      "deepNesting": "Jar nested too deeply"
+    }
   }
 }

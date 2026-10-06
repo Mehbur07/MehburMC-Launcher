@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-library-submit"
+description = "Enables the library_submit command without any pre-configured scope."
+commands.allow = ["library_submit"]
+
+[[permission]]
+identifier = "deny-library-submit"
+description = "Denies the library_submit command without any pre-configured scope."
+commands.deny = ["library_submit"]

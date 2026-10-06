@@ -214,6 +214,15 @@
       "quota": "En fazla 30 skin/pelerin paylaşabilirsin. Yenisi için birini geri çek.",
       "notFound": "Bu paylaşım artık yok.",
       "ownReport": "Kendi paylaşımını bildiremezsin."
+    },
+    "library": {
+      "blocked": "Bu mod otomatik kontrolden geçemedi ve yüklenemez/kurulamaz.",
+      "fileMissing": "Dosya yüklenemedi; tekrar dene.",
+      "quota": "Aynı anda en fazla 10 modun onay bekleyebilir.",
+      "notFound": "Bu mod artık kütüphanede yok.",
+      "changed": "Dosya kontrol edildikten sonra değişti; yeniden seç.",
+      "conflict": "Profilde aynı adlı başka bir dosya var.",
+      "wrongLoader": "Bu mod seçili profilin mod loader'ıyla uyumlu değil."
     }
   },
   "instances": {
@@ -862,5 +871,88 @@
     "on": "Açık",
     "off": "Kapalı",
     "switch": "{{name}} aç/kapat"
+  },
+  "library": {
+    "tab": "MehburMC Kütüphanesi",
+    "search": "Kütüphanede ara…",
+    "intro": "Topluluğun yüklediği modlar. Her yükleme otomatik güvenlik kontrolünden geçer ve bir admin onayladıktan sonra yayınlanır. Hiçbir tarama %100 güvenlik sağlamaz; yalnızca güvendiğin modları kur.",
+    "scanning": "Kontrol ediliyor…",
+    "mine": "Yüklediklerim",
+    "approved": "Onaylı modlar",
+    "empty": "Henüz onaylanmış mod yok",
+    "emptyHint": "Yüklenen modlar admin onayından sonra burada görünür.",
+    "withdraw": "Geri çek",
+    "withdrawTitle": "Modu geri çekmek istediğine emin misin?",
+    "withdrawMessage": "\"{{name}}\" kütüphaneden ve sunucudan silinecek.",
+    "warnings": "Uyarı: {{count}}",
+    "wrongLoader": "Bu mod seçili profilin mod loader'ıyla uyumlu değil.",
+    "locked": "Oyun çalışırken kurulamaz.",
+    "reviewNote": "Admin notu: {{note}}",
+    "confirmTitle": "\"{{name}}\" kurulsun mu?",
+    "confirmMessage": "Launcher'ın kendi kontrolü bu modda dikkat edilmesi gereken davranışlar buldu. Bunlar meşru modlarda da olabilir (ör. güncelleme denetimi), ama yalnızca güveniyorsan kur.",
+    "confirmInstall": "Yine de kur",
+    "status": {
+      "pending": "Onay bekliyor",
+      "approved": "Yayında",
+      "rejected": "Reddedildi"
+    },
+    "loaders": {
+      "fabric": "Fabric",
+      "quilt": "Quilt",
+      "forge": "Forge",
+      "neoForge": "NeoForge"
+    },
+    "verdict": {
+      "pass": "Kontrol temiz: şüpheli bir şey bulunmadı.",
+      "warn": "Kontrol uyarılarla geçti: admin bunlara bakacak.",
+      "block": "Bu dosya yüklenemez."
+    },
+    "upload": {
+      "button": "Mod yükle",
+      "pick": "Yüklenecek mod jar'ını seç",
+      "title": "Kütüphaneye yükle: {{file}}",
+      "stats": "{{classes}} sınıf · {{size}}",
+      "name": "Ad",
+      "description": "Açıklama",
+      "author": "Yükleyen olarak \"{{name}}\" görünecek.",
+      "noAccount": "Yüklemek için önce bir hesap seç.",
+      "rules": "Yalnızca dağıtma hakkın olan modları yükle. Zararlı yazılım yükleyen hesaplar yasaklanır.",
+      "submit": "Onaya gönder"
+    },
+    "report": {
+      "button": "Bildir",
+      "title": "\"{{name}}\" bildir",
+      "hint": "Bildirimler adminlere iletilir. Bildirdiğin mod artık sana gösterilmez.",
+      "submit": "Bildir",
+      "note": "Not (isteğe bağlı)",
+      "reasons": {
+        "malware": "Zararlı yazılım / şüpheli davranış",
+        "broken": "Çalışmıyor / oyunu çökertiyor",
+        "stolen": "Başkasının modu, izinsiz",
+        "other": "Diğer"
+      }
+    },
+    "findings": {
+      "webhook": "Discord webhook veya Telegram bot adresi (veri sızdırma)",
+      "credentialPaths": "Tarayıcı, Discord veya launcher hesap dosyalarına erişim yolu",
+      "hiddenPayload": "Çözülen/şifresi açılan veriden sınıf yükleme (gizli kod)",
+      "executable": "Gömülü çalıştırılabilir dosya (.exe, .bat vb.)",
+      "zipBomb": "Aşırı büyük veya aşırı sıkıştırılmış içerik",
+      "tooManyFiles": "Çok fazla dosya",
+      "tooLarge": "Dosya 25 MB sınırından büyük",
+      "noDescriptor": "Mod tanımı yok (fabric.mod.json / mods.toml / quilt.mod.json)",
+      "notAJar": "Geçerli bir jar dosyası değil",
+      "network": "İnternete bağlanıyor",
+      "processExec": "Başka program çalıştırıyor",
+      "nativeLoad": "Yerel (native) kütüphane yüklüyor",
+      "nativeBinary": "Yerel kütüphane dosyası içeriyor (.dll, .so)",
+      "defineClass": "Çalışırken sınıf tanımlıyor",
+      "crypto": "Şifreleme kullanıyor",
+      "suspiciousUrl": "Şüpheli adres (pastebin, ngrok, IP kaydedici vb.)",
+      "encodedBlob": "Uzun kodlanmış veri bloğu",
+      "obfuscated": "Kod karartılmış (obfuscated) görünüyor",
+      "badClass": "Okunamayan sınıf dosyası",
+      "deepNesting": "Çok derin iç içe jar"
+    }
   }
 }

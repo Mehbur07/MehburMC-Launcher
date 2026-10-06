@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-library-install"
+description = "Enables the library_install command without any pre-configured scope."
+commands.allow = ["library_install"]
+
+[[permission]]
+identifier = "deny-library-install"
+description = "Denies the library_install command without any pre-configured scope."
+commands.deny = ["library_install"]

@@ -7,4 +7,5 @@ pub mod installed;
 pub mod metadata;
 pub mod modpack;
 pub mod modrinth;
+pub mod scan;
 pub mod shaders;

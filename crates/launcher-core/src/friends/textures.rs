@@ -259,6 +259,11 @@ impl FriendsClient {
     /// Deletes every texture file of the caller (before `delete_me`; the
     /// rows go with the identity).
     pub(crate) async fn delete_all_textures(&self) -> Result<()> {
+        self.delete_own_objects(BUCKET).await
+    }
+
+    /// Deletes everything under `<uid>/` in `bucket`.
+    pub(crate) async fn delete_own_objects(&self, bucket: &str) -> Result<()> {
         #[derive(Deserialize)]
         struct Obj {
             name: String,
@@ -267,7 +272,7 @@ impl FriendsClient {
         let objs: Vec<Obj> = self
             .json(
                 Method::POST,
-                &format!("/storage/v1/object/list/{BUCKET}"),
+                &format!("/storage/v1/object/list/{bucket}"),
                 Some(&json!({ "prefix": me, "limit": 1000, "offset": 0 })),
                 &[],
             )
@@ -278,7 +283,7 @@ impl FriendsClient {
         let paths: Vec<String> = objs.iter().map(|o| format!("{me}/{}", o.name)).collect();
         self.send(
             Method::DELETE,
-            &format!("/storage/v1/object/{BUCKET}"),
+            &format!("/storage/v1/object/{bucket}"),
             Some(&json!({ "prefixes": paths })),
             &[],
         )

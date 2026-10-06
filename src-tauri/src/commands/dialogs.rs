@@ -27,6 +27,8 @@ pub enum PickPurpose {
     InstanceArchive,
     /// OptiFine installer `.jar`.
     Optifine,
+    /// Mod `.jar` to upload to the MehburMC Library.
+    LibraryMod,
     Skin,
     Cape,
     /// Account profile photo (`.png`).
@@ -53,6 +55,7 @@ fn kind(p: PickPurpose) -> Kind {
         Modpack => Kind::Open("Modpack", &["mrpack", "zip"]),
         InstanceArchive => Kind::Open("Zip", &["zip"]),
         Optifine => Kind::Open("OptiFine", &["jar"]),
+        LibraryMod => Kind::Open("Mod", &["jar"]),
         Skin | Cape | Avatar => Kind::Open("PNG", &["png"]),
         Java if cfg!(windows) => Kind::Open("Java", &["exe"]),
         Java => Kind::Open("Java", &["*"]),

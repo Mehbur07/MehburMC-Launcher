@@ -31,6 +31,9 @@ pub struct AppState {
     /// Paths chosen in native dialogs, waiting for the command that uses
     /// them (see `commands::dialogs`).
     pub picks: Mutex<HashMap<PickPurpose, PathBuf>>,
+    /// Library upload whose scan report the user is looking at:
+    /// `(path, sha1)`, consumed by `library_submit`.
+    pub library_upload: Mutex<Option<(PathBuf, String)>>,
     _log_guard: Option<WorkerGuard>,
 }
 
@@ -84,6 +87,7 @@ impl AppState {
             events_rx: Mutex::new(Some(rx)),
             pending_update: Mutex::new(None),
             picks: Mutex::new(HashMap::new()),
+            library_upload: Mutex::new(None),
             _log_guard: log_guard,
         }
     }
@@ -99,6 +103,7 @@ impl AppState {
             events_rx: Mutex::new(None),
             pending_update: Mutex::new(None),
             picks: Mutex::new(HashMap::new()),
+            library_upload: Mutex::new(None),
             _log_guard: None,
         }
     }

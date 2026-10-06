@@ -48,7 +48,7 @@ fn read_text(zip: &mut Zip, name: &str) -> Option<String> {
 }
 
 /// Single-line, bounded, no formatting codes.
-fn clean(s: &str) -> Option<String> {
+pub(crate) fn clean(s: &str) -> Option<String> {
     let s: String = s
         .chars()
         .filter(|c| !c.is_control())
@@ -72,7 +72,7 @@ fn clean(s: &str) -> Option<String> {
 
 /// Parses JSON the way mod loaders do (Gson, lenient): raw line breaks
 /// inside strings and `//` / `/* */` comments are accepted.
-fn lenient_json(text: &str) -> Option<Value> {
+pub(crate) fn lenient_json(text: &str) -> Option<Value> {
     if let Ok(v) = serde_json::from_str(text) {
         return Some(v);
     }
@@ -172,7 +172,7 @@ fn from_quilt(zip: &mut Zip) -> Option<LocalMeta> {
 }
 
 /// Value of `key = "…"` / `key = '…'` / `key = """…"""` on one line.
-fn toml_value(line: &str, key: &str) -> Option<String> {
+pub(crate) fn toml_value(line: &str, key: &str) -> Option<String> {
     let (k, rest) = line.split_once('=')?;
     if k.trim() != key {
         return None;

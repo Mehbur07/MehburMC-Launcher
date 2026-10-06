@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-library-mods"
+description = "Enables the library_mods command without any pre-configured scope."
+commands.allow = ["library_mods"]
+
+[[permission]]
+identifier = "deny-library-mods"
+description = "Denies the library_mods command without any pre-configured scope."
+commands.deny = ["library_mods"]

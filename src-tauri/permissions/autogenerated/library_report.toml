@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-library-report"
+description = "Enables the library_report command without any pre-configured scope."
+commands.allow = ["library_report"]
+
+[[permission]]
+identifier = "deny-library-report"
+description = "Denies the library_report command without any pre-configured scope."
+commands.deny = ["library_report"]

@@ -9,6 +9,7 @@ pub mod files;
 pub mod friends;
 pub mod home;
 pub mod instances;
+pub mod library;
 pub mod loaders;
 pub mod play;
 pub mod servers;

@@ -17,6 +17,7 @@ import { useInstances } from "../../stores/instances";
 import { activeTaskFor, useTasks } from "../../stores/tasks";
 import { ImportResultDialog } from "./ImportResultDialog";
 import { InstalledMenu } from "./InstalledMenu";
+import { LibraryPanel } from "./LibraryPanel";
 import { ProjectDialog } from "./ProjectDialog";
 import {
   compactNumber,
@@ -33,7 +34,9 @@ type InstallState = "busy" | "done" | ErrorPayload;
 
 export function BrowsePage() {
   const { t } = useTranslation();
-  const type = useApp((s) => s.browseType);
+  const tab = useApp((s) => s.browseType);
+  const isLibrary = tab === "library";
+  const type: ProjectType = isLibrary ? "mod" : tab;
   const target = useApp((s) => s.browseTarget);
   const instances = useInstances((s) => s.instances);
   const selected = useInstances((s) => s.selected);
@@ -41,7 +44,7 @@ export function BrowsePage() {
 
   const targetId = target ?? selected;
   const inst: Instance | null = instances.find((i) => i.id === targetId) ?? null;
-  const setType = (t: ProjectType) => useApp.setState({ browseType: t });
+  const setTab = (t: ProjectType | "library") => useApp.setState({ browseType: t });
   const setTarget = (id: string | null) => useApp.setState({ browseTarget: id });
 
   const [query, setQuery] = useState("");
@@ -116,9 +119,9 @@ export function BrowsePage() {
   };
 
   useEffect(() => {
-    void fetchPage(0);
+    if (!isLibrary) void fetchPage(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debounced, type, sort, filter, reload]);
+  }, [debounced, type, sort, filter, reload, isLibrary]);
 
   const install = async (hit: SearchHit, versionId?: string) => {
     setInstalls((s) => ({ ...s, [hit.projectId]: "busy" }));
@@ -182,158 +185,171 @@ export function BrowsePage() {
       </div>
 
       <div role="tablist" className="flex gap-1 border-b border-line">
-        {TYPES.map((k) => (
+        {[...TYPES, "library" as const].map((k) => (
           <button
             key={k}
             type="button"
             role="tab"
-            aria-selected={type === k}
-            onClick={() => setType(k)}
+            aria-selected={tab === k}
+            onClick={() => setTab(k)}
             className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
-              type === k
+              tab === k
                 ? "border-accent text-accent"
                 : "border-transparent text-muted hover:text-fg"
             }`}
           >
-            {t(`browse.types.${k}`)}
+            {k === "library" ? t("library.tab") : t(`browse.types.${k}`)}
           </button>
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-60 flex-1">
-          <Search
-            size={15}
-            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted"
-          />
-          <TextInput
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("browse.search")}
-            aria-label={t("browse.search")}
-            className="pl-9"
-          />
-        </div>
-        <select
-          value={sort}
-          aria-label={t("browse.sort")}
-          onChange={(e) => setSort(e.target.value as SearchSort)}
-          className="rounded-md border border-line bg-surface-2 px-2 py-2 text-sm focus:border-accent focus:outline-none"
-        >
-          {SORTS.map((s) => (
-            <option key={s} value={s}>
-              {t(`browse.sorts.${s}`)}
-            </option>
-          ))}
-        </select>
-        {!isPack && inst && (
-          <label className="flex items-center gap-2 text-sm text-muted">
-            <Toggle checked={compatOnly} onChange={setCompatOnly} label={t("browse.compatible")} />
-            {t("browse.compatible")}
-          </label>
-        )}
-      </div>
+      {isLibrary ? (
+        <LibraryPanel inst={inst} gameBusy={gameBusy} />
+      ) : (
+        <>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative min-w-60 flex-1">
+              <Search
+                size={15}
+                className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted"
+              />
+              <TextInput
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t("browse.search")}
+                aria-label={t("browse.search")}
+                className="pl-9"
+              />
+            </div>
+            <select
+              value={sort}
+              aria-label={t("browse.sort")}
+              onChange={(e) => setSort(e.target.value as SearchSort)}
+              className="rounded-md border border-line bg-surface-2 px-2 py-2 text-sm focus:border-accent focus:outline-none"
+            >
+              {SORTS.map((s) => (
+                <option key={s} value={s}>
+                  {t(`browse.sorts.${s}`)}
+                </option>
+              ))}
+            </select>
+            {!isPack && inst && (
+              <label className="flex items-center gap-2 text-sm text-muted">
+                <Toggle
+                  checked={compatOnly}
+                  onChange={setCompatOnly}
+                  label={t("browse.compatible")}
+                />
+                {t("browse.compatible")}
+              </label>
+            )}
+          </div>
 
-      {modsUnsupported && (
-        <p className="rounded-md border border-warn/40 bg-warn/10 px-3 py-2 text-sm text-warn">
-          {t("browse.needsLoader")}
-        </p>
-      )}
+          {modsUnsupported && (
+            <p className="rounded-md border border-warn/40 bg-warn/10 px-3 py-2 text-sm text-warn">
+              {t("browse.needsLoader")}
+            </p>
+          )}
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-4">
-        {error && (
-          <EmptyState
-            icon={<RefreshCw size={28} />}
-            title={t(`errors.${error}`, { defaultValue: t("errors.unknown") })}
-          >
-            <Button size="sm" onClick={() => setReload((n) => n + 1)}>
-              {t("common.retry")}
-            </Button>
-          </EmptyState>
-        )}
-        {!error && !loading && hits.length === 0 && (
-          <EmptyState icon={<Search size={28} />} title={t("browse.empty")} />
-        )}
-        <ul className="flex flex-col gap-2">
-          {hits.map((h) => {
-            const st = installs[h.projectId];
-            const files = isPack ? undefined : installed[h.projectId];
-            return (
-              <li
-                key={h.projectId}
-                className="flex items-center gap-3 rounded-lg border border-line bg-surface-1/85 px-3 py-2.5 transition-colors hover:border-accent/40"
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-4">
+            {error && (
+              <EmptyState
+                icon={<RefreshCw size={28} />}
+                title={t(`errors.${error}`, { defaultValue: t("errors.unknown") })}
               >
-                <button
-                  type="button"
-                  onClick={() => setOpen(h)}
-                  className="flex min-w-0 flex-1 items-center gap-3 text-left"
-                >
-                  <ProjectIcon url={h.iconUrl} />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate font-semibold">{h.title}</span>
-                      <span className="truncate text-xs text-muted">{h.author}</span>
-                    </div>
-                    <p className="truncate text-xs text-muted">{h.description}</p>
-                    <div className="mt-1 flex gap-1.5">
-                      <Badge>
-                        <Download size={10} />
-                        {compactNumber(h.downloads)}
-                      </Badge>
-                    </div>
-                  </div>
-                </button>
-                <div className="flex shrink-0 flex-col items-end gap-1">
-                  {files && st !== "busy" ? (
-                    <InstalledMenu
-                      disabled={files.some((f) => !f.enabled)}
-                      locked={gameBusy}
-                      onDelete={() => setRemoving({ hit: h, files })}
-                    />
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant={st === "done" ? "ghost" : "primary"}
-                      disabled={!canInstall || st === "busy" || st === "done"}
-                      onClick={() => void install(h)}
+                <Button size="sm" onClick={() => setReload((n) => n + 1)}>
+                  {t("common.retry")}
+                </Button>
+              </EmptyState>
+            )}
+            {!error && !loading && hits.length === 0 && (
+              <EmptyState icon={<Search size={28} />} title={t("browse.empty")} />
+            )}
+            <ul className="flex flex-col gap-2">
+              {hits.map((h) => {
+                const st = installs[h.projectId];
+                const files = isPack ? undefined : installed[h.projectId];
+                return (
+                  <li
+                    key={h.projectId}
+                    className="flex items-center gap-3 rounded-lg border border-line bg-surface-1/85 px-3 py-2.5 transition-colors hover:border-accent/40"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setOpen(h)}
+                      className="flex min-w-0 flex-1 items-center gap-3 text-left"
                     >
-                      {st === "busy" ? (
-                        <Loader2 size={13} className="animate-spin" />
-                      ) : st === "done" ? (
-                        <Check size={13} />
+                      <ProjectIcon url={h.iconUrl} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="truncate font-semibold">{h.title}</span>
+                          <span className="truncate text-xs text-muted">{h.author}</span>
+                        </div>
+                        <p className="truncate text-xs text-muted">{h.description}</p>
+                        <div className="mt-1 flex gap-1.5">
+                          <Badge>
+                            <Download size={10} />
+                            {compactNumber(h.downloads)}
+                          </Badge>
+                        </div>
+                      </div>
+                    </button>
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      {files && st !== "busy" ? (
+                        <InstalledMenu
+                          disabled={files.some((f) => !f.enabled)}
+                          locked={gameBusy}
+                          onDelete={() => setRemoving({ hit: h, files })}
+                        />
                       ) : (
-                        <Download size={13} />
+                        <Button
+                          size="sm"
+                          variant={st === "done" ? "ghost" : "primary"}
+                          disabled={!canInstall || st === "busy" || st === "done"}
+                          onClick={() => void install(h)}
+                        >
+                          {st === "busy" ? (
+                            <Loader2 size={13} className="animate-spin" />
+                          ) : st === "done" ? (
+                            <Check size={13} />
+                          ) : (
+                            <Download size={13} />
+                          )}
+                          {st === "done"
+                            ? t("browse.installed")
+                            : isPack
+                              ? t("browse.installPack")
+                              : t("browse.install")}
+                        </Button>
                       )}
-                      {st === "done"
-                        ? t("browse.installed")
-                        : isPack
-                          ? t("browse.installPack")
-                          : t("browse.install")}
-                    </Button>
-                  )}
-                  {typeof st === "object" && (
-                    <span className="max-w-56 truncate text-[11px] text-danger" title={st.detail}>
-                      {t(`errors.${st.code}`, { ...st.params, defaultValue: st.detail })}
-                    </span>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-        {loading && (
-          <div className="flex justify-center py-4">
-            <Loader2 className="animate-spin text-accent" aria-label={t("common.loading")} />
+                      {typeof st === "object" && (
+                        <span
+                          className="max-w-56 truncate text-[11px] text-danger"
+                          title={st.detail}
+                        >
+                          {t(`errors.${st.code}`, { ...st.params, defaultValue: st.detail })}
+                        </span>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            {loading && (
+              <div className="flex justify-center py-4">
+                <Loader2 className="animate-spin text-accent" aria-label={t("common.loading")} />
+              </div>
+            )}
+            {!loading && hits.length < total && (
+              <div className="flex justify-center py-3">
+                <Button size="sm" onClick={() => void fetchPage(hits.length)}>
+                  {t("browse.more", { shown: hits.length, total })}
+                </Button>
+              </div>
+            )}
           </div>
-        )}
-        {!loading && hits.length < total && (
-          <div className="flex justify-center py-3">
-            <Button size="sm" onClick={() => void fetchPage(hits.length)}>
-              {t("browse.more", { shown: hits.length, total })}
-            </Button>
-          </div>
-        )}
-      </div>
+        </>
+      )}
 
       <ProjectDialog
         hit={open}

@@ -673,6 +673,51 @@ impl Launcher {
             .await
     }
 
+    /// Submits a mod jar to the MehburMC Library under the selected
+    /// account's name. `expected_sha1` is the file the user saw the scan
+    /// report for; a file changed since then is refused.
+    pub async fn submit_library_mod(
+        &self,
+        path: &std::path::Path,
+        expected_sha1: &str,
+        name: &str,
+        description: &str,
+    ) -> Result<(i64, crate::content::scan::ScanReport)> {
+        let author = self.accounts.launch_account()?.name;
+        let bytes = crate::content::scan::read_jar(path)?;
+        if crate::friends::avatar::sha1_hex(&bytes) != expected_sha1 {
+            return Err(CoreError::Friends("library.changed"));
+        }
+        let file_name = path
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        self.friends
+            .submit_library_mod(&bytes, &file_name, name, description, &author)
+            .await
+    }
+
+    /// Installs a MehburMC Library mod into an instance's `mods/` folder;
+    /// the instance is reserved meanwhile so it cannot start.
+    pub async fn install_library_mod(
+        &self,
+        library_id: i64,
+        instance_id: &str,
+        accept_warnings: bool,
+    ) -> Result<crate::friends::library::LibraryInstall> {
+        let inst = self.instances.get(instance_id)?;
+        let _claim = self.running.try_claim(&inst)?;
+        let dir = self.instances.dir(&inst.id)?;
+        self.friends
+            .install_library_mod(
+                library_id,
+                &dir.join(Folder::Mods.dir_name()),
+                inst.loader.kind,
+                accept_warnings,
+            )
+            .await
+    }
+
     /// Switches a file on/off (`.disabled`). Content is in use while the
     /// game runs, so that is refused then.
     pub fn toggle_instance_file(

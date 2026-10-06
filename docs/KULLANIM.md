@@ -111,6 +111,18 @@ Profil ayrıntılarındaki **Modlar** sekmesinde modları açıp kapatabilir, si
 **Shader desteği**: Fabric/Quilt/NeoForge'da Iris + Sodium, Forge'da Oculus + Embeddium tek
 tıkla kurulur (profil → Genel → **Tek tıkla kur**).
 
+**MehburMC Kütüphanesi** (Mod Tarayıcı'nın son sekmesi): MehburMC kullanıcılarının yüklediği
+modlar.
+- **Mod yükle** → jar'ını seç. Launcher dosyayı hemen kontrol eder ve sonucu gösterir:
+  yeşil = şüpheli bir şey yok, sarı = dikkat edilecek davranışlar var (ör. internete bağlanma;
+  meşru modlarda da olur), kırmızı = yüklenemez (ör. Discord webhook'u, hesap dosyalarına
+  erişim, gömülü .exe, mod tanımı yok, 25 MB'den büyük). Ad ve açıklama yazıp **Onaya gönder**.
+- Yüklediğin modlar bir admin onaylayana kadar yalnızca sana, **Yüklediklerim** bölümünde
+  "Onay bekliyor" olarak görünür. **Geri çek** modu sunucudan siler.
+- Onaylı modu **Kur** ile hedef profile kurarsın. İndirilen dosya doğrulanır ve senin
+  launcher'ında yeniden kontrol edilir; uyarı varsa önce sorulur. Hiçbir otomatik kontrol
+  %100 güvenlik sağlamaz — şüpheli bir şey görürsen bayrak simgesiyle **Bildir**.
+
 ## 6. Skin ve pelerin
 
 **Skin & Cape** ekranı:

@@ -7,6 +7,7 @@ const ipcMock = vi.hoisted(() => ({
   deleteInstanceFile: vi.fn(),
   installContent: vi.fn(),
   listInstances: vi.fn(),
+  libraryMods: vi.fn(),
 }));
 vi.mock("../../lib/ipc", async (orig) => ({
   ...(await orig<typeof import("../../lib/ipc")>()),
@@ -132,5 +133,16 @@ describe("BrowsePage installed content", () => {
     render(<BrowsePage />);
     await row("Sodium");
     expect(ipcMock.scanContent).not.toHaveBeenCalled();
+  });
+
+  it("shows the MehburMC Library tab without searching Modrinth", async () => {
+    ipcMock.libraryMods.mockResolvedValue([]);
+    render(<BrowsePage />);
+    await row("Sodium");
+    ipcMock.searchModrinth.mockClear();
+    fireEvent.click(screen.getByRole("tab", { name: "MehburMC Library" }));
+    expect(await screen.findByText("No approved mods yet")).toBeInTheDocument();
+    expect(screen.queryByText("Sodium")).toBeNull();
+    expect(ipcMock.searchModrinth).not.toHaveBeenCalled();
   });
 });

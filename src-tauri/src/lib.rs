@@ -6,8 +6,8 @@ use tauri::window::Color;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 use crate::commands::{
-    accounts, content, data, dialogs, files, friends, home, instances, loaders, play, servers,
-    skins, textures, update,
+    accounts, content, data, dialogs, files, friends, home, instances, library, loaders, play,
+    servers, skins, textures, update,
 };
 use crate::state::AppState;
 
@@ -148,6 +148,12 @@ pub fn run() {
             textures::share_texture,
             textures::unshare_texture,
             textures::report_texture,
+            library::library_scan_pick,
+            library::library_submit,
+            library::library_mods,
+            library::library_withdraw,
+            library::library_report,
+            library::library_install,
             home::list_news,
             home::analyze_crash_report,
             home::open_data_file,
