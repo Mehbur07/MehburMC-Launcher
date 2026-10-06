@@ -3,19 +3,28 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ProjectIcon } from "../../components/ProjectIcon";
-import { Badge, Button, EmptyState, TextInput, Toggle } from "../../components/ui";
+import { Badge, Button, ConfirmDialog, EmptyState, TextInput, Toggle } from "../../components/ui";
 import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
 import type { ImportResult } from "../../lib/ipc/bindings/ImportResult";
 import type { Instance } from "../../lib/ipc/bindings/Instance";
+import type { InstalledItem } from "../../lib/ipc/bindings/InstalledItem";
 import type { ProjectType } from "../../lib/ipc/bindings/ProjectType";
 import type { SearchHit } from "../../lib/ipc/bindings/SearchHit";
 import type { SearchSort } from "../../lib/ipc/bindings/SearchSort";
 import { useApp } from "../../stores/app";
 import { useInstances } from "../../stores/instances";
+import { activeTaskFor, useTasks } from "../../stores/tasks";
 import { ImportResultDialog } from "./ImportResultDialog";
+import { InstalledMenu } from "./InstalledMenu";
 import { ProjectDialog } from "./ProjectDialog";
-import { compactNumber, installModpack, modrinthLoader } from "./content";
+import {
+  compactNumber,
+  folderFor,
+  installedByProject,
+  installModpack,
+  modrinthLoader,
+} from "./content";
 
 const TYPES: ProjectType[] = ["mod", "modpack", "resourcepack", "shader"];
 const SORTS: SearchSort[] = ["relevance", "downloads", "updated", "newest"];
@@ -47,6 +56,11 @@ export function BrowsePage() {
   const [installs, setInstalls] = useState<Record<string, InstallState>>({});
   const [open, setOpen] = useState<SearchHit | null>(null);
   const [imported, setImported] = useState<ImportResult | null>(null);
+  /** Files of the target instance per Modrinth project (current tab's folder). */
+  const [installed, setInstalled] = useState<Record<string, InstalledItem[]>>({});
+  const [rescan, setRescan] = useState(0);
+  const [removing, setRemoving] = useState<{ hit: SearchHit; files: InstalledItem[] } | null>(null);
+  const gameBusy = useTasks((s) => activeTaskFor(s.tasks, inst?.id ?? null) !== null);
 
   useEffect(() => {
     const h = setTimeout(() => setDebounced(query), 350);
@@ -54,6 +68,24 @@ export function BrowsePage() {
   }, [query]);
 
   const isPack = type === "modpack";
+  const folder = folderFor(type);
+  const instId = inst?.id ?? null;
+
+  // What the target instance already has (identified by SHA-1 on Modrinth).
+  useEffect(() => {
+    setInstalled({});
+    if (!instId || !folder) return;
+    let cancelled = false;
+    ipc
+      .scanContent(instId, folder, false)
+      .then((items) => !cancelled && setInstalled(installedByProject(items)))
+      .catch(() => {
+        // Offline: results simply show no "Installed" state.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [instId, folder, rescan]);
   const loader = inst ? modrinthLoader(inst.loader.kind) : null;
   const filter = useMemo(
     () => ({
@@ -99,10 +131,27 @@ export function BrowsePage() {
         await ipc.installContent(inst.id, [
           { project: hit.projectId, projectType: type, versionId },
         ]);
+        setRescan((n) => n + 1);
       }
       setInstalls((s) => ({ ...s, [hit.projectId]: "done" }));
     } catch (e) {
       setInstalls((s) => ({ ...s, [hit.projectId]: toErrorPayload(e) }));
+    }
+  };
+
+  const remove = async (hit: SearchHit, files: InstalledItem[]) => {
+    if (!inst || !folder) return;
+    try {
+      for (const f of files) await ipc.deleteInstanceFile(inst.id, folder, f.fileName);
+      setInstalls((s) => {
+        const next = { ...s };
+        delete next[hit.projectId];
+        return next;
+      });
+    } catch (e) {
+      useApp.setState({ notice: toErrorPayload(e) });
+    } finally {
+      setRescan((n) => n + 1);
     }
   };
 
@@ -208,6 +257,7 @@ export function BrowsePage() {
         <ul className="flex flex-col gap-2">
           {hits.map((h) => {
             const st = installs[h.projectId];
+            const files = isPack ? undefined : installed[h.projectId];
             return (
               <li
                 key={h.projectId}
@@ -234,25 +284,33 @@ export function BrowsePage() {
                   </div>
                 </button>
                 <div className="flex shrink-0 flex-col items-end gap-1">
-                  <Button
-                    size="sm"
-                    variant={st === "done" ? "ghost" : "primary"}
-                    disabled={!canInstall || st === "busy" || st === "done"}
-                    onClick={() => void install(h)}
-                  >
-                    {st === "busy" ? (
-                      <Loader2 size={13} className="animate-spin" />
-                    ) : st === "done" ? (
-                      <Check size={13} />
-                    ) : (
-                      <Download size={13} />
-                    )}
-                    {st === "done"
-                      ? t("browse.installed")
-                      : isPack
-                        ? t("browse.installPack")
-                        : t("browse.install")}
-                  </Button>
+                  {files && st !== "busy" ? (
+                    <InstalledMenu
+                      disabled={files.some((f) => !f.enabled)}
+                      locked={gameBusy}
+                      onDelete={() => setRemoving({ hit: h, files })}
+                    />
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant={st === "done" ? "ghost" : "primary"}
+                      disabled={!canInstall || st === "busy" || st === "done"}
+                      onClick={() => void install(h)}
+                    >
+                      {st === "busy" ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : st === "done" ? (
+                        <Check size={13} />
+                      ) : (
+                        <Download size={13} />
+                      )}
+                      {st === "done"
+                        ? t("browse.installed")
+                        : isPack
+                          ? t("browse.installPack")
+                          : t("browse.install")}
+                    </Button>
+                  )}
                   {typeof st === "object" && (
                     <span className="max-w-56 truncate text-[11px] text-danger" title={st.detail}>
                       {t(`errors.${st.code}`, { ...st.params, defaultValue: st.detail })}
@@ -289,6 +347,31 @@ export function BrowsePage() {
         }}
       />
       <ImportResultDialog result={imported} onClose={() => setImported(null)} />
+      <ConfirmDialog
+        open={removing !== null}
+        danger
+        title={t("browse.removeTitle")}
+        message={
+          removing && (
+            <>
+              <p>
+                {t("browse.removeMessage", {
+                  name: removing.hit.title,
+                  instance: inst?.name ?? "",
+                })}
+              </p>
+              <ul className="mt-2 font-mono text-xs">
+                {removing.files.map((f) => (
+                  <li key={f.fileName}>{f.fileName}</li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+        confirmLabel={t("browse.remove")}
+        onClose={() => setRemoving(null)}
+        onConfirm={() => removing && void remove(removing.hit, removing.files)}
+      />
     </div>
   );
 }

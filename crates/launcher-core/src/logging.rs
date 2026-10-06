@@ -75,7 +75,9 @@ pub fn init(logs_dir: &Path, debug: bool) -> io::Result<WorkerGuard> {
     let level = if debug { "debug" } else { "info" };
     let filter = EnvFilter::try_from_env("MEHBURMC_LOG").unwrap_or_else(|_| {
         EnvFilter::new(format!(
-            "{level},launcher_core={level},mehbur_launcher={level}"
+            // hickory (SRV lookups) warns about every DNS reply that a
+            // network-level resolver answered on behalf of another server.
+            "{level},launcher_core={level},mehbur_launcher={level},hickory_net=error,hickory_proto=error,hickory_resolver=error"
         ))
     });
 

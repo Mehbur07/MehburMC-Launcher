@@ -3,6 +3,19 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.8.0] — 2026-10-06
+
+### Eklendi
+- **Mod Tarayıcı'da kurulu olanlar:** hedef profilde zaten kurulu olan mod, resource pack ve
+  shader'lar aramada **Kurulu** olarak görünür (kapalı olanlar "Kurulu (kapalı)").
+- **Kurulu** düğmesine basınca **Sil** seçeneği çıkar; "Silmek istediğinize emin misiniz?"
+  sorusunu **Sil** ile onaylarsan projenin profildeki tüm dosyaları silinir, **İptal** ile
+  vazgeçersin. Kurduktan hemen sonra da düğme **Kurulu** olur.
+
+### Değişti
+- Oyun çalışırken profilin mod, resource pack ve shader dosyaları silinemez (anlaşılır bir
+  uyarı verilir).
+
 ## [0.7.0] — 2026-10-06
 
 ### Eklendi

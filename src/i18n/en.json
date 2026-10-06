@@ -419,7 +419,13 @@
     "openModrinth": "Open on Modrinth",
     "versions": "Versions",
     "noCompatible": "No version is compatible with this instance.",
-    "compatibleWith": "compatible with {{name}}"
+    "compatibleWith": "compatible with {{name}}",
+    "alreadyInstalled": "Installed",
+    "installedOff": "Installed (off)",
+    "remove": "Delete",
+    "removeTitle": "Are you sure you want to delete it?",
+    "removeMessage": "{{name}} will be deleted from {{instance}}:",
+    "removeLocked": "Cannot be deleted while the game is running."
   },
   "content": {
     "add": "Add content",

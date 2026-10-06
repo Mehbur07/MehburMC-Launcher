@@ -58,7 +58,7 @@ pub async fn delete_instance_file(
     name: String,
 ) -> CmdResult<()> {
     let l = state.launcher()?.clone();
-    blocking(move || files::delete(&l.instances, &id, folder, &name)).await
+    blocking(move || l.delete_instance_file(&id, folder, &name)).await
 }
 
 #[tauri::command]

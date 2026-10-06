@@ -1,6 +1,9 @@
 import { ipc } from "../../lib/ipc";
+import type { Folder } from "../../lib/ipc/bindings/Folder";
 import type { ImportResult } from "../../lib/ipc/bindings/ImportResult";
+import type { InstalledItem } from "../../lib/ipc/bindings/InstalledItem";
 import type { LoaderKind } from "../../lib/ipc/bindings/LoaderKind";
+import type { ProjectType } from "../../lib/ipc/bindings/ProjectType";
 import type { VersionSummary } from "../../lib/ipc/bindings/VersionSummary";
 
 /** Modrinth loader tag for mod searches on an instance (null = no mods). */
@@ -49,4 +52,23 @@ export async function installModpack(projectId: string, versionId?: string): Pro
     id = v.id;
   }
   return ipc.installModrinthModpack(id);
+}
+
+/** Instance folder that holds a content type (modpacks become instances). */
+export function folderFor(type: ProjectType): Folder | null {
+  return (
+    {
+      mod: "mods",
+      resourcepack: "resourcePacks",
+      shader: "shaderPacks",
+      modpack: null,
+    } satisfies Record<ProjectType, Folder | null>
+  )[type];
+}
+
+/** Installed files per Modrinth project id. */
+export function installedByProject(items: InstalledItem[]): Record<string, InstalledItem[]> {
+  const out: Record<string, InstalledItem[]> = {};
+  for (const i of items) if (i.projectId) (out[i.projectId] ??= []).push(i);
+  return out;
 }

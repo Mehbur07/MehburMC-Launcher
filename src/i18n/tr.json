@@ -419,7 +419,13 @@
     "openModrinth": "Modrinth'te aç",
     "versions": "Sürümler",
     "noCompatible": "Bu profille uyumlu sürüm yok.",
-    "compatibleWith": "{{name}} ile uyumlu"
+    "compatibleWith": "{{name}} ile uyumlu",
+    "alreadyInstalled": "Kurulu",
+    "installedOff": "Kurulu (kapalı)",
+    "remove": "Sil",
+    "removeTitle": "Silmek istediğinize emin misiniz?",
+    "removeMessage": "{{name}}, {{instance}} profilinden silinecek:",
+    "removeLocked": "Oyun çalışırken silinemez."
   },
   "content": {
     "add": "İçerik ekle",

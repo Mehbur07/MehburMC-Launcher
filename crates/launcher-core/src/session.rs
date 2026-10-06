@@ -633,6 +633,19 @@ impl Launcher {
         self.import_modpack(&dest, None).await
     }
 
+    /// Deletes a file from an instance folder. Content (mods, resource and
+    /// shader packs) is in use while the game runs, so it is refused then.
+    pub fn delete_instance_file(&self, id: &str, folder: Folder, name: &str) -> Result<()> {
+        let inst = self.instances.get(id)?;
+        if matches!(
+            folder,
+            Folder::Mods | Folder::ResourcePacks | Folder::ShaderPacks
+        ) {
+            self.running.ensure_idle(&inst)?;
+        }
+        crate::instance::files::delete(&self.instances, &inst.id, folder, name)
+    }
+
     /// Deletes an instance unless it is in use.
     pub fn delete_instance(&self, id: &str) -> Result<()> {
         let inst = self.instances.get(id)?;
@@ -675,6 +688,31 @@ mod tests {
             l.tasks.list().is_empty(),
             "no task is created for rejected starts"
         );
+    }
+
+    #[test]
+    fn content_is_not_deleted_while_the_game_runs() {
+        let (_tmp, l) = launcher();
+        let inst = l.instances.create(new("A")).unwrap();
+        let dir = l.instances.dir(&inst.id).unwrap();
+        std::fs::write(dir.join("mods/a.jar"), b"").unwrap();
+        std::fs::write(dir.join("screenshots/s.png"), b"").unwrap();
+
+        let claim = l.running.try_claim(&inst).unwrap();
+        assert_eq!(
+            l.delete_instance_file(&inst.id, Folder::Mods, "a.jar")
+                .unwrap_err()
+                .code(),
+            "instance.busy"
+        );
+        // Screenshots are not in use by the game.
+        l.delete_instance_file(&inst.id, Folder::Screenshots, "s.png")
+            .unwrap();
+        drop(claim);
+
+        l.delete_instance_file(&inst.id, Folder::Mods, "a.jar")
+            .unwrap();
+        assert!(!dir.join("mods/a.jar").exists());
     }
 
     #[test]
