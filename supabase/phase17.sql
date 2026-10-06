@@ -67,7 +67,7 @@ begin
   end if;
   insert into shared_textures as t (owner, kind, model, name, author, sha1, visibility)
   values (me, kind, coalesce(model, 'classic'), btrim(name), btrim(author), clean_sha, visibility)
-  on conflict (owner, sha1) do update
+  on conflict on constraint shared_textures_owner_sha1_key do update
     set kind = excluded.kind, model = excluded.model, name = excluded.name,
         author = excluded.author, visibility = excluded.visibility
   returning t.id into out_id;
