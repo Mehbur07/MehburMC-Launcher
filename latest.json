@@ -1,15 +1,15 @@
 {
-  "version": "0.9.0",
-  "notes": "### Eklendi\n- **Skin ve pelerin paylaşma:** kütüphanendeki her kartta **Paylaş** var. **Herkes** ya da\n  **Arkadaşlara özel** seçip paylaşırsın; paylaşan olarak seçili hesabının adı görünür.\n  Paylaşılan kartta küçük bir dünya/kişiler simgesi çıkar; aynı düğmeden **Geri çek**.\n- **Topluluk:** Hazır skinler'in en üstünde diğer MehburMC kullanıcılarının paylaştıkları.\n  Önizle, **+** ile kütüphanene ekle, istersen tasarımcıda düzenle.\n- **Bildir:** uygunsuz ya da izinsiz paylaşımları sebebiyle bildir; bildirdiğin paylaşım sana\n  artık gösterilmez (bildirimler yöneticiler için kaydedilir).",
-  "pub_date": "2026-10-06T17:58:30Z",
+  "version": "0.10.0",
+  "notes": "### Eklendi\n- **Mod Toggle sayfası:** bir profilin bütün modları ikon, ad ve sürümüyle tek listede; her\n  birini anahtarla aç/kapat. Arama, Tümü/Açık/Kapalı süzgeci, \"X / Y açık\" sayacı ve\n  **Hepsini aç / Hepsini kapat** (arama ya da süzgeç varken yalnızca görünenler). Oyun\n  çalışırken liste kilitlenir.\n- Modrinth'in tanımadığı modlar (ve internet yokken hepsi) artık dosya adı yerine jar'ın\n  içindeki gerçek ad, sürüm ve ikonla görünür (Fabric, Quilt, Forge, NeoForge).\n\n### Düzeltildi\n- Bir modun hem açık hem kapalı kopyası varken (`a.jar` ve `a.jar.disabled`) aç/kapa\n  yapmak birini sessizce siliyordu; artık reddediliyor.\n- Oyun çalışırken profil sayfasından da mod/resource pack/shader açılıp kapatılamaz.",
+  "pub_date": "2026-10-06T18:16:34Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUF3d1NxTlE0UFlSeVUySTduVGh6Zm13eDRQWUU2TnA1dVlPdmwzMWJVNERpcGcrTi93YUY3Z3E1eGtySFdMUUY2WW5zWVlNSk8zaVNGWGQwcVFrL0FNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzA5NDk0CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC45LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuOS4wCk5ieElnV3hlYzdDSnJxVzhrZnVEU0hkNDUzdjNJY1BhK1hqaURJd2JESUVNdlk3cXZKaHVwZGJjS2t1RzZtVEJYd0t4SUlNRFJSUzNUa2w2ZFRIaURBPT0K",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.9.0/MehburMC-Launcher_0.9.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUpma1VXL0hWc1BHc3dFeFlaZWdEOWZMUUZiMXJKZUxPaFFhVmJZU1FTMzdQTFpFREZPZTUzWUlOU2RMb3hOSkxmYmxOWHpPdHNPSCthY2o3VmVYSUF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzEwNTgwCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEwLjAKNlJCVHBCcGJFempvb0hXWjRBdW85RGIrTktjbTJyTjFQc1FuOUczeUNTK0RneGpBcUhSNGVrcHJSYStLeC9BZFFrS2ovQXBUMEFtNVFXWHFZelM2RGc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.10.0/MehburMC-Launcher_0.10.0_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUF3d1NxTlE0UFlSeVUySTduVGh6Zm13eDRQWUU2TnA1dVlPdmwzMWJVNERpcGcrTi93YUY3Z3E1eGtySFdMUUY2WW5zWVlNSk8zaVNGWGQwcVFrL0FNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzA5NDk0CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC45LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuOS4wCk5ieElnV3hlYzdDSnJxVzhrZnVEU0hkNDUzdjNJY1BhK1hqaURJd2JESUVNdlk3cXZKaHVwZGJjS2t1RzZtVEJYd0t4SUlNRFJSUzNUa2w2ZFRIaURBPT0K",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.9.0/MehburMC-Launcher_0.9.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUpma1VXL0hWc1BHc3dFeFlaZWdEOWZMUUZiMXJKZUxPaFFhVmJZU1FTMzdQTFpFREZPZTUzWUlOU2RMb3hOSkxmYmxOWHpPdHNPSCthY2o3VmVYSUF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzEwNTgwCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEwLjAKNlJCVHBCcGJFempvb0hXWjRBdW85RGIrTktjbTJyTjFQc1FuOUczeUNTK0RneGpBcUhSNGVrcHJSYStLeC9BZFFrS2ovQXBUMEFtNVFXWHFZelM2RGc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.10.0/MehburMC-Launcher_0.10.0_x64-setup.exe"
     }
   }
 }
