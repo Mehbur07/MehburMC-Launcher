@@ -1,7 +1,7 @@
 {
   "version": "0.8.0",
   "notes": "### Eklendi\n- **Mod Tarayıcı'da kurulu olanlar:** hedef profilde zaten kurulu olan mod, resource pack ve\n  shader'lar aramada **Kurulu** olarak görünür (kapalı olanlar \"Kurulu (kapalı)\").\n- **Kurulu** düğmesine basınca **Sil** seçeneği çıkar; \"Silmek istediğinize emin misiniz?\"\n  sorusunu **Sil** ile onaylarsan projenin profildeki tüm dosyaları silinir, **İptal** ile\n  vazgeçersin. Kurduktan hemen sonra da düğme **Kurulu** olur.\n\n### Değişti\n- Oyun çalışırken profilin mod, resource pack ve shader dosyaları silinemez (anlaşılır bir\n  uyarı verilir).",
-  "pub_date": "2026-10-06T17:22:43Z",
+  "pub_date": "2026-10-06T17:25:02Z",
   "platforms": {
     "windows-x86_64": {
       "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUpWM2xlK25xa2I5N2dINXVtWXpqeVo4aXlKNFBWTUNjdy8vMlJEeERXY0NjaUFlaUtHZ251eGplUmlpL2tIQWNxaHpHRC9Ub2pvV3pLcldOWGRLVXdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzA2OTI5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC44LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuOC4wCmZWaEdyVnhNditPODBHUU5kd3B0U3F5VG1ESVY3b3ROVHppaWJROXA2TXZzQVE1b1F0QkVGbXJwS0lITzNDMTlTY28yWFdmK3JzdUdIU1l4eHliMkN3PT0K",
