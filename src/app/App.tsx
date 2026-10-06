@@ -35,6 +35,7 @@ const BrowsePage = named(() => import("../features/browse/BrowsePage"), "BrowseP
 const CreateWizard = named(() => import("../features/instances/CreateWizard"), "CreateWizard");
 const SkinsPage = lazy(() => import("../features/skins/SkinsPage"));
 const FriendsPage = named(() => import("../features/friends/FriendsPage"), "FriendsPage");
+const ModTogglePage = named(() => import("../features/modtoggle/ModTogglePage"), "ModTogglePage");
 const ServersPage = named(() => import("../features/servers/ServersPage"), "ServersPage");
 const WhatsNewPage = named(() => import("../features/whatsnew/WhatsNewPage"), "WhatsNewPage");
 
@@ -60,6 +61,8 @@ function Page({ view }: { view: View }) {
       return <SkinsPage />;
     case "friends":
       return <FriendsPage />;
+    case "modToggle":
+      return <ModTogglePage />;
     case "servers":
       return <ServersPage />;
     case "whatsNew":

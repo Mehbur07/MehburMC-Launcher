@@ -104,6 +104,7 @@ pub fn run() {
             files::list_instance_files,
             files::instance_folder_path,
             files::toggle_instance_file,
+            files::set_content_enabled,
             files::delete_instance_file,
             files::read_instance_log,
             loaders::list_loader_versions,

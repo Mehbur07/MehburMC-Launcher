@@ -144,6 +144,17 @@ pub fn toggle(store: &InstanceStore, id: &str, folder: Folder, name: &str) -> Re
         None => format!("{name}{DISABLED_SUFFIX}"),
     };
     let to = dir.join(&new_name);
+    // `rename` replaces an existing target on Windows: with both `a.jar` and
+    // `a.jar.disabled` present, toggling would silently delete one of them.
+    if to.exists() {
+        return Err(CoreError::io(
+            &to,
+            std::io::Error::new(
+                std::io::ErrorKind::AlreadyExists,
+                "both the enabled and the disabled file exist",
+            ),
+        ));
+    }
     std::fs::rename(&from, &to).map_err(|e| CoreError::io(&to, e))?;
     list(store, id, folder)?
         .into_iter()

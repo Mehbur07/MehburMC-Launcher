@@ -4,6 +4,7 @@
 pub mod icons;
 pub mod install;
 pub mod installed;
+pub mod metadata;
 pub mod modpack;
 pub mod modrinth;
 pub mod shaders;

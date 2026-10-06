@@ -44,6 +44,7 @@ const COMMANDS: &[&str] = &[
     "list_instance_files",
     "instance_folder_path",
     "toggle_instance_file",
+    "set_content_enabled",
     "delete_instance_file",
     "read_instance_log",
     "list_loader_versions",

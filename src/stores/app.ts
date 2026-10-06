@@ -11,6 +11,7 @@ export type View =
   | "instances"
   | "instance"
   | "browse"
+  | "modToggle"
   | "accounts"
   | "skins"
   | "friends"

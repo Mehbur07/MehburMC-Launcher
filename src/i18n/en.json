@@ -13,6 +13,7 @@
     "home": "Play",
     "instances": "Instances",
     "browse": "Mod Browser",
+    "modToggle": "Mod Toggle",
     "accounts": "Accounts",
     "skins": "Skin & Cape",
     "friends": "Friends",
@@ -836,5 +837,30 @@
     "ping": "{{ms}} ms",
     "version": "Version: {{version}}",
     "lockedWhileRunning": "The game list cannot be changed while the game is running."
+  },
+  "modToggle": {
+    "title": "Mod Toggle",
+    "subtitle": "Turn a profile's mods on or off with one click. Disabled mods are kept, the game just does not load them.",
+    "profile": "Profile",
+    "noInstances": "Create a profile first.",
+    "search": "Search mods…",
+    "filter": "Filter",
+    "filters": {
+      "all": "All",
+      "on": "On",
+      "off": "Off"
+    },
+    "enableAll": "Enable all",
+    "disableAll": "Disable all",
+    "enableShown": "Enable shown",
+    "disableShown": "Disable shown",
+    "count": "{{on}} / {{total}} on",
+    "locked": "Mods cannot be changed while the game is running",
+    "noLoader": "This profile has no mod loader; mods are not loaded.",
+    "empty": "This profile has no mods.",
+    "noMatch": "No matching mods.",
+    "on": "On",
+    "off": "Off",
+    "switch": "Toggle {{name}}"
   }
 }

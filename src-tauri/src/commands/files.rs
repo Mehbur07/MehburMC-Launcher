@@ -42,12 +42,20 @@ pub fn toggle_instance_file(
     folder: Folder,
     name: String,
 ) -> CmdResult<FileEntry> {
-    Ok(files::toggle(
-        &state.launcher()?.instances,
-        &id,
-        folder,
-        &name,
-    )?)
+    Ok(state.launcher()?.toggle_instance_file(&id, folder, &name)?)
+}
+
+/// Turns several content files on or off at once (Mod Toggle page).
+#[tauri::command]
+pub async fn set_content_enabled(
+    state: State<'_, AppState>,
+    id: String,
+    folder: Folder,
+    names: Vec<String>,
+    enabled: bool,
+) -> CmdResult<u32> {
+    let l = state.launcher()?.clone();
+    blocking(move || l.set_content_enabled(&id, folder, &names, enabled)).await
 }
 
 #[tauri::command]

@@ -93,15 +93,21 @@ export function ProgressBar({ value, active = true }: { value: number; active?: 
   );
 }
 
-export function Toggle(props: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+export function Toggle(props: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={props.checked}
       aria-label={props.label}
+      disabled={props.disabled}
       onClick={() => props.onChange(!props.checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors ${
+      className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
         props.checked ? "border-accent bg-accent/25 neon-ring" : "border-line bg-surface-3"
       }`}
     >

@@ -98,6 +98,9 @@ export const ipc = {
     invoke<FileEntry[]>("list_instance_files", { id, folder }),
   instanceFolderPath: (id: string, folder: Folder) =>
     invoke<string>("instance_folder_path", { id, folder }),
+  /** Turns several content files on/off; returns how many were switched. */
+  setContentEnabled: (id: string, folder: Folder, names: string[], enabled: boolean) =>
+    invoke<number>("set_content_enabled", { id, folder, names, enabled }),
   toggleInstanceFile: (id: string, folder: Folder, name: string) =>
     invoke<FileEntry>("toggle_instance_file", { id, folder, name }),
   deleteInstanceFile: (id: string, folder: Folder, name: string) =>

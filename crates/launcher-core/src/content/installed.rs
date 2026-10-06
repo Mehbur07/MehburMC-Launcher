@@ -14,6 +14,7 @@ use tokio_util::sync::CancellationToken;
 use ts_rs::TS;
 
 use super::install::{self, modrinth_loaders};
+use super::metadata;
 use super::modrinth::{self, Version};
 use crate::ctx::Ctx;
 use crate::error::{CoreError, Result};
@@ -169,9 +170,43 @@ fn check_folder(folder: Folder) -> Result<()> {
     }
 }
 
-/// Lists a content folder with Modrinth metadata. Works offline (metadata
-/// is then missing).
+/// Lists a content folder with Modrinth metadata. Mods Modrinth does not
+/// know (or all of them offline) get name, version and icon from the jar.
 pub async fn scan(
+    ctx: &Ctx,
+    inst: &Instance,
+    game_dir: &Path,
+    folder: Folder,
+    check_updates: bool,
+) -> Result<Vec<InstalledItem>> {
+    let mut items = scan_remote(ctx, inst, game_dir, folder, check_updates).await?;
+    if folder == Folder::Mods {
+        let dir = game_dir.join(folder.dir_name());
+        let unknown: Vec<(usize, PathBuf)> = items
+            .iter()
+            .enumerate()
+            .filter(|(_, i)| i.project_id.is_none())
+            .map(|(n, i)| (n, dir.join(&i.file_name)))
+            .collect();
+        let metas = tokio::task::spawn_blocking(move || {
+            unknown
+                .into_iter()
+                .filter_map(|(n, p)| metadata::read(&p).map(|m| (n, m)))
+                .collect::<Vec<_>>()
+        })
+        .await
+        .unwrap_or_default();
+        for (n, m) in metas {
+            let item = &mut items[n];
+            item.title = m.name;
+            item.version_number = m.version;
+            item.icon_url = m.icon;
+        }
+    }
+    Ok(items)
+}
+
+async fn scan_remote(
     ctx: &Ctx,
     inst: &Instance,
     game_dir: &Path,

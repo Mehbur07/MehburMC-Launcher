@@ -9,6 +9,8 @@ const cache = new Map<string, string | null>();
 const pending = new Map<string, Promise<string | null>>();
 
 function load(url: string): Promise<string | null> {
+  // Icons read from inside a mod jar arrive ready to show.
+  if (url.startsWith("data:image/")) return Promise.resolve(url);
   const hit = cache.get(url);
   if (hit !== undefined) return Promise.resolve(hit);
   let p = pending.get(url);

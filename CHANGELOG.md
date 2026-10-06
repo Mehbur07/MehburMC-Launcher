@@ -3,6 +3,21 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.10.0] — 2026-10-06
+
+### Eklendi
+- **Mod Toggle sayfası:** bir profilin bütün modları ikon, ad ve sürümüyle tek listede; her
+  birini anahtarla aç/kapat. Arama, Tümü/Açık/Kapalı süzgeci, "X / Y açık" sayacı ve
+  **Hepsini aç / Hepsini kapat** (arama ya da süzgeç varken yalnızca görünenler). Oyun
+  çalışırken liste kilitlenir.
+- Modrinth'in tanımadığı modlar (ve internet yokken hepsi) artık dosya adı yerine jar'ın
+  içindeki gerçek ad, sürüm ve ikonla görünür (Fabric, Quilt, Forge, NeoForge).
+
+### Düzeltildi
+- Bir modun hem açık hem kapalı kopyası varken (`a.jar` ve `a.jar.disabled`) aç/kapa
+  yapmak birini sessizce siliyordu; artık reddediliyor.
+- Oyun çalışırken profil sayfasından da mod/resource pack/shader açılıp kapatılamaz.
+
 ## [0.9.0] — 2026-10-06
 
 ### Eklendi

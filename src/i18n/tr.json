@@ -13,6 +13,7 @@
     "home": "Oyna",
     "instances": "Profiller",
     "browse": "Mod Tarayıcı",
+    "modToggle": "Mod Toggle",
     "accounts": "Hesaplar",
     "skins": "Skin & Cape",
     "friends": "Arkadaşlar",
@@ -836,5 +837,30 @@
     "ping": "{{ms}} ms",
     "version": "Sürüm: {{version}}",
     "lockedWhileRunning": "Oyun çalışırken oyunun listesi değiştirilemez."
+  },
+  "modToggle": {
+    "title": "Mod Toggle",
+    "subtitle": "Bir profilin modlarını tek tıkla aç ya da kapat. Kapalı modlar silinmez, oyun onları yüklemez.",
+    "profile": "Profil",
+    "noInstances": "Önce bir profil oluştur.",
+    "search": "Mod ara…",
+    "filter": "Süzgeç",
+    "filters": {
+      "all": "Tümü",
+      "on": "Açık",
+      "off": "Kapalı"
+    },
+    "enableAll": "Hepsini aç",
+    "disableAll": "Hepsini kapat",
+    "enableShown": "Görünenleri aç",
+    "disableShown": "Görünenleri kapat",
+    "count": "{{on}} / {{total}} açık",
+    "locked": "Oyun çalışırken modlar değiştirilemez",
+    "noLoader": "Bu profilde mod yükleyici yok; modlar yüklenmez.",
+    "empty": "Bu profilde mod yok.",
+    "noMatch": "Eşleşen mod yok.",
+    "on": "Açık",
+    "off": "Kapalı",
+    "switch": "{{name}} aç/kapat"
   }
 }

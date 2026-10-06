@@ -47,6 +47,14 @@ pub enum StartMode {
     Repair,
 }
 
+/// Folders the running game reads (mods, resource and shader packs).
+fn is_content(folder: Folder) -> bool {
+    matches!(
+        folder,
+        Folder::Mods | Folder::ResourcePacks | Folder::ShaderPacks
+    )
+}
+
 /// Faces of the launcher accounts for the UI (`account id → data: URI`).
 #[derive(Debug, Clone, Default, serde::Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
@@ -665,14 +673,53 @@ impl Launcher {
             .await
     }
 
+    /// Switches a file on/off (`.disabled`). Content is in use while the
+    /// game runs, so that is refused then.
+    pub fn toggle_instance_file(
+        &self,
+        id: &str,
+        folder: Folder,
+        name: &str,
+    ) -> Result<crate::instance::files::FileEntry> {
+        let inst = self.instances.get(id)?;
+        if is_content(folder) {
+            self.running.ensure_idle(&inst)?;
+        }
+        crate::instance::files::toggle(&self.instances, &inst.id, folder, name)
+    }
+
+    /// Turns the given files of a content folder on or off; files already
+    /// in that state are left alone. Returns how many were switched.
+    pub fn set_content_enabled(
+        &self,
+        id: &str,
+        folder: Folder,
+        names: &[String],
+        enabled: bool,
+    ) -> Result<u32> {
+        if !is_content(folder) {
+            return Err(CoreError::InvalidInstance(format!(
+                "{folder:?} has no managed content"
+            )));
+        }
+        let inst = self.instances.get(id)?;
+        self.running.ensure_idle(&inst)?;
+        let mut switched = 0;
+        for name in names {
+            let disabled = name.ends_with(crate::instance::files::DISABLED_SUFFIX);
+            if disabled == enabled {
+                crate::instance::files::toggle(&self.instances, &inst.id, folder, name)?;
+                switched += 1;
+            }
+        }
+        Ok(switched)
+    }
+
     /// Deletes a file from an instance folder. Content (mods, resource and
     /// shader packs) is in use while the game runs, so it is refused then.
     pub fn delete_instance_file(&self, id: &str, folder: Folder, name: &str) -> Result<()> {
         let inst = self.instances.get(id)?;
-        if matches!(
-            folder,
-            Folder::Mods | Folder::ResourcePacks | Folder::ShaderPacks
-        ) {
+        if is_content(folder) {
             self.running.ensure_idle(&inst)?;
         }
         crate::instance::files::delete(&self.instances, &inst.id, folder, name)
@@ -744,6 +791,64 @@ mod tests {
             share("0000000000000000000000000000000000000000").await,
             "skin.notFound"
         );
+    }
+
+    #[test]
+    fn bulk_toggle_switches_only_what_differs_and_respects_running() {
+        let (_tmp, l) = launcher();
+        let inst = l.instances.create(new("A")).unwrap();
+        let mods = l.instances.dir(&inst.id).unwrap().join("mods");
+        std::fs::write(mods.join("a.jar"), b"a").unwrap();
+        std::fs::write(mods.join("b.jar.disabled"), b"b").unwrap();
+        let names = vec!["a.jar".to_owned(), "b.jar.disabled".to_owned()];
+
+        assert_eq!(
+            l.set_content_enabled(&inst.id, Folder::Mods, &names, false)
+                .unwrap(),
+            1
+        );
+        assert!(mods.join("a.jar.disabled").exists() && mods.join("b.jar.disabled").exists());
+
+        let names = vec!["a.jar.disabled".to_owned(), "b.jar.disabled".to_owned()];
+        let claim = l.running.try_claim(&inst).unwrap();
+        assert_eq!(
+            l.set_content_enabled(&inst.id, Folder::Mods, &names, true)
+                .unwrap_err()
+                .code(),
+            "instance.busy"
+        );
+        assert_eq!(
+            l.toggle_instance_file(&inst.id, Folder::Mods, "a.jar.disabled")
+                .unwrap_err()
+                .code(),
+            "instance.busy"
+        );
+        drop(claim);
+        assert_eq!(
+            l.set_content_enabled(&inst.id, Folder::Mods, &names, true)
+                .unwrap(),
+            2
+        );
+        assert!(mods.join("a.jar").exists() && mods.join("b.jar").exists());
+        assert!(
+            l.set_content_enabled(&inst.id, Folder::Saves, &names, true)
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn toggling_never_overwrites_the_twin_file() {
+        let (_tmp, l) = launcher();
+        let inst = l.instances.create(new("A")).unwrap();
+        let mods = l.instances.dir(&inst.id).unwrap().join("mods");
+        std::fs::write(mods.join("a.jar"), b"new").unwrap();
+        std::fs::write(mods.join("a.jar.disabled"), b"old").unwrap();
+        assert!(
+            l.toggle_instance_file(&inst.id, Folder::Mods, "a.jar")
+                .is_err()
+        );
+        assert_eq!(std::fs::read(mods.join("a.jar.disabled")).unwrap(), b"old");
+        assert_eq!(std::fs::read(mods.join("a.jar")).unwrap(), b"new");
     }
 
     #[test]
