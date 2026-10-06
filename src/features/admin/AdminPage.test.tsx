@@ -9,6 +9,8 @@ const ipcMock = vi.hoisted(() => ({
   adminReports: vi.fn(),
   adminDismissReports: vi.fn(),
   adminHideTexture: vi.fn(),
+  adminTextures: vi.fn(),
+  adminRestoreTexture: vi.fn(),
   adminFindUsers: vi.fn(),
   adminBan: vi.fn(),
   adminUnban: vi.fn(),
@@ -91,6 +93,7 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     const tabs = screen.getAllByRole("tab").map((t) => t.textContent);
     expect(tabs).toEqual(["Published mods", "Reports", "Bans"]);
+    expect(ipcMock.adminTextures).not.toHaveBeenCalled();
     expect(ipcMock.adminLibrary).toHaveBeenCalledWith("approved");
   });
 
@@ -224,6 +227,41 @@ describe("AdminPage", () => {
       fireEvent.click(await within(row).findByRole("button", { name: /Give/ })),
     );
     expect(ipcMock.adminSetTextureGrant).toHaveBeenCalledWith(4, FRIEND, true);
+  });
+
+  it("founder removes any community share and can restore it", async () => {
+    asRank(1);
+    const share = (hidden: boolean) => ({
+      id: 9,
+      kind: "skin",
+      model: "classic",
+      name: "Rude Skin",
+      author: "Alex",
+      owner: FRIEND,
+      visibility: "friends",
+      createdAt: "2026-10-07T10:00:00Z",
+      hidden,
+      dataUri: null,
+    });
+    ipcMock.adminTextures.mockImplementation((hidden: boolean) => Promise.resolve([share(hidden)]));
+    ipcMock.adminHideTexture.mockResolvedValue(undefined);
+    ipcMock.adminRestoreTexture.mockResolvedValue(undefined);
+    render(<AdminPage />);
+    fireEvent.click(screen.getByRole("tab", { name: "Community" }));
+
+    const row = (await screen.findByText("Rude Skin")).closest("li")!;
+    expect(row).toHaveTextContent("Friends only");
+    expect(ipcMock.adminTextures).toHaveBeenCalledWith(false);
+    fireEvent.click(within(row).getByRole("button", { name: /Remove/ }));
+    const dialog = await screen.findByRole("dialog");
+    await act(async () => fireEvent.click(within(dialog).getByRole("button", { name: /Remove/ })));
+    expect(ipcMock.adminHideTexture).toHaveBeenCalledWith(9);
+
+    fireEvent.click(screen.getByRole("button", { name: "Removed" }));
+    const gone = (await screen.findByText("Rude Skin")).closest("li")!;
+    expect(ipcMock.adminTextures).toHaveBeenCalledWith(true);
+    await act(async () => fireEvent.click(within(gone).getByRole("button", { name: /Restore/ })));
+    expect(ipcMock.adminRestoreTexture).toHaveBeenCalledWith(9);
   });
 
   it("rank 2 has no private textures tab", () => {

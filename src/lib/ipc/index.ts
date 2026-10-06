@@ -8,6 +8,7 @@ import type { AdminEntry } from "./bindings/AdminEntry";
 import type { AdminMod } from "./bindings/AdminMod";
 import type { AdminModStatus } from "./bindings/AdminModStatus";
 import type { AdminReport } from "./bindings/AdminReport";
+import type { AdminTexture } from "./bindings/AdminTexture";
 import type { AdminUser } from "./bindings/AdminUser";
 import type { PrivateTexture } from "./bindings/PrivateTexture";
 import type { TextureGrant } from "./bindings/TextureGrant";
@@ -193,6 +194,9 @@ export const ipc = {
   adminDismissReports: (kind: ReportKind, id: number) =>
     invoke<void>("admin_dismiss_reports", { kind, id }),
   adminHideTexture: (id: number) => invoke<void>("admin_hide_texture", { id }),
+  /** Founder: every community share; `hidden` lists the removed ones. */
+  adminTextures: (hidden: boolean) => invoke<AdminTexture[]>("admin_textures", { hidden }),
+  adminRestoreTexture: (id: number) => invoke<void>("admin_restore_texture", { id }),
   adminFindUsers: (query: string) => invoke<AdminUser[]>("admin_find_users", { query }),
   /** `hours` null = permanent. */
   adminBan: (userId: string, hours: number | null, reason: string) =>

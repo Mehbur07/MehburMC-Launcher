@@ -3,6 +3,13 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.13.1] — 2026-10-07
+
+### Eklendi
+- **Admin → Topluluk** (yalnızca kurucu): topluluktaki tüm skin ve pelerinleri (arkadaşlara özel
+  olanlar dahil) önizlemeleriyle gör, **Kaldır**, yanlışlıkla kaldırdığını **Kaldırılanlar**'dan
+  **Geri getir**, gerekirse paylaşanı banla.
+
 ## [0.13.0] — 2026-10-07
 
 ### Değişti

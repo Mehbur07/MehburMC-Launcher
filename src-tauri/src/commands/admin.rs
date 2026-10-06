@@ -5,6 +5,7 @@ use launcher_core::friends::admin::{
     AdminBan, AdminEntry, AdminMod, AdminModStatus, AdminReport, AdminUser, ReportKind,
 };
 use launcher_core::friends::private_textures::{PrivateTexture, TextureGrant};
+use launcher_core::friends::textures::AdminTexture;
 use launcher_core::skin::{SkinModel, TextureKind};
 use tauri::State;
 
@@ -72,6 +73,22 @@ pub async fn admin_dismiss_reports(
 pub async fn admin_hide_texture(state: State<'_, AppState>, id: i64) -> CmdResult<()> {
     let l = state.launcher()?.clone();
     Ok(l.friends.admin_hide_texture(id).await?)
+}
+
+/// Founder: every community share, listed or removed (K74).
+#[tauri::command]
+pub async fn admin_textures(
+    state: State<'_, AppState>,
+    hidden: bool,
+) -> CmdResult<Vec<AdminTexture>> {
+    let l = state.launcher()?.clone();
+    Ok(l.friends.admin_textures(hidden).await?)
+}
+
+#[tauri::command]
+pub async fn admin_restore_texture(state: State<'_, AppState>, id: i64) -> CmdResult<()> {
+    let l = state.launcher()?.clone();
+    Ok(l.friends.admin_restore_texture(id).await?)
 }
 
 #[tauri::command]

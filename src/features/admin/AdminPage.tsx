@@ -35,6 +35,7 @@ import type { AdminEntry } from "../../lib/ipc/bindings/AdminEntry";
 import type { AdminMod } from "../../lib/ipc/bindings/AdminMod";
 import type { AdminModStatus } from "../../lib/ipc/bindings/AdminModStatus";
 import type { AdminReport } from "../../lib/ipc/bindings/AdminReport";
+import type { AdminTexture } from "../../lib/ipc/bindings/AdminTexture";
 import type { AdminUser } from "../../lib/ipc/bindings/AdminUser";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
 import type { PrivateTexture } from "../../lib/ipc/bindings/PrivateTexture";
@@ -46,7 +47,7 @@ import { formatBytes, formatIso } from "../../lib/format";
 import { useAuth } from "../../stores/auth";
 import { FindingList, LoaderBadges } from "../browse/LibraryPanel";
 
-type Tab = "queue" | "published" | "reports" | "bans" | "admins" | "private";
+type Tab = "queue" | "published" | "reports" | "community" | "bans" | "admins" | "private";
 
 /** A user to act on: id plus a name to show. */
 interface Target {
@@ -581,6 +582,133 @@ function ReportsTab({ rank, onBan }: { rank: number; onBan: (t: Target) => void 
   );
 }
 
+/** Founder: every shared skin/cape, with remove and restore (K74). */
+function CommunityTab({ onBan }: { onBan: (t: Target) => void }) {
+  const { t, i18n } = useTranslation();
+  const [removed, setRemoved] = useState(false);
+  const [kind, setKind] = useState<TextureKind | "all">("all");
+  const fetch = useCallback(() => ipc.adminTextures(removed), [removed]);
+  const { items, error, reload } = useList(fetch);
+  const [removing, setRemoving] = useState<AdminTexture | null>(null);
+  const [notice, setNotice] = useState<ErrorPayload | null>(null);
+  const act = async (op: () => Promise<void>) => {
+    setNotice(null);
+    try {
+      await op();
+      reload();
+    } catch (e) {
+      setNotice(toErrorPayload(e));
+    }
+  };
+  const shown = items && items.filter((x) => kind === "all" || x.kind === kind);
+
+  return (
+    <>
+      <p className="mb-3 text-xs text-muted">{t("admin.community.hint")}</p>
+      <div className="mb-3 flex flex-wrap gap-1.5">
+        {([false, true] as const).map((r) => (
+          <Button
+            key={String(r)}
+            size="sm"
+            variant={removed === r ? "primary" : "ghost"}
+            onClick={() => setRemoved(r)}
+          >
+            {t(r ? "admin.community.removed" : "admin.community.listed")}
+          </Button>
+        ))}
+        <span className="mx-1 w-px self-stretch bg-line" />
+        {(["all", "skin", "cape"] as const).map((k) => (
+          <Button
+            key={k}
+            size="sm"
+            variant={kind === k ? "primary" : "ghost"}
+            onClick={() => setKind(k)}
+          >
+            {k === "all"
+              ? t("admin.community.all")
+              : k === "skin"
+                ? t("skins.skin")
+                : t("skins.cape")}
+          </Button>
+        ))}
+      </div>
+      <ErrorLine error={notice} />
+      <ListState
+        items={shown}
+        error={error}
+        empty={t(removed ? "admin.community.emptyRemoved" : "admin.community.empty")}
+      >
+        {(list) =>
+          list.map((x) => (
+            <Row key={x.id}>
+              <div className="grid h-16 w-16 shrink-0 place-items-center rounded-md bg-surface-3/40">
+                {x.dataUri ? (
+                  <img
+                    src={x.dataUri}
+                    alt={x.name}
+                    className="max-h-16 max-w-16 [image-rendering:pixelated]"
+                  />
+                ) : (
+                  <X size={18} className="text-danger" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold">{x.name}</span>
+                  <Badge>{x.kind === "skin" ? t("skins.skin") : t("skins.cape")}</Badge>
+                  <Badge>{t(`skins.share.visibility.${x.visibility}`)}</Badge>
+                </div>
+                <p className="text-xs text-muted">
+                  {x.author} · {formatIso(x.createdAt, i18n.language)}
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
+                {x.hidden ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => void act(() => ipc.adminRestoreTexture(x.id))}
+                  >
+                    <Undo2 size={13} />
+                    {t("admin.community.restore")}
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="danger" onClick={() => setRemoving(x)}>
+                    <Trash2 size={13} />
+                    {t("admin.community.remove")}
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onBan({ userId: x.owner, label: x.author })}
+                >
+                  <Ban size={13} />
+                  {t("admin.reports.banOwner")}
+                </Button>
+              </div>
+            </Row>
+          ))
+        }
+      </ListState>
+      <ConfirmDialog
+        open={removing !== null}
+        danger
+        title={t("admin.community.removeTitle", { name: removing?.name ?? "" })}
+        message={t("admin.community.removeBody")}
+        confirmLabel={t("admin.community.remove")}
+        onClose={() => setRemoving(null)}
+        onConfirm={() => {
+          if (!removing) return;
+          const id = removing.id;
+          setRemoving(null);
+          void act(() => ipc.adminHideTexture(id));
+        }}
+      />
+    </>
+  );
+}
+
 function BansTab({ onBan, version }: { onBan: (t: Target) => void; version: number }) {
   const { t, i18n } = useTranslation();
   const fetch = useCallback(() => ipc.adminBans(), []);
@@ -946,7 +1074,7 @@ export function AdminPage() {
   const rank = useAuth((s) => s.status?.rank ?? 0);
   const tabs: Tab[] =
     rank === 1
-      ? ["queue", "published", "reports", "bans", "admins", "private"]
+      ? ["queue", "published", "reports", "community", "bans", "admins", "private"]
       : ["published", "reports", "bans"];
   const [tab, setTab] = useState<Tab>(rank === 1 ? "queue" : "published");
   const [banTarget, setBanTarget] = useState<Target | null>(null);
@@ -989,6 +1117,7 @@ export function AdminPage() {
         {tab === "queue" && <QueueTab status="pending" />}
         {tab === "published" && <QueueTab status="approved" />}
         {tab === "reports" && <ReportsTab rank={rank} onBan={setBanTarget} />}
+        {tab === "community" && <CommunityTab onBan={setBanTarget} />}
         {tab === "bans" && <BansTab onBan={setBanTarget} version={bansVersion} />}
         {tab === "admins" && <AdminsTab />}
         {tab === "private" && <PrivateTab />}

@@ -168,6 +168,8 @@ pub fn run() {
             admin::admin_reports,
             admin::admin_dismiss_reports,
             admin::admin_hide_texture,
+            admin::admin_textures,
+            admin::admin_restore_texture,
             admin::admin_find_users,
             admin::admin_ban,
             admin::admin_unban,

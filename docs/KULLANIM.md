@@ -245,7 +245,8 @@ Launcher açılınca MehburMC hesabınla giriş yapman istenir.
   yasaklıyken launcher kullanılamaz, ekranda bitiş tarihi ve sebep yazar.
 
 **Yöneticiler** kenar çubuğunda **Admin** sayfasını görür: Kütüphane'ye yüklenen modların onayı
-(mod önce yöneticinin launcher'ında yeniden taranır), bildirilen içerik, banlar ve yönetici atama. Kurucu ayrıca **Özel dokular** sekmesinden özel
+(mod önce yöneticinin launcher'ında yeniden taranır), bildirilen içerik, banlar ve yönetici atama. Kurucu **Topluluk** sekmesinden paylaşılan skin/pelerinleri kaldırır
+(ve geri getirir), ayrıca **Özel dokular** sekmesinden özel
 MehburMC skin/pelerinlerini yükler ve seçtiği kişilere gönderir.
 
 Sorun mu yaşıyorsun? → [Sorun giderme](SORUN_GIDERME.md)

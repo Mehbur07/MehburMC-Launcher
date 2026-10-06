@@ -1042,6 +1042,7 @@
       "queue": "Onay kuyruğu",
       "published": "Yayındaki modlar",
       "reports": "Bildirimler",
+      "community": "Topluluk",
       "bans": "Banlar",
       "admins": "Yöneticiler",
       "private": "Özel dokular"
@@ -1122,6 +1123,18 @@
       "revoke": "Geri al",
       "deleteTitle": "\"{{name}}\" silinsin mi?",
       "deleteBody": "Doku sunucudan silinir ve herkesten geri alınır; alıcıların launcher'ı bir sonraki kontrolde kaldırır."
+    },
+    "community": {
+      "hint": "Topluluktaki tüm skin ve pelerinler (arkadaşlara özel olanlar dahil). Kaldırılan paylaşım sahibi dışında kimseye görünmez; Kaldırılanlar'dan geri getirebilirsin.",
+      "listed": "Yayında",
+      "removed": "Kaldırılanlar",
+      "all": "Tümü",
+      "empty": "Toplulukta paylaşım yok",
+      "emptyRemoved": "Kaldırılan paylaşım yok",
+      "remove": "Kaldır",
+      "restore": "Geri getir",
+      "removeTitle": "\"{{name}}\" topluluktan kaldırılsın mı?",
+      "removeBody": "Paylaşım herkesten gizlenir (paylaşan kişi kendi kütüphanesinde görmeye devam eder). Kaldırılanlar listesinden geri getirebilirsin."
     }
   }
 }

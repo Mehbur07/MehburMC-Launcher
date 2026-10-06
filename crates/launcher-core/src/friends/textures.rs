@@ -79,6 +79,42 @@ pub struct SharedTexture {
     pub data_uri: String,
 }
 
+/// A share as the founder sees it in the Admin panel (K74).
+#[derive(Debug, Clone, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct AdminTexture {
+    #[ts(type = "number")]
+    pub id: i64,
+    pub kind: TextureKind,
+    pub model: SkinModel,
+    pub name: String,
+    pub author: String,
+    /// User id of the person who shared it (for bans).
+    pub owner: String,
+    pub visibility: Visibility,
+    /// RFC 3339.
+    pub created_at: String,
+    /// Removed from the community.
+    pub hidden: bool,
+    /// None when the image is missing or fails verification.
+    pub data_uri: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct AdminRow {
+    id: i64,
+    owner: String,
+    kind: TextureKind,
+    model: SkinModel,
+    name: String,
+    author: String,
+    sha1: String,
+    visibility: Visibility,
+    created_at: String,
+    hidden: bool,
+}
+
 #[derive(Debug, Deserialize)]
 struct Row {
     id: i64,
@@ -204,6 +240,40 @@ impl FriendsClient {
             .collect()
             .await;
         Ok(out.into_iter().flatten().collect())
+    }
+
+    /// Founder: every share, listed (`hidden` false) or removed (true).
+    /// Unlike the community list, rows without a usable image stay so they
+    /// can still be removed.
+    pub async fn admin_textures(&self, hidden: bool) -> Result<Vec<AdminTexture>> {
+        let rows: Vec<AdminRow> = self
+            .rpc("admin_textures", json!({ "p_hidden": hidden }))
+            .await?;
+        Ok(stream::iter(rows)
+            .map(|r| async move {
+                let png = self.texture_png(&r.owner, &r.sha1, r.kind).await;
+                AdminTexture {
+                    id: r.id,
+                    kind: r.kind,
+                    model: r.model,
+                    name: r.name,
+                    author: r.author,
+                    owner: r.owner,
+                    visibility: r.visibility,
+                    created_at: r.created_at,
+                    hidden: r.hidden,
+                    data_uri: png.as_deref().map(data_uri),
+                }
+            })
+            .buffered(PARALLEL_FETCHES)
+            .collect()
+            .await)
+    }
+
+    /// Founder: puts a removed share back into the community.
+    pub async fn admin_restore_texture(&self, id: i64) -> Result<()> {
+        self.rpc_void("admin_restore_texture", json!({ "p_id": id }))
+            .await
     }
 
     /// A shared image from the cache or the server, verified.
@@ -431,6 +501,45 @@ mod tests {
         assert!(list[0].data_uri.starts_with("data:image/png;base64,"));
         // Second load comes from the cache (the image mock expects one call).
         assert_eq!(c.community_textures().await.unwrap().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn admin_list_keeps_rows_without_an_image() {
+        let server = MockServer::builder().start().await;
+        let good = skin();
+        let good_sha = sha1_hex(&good);
+        let missing = "2222222222222222222222222222222222222222";
+        let row = |id: i64, sha: &str| {
+            json!({
+                "id": id, "owner": FRIEND, "kind": "skin", "model": "classic",
+                "name": format!("n{id}"), "author": "Alex", "sha1": sha,
+                "visibility": "friends", "created_at": "2026-10-07T10:00:00Z", "hidden": true
+            })
+        };
+        Mock::given(method("POST"))
+            .and(path("/rest/v1/rpc/admin_textures"))
+            .and(body_json(json!({ "p_hidden": true })))
+            .respond_with(
+                ResponseTemplate::new(200)
+                    .set_body_json(json!([row(1, &good_sha), row(2, missing)])),
+            )
+            .mount(&server)
+            .await;
+        Mock::given(method("GET"))
+            .and(path(format!(
+                "/storage/v1/object/authenticated/textures/{FRIEND}/{good_sha}.png"
+            )))
+            .respond_with(ResponseTemplate::new(200).set_body_bytes(good.clone()))
+            .mount(&server)
+            .await;
+        let tmp = tempfile::tempdir().unwrap();
+        let c = signed_in(&tmp, &server).await;
+        let list = c.admin_textures(true).await.unwrap();
+        assert_eq!(list.len(), 2);
+        assert!(list[0].hidden);
+        assert_eq!(list[0].owner, FRIEND);
+        assert!(list[0].data_uri.as_deref().unwrap().starts_with("data:image/png;base64,"));
+        assert!(list[1].data_uri.is_none());
     }
 
     #[tokio::test]

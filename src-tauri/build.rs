@@ -108,6 +108,8 @@ const COMMANDS: &[&str] = &[
     "admin_reports",
     "admin_dismiss_reports",
     "admin_hide_texture",
+    "admin_textures",
+    "admin_restore_texture",
     "admin_find_users",
     "admin_ban",
     "admin_unban",

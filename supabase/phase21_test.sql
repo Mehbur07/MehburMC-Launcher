@@ -1,5 +1,5 @@
 -- MehburMC Launcher — checks for phase21.sql. Run in Supabase → SQL Editor
--- after phase21.sql. It always ends with an error so that nothing is saved:
+-- after phase21.sql and phase21_fix1.sql. It always ends with an error so that nothing is saved:
 --   "PHASE21_OK ..."   → all checks passed
 --   "FAIL: ..."        → a rule is broken (send the message to the developer)
 
@@ -12,6 +12,8 @@ declare
   bob uuid := gen_random_uuid();
   anon_u uuid := gen_random_uuid();
   sha text := md5('p21' || random()::text) || '00000000';
+  sha2 text := md5('p21b' || random()::text) || '00000000';
+  share bigint;
   tex bigint;
   n int;
   ok boolean;
@@ -146,6 +148,47 @@ begin
   execute 'reset role';
   select count(*) into n from texture_grants g where g.texture_id = tex;
   if n <> 0 then raise exception 'FAIL: grants survived the delete'; end if;
+
+  -- ---------------------------------------------------------------- community moderation (fix 1)
+  insert into shared_textures (owner, kind, name, author, sha1, visibility)
+  values (alice, 'skin', 'Friends only', 'P21a_' || sfx, sha2, 'friends')
+  returning id into share;
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', modr, 'role', 'authenticated', 'is_anonymous', false)::text, true);
+  execute 'set local role authenticated';
+  begin
+    perform public.admin_textures(false);
+    raise exception 'FAIL: rank 2 listed all shares';
+  exception when others then
+    if sqlerrm <> 'admin.forbidden' then raise exception 'FAIL: rank2 list: %', sqlerrm; end if;
+  end;
+  if public.can_read_texture_file(alice::text || '/' || sha2 || '.png') then
+    raise exception 'FAIL: rank 2 reads a friends-only image';
+  end if;
+  execute 'reset role';
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', founder, 'role', 'authenticated', 'is_anonymous', false)::text, true);
+  execute 'set local role authenticated';
+  select count(*) into n from public.admin_textures(false) a where a.id = share;
+  if n <> 1 then raise exception 'FAIL: founder does not see a friends-only share'; end if;
+  if not public.can_read_texture_file(alice::text || '/' || sha2 || '.png') then
+    raise exception 'FAIL: founder cannot read the image';
+  end if;
+  perform public.admin_hide_texture(share);
+  select count(*) into n from public.admin_textures(false) a where a.id = share;
+  if n <> 0 then raise exception 'FAIL: removed share still listed'; end if;
+  select count(*) into n from public.admin_textures(true) a where a.id = share;
+  if n <> 1 then raise exception 'FAIL: removed share missing from the removed list'; end if;
+  perform public.admin_restore_texture(share);
+  select count(*) into n from public.admin_textures(false) a where a.id = share;
+  if n <> 1 then raise exception 'FAIL: restore did not bring the share back'; end if;
+  begin
+    perform public.admin_restore_texture(-1);
+    raise exception 'FAIL: restored a missing share';
+  exception when others then
+    if sqlerrm <> 'textures.notFound' then raise exception 'FAIL: restore missing: %', sqlerrm; end if;
+  end;
+  execute 'reset role';
 
   raise exception 'PHASE21_OK all checks passed (nothing was saved)';
 end;

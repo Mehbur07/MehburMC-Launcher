@@ -1042,6 +1042,7 @@
       "queue": "Approval queue",
       "published": "Published mods",
       "reports": "Reports",
+      "community": "Community",
       "bans": "Bans",
       "admins": "Admins",
       "private": "Private textures"
@@ -1122,6 +1123,18 @@
       "revoke": "Take back",
       "deleteTitle": "Delete \"{{name}}\"?",
       "deleteBody": "The texture is deleted from the server and taken back from everyone; receivers' launchers remove it at their next check."
+    },
+    "community": {
+      "hint": "Every shared skin and cape (friends-only ones included). A removed share is hidden from everyone but its owner; bring it back from Removed.",
+      "listed": "Listed",
+      "removed": "Removed",
+      "all": "All",
+      "empty": "No community shares",
+      "emptyRemoved": "No removed shares",
+      "remove": "Remove",
+      "restore": "Restore",
+      "removeTitle": "Remove \"{{name}}\" from the community?",
+      "removeBody": "The share is hidden from everyone (the owner still has it in their library). You can bring it back from the Removed list."
     }
   }
 }

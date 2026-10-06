@@ -120,6 +120,8 @@
     "allow-admin-reports",
     "allow-admin-dismiss-reports",
     "allow-admin-hide-texture",
+    "allow-admin-textures",
+    "allow-admin-restore-texture",
     "allow-admin-find-users",
     "allow-admin-ban",
     "allow-admin-unban",
