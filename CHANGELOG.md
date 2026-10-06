@@ -3,6 +3,20 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.13.0] — 2026-10-07
+
+### Değişti
+- **MehburMC skin'i ve pelerini artık herkese açık değil.** Kütüphanelerde hazır gelen eski
+  MehburMC skin/pelerini ve Hazırlar'daki MehburMC kartı kaldırıldı; launcher açılınca
+  kütüphanenden de silinir ve artık toplulukta paylaşılamaz.
+
+### Eklendi
+- **Özel MehburMC dokuları:** yeni MehburMC tasarımları yalnızca sunucuda durur. Kurucu bir
+  kişiye gönderdiğinde skin/pelerin o kişinin launcher'ına kendiliğinden eklenir (kartında
+  kilit simgesi var, paylaşılamaz); geri alındığında kaldırılır.
+- **Admin → Özel dokular** (yalnızca kurucu): PNG yükle, kişileri seç, gönder/geri al, sil.
+- Kurucu, Topluluk'taki bir paylaşımı **Topluluktan kaldır (admin)** ile kaldırabilir.
+
 ## [0.12.0] — 2026-10-06
 
 ### Eklendi

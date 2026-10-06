@@ -12,8 +12,9 @@ use crate::state::AppState;
 pub async fn list_skins(state: State<'_, AppState>) -> CmdResult<LibraryView> {
     let launcher = state.launcher()?.clone();
     blocking(move || {
-        if let Err(e) = launcher.skins.seed_builtins() {
-            tracing::warn!(error = %e, "could not add the built-in skins");
+        // The public MehburMC skin/cape is retired (K74).
+        if let Err(e) = launcher.skins.retire_builtins() {
+            tracing::warn!(error = %e, "could not remove the retired built-in skins");
         }
         Ok(launcher.skins.view())
     })

@@ -78,3 +78,11 @@ pub async fn auth_sign_out(state: State<'_, AppState>) -> CmdResult<()> {
     let l = state.launcher()?.clone();
     Ok(l.friends.sign_out().await?)
 }
+
+/// Applies the private texture grants of the signed-in account (K74);
+/// `true` if the skin library changed.
+#[tauri::command]
+pub async fn sync_private_textures(state: State<'_, AppState>) -> CmdResult<bool> {
+    let l = state.launcher()?.clone();
+    Ok(l.sync_private_textures().await?)
+}

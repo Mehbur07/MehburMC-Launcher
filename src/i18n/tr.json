@@ -563,7 +563,6 @@
         "wizard": "Büyücü",
         "cyber": "Siber Neon",
         "footballer": "Futbolcu",
-        "mehbur": "MehburMC",
         "turkey": "Ay Yıldız",
         "sunset": "Gün Batımı",
         "flame": "Alev",
@@ -659,7 +658,10 @@
       "empty": "Henüz paylaşılan bir şey yok. Kütüphanendeki bir kartta Paylaş düğmesine basarak ilk sen paylaş.",
       "unavailable": "Topluluk şu an yüklenemedi.",
       "by": "Paylaşan: {{name}}",
-      "mine": "Senin paylaşımın"
+      "mine": "Senin paylaşımın",
+      "adminRemove": "Topluluktan kaldır (admin)",
+      "adminRemoveTitle": "Topluluktan kaldırılsın mı?",
+      "adminRemoveBody": "\"{{name}}\" ({{author}}) artık kimseye gösterilmez; yalnızca paylaşan kendi paylaşımını görür."
     },
     "report": {
       "button": "Bildir",
@@ -674,7 +676,8 @@
       "note": "Not (isteğe bağlı)",
       "submit": "Bildir",
       "thanks": "Teşekkürler, bildirimin alındı."
-    }
+    },
+    "private": "Özel MehburMC dokusu — yalnızca sana verildi, paylaşılamaz."
   },
   "crash": {
     "title": "{{name}} çöktü",
@@ -1040,7 +1043,8 @@
       "published": "Yayındaki modlar",
       "reports": "Bildirimler",
       "bans": "Banlar",
-      "admins": "Yöneticiler"
+      "admins": "Yöneticiler",
+      "private": "Özel dokular"
     },
     "queue": {
       "hint": "Onaylamadan önce \"İndir ve tara\" ile mod senin launcher'ında yeniden taranır; yalnızca kendi taramanın engellemediği modlar onaylanabilir.",
@@ -1102,6 +1106,22 @@
       "add": "Admin ekle",
       "make": "Admin yap",
       "remove": "Adminlikten çıkar"
+    },
+    "private": {
+      "hint": "Özel MehburMC skin ve pelerinleri yalnızca sunucuda durur. Seçtiğin kişilerin launcher'ına otomatik eklenir, geri alınca silinir. Topluluğa paylaşılamazlar.",
+      "upload": "PNG yükle",
+      "pick": "Özel skin veya pelerin PNG'sini seç",
+      "uploadTitle": "Özel doku yükle",
+      "uploadHint": "Skin 64×64 (veya 64×32), pelerin 64×32; en fazla 128 KB.",
+      "name": "Ad (alıcılar görür)",
+      "empty": "Henüz özel doku yok",
+      "grants": "{{count}} kişide",
+      "people": "Kişiler",
+      "noGrants": "Henüz kimseye verilmedi",
+      "give": "Gönder",
+      "revoke": "Geri al",
+      "deleteTitle": "\"{{name}}\" silinsin mi?",
+      "deleteBody": "Doku sunucudan silinir ve herkesten geri alınır; alıcıların launcher'ı bir sonraki kontrolde kaldırır."
     }
   }
 }

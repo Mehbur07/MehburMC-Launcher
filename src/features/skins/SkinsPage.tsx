@@ -5,6 +5,7 @@ import {
   Library,
   Paintbrush,
   Pencil,
+  Lock,
   Share2,
   Shirt,
   Sparkles,
@@ -471,6 +472,7 @@ export function SkinsPage() {
                       it.item.id === activeId && !(tab === "skin" ? looseSkin : looseCape);
                     const applied = it.item.id === appliedId;
                     const shared = myShare(shares, it.kind, it.item.id);
+                    const isPrivate = store.private.includes(it.item.id);
                     return (
                       <div
                         key={it.item.id}
@@ -480,21 +482,32 @@ export function SkinsPage() {
                             : "border-line hover:border-accent/40"
                         }`}
                       >
-                        <IconButton
-                          label={shared ? t("skins.share.manage") : t("skins.share.button")}
-                          className={`absolute top-1 right-1 z-10 h-7 w-7 bg-surface-1/80 ${
-                            shared ? "text-accent" : "opacity-70 group-hover:opacity-100"
-                          }`}
-                          onClick={() =>
-                            setSharing({ kind: it.kind, id: it.item.id, name: it.item.name })
-                          }
-                        >
-                          {shared ? (
-                            <VisibilityIcon visibility={shared.visibility} size={14} />
-                          ) : (
-                            <Share2 size={14} />
-                          )}
-                        </IconButton>
+                        {isPrivate ? (
+                          <span
+                            role="img"
+                            aria-label={t("skins.private")}
+                            title={t("skins.private")}
+                            className="absolute top-1 right-1 z-10 grid h-7 w-7 place-items-center rounded-md bg-surface-1/80 text-accent"
+                          >
+                            <Lock size={14} />
+                          </span>
+                        ) : (
+                          <IconButton
+                            label={shared ? t("skins.share.manage") : t("skins.share.button")}
+                            className={`absolute top-1 right-1 z-10 h-7 w-7 bg-surface-1/80 ${
+                              shared ? "text-accent" : "opacity-70 group-hover:opacity-100"
+                            }`}
+                            onClick={() =>
+                              setSharing({ kind: it.kind, id: it.item.id, name: it.item.name })
+                            }
+                          >
+                            {shared ? (
+                              <VisibilityIcon visibility={shared.visibility} size={14} />
+                            ) : (
+                              <Share2 size={14} />
+                            )}
+                          </IconButton>
+                        )}
                         <button
                           type="button"
                           onClick={() => previewLibrary(it.kind, it.item.id)}

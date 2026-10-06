@@ -1,4 +1,4 @@
-import { Check, Flag, Paintbrush, Plus, RefreshCw, Undo2 } from "lucide-react";
+import { Check, Flag, Paintbrush, Plus, RefreshCw, ShieldX, Undo2 } from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -11,6 +11,7 @@ import type { TextureKind } from "../../lib/ipc/bindings/TextureKind";
 import { toDataUri } from "./editor/canvas";
 import { CAPE_PRESETS, SKIN_PRESETS } from "./presets";
 import { useApp } from "../../stores/app";
+import { useAuth } from "../../stores/auth";
 import { useCommunity } from "../../stores/community";
 import { ReportDialog, VisibilityIcon } from "./ShareDialogs";
 import { CapeThumb, SkinThumb } from "./SkinThumb";
@@ -56,6 +57,9 @@ export function PresetsPanel({
   const communityError = useCommunity((s) => s.error);
   const loadCommunity = useCommunity((s) => s.load);
   const unshare = useCommunity((s) => s.unshare);
+  const adminRemove = useCommunity((s) => s.adminRemove);
+  const isFounder = useAuth((s) => s.status?.rank === 1);
+  const [removing, setRemoving] = useState<SharedTexture | null>(null);
   const [reporting, setReporting] = useState<SharedTexture | null>(null);
   const [withdrawing, setWithdrawing] = useState<SharedTexture | null>(null);
   const [reported, setReported] = useState(false);
@@ -122,13 +126,24 @@ export function PresetsPanel({
         <Undo2 size={13} />
       </IconButton>
     ) : (
-      <IconButton
-        label={t("skins.report.button")}
-        className="h-7 w-7 hover:text-danger"
-        onClick={() => setReporting(s)}
-      >
-        <Flag size={13} />
-      </IconButton>
+      <>
+        {isFounder && (
+          <IconButton
+            label={t("skins.community.adminRemove")}
+            className="h-7 w-7 hover:text-danger"
+            onClick={() => setRemoving(s)}
+          >
+            <ShieldX size={13} />
+          </IconButton>
+        )}
+        <IconButton
+          label={t("skins.report.button")}
+          className="h-7 w-7 hover:text-danger"
+          onClick={() => setReporting(s)}
+        >
+          <Flag size={13} />
+        </IconButton>
+      </>
     );
   };
 
@@ -266,6 +281,21 @@ export function PresetsPanel({
         item={reporting}
         onClose={() => setReporting(null)}
         onReported={() => setReported(true)}
+      />
+      <ConfirmDialog
+        open={removing !== null}
+        danger
+        title={t("skins.community.adminRemoveTitle")}
+        message={t("skins.community.adminRemoveBody", {
+          name: removing?.name ?? "",
+          author: removing?.author ?? "",
+        })}
+        confirmLabel={t("skins.community.adminRemove")}
+        onClose={() => setRemoving(null)}
+        onConfirm={() => {
+          if (!removing) return;
+          void adminRemove(removing.id).then((e) => e && useApp.setState({ notice: e }));
+        }}
       />
       <ConfirmDialog
         open={withdrawing !== null}

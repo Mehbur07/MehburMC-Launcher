@@ -50,75 +50,7 @@ function plate(
   };
 }
 
-/** 6×5 "M" for the chest of the MehburMC skin. */
-const CHEST_M = ["#....#", "##..##", "#.##.#", "#....#", "#....#"];
-
 export const SKIN_PRESETS: SkinPreset[] = [
-  {
-    // Launcher mascot; matches the "mehbur" cape and ships in every library.
-    id: "mehbur",
-    model: "classic",
-    draw: person("classic", (c) => {
-      drawPerson(c, {
-        skin: "#e0ac85",
-        hair: "#1c1c24",
-        hairStyle: "short",
-        eyes: "#22d3ee",
-        shirt: "#0f1b33",
-        longSleeves: true,
-        pants: "#121419",
-        shoes: "#f2f2f2",
-        seed: 12,
-      });
-      const r = rng(121);
-      const cyan = hex("#22d3ee");
-      const deep = hex("#0a1224");
-      // Jacket: logo, collar and hem.
-      paintFace(c.p, c.face("body", "front"), (x, y) =>
-        y >= 2 && y < 7 && x >= 1 && x < 7 && CHEST_M[y - 2]?.[x - 1] === "#"
-          ? cyan
-          : y === 0 && (x < 2 || x > 5)
-            ? cyan
-            : y === 11
-              ? cyan
-              : null,
-      );
-      paintFace(c.p, c.face("body", "back"), (x, y) =>
-        y === 11 ? cyan : y > 1 && y < 10 && x > 0 && x < 7 ? grain(deep, r, 6) : null,
-      );
-      for (const side of ["left", "right"] as const) {
-        paintFace(c.p, c.face("body", side), (_x, y) => (y === 11 ? cyan : null));
-      }
-      // Sleeves: cyan stripe on the outside, cyan cuffs.
-      paintFace(c.p, c.face("rArm", "right"), (x, y) => (x === 1 && y < 9 ? cyan : null));
-      paintFace(c.p, c.face("lArm", "left"), (x, y) => (x === 2 && y < 9 ? cyan : null));
-      for (const id of ["rArm", "lArm"]) {
-        paintBox(c.p, c.box(id), (_x, y, f) =>
-          f.name !== "top" && f.name !== "bottom" && y === 9 ? cyan : null,
-        );
-      }
-      // Trousers: side stripes; shoes with cyan soles.
-      paintFace(c.p, c.face("rLeg", "right"), (x, y) => (x === 1 && y < 10 ? cyan : null));
-      paintFace(c.p, c.face("lLeg", "left"), (x, y) => (x === 2 && y < 10 ? cyan : null));
-      for (const id of ["rLeg", "lLeg"]) {
-        paintBox(c.p, c.box(id), (_x, y, f) =>
-          f.name !== "top" && f.name !== "bottom" && y === 11 ? cyan : null,
-        );
-      }
-      // Headset on the hat layer: band over the top, ear cups with a glow.
-      const band = hex("#16181f");
-      paintFace(c.p, c.face("hat", "top"), (_x, y) => (y === 3 || y === 4 ? band : null));
-      for (const side of ["right", "left"] as const) {
-        paintFace(c.p, c.face("hat", side), (x, y) => {
-          if (y < 3 && (x === 3 || x === 4)) return band;
-          if (y >= 3 && y < 6 && x >= 2 && x < 6) {
-            return y === 4 && (x === 3 || x === 4) ? cyan : band;
-          }
-          return null;
-        });
-      }
-    }),
-  },
   {
     id: "explorer",
     model: "classic",
@@ -516,24 +448,7 @@ const crescentFlag = (x: number, y: number, w: number, h: number): Color => {
   return on ? hex("#ffffff") : hex("#e30a17");
 };
 
-const M_GLYPH = ["#...#", "##.##", "#.#.#", "#...#", "#...#"];
-
 export const CAPE_PRESETS: CapePreset[] = [
-  {
-    id: "mehbur",
-    draw: () =>
-      drawCape({
-        lining: hex("#0d1b2a"),
-        front: (x, y, w, h) => {
-          const cyan = hex("#22d3ee");
-          if (x === 0 || x === w - 1 || y === 0 || y === h - 1) return cyan;
-          const gx = x - Math.floor((w - 5) / 2);
-          const gy = y - Math.floor((h - 5) / 2);
-          if (gx >= 0 && gx < 5 && gy >= 0 && gy < 5 && M_GLYPH[gy]?.[gx] === "#") return cyan;
-          return mix(hex("#1b2a4a"), hex("#0b1020"), y / h);
-        },
-      }),
-  },
   {
     id: "turkey",
     draw: () => drawCape({ lining: hex("#b0070f"), front: crescentFlag }),

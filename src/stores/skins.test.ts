@@ -19,6 +19,7 @@ const lib: LibraryView = {
   skins: [{ id: "s1", name: "Steve", model: "classic", addedAt: 1, dataUri: "data:a" }],
   capes: [{ id: "c1", name: "Cape", addedAt: 1, dataUri: "data:b" }],
   assignments: { acc: { skin: "s1", cape: "c1" }, other: { skin: "gone" } },
+  private: [],
 };
 
 describe("skins store", () => {

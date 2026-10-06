@@ -22,6 +22,8 @@ interface CommunityStore {
   ) => Promise<ErrorPayload | null>;
   unshare: (shareId: number) => Promise<ErrorPayload | null>;
   report: (shareId: number, reason: ReportReason, note: string) => Promise<ErrorPayload | null>;
+  /** Founder: hides a share from everyone but its owner (K73/K74). */
+  adminRemove: (shareId: number) => Promise<ErrorPayload | null>;
 }
 
 /** The caller's own share of a library texture (library id = SHA-1). */
@@ -58,6 +60,16 @@ export const useCommunity = create<CommunityStore>((set, get) => ({
   unshare: async (shareId) => {
     try {
       await ipc.unshareTexture(shareId);
+      set((s) => ({ items: s.items?.filter((i) => i.id !== shareId) ?? null }));
+      return null;
+    } catch (e) {
+      return toErrorPayload(e);
+    }
+  },
+
+  adminRemove: async (shareId) => {
+    try {
+      await ipc.adminHideTexture(shareId);
       set((s) => ({ items: s.items?.filter((i) => i.id !== shareId) ?? null }));
       return null;
     } catch (e) {

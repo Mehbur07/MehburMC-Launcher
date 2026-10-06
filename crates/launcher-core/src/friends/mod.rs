@@ -8,6 +8,7 @@ pub mod avatar;
 pub mod library;
 pub mod names;
 pub mod presence;
+pub mod private_textures;
 pub mod share;
 pub mod textures;
 

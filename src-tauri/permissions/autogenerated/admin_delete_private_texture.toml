@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-admin-delete-private-texture"
+description = "Enables the admin_delete_private_texture command without any pre-configured scope."
+commands.allow = ["admin_delete_private_texture"]
+
+[[permission]]
+identifier = "deny-admin-delete-private-texture"
+description = "Denies the admin_delete_private_texture command without any pre-configured scope."
+commands.deny = ["admin_delete_private_texture"]

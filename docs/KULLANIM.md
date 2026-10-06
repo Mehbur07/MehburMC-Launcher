@@ -129,9 +129,10 @@ modlar.
 
 **Skin & Cape** ekranı:
 - **Dosyadan ekle**: 64×64 veya 64×32 (ya da HD katları) PNG skin, 64×32 pelerin.
-- Kütüphanende **MehburMC** skin'i ve pelerini hazır gelir (silersen geri eklenmez).
+- **Özel MehburMC skin/pelerinleri** yalnızca kurucunun gönderdiği hesaplarda görünür; kartlarında
+  kilit simgesi vardır ve paylaşılamaz. Geri alınırsa kütüphanenden kaldırılır.
 - **Hazırlar**: oyunun varsayılan skinleri (Steve, Alex… — kurulu bir sürümün oyun dosyasından
-  okunur) ve MehburMC koleksiyonundaki özgün skin/pelerinler. Tıkla önizle, **+** ile kütüphaneye ekle.
+  okunur) ve launcher'ın özgün skin/pelerin koleksiyonu. Tıkla önizle, **+** ile kütüphaneye ekle.
 - **Tasarla**: kendi skin'ini (64×64) veya pelerinini (64×32) çiz; soldaki 3B önizleme anında
   güncellenir. Araçlar: kalem (B), silgi (E), kova (G), damlalık (I), çizgi (L), ayna modu (M);
   sağ tık siler, Alt+tık renk alır, Ctrl+Z / Ctrl+Y geri/ileri alır. **Katman** ile yalnızca
@@ -244,6 +245,7 @@ Launcher açılınca MehburMC hesabınla giriş yapman istenir.
   yasaklıyken launcher kullanılamaz, ekranda bitiş tarihi ve sebep yazar.
 
 **Yöneticiler** kenar çubuğunda **Admin** sayfasını görür: Kütüphane'ye yüklenen modların onayı
-(mod önce yöneticinin launcher'ında yeniden taranır), bildirilen içerik, banlar ve yönetici atama.
+(mod önce yöneticinin launcher'ında yeniden taranır), bildirilen içerik, banlar ve yönetici atama. Kurucu ayrıca **Özel dokular** sekmesinden özel
+MehburMC skin/pelerinlerini yükler ve seçtiği kişilere gönderir.
 
 Sorun mu yaşıyorsun? → [Sorun giderme](SORUN_GIDERME.md)

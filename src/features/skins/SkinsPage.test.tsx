@@ -32,7 +32,7 @@ describe("SkinsPage", () => {
     applyLanguage("en");
     vi.clearAllMocks();
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
-    ipcMock.listSkins.mockResolvedValue({ skins: [], capes: [], assignments: {} });
+    ipcMock.listSkins.mockResolvedValue({ skins: [], capes: [], assignments: {}, private: [] });
     ipcMock.listDefaultSkins.mockResolvedValue([
       { name: "Steve", model: "classic", dataUri: "data:image/png;base64,QQ", source: "1.21.4" },
     ]);

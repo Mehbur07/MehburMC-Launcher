@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-admin-texture-grants"
+description = "Enables the admin_texture_grants command without any pre-configured scope."
+commands.allow = ["admin_texture_grants"]
+
+[[permission]]
+identifier = "deny-admin-texture-grants"
+description = "Denies the admin_texture_grants command without any pre-configured scope."
+commands.deny = ["admin_texture_grants"]

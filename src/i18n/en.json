@@ -563,7 +563,6 @@
         "wizard": "Wizard",
         "cyber": "Cyber Neon",
         "footballer": "Footballer",
-        "mehbur": "MehburMC",
         "turkey": "Crescent & Star",
         "sunset": "Sunset",
         "flame": "Flame",
@@ -659,7 +658,10 @@
       "empty": "Nothing shared yet. Press Share on a card in your library to be the first.",
       "unavailable": "The community could not be loaded right now.",
       "by": "Shared by {{name}}",
-      "mine": "Your share"
+      "mine": "Your share",
+      "adminRemove": "Remove from community (admin)",
+      "adminRemoveTitle": "Remove from the community?",
+      "adminRemoveBody": "\"{{name}}\" ({{author}}) will no longer be shown to anyone; only the sharer still sees their share."
     },
     "report": {
       "button": "Report",
@@ -674,7 +676,8 @@
       "note": "Note (optional)",
       "submit": "Report",
       "thanks": "Thanks, your report was received."
-    }
+    },
+    "private": "Private MehburMC texture — given to you only, cannot be shared."
   },
   "crash": {
     "title": "{{name}} crashed",
@@ -1040,7 +1043,8 @@
       "published": "Published mods",
       "reports": "Reports",
       "bans": "Bans",
-      "admins": "Admins"
+      "admins": "Admins",
+      "private": "Private textures"
     },
     "queue": {
       "hint": "Before approving, \"Download and scan\" checks the mod again in your launcher; only mods your own scan does not block can be approved.",
@@ -1102,6 +1106,22 @@
       "add": "Add an admin",
       "make": "Make admin",
       "remove": "Remove admin"
+    },
+    "private": {
+      "hint": "Private MehburMC skins and capes live only on the server. They are added to the launchers of the people you choose and removed when you take them back. They cannot be shared to the community.",
+      "upload": "Upload PNG",
+      "pick": "Choose the private skin or cape PNG",
+      "uploadTitle": "Upload a private texture",
+      "uploadHint": "Skin 64×64 (or 64×32), cape 64×32; at most 128 KB.",
+      "name": "Name (shown to receivers)",
+      "empty": "No private textures yet",
+      "grants": "Given to {{count}}",
+      "people": "People",
+      "noGrants": "Not given to anyone yet",
+      "give": "Give",
+      "revoke": "Take back",
+      "deleteTitle": "Delete \"{{name}}\"?",
+      "deleteBody": "The texture is deleted from the server and taken back from everyone; receivers' launchers remove it at their next check."
     }
   }
 }

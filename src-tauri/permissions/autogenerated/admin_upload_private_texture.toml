@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-admin-upload-private-texture"
+description = "Enables the admin_upload_private_texture command without any pre-configured scope."
+commands.allow = ["admin_upload_private_texture"]
+
+[[permission]]
+identifier = "deny-admin-upload-private-texture"
+description = "Denies the admin_upload_private_texture command without any pre-configured scope."
+commands.deny = ["admin_upload_private_texture"]

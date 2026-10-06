@@ -10,13 +10,25 @@ import {
   ShieldCheck,
   ShieldMinus,
   ShieldPlus,
+  Send,
   Trash2,
+  Undo2,
+  Upload,
+  Users,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Badge, Button, EmptyState, Field, Modal, TextInput } from "../../components/ui";
+import {
+  Badge,
+  Button,
+  ConfirmDialog,
+  EmptyState,
+  Field,
+  Modal,
+  TextInput,
+} from "../../components/ui";
 import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { AdminBan } from "../../lib/ipc/bindings/AdminBan";
 import type { AdminEntry } from "../../lib/ipc/bindings/AdminEntry";
@@ -25,12 +37,16 @@ import type { AdminModStatus } from "../../lib/ipc/bindings/AdminModStatus";
 import type { AdminReport } from "../../lib/ipc/bindings/AdminReport";
 import type { AdminUser } from "../../lib/ipc/bindings/AdminUser";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
+import type { PrivateTexture } from "../../lib/ipc/bindings/PrivateTexture";
+import type { SkinModel } from "../../lib/ipc/bindings/SkinModel";
+import type { TextureGrant } from "../../lib/ipc/bindings/TextureGrant";
+import type { TextureKind } from "../../lib/ipc/bindings/TextureKind";
 import type { ScanReport } from "../../lib/ipc/bindings/ScanReport";
 import { formatBytes, formatIso } from "../../lib/format";
 import { useAuth } from "../../stores/auth";
 import { FindingList, LoaderBadges } from "../browse/LibraryPanel";
 
-type Tab = "queue" | "published" | "reports" | "bans" | "admins";
+type Tab = "queue" | "published" | "reports" | "bans" | "admins" | "private";
 
 /** A user to act on: id plus a name to show. */
 interface Target {
@@ -695,13 +711,242 @@ function AdminsTab() {
   );
 }
 
+/** Uploads the PNG picked with `pickPath("privateTexture")`. */
+function PrivateUploadDialog({
+  file,
+  onClose,
+  onDone,
+}: {
+  file: string | null;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const { t } = useTranslation();
+  const [kind, setKind] = useState<TextureKind>("skin");
+  const [model, setModel] = useState<SkinModel>("classic");
+  const [name, setName] = useState("MehburMC");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<ErrorPayload | null>(null);
+  useEffect(() => {
+    if (file) {
+      setKind("skin");
+      setModel("classic");
+      setName("MehburMC");
+      setError(null);
+    }
+  }, [file]);
+  const submit = async () => {
+    setBusy(true);
+    try {
+      await ipc.adminUploadPrivateTexture(kind, model, name);
+      onDone();
+      onClose();
+    } catch (e) {
+      setError(toErrorPayload(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const radio = <T extends string>(
+    group: string,
+    value: T,
+    current: T,
+    set: (v: T) => void,
+    label: string,
+  ) => (
+    <label className="flex items-center gap-2 text-sm">
+      <input
+        type="radio"
+        name={group}
+        checked={current === value}
+        onChange={() => set(value)}
+        className="accent-[rgb(var(--mc-accent-rgb))]"
+      />
+      {label}
+    </label>
+  );
+  return (
+    <Modal
+      open={file !== null}
+      onClose={onClose}
+      title={t("admin.private.uploadTitle")}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose}>
+            {t("common.cancel")}
+          </Button>
+          <Button
+            variant="primary"
+            disabled={busy || name.trim() === ""}
+            onClick={() => void submit()}
+          >
+            {busy ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+            {t("admin.private.upload")}
+          </Button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-3">
+        <p className="truncate font-mono text-xs text-muted" title={file ?? ""}>
+          {file}
+        </p>
+        <fieldset className="flex gap-4">
+          {radio("pt-kind", "skin" as TextureKind, kind, setKind, t("skins.skin"))}
+          {radio("pt-kind", "cape" as TextureKind, kind, setKind, t("skins.cape"))}
+        </fieldset>
+        {kind === "skin" && (
+          <fieldset className="flex gap-4">
+            {radio("pt-model", "classic" as SkinModel, model, setModel, t("skins.model.classic"))}
+            {radio("pt-model", "slim" as SkinModel, model, setModel, t("skins.model.slim"))}
+          </fieldset>
+        )}
+        <Field label={t("admin.private.name")}>
+          <TextInput value={name} maxLength={48} onChange={(e) => setName(e.target.value)} />
+        </Field>
+        <p className="text-xs text-muted">{t("admin.private.uploadHint")}</p>
+        <ErrorLine error={error} />
+      </div>
+    </Modal>
+  );
+}
+
+/** Who has a private texture; give or take it back. */
+function GrantsPanel({ texture, onChange }: { texture: PrivateTexture; onChange: () => void }) {
+  const { t } = useTranslation();
+  const fetch = useCallback(() => ipc.adminTextureGrants(texture.id), [texture.id]);
+  const { items, error, reload } = useList<TextureGrant>(fetch);
+  const [notice, setNotice] = useState<ErrorPayload | null>(null);
+  const set = async (userId: string, grant: boolean) => {
+    setNotice(null);
+    try {
+      await ipc.adminSetTextureGrant(texture.id, userId, grant);
+      reload();
+      onChange();
+    } catch (e) {
+      setNotice(toErrorPayload(e));
+    }
+  };
+  const has = (userId: string) => items?.some((g) => g.userId === userId) ?? false;
+  return (
+    <div className="mt-2 flex w-full flex-col gap-3 border-t border-line pt-3">
+      <ErrorLine error={notice} />
+      <ListState items={items} error={error} empty={t("admin.private.noGrants")}>
+        {(list) =>
+          list.map((g) => (
+            <Row key={g.userId}>
+              <span className="flex-1 text-sm font-medium">{g.names.join(", ") || g.userId}</span>
+              <Button size="sm" variant="ghost" onClick={() => void set(g.userId, false)}>
+                <Undo2 size={13} />
+                {t("admin.private.revoke")}
+              </Button>
+            </Row>
+          ))
+        }
+      </ListState>
+      <UserSearch
+        action={(u) =>
+          !has(u.userId) &&
+          !u.banned && (
+            <Button size="sm" onClick={() => void set(u.userId, true)}>
+              <Send size={13} />
+              {t("admin.private.give")}
+            </Button>
+          )
+        }
+      />
+    </div>
+  );
+}
+
+function PrivateTab() {
+  const { t } = useTranslation();
+  const fetch = useCallback(() => ipc.adminPrivateTextures(), []);
+  const { items, error, reload } = useList<PrivateTexture>(fetch);
+  const [file, setFile] = useState<string | null>(null);
+  const [open, setOpen] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState<PrivateTexture | null>(null);
+  const [notice, setNotice] = useState<ErrorPayload | null>(null);
+  const pick = async () => {
+    const path = await ipc.pickPath("privateTexture", undefined, t("admin.private.pick"));
+    if (path) setFile(path);
+  };
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-xs text-muted">{t("admin.private.hint")}</p>
+        <Button variant="primary" onClick={() => void pick()}>
+          <Upload size={14} />
+          {t("admin.private.upload")}
+        </Button>
+      </div>
+      <ErrorLine error={notice} />
+      <ListState items={items} error={error} empty={t("admin.private.empty")}>
+        {(list) =>
+          list.map((p) => (
+            <Row key={p.id}>
+              <div className="grid h-16 w-16 shrink-0 place-items-center rounded-md bg-surface-3/40">
+                {p.dataUri ? (
+                  <img
+                    src={p.dataUri}
+                    alt={p.name}
+                    className="max-h-16 max-w-16 [image-rendering:pixelated]"
+                  />
+                ) : (
+                  <X size={18} className="text-danger" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold">{p.name}</span>
+                  <Badge>{p.kind === "skin" ? t("skins.skin") : t("skins.cape")}</Badge>
+                  {p.kind === "skin" && <Badge>{t(`skins.model.${p.model}`)}</Badge>}
+                </div>
+                <p className="text-xs text-muted">
+                  {t("admin.private.grants", { count: p.grants })}
+                </p>
+              </div>
+              <div className="flex shrink-0 gap-1.5">
+                <Button size="sm" onClick={() => setOpen(open === p.id ? null : p.id)}>
+                  <Users size={13} />
+                  {t("admin.private.people")}
+                </Button>
+                <Button size="sm" variant="danger" onClick={() => setDeleting(p)}>
+                  <Trash2 size={13} />
+                </Button>
+              </div>
+              {open === p.id && <GrantsPanel texture={p} onChange={reload} />}
+            </Row>
+          ))
+        }
+      </ListState>
+      <PrivateUploadDialog file={file} onClose={() => setFile(null)} onDone={reload} />
+      <ConfirmDialog
+        open={deleting !== null}
+        danger
+        title={t("admin.private.deleteTitle", { name: deleting?.name ?? "" })}
+        message={t("admin.private.deleteBody")}
+        confirmLabel={t("common.delete")}
+        onClose={() => setDeleting(null)}
+        onConfirm={() => {
+          if (!deleting) return;
+          setNotice(null);
+          ipc
+            .adminDeletePrivateTexture(deleting.id)
+            .then(reload)
+            .catch((e) => setNotice(toErrorPayload(e)));
+        }}
+      />
+    </div>
+  );
+}
+
 /** Admin notifications and tools; only reachable with an admin rank (K73). */
 export function AdminPage() {
   const { t } = useTranslation();
   const rank = useAuth((s) => s.status?.rank ?? 0);
   const tabs: Tab[] =
     rank === 1
-      ? ["queue", "published", "reports", "bans", "admins"]
+      ? ["queue", "published", "reports", "bans", "admins", "private"]
       : ["published", "reports", "bans"];
   const [tab, setTab] = useState<Tab>(rank === 1 ? "queue" : "published");
   const [banTarget, setBanTarget] = useState<Target | null>(null);
@@ -746,6 +991,7 @@ export function AdminPage() {
         {tab === "reports" && <ReportsTab rank={rank} onBan={setBanTarget} />}
         {tab === "bans" && <BansTab onBan={setBanTarget} version={bansVersion} />}
         {tab === "admins" && <AdminsTab />}
+        {tab === "private" && <PrivateTab />}
       </div>
       <BanDialog
         target={banTarget}

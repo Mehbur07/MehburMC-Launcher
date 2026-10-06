@@ -9,6 +9,7 @@ import { Sidebar } from "../components/Sidebar";
 import { TitleBar } from "../components/TitleBar";
 import { HomePage } from "../features/home/HomePage";
 import { applyLanguage } from "../i18n";
+import { ipc } from "../lib/ipc";
 import { useAccounts } from "../stores/accounts";
 import { canUse, useAuth } from "../stores/auth";
 import { AuthScreen, BanScreen } from "../features/auth/AuthScreen";
@@ -115,10 +116,16 @@ export function App() {
   const usable = canUse(auth);
   useEffect(() => {
     if (status !== "ready") return;
-    void loadAuth(false).then(() => loadAuth(true));
-    const id = window.setInterval(() => void loadAuth(true), 5 * 60_000);
+    // Private MehburMC textures follow the server's grants (K74).
+    const check = () =>
+      loadAuth(true).then(async () => {
+        if (!canUse(useAuth.getState().status)) return;
+        if (await ipc.syncPrivateTextures().catch(() => false)) void loadSkins();
+      });
+    void loadAuth(false).then(check);
+    const id = window.setInterval(() => void check(), 5 * 60_000);
     return () => window.clearInterval(id);
-  }, [status, loadAuth]);
+  }, [status, loadAuth, loadSkins]);
 
   // Friend list (unread badge) every 20 s once friends are on.
   const friendsStatus = useFriends((s) => s.status);

@@ -12,6 +12,8 @@ interface SkinsStore {
   skins: SkinItem[];
   capes: CapeItem[];
   assignments: Record<string, Assignment>;
+  /** Ids granted privately by the MehburMC team: never shareable. */
+  private: string[];
   loaded: boolean;
   load: () => Promise<void>;
   /**
@@ -40,12 +42,19 @@ export const useSkins = create<SkinsStore>((set, get) => ({
   skins: [],
   capes: [],
   assignments: {},
+  private: [],
   loaded: false,
 
   load: async () => {
     try {
       const v = await ipc.listSkins();
-      set({ skins: v.skins, capes: v.capes, assignments: v.assignments, loaded: true });
+      set({
+        skins: v.skins,
+        capes: v.capes,
+        assignments: v.assignments,
+        private: v.private,
+        loaded: true,
+      });
     } catch (e) {
       notify(e);
     }

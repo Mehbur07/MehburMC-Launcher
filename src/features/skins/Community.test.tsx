@@ -10,6 +10,7 @@ const ipcMock = vi.hoisted(() => ({
   shareTexture: vi.fn(),
   unshareTexture: vi.fn(),
   reportTexture: vi.fn(),
+  adminHideTexture: vi.fn(),
 }));
 vi.mock("../../lib/ipc", async (orig) => ({
   ...(await orig<typeof import("../../lib/ipc")>()),
@@ -27,6 +28,7 @@ import "../../i18n";
 import { applyLanguage } from "../../i18n";
 import type { SharedTexture } from "../../lib/ipc/bindings/SharedTexture";
 import { useAccounts } from "../../stores/accounts";
+import { useAuth } from "../../stores/auth";
 import { useCommunity } from "../../stores/community";
 import { useFriends } from "../../stores/friends";
 import { useSkins } from "../../stores/skins";
@@ -59,6 +61,7 @@ describe("Sharing skins", () => {
       shared({ id: 2, name: "Shadow Fox", visibility: "friends" }),
     ]);
     useCommunity.setState({ items: null, loading: false, error: null });
+    useAuth.setState({ status: null });
     useFriends.setState({ enabled: false });
     useSkins.setState({
       skins: [
@@ -149,6 +152,37 @@ describe("Sharing skins", () => {
     await act(async () => fireEvent.click(within(dialog).getByRole("button", { name: "Report" })));
     expect(ipcMock.reportTexture).toHaveBeenCalledWith(2, "stolen", "copied");
     expect(await screen.findByText(/your report was received/)).toBeInTheDocument();
+    expect(screen.queryByText("Shared by Alex")).toBeNull();
+  });
+
+  it("lets the founder remove someone else's share from the community", async () => {
+    ipcMock.adminHideTexture.mockResolvedValue(undefined);
+    render(<SkinsPage />);
+    fireEvent.click(screen.getByRole("tab", { name: /Presets/ }));
+    await screen.findByText("Shared by Alex");
+    // Ordinary users have no remove button.
+    expect(screen.queryByRole("button", { name: /Remove from community/ })).toBeNull();
+    act(() =>
+      useAuth.setState({
+        status: {
+          signedIn: true,
+          email: "a@b.co",
+          anonymousIdentity: false,
+          rank: 1,
+          ban: null,
+          offline: false,
+        },
+      }),
+    );
+    // Only on other people's shares.
+    const remove = screen.getAllByRole("button", { name: /Remove from community/ });
+    expect(remove).toHaveLength(1);
+    fireEvent.click(remove[0]!);
+    const dialog = await screen.findByRole("dialog", { name: "Remove from the community?" });
+    await act(async () =>
+      fireEvent.click(within(dialog).getByRole("button", { name: /Remove from community/ })),
+    );
+    expect(ipcMock.adminHideTexture).toHaveBeenCalledWith(2);
     expect(screen.queryByText("Shared by Alex")).toBeNull();
   });
 

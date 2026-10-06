@@ -15,6 +15,12 @@ const ipcMock = vi.hoisted(() => ({
   adminBans: vi.fn(),
   adminList: vi.fn(),
   adminSetRank: vi.fn(),
+  adminPrivateTextures: vi.fn(),
+  adminUploadPrivateTexture: vi.fn(),
+  adminDeletePrivateTexture: vi.fn(),
+  adminTextureGrants: vi.fn(),
+  adminSetTextureGrant: vi.fn(),
+  pickPath: vi.fn(),
 }));
 vi.mock("../../lib/ipc", async (orig) => ({
   ...(await orig<typeof import("../../lib/ipc")>()),
@@ -171,5 +177,58 @@ describe("AdminPage", () => {
     expect(row).toHaveTextContent("rude");
     await act(async () => fireEvent.click(within(row).getByRole("button", { name: /Hide/ })));
     expect(ipcMock.adminHideTexture).toHaveBeenCalledWith(3);
+  });
+
+  it("founder uploads a private texture and gives it to someone", async () => {
+    asRank(1);
+    ipcMock.adminPrivateTextures.mockResolvedValue([
+      {
+        id: 4,
+        kind: "skin",
+        model: "slim",
+        name: "MehburMC",
+        sha1: "c".repeat(40),
+        createdAt: "2026-10-07T10:00:00Z",
+        grants: 0,
+        dataUri: "data:image/png;base64,QQ",
+      },
+    ]);
+    ipcMock.pickPath.mockResolvedValue("C:/designs/mehbur.png");
+    ipcMock.adminUploadPrivateTexture.mockResolvedValue(4);
+    ipcMock.adminTextureGrants.mockResolvedValue([]);
+    ipcMock.adminFindUsers.mockResolvedValue([
+      { userId: FRIEND, names: ["Friend"], rank: 0, banned: false, banUntil: null },
+    ]);
+    ipcMock.adminSetTextureGrant.mockResolvedValue(undefined);
+    render(<AdminPage />);
+    fireEvent.click(screen.getByRole("tab", { name: "Private textures" }));
+
+    await act(async () =>
+      fireEvent.click(await screen.findByRole("button", { name: /Upload PNG/ })),
+    );
+    expect(ipcMock.pickPath).toHaveBeenCalledWith("privateTexture", undefined, expect.any(String));
+    const dialog = await screen.findByRole("dialog", { name: "Upload a private texture" });
+    fireEvent.click(within(dialog).getByRole("radio", { name: "Slim" }));
+    await act(async () =>
+      fireEvent.click(within(dialog).getByRole("button", { name: /Upload PNG/ })),
+    );
+    expect(ipcMock.adminUploadPrivateTexture).toHaveBeenCalledWith("skin", "slim", "MehburMC");
+
+    const row = (await screen.findByText("MehburMC", { selector: "span" })).closest("li")!;
+    fireEvent.click(within(row).getByRole("button", { name: /People/ }));
+    fireEvent.change(await within(row).findByLabelText("Account name or friend code"), {
+      target: { value: "frie" },
+    });
+    await act(async () => fireEvent.click(within(row).getByRole("button", { name: /Search/ })));
+    await act(async () =>
+      fireEvent.click(await within(row).findByRole("button", { name: /Give/ })),
+    );
+    expect(ipcMock.adminSetTextureGrant).toHaveBeenCalledWith(4, FRIEND, true);
+  });
+
+  it("rank 2 has no private textures tab", () => {
+    asRank(2);
+    render(<AdminPage />);
+    expect(screen.queryByRole("tab", { name: "Private textures" })).toBeNull();
   });
 });

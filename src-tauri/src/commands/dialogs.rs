@@ -33,6 +33,8 @@ pub enum PickPurpose {
     Cape,
     /// Account profile photo (`.png`).
     Avatar,
+    /// Private MehburMC skin/cape uploaded by the founder (K74).
+    PrivateTexture,
     /// A Java executable for the instance settings (returned, not stored).
     Java,
     /// Destination folder for "Move data folder".
@@ -56,7 +58,7 @@ fn kind(p: PickPurpose) -> Kind {
         InstanceArchive => Kind::Open("Zip", &["zip"]),
         Optifine => Kind::Open("OptiFine", &["jar"]),
         LibraryMod => Kind::Open("Mod", &["jar"]),
-        Skin | Cape | Avatar => Kind::Open("PNG", &["png"]),
+        Skin | Cape | Avatar | PrivateTexture => Kind::Open("PNG", &["png"]),
         Java if cfg!(windows) => Kind::Open("Java", &["exe"]),
         Java => Kind::Open("Java", &["*"]),
         DataFolder => Kind::Folder,

@@ -9,6 +9,8 @@ import type { AdminMod } from "./bindings/AdminMod";
 import type { AdminModStatus } from "./bindings/AdminModStatus";
 import type { AdminReport } from "./bindings/AdminReport";
 import type { AdminUser } from "./bindings/AdminUser";
+import type { PrivateTexture } from "./bindings/PrivateTexture";
+import type { TextureGrant } from "./bindings/TextureGrant";
 import type { AuthStatus } from "./bindings/AuthStatus";
 import type { CodePurpose } from "./bindings/CodePurpose";
 import type { ReportKind } from "./bindings/ReportKind";
@@ -200,6 +202,17 @@ export const ipc = {
   adminList: () => invoke<AdminEntry[]>("admin_list"),
   adminSetRank: (userId: string, admin: boolean) =>
     invoke<void>("admin_set_rank", { userId, admin }),
+  /** Founder: private MehburMC textures (K74). */
+  adminPrivateTextures: () => invoke<PrivateTexture[]>("admin_private_textures"),
+  /** Uploads the PNG chosen with `pickPath("privateTexture")`. */
+  adminUploadPrivateTexture: (kind: TextureKind, model: SkinModel, name: string) =>
+    invoke<number>("admin_upload_private_texture", { kind, model, name }),
+  adminDeletePrivateTexture: (id: number) => invoke<void>("admin_delete_private_texture", { id }),
+  adminTextureGrants: (id: number) => invoke<TextureGrant[]>("admin_texture_grants", { id }),
+  adminSetTextureGrant: (id: number, userId: string, grant: boolean) =>
+    invoke<void>("admin_set_texture_grant", { id, userId, grant }),
+  /** Applies this account's private texture grants; true if the library changed. */
+  syncPrivateTextures: () => invoke<boolean>("sync_private_textures"),
 
   /** Scans the jar chosen with `pickPath("libraryMod")`. */
   libraryScanPick: () => invoke<LibraryScan>("library_scan_pick"),

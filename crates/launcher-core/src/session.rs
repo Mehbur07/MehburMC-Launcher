@@ -673,6 +673,40 @@ impl Launcher {
             .await
     }
 
+    /// Brings privately granted MehburMC textures in line with the server
+    /// (K74): new grants are downloaded into the skin library, revoked ones
+    /// removed (with their assignments). Offline or signed out nothing
+    /// changes. Returns whether the library changed.
+    pub async fn sync_private_textures(&self) -> Result<bool> {
+        if !self.friends.can_play().await {
+            return Ok(false);
+        }
+        let grants = self.friends.my_private_textures().await?;
+        let local = self.skins.private_ids();
+        let revoked: Vec<String> = local
+            .iter()
+            .filter(|id| !grants.iter().any(|g| &g.sha1 == *id))
+            .cloned()
+            .collect();
+        let mut changed = !self.skins.remove_ids(&revoked)?.is_empty();
+        for g in grants {
+            // Deleting one by hand removes its file; the grant brings it back.
+            if local.contains(&g.sha1) && self.skins.texture_path(&g.sha1)?.is_file() {
+                continue;
+            }
+            match self.friends.private_texture_png(&g.sha1, g.kind).await {
+                Ok(png) => {
+                    self.skins.add_private(g.kind, &png, &g.name, g.model)?;
+                    changed = true;
+                }
+                Err(e) => {
+                    tracing::warn!(error = %e.detail(), sha1 = %g.sha1, "private texture not available")
+                }
+            }
+        }
+        Ok(changed)
+    }
+
     /// Submits a mod jar to the MehburMC Library under the selected
     /// account's name. `expected_sha1` is the file the user saw the scan
     /// report for; a file changed since then is refused.

@@ -34,6 +34,7 @@ pub const TEXTURE_ERRORS: &[&str] = &[
     "textures.quota",
     "textures.notFound",
     "textures.ownReport",
+    "textures.notShareable",
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]

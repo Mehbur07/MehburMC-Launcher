@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-sync-private-textures"
+description = "Enables the sync_private_textures command without any pre-configured scope."
+commands.allow = ["sync_private_textures"]
+
+[[permission]]
+identifier = "deny-sync-private-textures"
+description = "Denies the sync_private_textures command without any pre-configured scope."
+commands.deny = ["sync_private_textures"]

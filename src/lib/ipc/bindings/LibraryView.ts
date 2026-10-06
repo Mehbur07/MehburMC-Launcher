@@ -3,4 +3,8 @@ import type { Assignment } from "./Assignment";
 import type { CapeItem } from "./CapeItem";
 import type { SkinItem } from "./SkinItem";
 
-export type LibraryView = { skins: Array<SkinItem>, capes: Array<CapeItem>, assignments: { [key in string]: Assignment }, };
+export type LibraryView = { skins: Array<SkinItem>, capes: Array<CapeItem>, assignments: { [key in string]: Assignment }, 
+/**
+ * Ids granted privately by the MehburMC team: not shareable.
+ */
+private: Array<string>, };

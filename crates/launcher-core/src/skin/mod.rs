@@ -82,36 +82,19 @@ struct Library {
     capes: Vec<CapeEntry>,
     /// Account id → chosen textures.
     assignments: BTreeMap<String, Assignment>,
-    /// Built-in textures already offered once; deleting one keeps it gone.
+    /// Keys of the retired built-in textures (K59/K60); kept so old files
+    /// round-trip, no longer used.
     builtin: Vec<String>,
+    /// Ids added from private grants (K74); they leave when the grant does.
+    private: Vec<String>,
 }
 
-/// A texture every library starts with.
-struct Builtin {
-    key: &'static str,
-    kind: TextureKind,
-    name: &'static str,
-    model: Option<SkinModel>,
-    png: &'static [u8],
-}
-
-/// Exported from the "mehbur" presets in `src/features/skins/presets`
-/// (`builtin.test.ts` keeps them in sync).
-const BUILTINS: &[Builtin] = &[
-    Builtin {
-        key: "mehbur-skin",
-        kind: TextureKind::Skin,
-        name: "MehburMC",
-        model: Some(SkinModel::Classic),
-        png: include_bytes!("../../assets/builtin/mehbur-skin.png"),
-    },
-    Builtin {
-        key: "mehbur-cape",
-        kind: TextureKind::Cape,
-        name: "MehburMC",
-        model: None,
-        png: include_bytes!("../../assets/builtin/mehbur-cape.png"),
-    },
+/// SHA-1s of the retired public MehburMC skin and cape (K74). They are
+/// removed from every library and never offered again; the new design is
+/// only handed out privately.
+pub const RETIRED: &[&str] = &[
+    "15f36107b3e370aa9b39b7327f421b0fc371f0b0",
+    "550a2572b75449fd44f33723a4bea217ba767805",
 ];
 
 #[derive(Debug, Clone, Serialize, TS)]
@@ -140,6 +123,8 @@ pub struct LibraryView {
     pub skins: Vec<SkinItem>,
     pub capes: Vec<CapeItem>,
     pub assignments: BTreeMap<String, Assignment>,
+    /// Ids granted privately by the MehburMC team: not shareable.
+    pub private: Vec<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -257,6 +242,7 @@ impl SkinStore {
             skins,
             capes,
             assignments: lib.assignments,
+            private: lib.private,
         }
     }
 
@@ -269,31 +255,78 @@ impl SkinStore {
         Ok(id)
     }
 
-    /// Adds the built-in MehburMC textures the first time this library is
-    /// seen (new and existing installs alike); never re-adds deleted ones.
-    pub fn seed_builtins(&self) -> Result<()> {
-        let seen = self.read().builtin;
-        let missing: Vec<_> = BUILTINS
-            .iter()
-            .filter(|b| !seen.iter().any(|s| s == b.key))
-            .collect();
-        if missing.is_empty() {
-            return Ok(());
-        }
-        for b in &missing {
-            match b.kind {
-                TextureKind::Skin => drop(self.add_skin(b.png, b.name, b.model)?),
-                TextureKind::Cape => drop(self.add_cape(b.png, b.name)?),
-            }
-        }
+    /// Removes the retired MehburMC textures (K74): library entries,
+    /// assignments (the game falls back to the default skin) and files.
+    /// Returns whether anything was removed.
+    pub fn retire_builtins(&self) -> Result<bool> {
+        let ids: Vec<String> = RETIRED.iter().map(|s| (*s).to_owned()).collect();
+        Ok(!self.remove_ids(&ids)?.is_empty())
+    }
+
+    /// Ids of privately granted textures in this library.
+    pub fn private_ids(&self) -> Vec<String> {
+        self.read().private
+    }
+
+    /// Adds a privately granted texture and remembers it as private.
+    pub fn add_private(
+        &self,
+        kind: TextureKind,
+        bytes: &[u8],
+        name: &str,
+        model: SkinModel,
+    ) -> Result<String> {
+        let id = match kind {
+            TextureKind::Skin => self.add_skin(bytes, name, Some(model))?.id,
+            TextureKind::Cape => self.add_cape(bytes, name)?.id,
+        };
         let _g = self.lock.lock().expect("skins lock");
         let mut lib = self.read();
-        for b in missing {
-            if !lib.builtin.iter().any(|s| s == b.key) {
-                lib.builtin.push(b.key.to_owned());
+        if !lib.private.contains(&id) {
+            lib.private.push(id.clone());
+            self.write(&lib)?;
+        }
+        Ok(id)
+    }
+
+    /// Removes the given ids everywhere (entries, assignments, private
+    /// list, files). Returns the ids that were present.
+    pub fn remove_ids(&self, ids: &[String]) -> Result<Vec<String>> {
+        let _g = self.lock.lock().expect("skins lock");
+        let mut lib = self.read();
+        let present: Vec<String> = ids
+            .iter()
+            .filter(|id| {
+                lib.skins.iter().any(|e| &e.id == *id)
+                    || lib.capes.iter().any(|e| &e.id == *id)
+                    || lib.private.contains(id)
+            })
+            .cloned()
+            .collect();
+        if present.is_empty() {
+            return Ok(present);
+        }
+        lib.skins.retain(|e| !present.contains(&e.id));
+        lib.capes.retain(|e| !present.contains(&e.id));
+        lib.private.retain(|id| !present.contains(id));
+        for a in lib.assignments.values_mut() {
+            for slot in [&mut a.skin, &mut a.cape] {
+                if slot.as_ref().is_some_and(|id| present.contains(id)) {
+                    *slot = None;
+                }
             }
         }
-        self.write(&lib)
+        lib.assignments.retain(|_, a| !a.is_empty());
+        self.write(&lib)?;
+        for id in &present {
+            let path = self.texture_path(id)?;
+            if let Err(e) = std::fs::remove_file(&path)
+                && e.kind() != std::io::ErrorKind::NotFound
+            {
+                return Err(CoreError::io(path, e));
+            }
+        }
+        Ok(present)
     }
 
     /// Validates and adds a skin; the same image twice returns the existing
@@ -552,18 +585,66 @@ mod tests {
     }
 
     #[test]
-    fn seeds_builtins_once() {
+    fn retires_the_old_mehbur_textures() {
         let (_tmp, s) = store();
-        s.seed_builtins().unwrap();
+        let mine = s
+            .add_skin(&png(64, 64, |_, _| false), "Mine", None)
+            .unwrap();
+        // Simulate a library seeded by an older launcher: the retired ids.
+        let old_skin = RETIRED[0].to_owned();
+        let old_cape = RETIRED[1].to_owned();
+        {
+            let mut lib = s.read();
+            lib.skins.push(SkinEntry {
+                id: old_skin.clone(),
+                name: "MehburMC".into(),
+                model: SkinModel::Classic,
+                added_at: 1,
+            });
+            lib.capes.push(CapeEntry {
+                id: old_cape.clone(),
+                name: "MehburMC".into(),
+                added_at: 1,
+            });
+            lib.builtin = vec!["mehbur-skin".into(), "mehbur-cape".into()];
+            s.write(&lib).unwrap();
+        }
+        std::fs::write(s.texture_path(&old_skin).unwrap(), b"x").unwrap();
+        s.assign("acc", TextureKind::Skin, Some(&old_skin)).unwrap();
+        s.assign("acc", TextureKind::Cape, Some(&old_cape)).unwrap();
+        s.assign("other", TextureKind::Skin, Some(&mine.id))
+            .unwrap();
+
+        assert!(s.retire_builtins().unwrap());
         let v = s.view();
         assert_eq!(v.skins.len(), 1);
-        assert_eq!(v.skins[0].entry.name, "MehburMC");
-        assert_eq!(v.capes.len(), 1);
-        // Deleted built-ins stay deleted.
-        s.delete(TextureKind::Skin, &v.skins[0].entry.id).unwrap();
-        s.seed_builtins().unwrap();
-        assert!(s.view().skins.is_empty());
-        assert_eq!(s.view().capes.len(), 1);
+        assert!(v.capes.is_empty());
+        // The account falls back to the default skin; others keep theirs.
+        assert!(!v.assignments.contains_key("acc"));
+        assert_eq!(
+            v.assignments["other"].skin.as_deref(),
+            Some(mine.id.as_str())
+        );
+        assert!(!s.texture_path(&old_skin).unwrap().exists());
+        // Nothing left to do the second time.
+        assert!(!s.retire_builtins().unwrap());
+    }
+
+    #[test]
+    fn private_textures_come_and_go() {
+        let (_tmp, s) = store();
+        let skin = png(64, 64, |x, _| x == 3);
+        let id = s
+            .add_private(TextureKind::Skin, &skin, "MehburMC", SkinModel::Slim)
+            .unwrap();
+        assert_eq!(s.private_ids(), std::slice::from_ref(&id));
+        let v = s.view();
+        assert_eq!(v.private, std::slice::from_ref(&id));
+        assert_eq!(v.skins[0].entry.model, SkinModel::Slim);
+        s.assign("acc", TextureKind::Skin, Some(&id)).unwrap();
+        assert_eq!(s.remove_ids(std::slice::from_ref(&id)).unwrap(), [id]);
+        assert!(s.view().skins.is_empty() && s.private_ids().is_empty());
+        assert!(s.view().assignments.is_empty());
     }
 
     #[test]

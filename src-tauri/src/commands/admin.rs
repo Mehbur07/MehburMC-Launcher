@@ -4,9 +4,12 @@ use launcher_core::content::scan::ScanReport;
 use launcher_core::friends::admin::{
     AdminBan, AdminEntry, AdminMod, AdminModStatus, AdminReport, AdminUser, ReportKind,
 };
+use launcher_core::friends::private_textures::{PrivateTexture, TextureGrant};
+use launcher_core::skin::{SkinModel, TextureKind};
 use tauri::State;
 
 use super::CmdResult;
+use super::dialogs::{PickPurpose, take_pick};
 use crate::state::AppState;
 
 #[tauri::command]
@@ -118,4 +121,59 @@ pub async fn admin_set_rank(
 ) -> CmdResult<()> {
     let l = state.launcher()?.clone();
     Ok(l.friends.admin_set_rank(&user_id, admin).await?)
+}
+
+/// Founder: private textures with previews and grant counts (K74).
+#[tauri::command]
+pub async fn admin_private_textures(state: State<'_, AppState>) -> CmdResult<Vec<PrivateTexture>> {
+    let l = state.launcher()?.clone();
+    Ok(l.friends.admin_private_textures().await?)
+}
+
+/// Founder: uploads the PNG picked with `pick_path("privateTexture")`.
+#[tauri::command]
+pub async fn admin_upload_private_texture(
+    state: State<'_, AppState>,
+    kind: TextureKind,
+    model: SkinModel,
+    name: String,
+) -> CmdResult<i64> {
+    let path = take_pick(&state, PickPurpose::PrivateTexture)?;
+    let l = state.launcher()?.clone();
+    let meta = std::fs::metadata(&path).map_err(|e| launcher_core::CoreError::io(&path, e))?;
+    if meta.len() > launcher_core::friends::textures::MAX_BYTES as u64 {
+        return Err(launcher_core::CoreError::SkinInvalid("too large".into()).to_payload());
+    }
+    let png = std::fs::read(&path).map_err(|e| launcher_core::CoreError::io(&path, e))?;
+    Ok(l.friends
+        .admin_upload_private_texture(kind, model, &name, &png)
+        .await?)
+}
+
+#[tauri::command]
+pub async fn admin_delete_private_texture(state: State<'_, AppState>, id: i64) -> CmdResult<()> {
+    let l = state.launcher()?.clone();
+    Ok(l.friends.admin_delete_private_texture(id).await?)
+}
+
+#[tauri::command]
+pub async fn admin_texture_grants(
+    state: State<'_, AppState>,
+    id: i64,
+) -> CmdResult<Vec<TextureGrant>> {
+    let l = state.launcher()?.clone();
+    Ok(l.friends.admin_texture_grants(id).await?)
+}
+
+#[tauri::command]
+pub async fn admin_set_texture_grant(
+    state: State<'_, AppState>,
+    id: i64,
+    user_id: String,
+    grant: bool,
+) -> CmdResult<()> {
+    let l = state.launcher()?.clone();
+    Ok(l.friends
+        .admin_set_texture_grant(id, &user_id, grant)
+        .await?)
 }
