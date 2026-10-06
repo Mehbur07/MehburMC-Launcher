@@ -27,6 +27,7 @@ pub const AUTH_ERRORS: &[&str] = &[
     "auth.signupDisabled",
     "auth.samePassword",
     "auth.sessionExpired",
+    "auth.emailSendFailed",
 ];
 
 const MIN_PASSWORD: usize = 8;
@@ -54,6 +55,9 @@ pub(crate) fn auth_error(error_code: &str, message: &str) -> Option<&'static str
         | "user_not_found" => "auth.sessionExpired",
         _ if message.contains("Invalid Refresh Token") => "auth.sessionExpired",
         _ if message.contains("Token has expired or is invalid") => "auth.codeInvalid",
+        // SMTP refused or failed ("Error sending confirmation/recovery/
+        // email change email").
+        _ if message.starts_with("Error sending") => "auth.emailSendFailed",
         _ => return None,
     })
 }
@@ -554,6 +558,10 @@ mod tests {
             "auth.sessionExpired"
         );
         assert_eq!(e("over_email_send_rate_limit", ""), "auth.rateLimited");
+        assert_eq!(
+            e("unexpected_failure", "Error sending email change email"),
+            "auth.emailSendFailed"
+        );
     }
 
     #[tokio::test]

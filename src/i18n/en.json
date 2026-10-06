@@ -170,7 +170,8 @@
       "emailNotConfirmed": "Your email is not verified yet. Request the code again from Create account.",
       "signupDisabled": "New accounts cannot be created right now. Try again later.",
       "samePassword": "The new password must differ from the old one.",
-      "sessionExpired": "Your session ended; please sign in again."
+      "sessionExpired": "Your session ended; please sign in again.",
+      "emailSendFailed": "The verification email could not be sent (email service error). Please try again later."
     },
     "launch": {
       "commandTooLong": "The command line is too long for Java {{major}}.",

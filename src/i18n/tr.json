@@ -170,7 +170,8 @@
       "emailNotConfirmed": "E-postan henüz doğrulanmadı. Hesap oluştur ekranından kodu tekrar iste.",
       "signupDisabled": "Şu an yeni hesap açılamıyor. Daha sonra tekrar dene.",
       "samePassword": "Yeni şifre eskisiyle aynı olamaz.",
-      "sessionExpired": "Oturumun sona erdi; tekrar giriş yap."
+      "sessionExpired": "Oturumun sona erdi; tekrar giriş yap.",
+      "emailSendFailed": "Doğrulama e-postası gönderilemedi (e-posta servisi hatası). Lütfen biraz sonra tekrar dene."
     },
     "launch": {
       "commandTooLong": "Komut satırı Java {{major}} için çok uzun.",
