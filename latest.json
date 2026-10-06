@@ -1,15 +1,15 @@
 {
-  "version": "0.13.0",
-  "notes": "### Değişti\n- **MehburMC skin'i ve pelerini artık herkese açık değil.** Kütüphanelerde hazır gelen eski\n  MehburMC skin/pelerini ve Hazırlar'daki MehburMC kartı kaldırıldı; launcher açılınca\n  kütüphanenden de silinir ve artık toplulukta paylaşılamaz.\n\n### Eklendi\n- **Özel MehburMC dokuları:** yeni MehburMC tasarımları yalnızca sunucuda durur. Kurucu bir\n  kişiye gönderdiğinde skin/pelerin o kişinin launcher'ına kendiliğinden eklenir (kartında\n  kilit simgesi var, paylaşılamaz); geri alındığında kaldırılır.\n- **Admin → Özel dokular** (yalnızca kurucu): PNG yükle, kişileri seç, gönder/geri al, sil.\n- Kurucu, Topluluk'taki bir paylaşımı **Topluluktan kaldır (admin)** ile kaldırabilir.",
-  "pub_date": "2026-10-06T22:46:39Z",
+  "version": "0.13.1",
+  "notes": "### Eklendi\n- **Admin → Topluluk** (yalnızca kurucu): topluluktaki tüm skin ve pelerinleri (arkadaşlara özel\n  olanlar dahil) önizlemeleriyle gör, **Kaldır**, yanlışlıkla kaldırdığını **Kaldırılanlar**'dan\n  **Geri getir**, gerekirse paylaşanı banla.",
+  "pub_date": "2026-10-06T23:19:38Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYU4wa3Vpa1UwR3R4RW9ocTk3RkZWOE1HbVhteXB6L2x1blRiVHdKdVFra3dNMDlwdlZQWHVydGpZeVZ2ekV4TWNaZjVTU1k3ekp0M0lCODBia0ZBSndRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzI2Nzg1CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMy4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEzLjAKTFd0aUNDM3BhdndOSUp4N2xibGlocnV6Y3p2V0dLdWtLZDJlYWZDbFZKOFhKbDJKUmxzTTJscGVrdFhTOWRBQkZGK0t3a2txdUJCMmlaRGRKSVgyQ2c9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.13.0/MehburMC-Launcher_0.13.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUtEUERHM1MzSDdMQWRhRHVuMHE0M2p5TWM5U3hOSUJMR3ovdUdaMHphcWYzYWpGZVFSMTBDRW9pbU1OOS9NbkdmcnMxdUh2TXZDdjZoK08wM1hlZUFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzI4NzYxCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMy4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEzLjEKU0ZET3VYUUxqM2hZN1cvTlJvWWhGNWRWWTkzVDVBeWFGdS8vdHNmU0pJZU1yNjhoQlc4SzhaOS9GYmtxM3B5SHJYU0tUZkx1ekZQcm1mM204akpvQXc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.13.1/MehburMC-Launcher_0.13.1_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYU4wa3Vpa1UwR3R4RW9ocTk3RkZWOE1HbVhteXB6L2x1blRiVHdKdVFra3dNMDlwdlZQWHVydGpZeVZ2ekV4TWNaZjVTU1k3ekp0M0lCODBia0ZBSndRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzI2Nzg1CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMy4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEzLjAKTFd0aUNDM3BhdndOSUp4N2xibGlocnV6Y3p2V0dLdWtLZDJlYWZDbFZKOFhKbDJKUmxzTTJscGVrdFhTOWRBQkZGK0t3a2txdUJCMmlaRGRKSVgyQ2c9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.13.0/MehburMC-Launcher_0.13.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUtEUERHM1MzSDdMQWRhRHVuMHE0M2p5TWM5U3hOSUJMR3ovdUdaMHphcWYzYWpGZVFSMTBDRW9pbU1OOS9NbkdmcnMxdUh2TXZDdjZoK08wM1hlZUFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzI4NzYxCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMy4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEzLjEKU0ZET3VYUUxqM2hZN1cvTlJvWWhGNWRWWTkzVDVBeWFGdS8vdHNmU0pJZU1yNjhoQlc4SzhaOS9GYmtxM3B5SHJYU0tUZkx1ekZQcm1mM204akpvQXc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.13.1/MehburMC-Launcher_0.13.1_x64-setup.exe"
     }
   }
 }
