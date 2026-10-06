@@ -1,15 +1,15 @@
 {
-  "version": "0.8.0",
-  "notes": "### Eklendi\n- **Mod Tarayıcı'da kurulu olanlar:** hedef profilde zaten kurulu olan mod, resource pack ve\n  shader'lar aramada **Kurulu** olarak görünür (kapalı olanlar \"Kurulu (kapalı)\").\n- **Kurulu** düğmesine basınca **Sil** seçeneği çıkar; \"Silmek istediğinize emin misiniz?\"\n  sorusunu **Sil** ile onaylarsan projenin profildeki tüm dosyaları silinir, **İptal** ile\n  vazgeçersin. Kurduktan hemen sonra da düğme **Kurulu** olur.\n\n### Değişti\n- Oyun çalışırken profilin mod, resource pack ve shader dosyaları silinemez (anlaşılır bir\n  uyarı verilir).",
-  "pub_date": "2026-10-06T17:25:02Z",
+  "version": "0.9.0",
+  "notes": "### Eklendi\n- **Skin ve pelerin paylaşma:** kütüphanendeki her kartta **Paylaş** var. **Herkes** ya da\n  **Arkadaşlara özel** seçip paylaşırsın; paylaşan olarak seçili hesabının adı görünür.\n  Paylaşılan kartta küçük bir dünya/kişiler simgesi çıkar; aynı düğmeden **Geri çek**.\n- **Topluluk:** Hazır skinler'in en üstünde diğer MehburMC kullanıcılarının paylaştıkları.\n  Önizle, **+** ile kütüphanene ekle, istersen tasarımcıda düzenle.\n- **Bildir:** uygunsuz ya da izinsiz paylaşımları sebebiyle bildir; bildirdiğin paylaşım sana\n  artık gösterilmez (bildirimler yöneticiler için kaydedilir).",
+  "pub_date": "2026-10-06T17:58:30Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUpWM2xlK25xa2I5N2dINXVtWXpqeVo4aXlKNFBWTUNjdy8vMlJEeERXY0NjaUFlaUtHZ251eGplUmlpL2tIQWNxaHpHRC9Ub2pvV3pLcldOWGRLVXdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzA2OTI5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC44LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuOC4wCmZWaEdyVnhNditPODBHUU5kd3B0U3F5VG1ESVY3b3ROVHppaWJROXA2TXZzQVE1b1F0QkVGbXJwS0lITzNDMTlTY28yWFdmK3JzdUdIU1l4eHliMkN3PT0K",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.8.0/MehburMC-Launcher_0.8.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUF3d1NxTlE0UFlSeVUySTduVGh6Zm13eDRQWUU2TnA1dVlPdmwzMWJVNERpcGcrTi93YUY3Z3E1eGtySFdMUUY2WW5zWVlNSk8zaVNGWGQwcVFrL0FNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzA5NDk0CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC45LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuOS4wCk5ieElnV3hlYzdDSnJxVzhrZnVEU0hkNDUzdjNJY1BhK1hqaURJd2JESUVNdlk3cXZKaHVwZGJjS2t1RzZtVEJYd0t4SUlNRFJSUzNUa2w2ZFRIaURBPT0K",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.9.0/MehburMC-Launcher_0.9.0_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUpWM2xlK25xa2I5N2dINXVtWXpqeVo4aXlKNFBWTUNjdy8vMlJEeERXY0NjaUFlaUtHZ251eGplUmlpL2tIQWNxaHpHRC9Ub2pvV3pLcldOWGRLVXdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzA2OTI5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC44LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuOC4wCmZWaEdyVnhNditPODBHUU5kd3B0U3F5VG1ESVY3b3ROVHppaWJROXA2TXZzQVE1b1F0QkVGbXJwS0lITzNDMTlTY28yWFdmK3JzdUdIU1l4eHliMkN3PT0K",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.8.0/MehburMC-Launcher_0.8.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUF3d1NxTlE0UFlSeVUySTduVGh6Zm13eDRQWUU2TnA1dVlPdmwzMWJVNERpcGcrTi93YUY3Z3E1eGtySFdMUUY2WW5zWVlNSk8zaVNGWGQwcVFrL0FNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzA5NDk0CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC45LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuOS4wCk5ieElnV3hlYzdDSnJxVzhrZnVEU0hkNDUzdjNJY1BhK1hqaURJd2JESUVNdlk3cXZKaHVwZGJjS2t1RzZtVEJYd0t4SUlNRFJSUzNUa2w2ZFRIaURBPT0K",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.9.0/MehburMC-Launcher_0.9.0_x64-setup.exe"
     }
   }
 }
