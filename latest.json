@@ -1,15 +1,15 @@
 {
-  "version": "0.10.0",
-  "notes": "### Eklendi\n- **Mod Toggle sayfası:** bir profilin bütün modları ikon, ad ve sürümüyle tek listede; her\n  birini anahtarla aç/kapat. Arama, Tümü/Açık/Kapalı süzgeci, \"X / Y açık\" sayacı ve\n  **Hepsini aç / Hepsini kapat** (arama ya da süzgeç varken yalnızca görünenler). Oyun\n  çalışırken liste kilitlenir.\n- Modrinth'in tanımadığı modlar (ve internet yokken hepsi) artık dosya adı yerine jar'ın\n  içindeki gerçek ad, sürüm ve ikonla görünür (Fabric, Quilt, Forge, NeoForge).\n\n### Düzeltildi\n- Bir modun hem açık hem kapalı kopyası varken (`a.jar` ve `a.jar.disabled`) aç/kapa\n  yapmak birini sessizce siliyordu; artık reddediliyor.\n- Oyun çalışırken profil sayfasından da mod/resource pack/shader açılıp kapatılamaz.",
-  "pub_date": "2026-10-06T18:16:34Z",
+  "version": "0.11.0",
+  "notes": "### Eklendi\n- **MehburMC Kütüphanesi:** Mod Tarayıcı'da yeni sekme. Kendi mod jar'ını **Mod yükle** ile\n  kütüphaneye gönder; launcher dosyayı önce **otomatik güvenlik kontrolünden** geçirir\n  (veri sızdırma adresleri, hesap/tarayıcı dosyalarına erişim, gizli kod yükleme, gömülü\n  .exe, zip bombası, geçersiz mod tanımı engellenir; ağ, program çalıştırma gibi davranışlar\n  uyarı olarak gösterilir). Geçen modlar **admin onayından sonra** herkese yayınlanır;\n  o zamana kadar **Yüklediklerim** bölümünde \"Onay bekliyor\" olarak görünür, istediğin an\n  **Geri çek**.\n- Onaylı modları tek tıkla kur: dosya indirildikten sonra SHA-1 ile doğrulanır ve senin\n  launcher'ında yeniden taranır; uyarı varsa kurmadan önce sorulur. Profilin mod loader'ına\n  uymayan modlar kurulamaz. Şüpheli modu **Bildir**.",
+  "pub_date": "2026-10-06T19:01:56Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUpma1VXL0hWc1BHc3dFeFlaZWdEOWZMUUZiMXJKZUxPaFFhVmJZU1FTMzdQTFpFREZPZTUzWUlOU2RMb3hOSkxmYmxOWHpPdHNPSCthY2o3VmVYSUF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzEwNTgwCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEwLjAKNlJCVHBCcGJFempvb0hXWjRBdW85RGIrTktjbTJyTjFQc1FuOUczeUNTK0RneGpBcUhSNGVrcHJSYStLeC9BZFFrS2ovQXBUMEFtNVFXWHFZelM2RGc9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.10.0/MehburMC-Launcher_0.10.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUg5eXlKb1kzSVl5eDRaYTdzWEVoVSttenRXaDVyNEcyVUVHck9rT1FLaW9GbWROM2Zud1FaRUt0emRneU9pN2VwUGlhYWp2RlZ6MEhxK1dON29KVkE4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzEzMzA0CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjExLjAKbmRQdU1TQWtkMnluQ3ZvUWRWN0o0cXNIUUNXa1pWN3FUZnBhSjV5TWs2U0JkVlpuRVlhY1BUY1p0M3NCRGZPcVFxeGtqNThPOHJKVTlReGRrNENIQ2c9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.11.0/MehburMC-Launcher_0.11.0_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUpma1VXL0hWc1BHc3dFeFlaZWdEOWZMUUZiMXJKZUxPaFFhVmJZU1FTMzdQTFpFREZPZTUzWUlOU2RMb3hOSkxmYmxOWHpPdHNPSCthY2o3VmVYSUF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzEwNTgwCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEwLjAKNlJCVHBCcGJFempvb0hXWjRBdW85RGIrTktjbTJyTjFQc1FuOUczeUNTK0RneGpBcUhSNGVrcHJSYStLeC9BZFFrS2ovQXBUMEFtNVFXWHFZelM2RGc9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.10.0/MehburMC-Launcher_0.10.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUg5eXlKb1kzSVl5eDRaYTdzWEVoVSttenRXaDVyNEcyVUVHck9rT1FLaW9GbWROM2Zud1FaRUt0emRneU9pN2VwUGlhYWp2RlZ6MEhxK1dON29KVkE4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzEzMzA0CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjExLjAKbmRQdU1TQWtkMnluQ3ZvUWRWN0o0cXNIUUNXa1pWN3FUZnBhSjV5TWs2U0JkVlpuRVlhY1BUY1p0M3NCRGZPcVFxeGtqNThPOHJKVTlReGRrNENIQ2c9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.11.0/MehburMC-Launcher_0.11.0_x64-setup.exe"
     }
   }
 }
