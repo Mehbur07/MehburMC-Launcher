@@ -1,4 +1,14 @@
-import { Check, ImageOff, Pencil, Plus, Shirt, Trash2, UserPlus, X } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  ImageOff,
+  Pencil,
+  Plus,
+  Shirt,
+  Trash2,
+  UserPlus,
+  X,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -25,6 +35,9 @@ export function AccountsPage() {
   const pickPhoto = useAccounts((s) => s.pickPhoto);
   const resetPhoto = useAccounts((s) => s.resetPhoto);
   const defaultSkins = useAccounts((s) => s.defaultSkins);
+  const nameConflicts = useAccounts((s) => s.nameConflicts);
+  // Creating checks the name on the server; keep the button busy meanwhile.
+  const [adding, setAdding] = useState(false);
   const load = useAccounts((s) => s.load);
   const online = useFriends((s) => s.enabled === true && s.online);
   const [name, setName] = useState("");
@@ -44,7 +57,9 @@ export function AccountsPage() {
 
   const valid = NAME_RE.test(name);
   const add = async () => {
+    setAdding(true);
     const err = await addOffline(name);
+    setAdding(false);
     setError(err);
     if (!err) setName("");
   };
@@ -74,7 +89,7 @@ export function AccountsPage() {
           className="mt-4 flex gap-2"
           onSubmit={(e) => {
             e.preventDefault();
-            if (valid) void add();
+            if (valid && !adding) void add();
           }}
         >
           <TextInput
@@ -88,15 +103,18 @@ export function AccountsPage() {
             aria-invalid={name.length > 0 && !valid}
             spellCheck={false}
           />
-          <Button type="submit" variant="primary" disabled={!valid}>
-            {t("accounts.add")}
+          <Button type="submit" variant="primary" disabled={!valid || adding}>
+            {adding ? t("accounts.checking") : t("accounts.add")}
           </Button>
         </form>
-        <p className={`mt-2 text-xs ${name.length > 0 && !valid ? "text-warn" : "text-muted"}`}>
+        <p
+          className={`mt-2 text-xs ${error || (name.length > 0 && !valid) ? "text-warn" : "text-muted"}`}
+        >
           {error
             ? t(`errors.${error.code}`, { ...error.params, defaultValue: error.detail })
             : t("accounts.nameRules")}
         </p>
+        <p className="mt-1 text-xs text-muted">{t("accounts.nameServerNote")}</p>
       </section>
 
       <section className="flex flex-col gap-2">
@@ -170,7 +188,19 @@ export function AccountsPage() {
                 </form>
               ) : (
                 <div className="min-w-0 flex-1">
-                  <div className="font-semibold">{a.name}</div>
+                  <div className="flex flex-wrap items-center gap-2 font-semibold">
+                    {a.name}
+                    {nameConflicts.includes(a.id) && (
+                      <button
+                        type="button"
+                        onClick={() => startRename(a)}
+                        className="inline-flex items-center gap-1 rounded-full border border-warn/50 px-2 py-0.5 text-[11px] font-medium text-warn hover:bg-warn/10"
+                      >
+                        <AlertTriangle size={11} />
+                        {t("accounts.nameConflict")}
+                      </button>
+                    )}
+                  </div>
                   <div data-selectable className="truncate font-mono text-xs text-muted">
                     {a.uuid}
                   </div>

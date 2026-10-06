@@ -3,6 +3,18 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.6.0] — 2026-10-06
+
+### Eklendi
+- **Benzersiz kullanıcı adları:** bir ad tüm MehburMC kullanıcıları arasında yalnızca bir
+  kişiye ait. Başkası almışsa "Bu kullanıcı adı alındı. Lütfen başka bir ad seçiniz." yazar.
+  Hesap oluşturmak ve adı değiştirmek için internet gerekir; hesabı silince adı serbest kalır.
+- Önceden oluşturduğun bir hesabın adını başkası senden önce aldıysa hesap kartında
+  "yeniden adlandır" uyarısı çıkar.
+
+### Değişti
+- "Arkadaşları kapat ve verilerimi sil" artık hesap adlarını silmiyor; adların ayrılmış kalıyor.
+
 ## [0.5.0] — 2026-10-06
 
 ### Eklendi

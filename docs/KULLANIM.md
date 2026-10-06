@@ -40,6 +40,14 @@ launcher, sürümün istediği Java'yı (8, 17, 21, 25 …) Eclipse Temurin'den 
 **Hesaplar → Yeni hesap oluştur** kısmına bir oyuncu adı yaz (3–16 karakter; harf, rakam, `_`)
 ve **Oluştur**'a bas. Birden fazla hesap oluşturup **Kullan** ile aralarında geçiş yapabilirsin.
 
+**Kullanıcı adları benzersizdir:** bir ad tüm MehburMC kullanıcıları arasında yalnızca bir kişiye
+aittir (büyük/küçük harf fark etmez). Başkası almışsa "Bu kullanıcı adı alındı. Lütfen başka bir
+ad seçiniz." yazar. Bu yüzden hesap oluştururken ve adı değiştirirken **internet gerekir**; ad
+MehburMC sunucusuna kaydedilir. Hesabı silince adı serbest kalır. Bir bilgisayardan en fazla 10
+ad alınabilir. Bu özellik gelmeden önce oluşturduğun bir hesabın adını başkası senden önce
+aldıysa kartında **"Bu ad başka bir kullanıcıda — yeniden adlandır"** uyarısı çıkar; hesap yine
+çalışır, ama yeni bir ad seçmen önerilir.
+
 **Adı değiştirmek** için hesabın yanındaki kalem simgesine bas, yeni adı yaz ve **Kaydet**'e bas.
 Yeni ad bir sonraki OYNA'da oyunda görünür. Oyuncu kimliği (UUID) yeni ada göre değişir; bu
 yüzden tek oyunculu dünyalarda karakter yeni oyuncu gibi başlar. Skin ve pelerin ataması korunur.

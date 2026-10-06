@@ -37,7 +37,7 @@ describe("AccountsPage", () => {
   beforeEach(() => {
     applyLanguage("en");
     vi.clearAllMocks();
-    ipcMock.accountAvatars.mockResolvedValue({ photos: {}, defaultSkins: {} });
+    ipcMock.accountAvatars.mockResolvedValue({ photos: {}, defaultSkins: {}, nameConflicts: [] });
     useSkins.setState({ skins: [], capes: [], assignments: {}, loaded: true });
     useAccounts.setState({
       accounts: [acc("Steve"), acc("Alex")],
@@ -110,7 +110,9 @@ describe("AccountsPage", () => {
     });
     fireEvent.change(input, { target: { value: "Alex" } });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(await screen.findByText(/named "Alex" already exists/)).toBeInTheDocument();
+    expect(
+      await screen.findByText("This username is taken. Please choose another one."),
+    ).toBeInTheDocument();
 
     ipcMock.renameAccount.mockResolvedValueOnce({ ...acc("Mehbur"), id: "offline-Steve" });
     ipcMock.listAccounts.mockResolvedValue({
@@ -158,5 +160,37 @@ describe("AccountsPage", () => {
     await vi.waitFor(() => expect(container.querySelector("img")).toBeNull());
     expect(ipcMock.clearAccountAvatar).toHaveBeenCalledWith("offline-Steve");
     expect(screen.queryByRole("button", { name: "Back to skin head" })).toBeNull();
+  });
+
+  it("shows the taken-name message in Turkish while the server checks", async () => {
+    applyLanguage("tr");
+    let reject: (e: unknown) => void = () => {};
+    ipcMock.addOfflineAccount.mockReturnValue(
+      new Promise((_, r) => {
+        reject = r;
+      }),
+    );
+    render(<AccountsPage />);
+    fireEvent.change(screen.getByPlaceholderText("Oyuncu adı"), { target: { value: "Notch" } });
+    fireEvent.click(screen.getByRole("button", { name: "Oluştur" }));
+    const busy = await screen.findByRole("button", { name: "Kontrol ediliyor…" });
+    expect(busy).toBeDisabled();
+    reject({ code: "account.nameTaken", params: { name: "" }, detail: "" });
+    expect(
+      await screen.findByText("Bu kullanıcı adı alındı. Lütfen başka bir ad seçiniz."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Oluştur" })).toBeEnabled();
+  });
+
+  it("flags accounts whose name another user has and offers a rename", async () => {
+    ipcMock.accountAvatars.mockResolvedValue({
+      photos: {},
+      defaultSkins: {},
+      nameConflicts: ["offline-Alex"],
+    });
+    render(<AccountsPage />);
+    const flag = await screen.findByRole("button", { name: /Another user has this name/ });
+    fireEvent.click(flag);
+    expect(screen.getByRole("textbox", { name: "Rename" })).toHaveValue("Alex");
   });
 });

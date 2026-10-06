@@ -53,6 +53,8 @@ pub fn run() {
                 tauri::async_runtime::spawn(bridge::forward(app.handle().clone(), rx));
             }
             if let Some(launcher) = app_state.launcher.clone() {
+                let names = launcher.clone();
+                tauri::async_runtime::spawn(async move { names.sync_account_names().await });
                 tauri::async_runtime::spawn(friends::heartbeat_loop(launcher));
             }
             app.manage(app_state);

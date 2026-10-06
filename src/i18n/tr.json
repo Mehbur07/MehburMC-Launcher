@@ -163,8 +163,12 @@
     "account": {
       "none": "Önce bir hesap ekle veya seç.",
       "notFound": "Hesap bulunamadı: {{id}}",
-      "nameTaken": "\"{{name}}\" adında bir hesap zaten var.",
-      "avatarInvalid": "Geçersiz profil fotoğrafı: {{reason}}"
+      "nameTaken": "Bu kullanıcı adı alındı. Lütfen başka bir ad seçiniz.",
+      "avatarInvalid": "Geçersiz profil fotoğrafı: {{reason}}",
+      "nameLimit": "Bu bilgisayardan en fazla 10 kullanıcı adı alınabilir. Kullanmadığın bir hesabı sil.",
+      "nameInvalid": "Geçersiz kullanıcı adı.",
+      "nameCheckOffline": "Kullanıcı adını kontrol etmek için internet bağlantısı gerekli.",
+      "nameServiceUnavailable": "Kullanıcı adı servisi şu an kullanılamıyor. Lütfen biraz sonra tekrar dene."
     },
     "loader": {
       "unavailable": "{{loader}}, Minecraft {{mc}} için mevcut değil.",
@@ -352,7 +356,10 @@
     "renameSave": "Kaydet",
     "renameHint": "Yeni ad bir sonraki OYNA'da oyunda görünür.",
     "photoAdd": "{{name}} için profil fotoğrafı seç (.png)",
-    "photoReset": "Skin kafasına dön"
+    "photoReset": "Skin kafasına dön",
+    "checking": "Kontrol ediliyor…",
+    "nameServerNote": "Ad, tüm MehburMC kullanıcıları arasında benzersiz olsun diye MehburMC sunucusuna kaydedilir.",
+    "nameConflict": "Bu ad başka bir kullanıcıda — yeniden adlandır"
   },
   "loader": {
     "version": "Loader sürümü",
@@ -654,7 +661,7 @@
     "consentBody": "Arkadaşlarınla mesajlaşmak ve modlarını paylaşmak için launcher MehburMC sunucusunda (Supabase) senin için anonim bir kimlik oluşturur. E-posta veya şifre gerekmez.",
     "consentStored": "Sunucuda saklananlar: arkadaş kodun, görünen adın ve profil fotoğrafın (seçili hesabının adı ve fotoğrafı, yoksa skin kafası), arkadaşlıkların, mesajların ve paylaştığın mod listeleri/dosyaları. Launcher açıkken arkadaşların seni çevrimiçi görür.",
     "consentPrivate": "Mesajlarını yalnızca sen ve konuştuğun kişi görebilir; mod listelerini yalnızca arkadaşların görür.",
-    "consentDelete": "İstediğin an \"Arkadaşları kapat ve verilerimi sil\" ile sunucudaki her şey silinir.",
+    "consentDelete": "İstediğin an \"Arkadaşları kapat ve verilerimi sil\" ile arkadaş verilerin (profilin, fotoğrafın, arkadaşlıkların, mesajların, paylaştığın dosyalar) sunucudan silinir. Hesap adların ayrılmış kalır; hesabı silince adı da serbest kalır.",
     "enable": "Kabul et ve aç",
     "myCode": "Arkadaş kodun",
     "copyCode": "Kodu kopyala",
@@ -692,7 +699,7 @@
       "blockBody": "Sana istek ve mesaj gönderemez, modlarını göremez. Engeli sonra kaldırabilirsin.",
       "blockAction": "Engelle",
       "disableTitle": "Arkadaşlar kapatılsın mı?",
-      "disableBody": "Sunucudaki kimliğin, arkadaşlıkların, mesajların ve paylaştığın tüm dosyalar kalıcı olarak silinir.",
+      "disableBody": "Profilin, fotoğrafın, arkadaşlıkların, mesajların ve paylaştığın tüm dosyalar sunucudan kalıcı olarak silinir. Hesap adların ayrılmış kalır.",
       "disableAction": "Kapat ve sil"
     },
     "mods": {

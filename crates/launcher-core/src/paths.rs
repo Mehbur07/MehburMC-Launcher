@@ -207,6 +207,10 @@ impl Paths {
     pub fn accounts_file(&self) -> PathBuf {
         self.launcher_dir().join("accounts.json")
     }
+    /// Reserved account names whose release failed offline (K67).
+    pub fn pending_releases_file(&self) -> PathBuf {
+        self.launcher_dir().join("pending-releases.json")
+    }
     /// Account profile photos (`<account id>.png`).
     pub fn avatars(&self) -> PathBuf {
         self.launcher_dir().join("avatars")

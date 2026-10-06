@@ -12,6 +12,8 @@ interface AccountsStore {
   avatars: Record<string, string>;
   /** Game default skin of accounts without a skin of their own. */
   defaultSkins: Record<string, string>;
+  /** Accounts whose name another MehburMC user reserved first. */
+  nameConflicts: string[];
   load: () => Promise<void>;
   /** Opens the file picker and sets the chosen PNG as the account's photo. */
   pickPhoto: (id: string, title?: string) => Promise<void>;
@@ -32,6 +34,7 @@ export const useAccounts = create<AccountsStore>((set, get) => ({
   selected: null,
   avatars: {},
   defaultSkins: {},
+  nameConflicts: [],
 
   load: async () => {
     try {
@@ -42,7 +45,11 @@ export const useAccounts = create<AccountsStore>((set, get) => ({
     }
     try {
       const faces = await ipc.accountAvatars();
-      set({ avatars: faces.photos, defaultSkins: faces.defaultSkins });
+      set({
+        avatars: faces.photos,
+        defaultSkins: faces.defaultSkins,
+        nameConflicts: faces.nameConflicts,
+      });
     } catch {
       // Photos are optional; the skin head is shown instead.
     }

@@ -11,4 +11,8 @@ photos: { [key in string]: string },
 /**
  * Game default skin of accounts that have no skin assigned.
  */
-defaultSkins: { [key in string]: string }, };
+defaultSkins: { [key in string]: string }, 
+/**
+ * Accounts whose name another user holds (rename them).
+ */
+nameConflicts: Array<string>, };

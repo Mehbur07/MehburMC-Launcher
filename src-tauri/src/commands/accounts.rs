@@ -19,31 +19,33 @@ pub fn list_accounts(state: State<'_, AppState>) -> CmdResult<AccountsView> {
     Ok(state.launcher()?.accounts.view())
 }
 
+/// The name is reserved for all MehburMC users first (K67).
 #[tauri::command]
-pub fn add_offline_account(state: State<'_, AppState>, name: String) -> CmdResult<Account> {
-    let launcher = state.launcher()?;
-    let account = launcher.accounts.add_offline(&name)?;
-    refresh_friend_profile(launcher);
+pub async fn add_offline_account(state: State<'_, AppState>, name: String) -> CmdResult<Account> {
+    let launcher = state.launcher()?.clone();
+    let account = launcher.create_account(&name).await?;
+    refresh_friend_profile(&launcher);
     Ok(account)
 }
 
 #[tauri::command]
-pub fn remove_account(state: State<'_, AppState>, id: String) -> CmdResult<AccountsView> {
-    let launcher = state.launcher()?;
-    let view = launcher.accounts.remove(&id)?;
-    if let Err(e) = launcher.skins.forget_account(&id) {
-        tracing::warn!(error = %e.detail(), "could not clear skin assignment");
-    }
-    refresh_friend_profile(launcher);
+pub async fn remove_account(state: State<'_, AppState>, id: String) -> CmdResult<AccountsView> {
+    let launcher = state.launcher()?.clone();
+    let view = launcher.remove_account(&id).await?;
+    refresh_friend_profile(&launcher);
     Ok(view)
 }
 
 /// Renames an account; the next launch uses the new in-game name.
 #[tauri::command]
-pub fn rename_account(state: State<'_, AppState>, id: String, name: String) -> CmdResult<Account> {
-    let launcher = state.launcher()?;
-    let account = launcher.accounts.rename(&id, &name)?;
-    refresh_friend_profile(launcher);
+pub async fn rename_account(
+    state: State<'_, AppState>,
+    id: String,
+    name: String,
+) -> CmdResult<Account> {
+    let launcher = state.launcher()?.clone();
+    let account = launcher.rename_account(&id, &name).await?;
+    refresh_friend_profile(&launcher);
     Ok(account)
 }
 

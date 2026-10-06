@@ -3,6 +3,7 @@
 //! this client only holds an anonymous identity in `launcher/friends.json`.
 
 pub mod avatar;
+pub mod names;
 pub mod presence;
 pub mod share;
 
@@ -49,6 +50,14 @@ struct Session {
     refresh_token: String,
     /// Unix seconds.
     expires_at: u64,
+    /// The identity also reserves account names (K67), so it exists with
+    /// friends off. Sessions saved before that were always friends-on.
+    #[serde(default = "yes")]
+    friends_enabled: bool,
+}
+
+fn yes() -> bool {
+    true
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -178,7 +187,11 @@ fn server_error(status: u16, body: &[u8]) -> CoreError {
         .or_else(|| v["error"].as_str())
         .unwrap_or("")
         .to_owned();
-    if let Some(code) = FRIEND_ERRORS.iter().find(|c| **c == message) {
+    if let Some(code) = FRIEND_ERRORS
+        .iter()
+        .chain(names::NAME_ERRORS)
+        .find(|c| **c == message)
+    {
         return CoreError::Friends(code);
     }
     let pg_code = v["code"].as_str().unwrap_or("");
@@ -234,8 +247,38 @@ impl FriendsClient {
         format!("{}{path}", self.ctx.endpoints.friends.trim_end_matches('/'))
     }
 
+    /// Friends are on (the user agreed; an identity exists).
     pub async fn is_enabled(&self) -> bool {
+        self.session
+            .lock()
+            .await
+            .as_ref()
+            .is_some_and(|s| s.friends_enabled)
+    }
+
+    /// An anonymous identity exists (friends on or off).
+    pub async fn has_identity(&self) -> bool {
         self.session.lock().await.is_some()
+    }
+
+    /// Creates the anonymous identity once (friends stay as they are).
+    pub(crate) async fn ensure_identity(&self) -> Result<()> {
+        if self.has_identity().await {
+            return Ok(());
+        }
+        let s = self.auth_call("/auth/v1/signup", json!({})).await?;
+        self.save(&s)?;
+        *self.session.lock().await = Some(s);
+        Ok(())
+    }
+
+    async fn set_friends_enabled(&self, on: bool) -> Result<()> {
+        let mut guard = self.session.lock().await;
+        if let Some(s) = guard.as_mut() {
+            s.friends_enabled = on;
+            write_json_atomic(&self.ctx.paths.friends_file(), &*s)?;
+        }
+        Ok(())
     }
 
     pub(crate) async fn user_id(&self) -> Result<String> {
@@ -282,6 +325,7 @@ impl FriendsClient {
                 expires_at: v["expires_at"]
                     .as_u64()
                     .unwrap_or_else(|| now_secs() + v["expires_in"].as_u64().unwrap_or(3600)),
+                friends_enabled: false,
             }),
             _ => Err(CoreError::FriendsServer {
                 status,
@@ -305,6 +349,10 @@ impl FriendsClient {
                 json!({ "refresh_token": s.refresh_token }),
             )
             .await?;
+        let refreshed = Session {
+            friends_enabled: s.friends_enabled,
+            ..refreshed
+        };
         self.save(&refreshed)?;
         let token = refreshed.access_token.clone();
         *guard = Some(refreshed);
@@ -404,12 +452,9 @@ impl FriendsClient {
     /// Creates the anonymous identity (once) and the profile shown to
     /// friends under `display_name` with the photo `avatar` (PNG).
     pub async fn enable(&self, display_name: &str, avatar: Option<&[u8]>) -> Result<Profile> {
-        if !self.is_enabled().await {
-            let s = self.auth_call("/auth/v1/signup", json!({})).await?;
-            self.save(&s)?;
-            *self.session.lock().await = Some(s);
-        }
+        self.ensure_identity().await?;
         let profile = self.sync_profile(display_name, avatar).await?;
+        self.set_friends_enabled(true).await?;
         // Online right away instead of after the first timer tick.
         if let Err(e) = self.heartbeat().await {
             tracing::debug!(error = %e.detail(), "first heartbeat failed");
@@ -449,20 +494,43 @@ impl FriendsClient {
         })
     }
 
-    /// Deletes everything on the server, then forgets the identity locally.
+    /// Removes uploaded files and photos (Storage API; SQL cannot).
+    async fn delete_files(&self) -> Result<()> {
+        for deleted in [
+            self.delete_all_uploads().await,
+            self.delete_all_avatars().await,
+        ] {
+            match deleted {
+                // An identity the server already forgot has nothing left.
+                Ok(()) | Err(CoreError::FriendsServer { status: 401, .. }) => {}
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(())
+    }
+
+    /// "Turn off friends and delete my data": profile, friendships,
+    /// messages, shared lists and files go; the identity and the account
+    /// names it reserved stay (K67).
     pub async fn disable_and_delete(&self) -> Result<()> {
         if self.is_enabled().await {
-            for deleted in [
-                self.delete_all_uploads().await,
-                self.delete_all_avatars().await,
-            ] {
-                match deleted {
-                    Ok(()) | Err(CoreError::FriendsServer { status: 401, .. }) => {}
-                    Err(e) => return Err(e),
-                }
+            self.delete_files().await?;
+            match self.rpc_void("delete_friend_data", json!({})).await {
+                Ok(()) | Err(CoreError::FriendsServer { status: 401, .. }) => {}
+                Err(e) => return Err(e),
             }
+        }
+        self.online
+            .store(false, std::sync::atomic::Ordering::Relaxed);
+        self.set_friends_enabled(false).await
+    }
+
+    /// Deletes the whole identity on the server (including reserved names)
+    /// and forgets it locally.
+    pub async fn delete_identity(&self) -> Result<()> {
+        if self.has_identity().await {
+            self.delete_files().await?;
             match self.rpc_void("delete_me", json!({})).await {
-                // An identity the server already forgot is fine to drop.
                 Ok(()) | Err(CoreError::FriendsServer { status: 401, .. }) => {}
                 Err(e) => return Err(e),
             }
@@ -646,6 +714,7 @@ pub(crate) mod tests {
             access_token: "tok".into(),
             refresh_token: "refresh-1".into(),
             expires_at: now_secs() + 3600,
+            friends_enabled: true,
         });
         c
     }
@@ -811,6 +880,12 @@ pub(crate) mod tests {
                 json!({ "prefixes": [format!("{ME}/a.jar")] }),
             ))
             .respond_with(ResponseTemplate::new(200).set_body_json(json!([])))
+            .expect(2) // friends off, then the whole identity
+            .mount(&server)
+            .await;
+        Mock::given(method("POST"))
+            .and(path("/rest/v1/rpc/delete_friend_data"))
+            .respond_with(ResponseTemplate::new(204))
             .expect(1)
             .mount(&server)
             .await;
@@ -823,8 +898,24 @@ pub(crate) mod tests {
         let tmp = tempfile::tempdir().unwrap();
         let c = signed_in(&tmp, &server).await;
         c.save(&c.session.lock().await.clone().unwrap()).unwrap();
+
+        // Friends off: data goes, the identity (and its names) stays.
         c.disable_and_delete().await.unwrap();
         assert!(!c.is_enabled().await);
+        assert!(c.has_identity().await);
+        let reloaded = FriendsClient::new(c.ctx().clone());
+        assert!(reloaded.has_identity().await && !reloaded.is_enabled().await);
+
+        // Whole identity.
+        c.delete_identity().await.unwrap();
+        assert!(!c.has_identity().await);
         assert!(!c.ctx().paths.friends_file().exists());
+    }
+
+    #[test]
+    fn sessions_saved_before_names_count_as_friends_on() {
+        let old = json!({ "userId": ME, "accessToken": "a", "refreshToken": "r", "expiresAt": 1 });
+        let s: Session = serde_json::from_value(old).unwrap();
+        assert!(s.friends_enabled);
     }
 }

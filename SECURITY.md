@@ -37,6 +37,12 @@ webview'da çalışabilecek kötü niyetli içerik (XSS).
 - CurseForge API anahtarı (kullanıcı girerse) `settings.json`'da düz metin durur — yalnızca
   bu bilgisayarda ve yalnızca `api.curseforge.com` isteklerinde kullanılır.
 
+**Kullanıcı adları**
+- Hesap adları benzersiz olsun diye MehburMC sunucusunda (Supabase) parolasız, anonim bir kurulum
+  kimliğine bağlı olarak saklanır; arkadaşlar kapalıyken de. Saklanan yalnızca ad ve kimliktir.
+  Ad tablosu doğrudan okunamaz (RLS, izin yok); yalnızca "ayır / bırak / taşı" fonksiyonları
+  çalışır, kimse başkalarının ad listesini çekemez. Hesap silinince ad sunucudan silinir.
+
 **Arkadaşlar (isteğe bağlı, varsayılan kapalı)**
 - Sunucu Supabase; kimlik parolasız anonim hesaptır. Oturum token'ları yalnızca
   `launcher/friends.json`'da durur ve loglarda maskelenir. Uygulamaya gömülü anahtar

@@ -163,8 +163,12 @@
     "account": {
       "none": "Add or select an account first.",
       "notFound": "Account not found: {{id}}",
-      "nameTaken": "An account named \"{{name}}\" already exists.",
-      "avatarInvalid": "Invalid profile photo: {{reason}}"
+      "nameTaken": "This username is taken. Please choose another one.",
+      "avatarInvalid": "Invalid profile photo: {{reason}}",
+      "nameLimit": "At most 10 usernames can be reserved from this computer. Delete an account you no longer use.",
+      "nameInvalid": "Invalid username.",
+      "nameCheckOffline": "An internet connection is needed to check the username.",
+      "nameServiceUnavailable": "The username service is unavailable right now. Please try again shortly."
     },
     "loader": {
       "unavailable": "{{loader}} is not available for Minecraft {{mc}}.",
@@ -352,7 +356,10 @@
     "renameSave": "Save",
     "renameHint": "The new name shows in game from the next PLAY.",
     "photoAdd": "Choose a profile photo for {{name}} (.png)",
-    "photoReset": "Back to skin head"
+    "photoReset": "Back to skin head",
+    "checking": "Checking…",
+    "nameServerNote": "The name is registered on the MehburMC server so it stays unique among all MehburMC users.",
+    "nameConflict": "Another user has this name — rename"
   },
   "loader": {
     "version": "Loader version",
@@ -654,7 +661,7 @@
     "consentBody": "To chat with friends and share mods, the launcher creates an anonymous identity for you on the MehburMC server (Supabase). No e-mail or password needed.",
     "consentStored": "Stored on the server: your friend code, display name and profile photo (your selected account's name and photo, or its skin head), friendships, messages and the mod lists/files you share. While the launcher is open, your friends see you online.",
     "consentPrivate": "Only you and the person you talk to can read your messages; only your friends can see your mod lists.",
-    "consentDelete": "\"Turn off friends and delete my data\" removes everything from the server at any time.",
+    "consentDelete": "\"Turn off friends and delete my data\" removes your friends data (profile, photo, friendships, messages, shared files) from the server at any time. Your account names stay reserved; deleting an account frees its name.",
     "enable": "Agree and turn on",
     "myCode": "Your friend code",
     "copyCode": "Copy code",
@@ -692,7 +699,7 @@
       "blockBody": "They cannot send you requests or messages or see your mods. You can unblock later.",
       "blockAction": "Block",
       "disableTitle": "Turn off friends?",
-      "disableBody": "Your identity, friendships, messages and all shared files are deleted from the server for good.",
+      "disableBody": "Your profile, photo, friendships, messages and all shared files are deleted from the server for good. Your account names stay reserved.",
       "disableAction": "Turn off and delete"
     },
     "mods": {

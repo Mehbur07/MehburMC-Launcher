@@ -55,6 +55,8 @@ pub struct AccountFaces {
     pub photos: std::collections::HashMap<String, String>,
     /// Game default skin of accounts that have no skin assigned.
     pub default_skins: std::collections::HashMap<String, String>,
+    /// Accounts whose name another user holds (rename them).
+    pub name_conflicts: Vec<String>,
 }
 
 pub struct Launcher {
@@ -66,6 +68,8 @@ pub struct Launcher {
     pub friends: FriendsClient,
     pub tasks: Arc<TaskRegistry>,
     pub running: Running,
+    /// Accounts whose name another MehburMC user reserved first (K67).
+    name_conflicts: std::sync::Mutex<std::collections::HashSet<String>>,
 }
 
 impl Launcher {
@@ -85,6 +89,7 @@ impl Launcher {
             skins: SkinStore::new(paths),
             tasks,
             running: Running::default(),
+            name_conflicts: Default::default(),
         }))
     }
 
@@ -299,6 +304,116 @@ impl Launcher {
         .await
     }
 
+    /// Creates an account after reserving its name for all MehburMC users.
+    pub async fn create_account(&self, name: &str) -> Result<crate::auth::store::Account> {
+        let name = name.trim();
+        crate::auth::offline::validate_name(name)?;
+        let v = self.accounts.view();
+        if v.accounts.iter().any(|a| a.name.eq_ignore_ascii_case(name)) {
+            return Err(CoreError::AccountNameTaken(name.to_owned()));
+        }
+        self.friends.claim_name(name).await?;
+        match self.accounts.add_offline(name) {
+            Ok(acc) => Ok(acc),
+            Err(e) => {
+                self.friends.release_name(name).await;
+                Err(e)
+            }
+        }
+    }
+
+    /// Renames an account; the reservation moves to the new name first.
+    pub async fn rename_account(
+        &self,
+        id: &str,
+        name: &str,
+    ) -> Result<crate::auth::store::Account> {
+        let name = name.trim();
+        crate::auth::offline::validate_name(name)?;
+        let v = self.accounts.view();
+        let old = v
+            .accounts
+            .iter()
+            .find(|a| a.id == id)
+            .map(|a| a.name.clone())
+            .ok_or_else(|| CoreError::AccountNotFound(id.to_owned()))?;
+        if v.accounts
+            .iter()
+            .any(|a| a.id != id && a.name.eq_ignore_ascii_case(name))
+        {
+            return Err(CoreError::AccountNameTaken(name.to_owned()));
+        }
+        if old != name {
+            self.friends.rename_name(&old, name).await?;
+        }
+        match self.accounts.rename(id, name) {
+            Ok(acc) => {
+                self.name_conflicts
+                    .lock()
+                    .expect("conflicts lock")
+                    .remove(id);
+                Ok(acc)
+            }
+            Err(e) => {
+                if old != name
+                    && let Err(back) = self.friends.rename_name(name, &old).await
+                {
+                    tracing::warn!(error = %back.detail(), "could not restore the old name");
+                }
+                Err(e)
+            }
+        }
+    }
+
+    /// Removes an account and lets its name go.
+    pub async fn remove_account(&self, id: &str) -> Result<crate::auth::store::AccountsView> {
+        let name = self
+            .accounts
+            .view()
+            .accounts
+            .into_iter()
+            .find(|a| a.id == id)
+            .map(|a| a.name);
+        let view = self.accounts.remove(id)?;
+        if let Err(e) = self.skins.forget_account(id) {
+            tracing::warn!(error = %e.detail(), "could not clear skin assignment");
+        }
+        let conflicted = self
+            .name_conflicts
+            .lock()
+            .expect("conflicts lock")
+            .remove(id);
+        // Someone else's name was never ours to release.
+        if let Some(name) = name
+            && !conflicted
+        {
+            self.friends.release_name(&name).await;
+        }
+        Ok(view)
+    }
+
+    /// Startup: reserves the names of existing accounts and remembers the
+    /// ones another user already has. Offline is not an error (next start).
+    pub async fn sync_account_names(&self) {
+        let accounts = self.accounts.view().accounts;
+        let names: Vec<String> = accounts.iter().map(|a| a.name.clone()).collect();
+        match self.friends.sync_names(&names).await {
+            Ok(results) => {
+                let conflicts = accounts
+                    .iter()
+                    .filter(|a| {
+                        results
+                            .get(&a.name)
+                            .is_some_and(|r| *r != crate::friends::names::ClaimResult::Ok)
+                    })
+                    .map(|a| a.id.clone())
+                    .collect();
+                *self.name_conflicts.lock().expect("conflicts lock") = conflicts;
+            }
+            Err(e) => tracing::debug!(error = %e.detail(), "account name sync skipped"),
+        }
+    }
+
     /// Skin texture shown for an account: its own, else the game default
     /// for its UUID (from an installed client jar, if any).
     fn account_skin_png(
@@ -330,11 +445,21 @@ impl Launcher {
                 Some((a.id.clone(), d.data_uri.clone()))
             })
             .collect();
+        let mut name_conflicts: Vec<String> = self
+            .name_conflicts
+            .lock()
+            .expect("conflicts lock")
+            .iter()
+            .filter(|id| v.accounts.iter().any(|a| a.id == **id))
+            .cloned()
+            .collect();
+        name_conflicts.sort();
         AccountFaces {
             photos: self
                 .avatars
                 .data_uris(v.accounts.iter().map(|a| a.id.as_str())),
             default_skins,
+            name_conflicts,
         }
     }
 

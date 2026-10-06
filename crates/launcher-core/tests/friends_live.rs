@@ -87,7 +87,7 @@ async fn friends_end_to_end() {
     // Always clean up the throwaway identities.
     let mut failed = Vec::new();
     for (n, cl) in [("A", &a), ("B", &b), ("C", &c)] {
-        if let Err(e) = cl.disable_and_delete().await {
+        if let Err(e) = cl.delete_identity().await {
             failed.push(format!("{n} delete: {e}"));
         }
     }
@@ -99,7 +99,10 @@ async fn friends_end_to_end() {
     let d = client(&tmp.path().join("d"));
     d.enable("LiveD", None).await.unwrap();
     let gone = d.send_request(&pa.friend_code).await.unwrap_err();
-    d.disable_and_delete().await.unwrap();
+    // A deleted identity's names are free again.
+    let tag = &pa.id[..6];
+    d.claim_name(&format!("Lv{tag}c")).await.unwrap();
+    d.delete_identity().await.unwrap();
     assert_eq!(code(&gone), "friends.codeNotFound");
     println!("cleanup verified");
 }
@@ -198,6 +201,37 @@ async fn scenario(
     a.heartbeat().await.unwrap();
     assert!(b.friends().await.unwrap()[0].online);
     println!("presence ok");
+
+    // Unique account names across installations (random suffix: the live
+    // project is shared with real users).
+    let tag = &pa.id[..6];
+    let (n1, n2) = (format!("Lv{tag}a"), format!("Lv{tag}b"));
+    a.claim_name(&n1).await.unwrap();
+    a.claim_name(&n1).await.unwrap(); // idempotent
+    let taken = c.claim_name(&n1.to_uppercase()).await.unwrap_err();
+    assert_eq!(taken.code(), "account.nameTaken");
+    a.rename_name(&n1, &n2).await.unwrap();
+    c.claim_name(&n1).await.unwrap(); // freed by the rename
+    assert_eq!(
+        c.claim_name(&n2).await.unwrap_err().code(),
+        "account.nameTaken"
+    );
+    a.release_name(&n2).await;
+    c.claim_name(&n2).await.unwrap();
+    let sync = a
+        .sync_names(&[n1.clone(), format!("Lv{tag}c")])
+        .await
+        .unwrap();
+    assert_eq!(sync[&n1], launcher_core::friends::names::ClaimResult::Taken);
+    assert_eq!(
+        sync[&format!("Lv{tag}c")],
+        launcher_core::friends::names::ClaimResult::Ok
+    );
+    assert_eq!(
+        c.claim_name("x").await.unwrap_err().code(),
+        "account.nameInvalid"
+    );
+    println!("names ok");
 
     // C is a stranger: cannot message A, cannot see A/B's chat.
     assert!(c.send_message(&pa.id, "spam").await.is_err());
@@ -349,7 +383,7 @@ async fn peer() {
         wait(30).await;
     }))
     .await;
-    me.disable_and_delete().await.unwrap();
+    me.delete_identity().await.unwrap();
     println!("peer deleted");
     if let Err(p) = outcome {
         std::panic::resume_unwind(p);
