@@ -1,15 +1,15 @@
 {
-  "version": "0.11.0",
-  "notes": "### Eklendi\n- **MehburMC Kütüphanesi:** Mod Tarayıcı'da yeni sekme. Kendi mod jar'ını **Mod yükle** ile\n  kütüphaneye gönder; launcher dosyayı önce **otomatik güvenlik kontrolünden** geçirir\n  (veri sızdırma adresleri, hesap/tarayıcı dosyalarına erişim, gizli kod yükleme, gömülü\n  .exe, zip bombası, geçersiz mod tanımı engellenir; ağ, program çalıştırma gibi davranışlar\n  uyarı olarak gösterilir). Geçen modlar **admin onayından sonra** herkese yayınlanır;\n  o zamana kadar **Yüklediklerim** bölümünde \"Onay bekliyor\" olarak görünür, istediğin an\n  **Geri çek**.\n- Onaylı modları tek tıkla kur: dosya indirildikten sonra SHA-1 ile doğrulanır ve senin\n  launcher'ında yeniden taranır; uyarı varsa kurmadan önce sorulur. Profilin mod loader'ına\n  uymayan modlar kurulamaz. Şüpheli modu **Bildir**.",
-  "pub_date": "2026-10-06T19:01:56Z",
+  "version": "0.12.0",
+  "notes": "### Eklendi\n- **MehburMC hesabı (zorunlu):** launcher artık e-posta ve şifreyle giriş istiyor. Hesap\n  oluştururken ve şifre sıfırlarken e-postana gelen 6 haneli kodu launcher'a yazman yeterli.\n  Daha önce arkadaşlar özelliğini ya da hesap adlarını kullandıysan **Hesap oluştur** mevcut\n  kimliğini hesaba dönüştürür: arkadaşların, ayrılmış adların ve paylaşımların kaybolmaz.\n  Bir kez giriş yaptıktan sonra internet yokken de oynayabilirsin.\n- **Ayarlar → MehburMC hesabı:** hangi e-postayla girdiğini gör, **Çıkış yap**.\n- **Admin bildirimleri** (yalnızca yöneticilere görünür): MehburMC Kütüphanesi onay kuyruğu\n  (mod, onaylayan adminin launcher'ında yeniden taranır), yayındaki modlar, bildirilen\n  mod/skin/pelerinler, süreli veya kalıcı ban, yönetici atama.\n- Yasaklanan hesap launcher'ı kullanamaz; ekranda bitiş tarihi ve sebep görünür.",
+  "pub_date": "2026-10-06T22:20:05Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUg5eXlKb1kzSVl5eDRaYTdzWEVoVSttenRXaDVyNEcyVUVHck9rT1FLaW9GbWROM2Zud1FaRUt0emRneU9pN2VwUGlhYWp2RlZ6MEhxK1dON29KVkE4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzEzMzA0CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjExLjAKbmRQdU1TQWtkMnluQ3ZvUWRWN0o0cXNIUUNXa1pWN3FUZnBhSjV5TWs2U0JkVlpuRVlhY1BUY1p0M3NCRGZPcVFxeGtqNThPOHJKVTlReGRrNENIQ2c9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.11.0/MehburMC-Launcher_0.11.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUxlSmNFeURMVVZRTHBhK0M3UHlxeHRmVytueUZ4c1EvV0l6MTV0WUhnSW1CNFZGK0FkNThsRFJIeHU4eXZ3TkMyMllLUkVwTzdWTERvMGErZ2o1ZmdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzI1MTk2CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMi4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEyLjAKdlMwV0xpd0Z0NGgwLzNLeTBSMEtldW5qdUE5am56UUZWektrUURjM3B5NXN1d2dzQkNWN2V0UnVPc3lkU2REY0hncEN4Y3piS3FpdjJyMit2TUZkQUE9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.12.0/MehburMC-Launcher_0.12.0_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUg5eXlKb1kzSVl5eDRaYTdzWEVoVSttenRXaDVyNEcyVUVHck9rT1FLaW9GbWROM2Zud1FaRUt0emRneU9pN2VwUGlhYWp2RlZ6MEhxK1dON29KVkE4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzEzMzA0CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjExLjAKbmRQdU1TQWtkMnluQ3ZvUWRWN0o0cXNIUUNXa1pWN3FUZnBhSjV5TWs2U0JkVlpuRVlhY1BUY1p0M3NCRGZPcVFxeGtqNThPOHJKVTlReGRrNENIQ2c9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.11.0/MehburMC-Launcher_0.11.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUxlSmNFeURMVVZRTHBhK0M3UHlxeHRmVytueUZ4c1EvV0l6MTV0WUhnSW1CNFZGK0FkNThsRFJIeHU4eXZ3TkMyMllLUkVwTzdWTERvMGErZ2o1ZmdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzI1MTk2CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xMi4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEyLjAKdlMwV0xpd0Z0NGgwLzNLeTBSMEtldW5qdUE5am56UUZWektrUURjM3B5NXN1d2dzQkNWN2V0UnVPc3lkU2REY0hncEN4Y3piS3FpdjJyMit2TUZkQUE9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.12.0/MehburMC-Launcher_0.12.0_x64-setup.exe"
     }
   }
 }
