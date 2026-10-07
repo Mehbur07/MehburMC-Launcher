@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`MehburMC Library collection > keeps the published designs 1`] = `
+exports[`MehburMC collection (phase 22) > keeps the published designs 1`] = `
 {
   "autumn": "43fca1cc81fe42dd0b2230e10d5efb67ae0a3ece",
   "autumnLeaves": "9627c82ff04d0e38f9e674a0af119f1def72fdbc",

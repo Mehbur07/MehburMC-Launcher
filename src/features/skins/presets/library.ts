@@ -1,5 +1,5 @@
-// MehburMC Library collection (phase 22): 20 skins and 15 capes, drawn in
-// code like the presets (no third-party art). Free for everyone.
+// Phase 22 collection: 20 skins and 15 capes, drawn in code like the
+// presets (no third-party art). Listed under Skin & Cape presets.
 
 import type { SkinModel } from "../../../lib/ipc/bindings/SkinModel";
 import type { Pixels } from "../editor/ops";
@@ -114,23 +114,6 @@ function plaid(a: Color, line: Color, r: () => number): FacePainter {
     const h = y % 4 === 1;
     return grain(v && h ? shade(line, -20) : v || h ? line : a, r, 8);
   };
-}
-
-/** A plain grey figure that shows capes off in the 3D preview. */
-export function mannequin(): Pixels {
-  const c = skinCanvas("classic");
-  drawPerson(c, {
-    skin: "#b8bcc4",
-    hair: "#8a8f99",
-    hairStyle: "none",
-    eyes: "#5a5f69",
-    shirt: "#6b707a",
-    longSleeves: true,
-    pants: "#555a63",
-    shoes: "#3f434a",
-    seed: 1,
-  });
-  return c.p;
 }
 
 export const LIBRARY_SKINS: SkinPreset[] = [

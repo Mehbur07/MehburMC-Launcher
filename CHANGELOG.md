@@ -3,6 +3,12 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.14.2] — 2026-10-07
+
+### Değişti
+- MehburMC Kütüphanesi yine yalnızca modlar için. 20 skin ve 15 pelerin yalnızca
+  **Skin & Cape → Hazırlar → MehburMC koleksiyonu** bölümünde.
+
 ## [0.14.1] — 2026-10-07
 
 ### Değişti

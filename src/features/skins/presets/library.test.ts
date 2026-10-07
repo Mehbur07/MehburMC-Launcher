@@ -6,11 +6,11 @@ import tr from "../../../i18n/tr.json";
 import { faces, skinBoxes } from "../editor/layout";
 import { getPx } from "../editor/ops";
 import { CAPE_PRESETS, SKIN_PRESETS } from ".";
-import { LIBRARY_CAPES, LIBRARY_SKINS, mannequin } from "./library";
+import { LIBRARY_CAPES, LIBRARY_SKINS } from "./library";
 
 const sha1 = (data: Uint8ClampedArray) => createHash("sha1").update(data).digest("hex");
 
-describe("MehburMC Library collection", () => {
+describe("MehburMC collection (phase 22)", () => {
   it("has 20 skins and 15 capes with unique ids", () => {
     expect(LIBRARY_SKINS).toHaveLength(20);
     expect(LIBRARY_CAPES).toHaveLength(15);
@@ -20,8 +20,8 @@ describe("MehburMC Library collection", () => {
 
   it("names every item in both languages", () => {
     for (const p of [...LIBRARY_SKINS, ...LIBRARY_CAPES]) {
-      expect(tr.library.textures.items).toHaveProperty(p.id);
-      expect(en.library.textures.items).toHaveProperty(p.id);
+      expect(tr.skins.presets.items).toHaveProperty(p.id);
+      expect(en.skins.presets.items).toHaveProperty(p.id);
     }
   });
 
@@ -47,7 +47,6 @@ describe("MehburMC Library collection", () => {
         for (let x = 1; x < 11; x++) expect(getPx(px, x, y)[3], p.id).toBe(255);
       }
     }
-    expect(mannequin().width).toBe(64);
   });
 
   it("is deterministic and every design is different", () => {

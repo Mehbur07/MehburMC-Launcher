@@ -73,7 +73,7 @@ export function PresetsPanel({
     };
   }, []);
 
-  // The original presets, then the MehburMC Library collection (K75).
+  // The original presets, then the phase 22 collection (K75).
   const ours = useMemo<LooseTexture[]>(() => {
     const skin = (key: string, name: string, p: (typeof SKIN_PRESETS)[number]): LooseTexture => ({
       key,
@@ -92,15 +92,11 @@ export function PresetsPanel({
     return kind === "skin"
       ? [
           ...SKIN_PRESETS.map((p) => skin(`preset:${p.id}`, t(`skins.presets.items.${p.id}`), p)),
-          ...LIBRARY_SKINS.map((p) =>
-            skin(`library:${p.id}`, t(`library.textures.items.${p.id}`), p),
-          ),
+          ...LIBRARY_SKINS.map((p) => skin(`library:${p.id}`, t(`skins.presets.items.${p.id}`), p)),
         ]
       : [
           ...CAPE_PRESETS.map((p) => cape(`preset:${p.id}`, t(`skins.presets.items.${p.id}`), p)),
-          ...LIBRARY_CAPES.map((p) =>
-            cape(`library:${p.id}`, t(`library.textures.items.${p.id}`), p),
-          ),
+          ...LIBRARY_CAPES.map((p) => cape(`library:${p.id}`, t(`skins.presets.items.${p.id}`), p)),
         ];
   }, [kind, t]);
 

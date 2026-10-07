@@ -131,8 +131,6 @@ modlar.
 - **Dosyadan ekle**: 64×64 veya 64×32 (ya da HD katları) PNG skin, 64×32 pelerin.
 - **Özel MehburMC skin/pelerinleri** yalnızca kurucunun gönderdiği hesaplarda görünür; kartlarında
   kilit simgesi vardır ve paylaşılamaz. Geri alınırsa kütüphanenden kaldırılır.
-- **Mod Tarayıcı → MehburMC Kütüphanesi → Skinler / Pelerinler**: 20 skin ve 15 pelerinlik ücretsiz
-  MehburMC koleksiyonu. Tıkla 3B önizle, **Ekle** ile buradaki kütüphanene al.
 - **Hazırlar**: oyunun varsayılan skinleri (Steve, Alex… — kurulu bir sürümün oyun dosyasından
   okunur) ve launcher'ın özgün skin/pelerin koleksiyonu (MehburMC Kütüphanesi'ndeki 20 skin + 15 pelerin dahil). Tıkla önizle, **+** ile kütüphaneye ekle.
 - **Tasarla**: kendi skin'ini (64×64) veya pelerinini (64×32) çiz; soldaki 3B önizleme anında
