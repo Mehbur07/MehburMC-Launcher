@@ -1,15 +1,15 @@
 {
-  "version": "0.14.1",
-  "notes": "### Değişti\n- Yeni 20 skin ve 15 pelerin artık **Skin & Cape → Hazırlar → MehburMC koleksiyonu** bölümünde de\n  listeleniyor (MehburMC Kütüphanesi'ndeki Skinler/Pelerinler sekmeleri de duruyor).",
-  "pub_date": "2026-10-07T11:57:53Z",
+  "version": "0.14.2",
+  "notes": "### Değişti\n- MehburMC Kütüphanesi yine yalnızca modlar için. 20 skin ve 15 pelerin yalnızca\n  **Skin & Cape → Hazırlar → MehburMC koleksiyonu** bölümünde.",
+  "pub_date": "2026-10-07T12:17:55Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUFUMHl1UFJWN0FtUUtra1hieDBaV1JaL2hBUmJtNE5mTDBsU3dDd25YV1Fhc1NxQzVpOUFKMTRnTFJHaGR0Mmc4NEM3dTVGY1hqWFQreVhqWW1JTVE4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzc0MjYzCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xNC4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjEKem5iRTl2MGtWOGYvbDRoWkdKbWNJVXA3YzFDN3l1Z1lXb2U4N2hoK3UwejFhd0hkWWMxQ3ZLSEphWjZtamMzMXdrU0xNSFF6bmpXdjhRTmluWEYvQVE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.14.1/MehburMC-Launcher_0.14.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYU5kSmlmTlh2VWtrbk1pc1RBWlNLaDUvR0VqU3NMOXJCS1NuK2FsK0RrOHV4blVWRDkvOGdLQzBCNEpPUnlZRW5KVzFsd3dQcS9zaEwzamNubUFvT2d3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzc1NDY2CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xNC4yX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjIKSEV1a29UU05PYW9ndXNLc054cEh2YnAzc0lFZ3d5bitXTUFVdW5CVWwzR2JpZkF3NCsrUVZIWVJONXZhVm5hUGdvTTRTQkJJakpwWGl0eHRGbUFnQkE9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.14.2/MehburMC-Launcher_0.14.2_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUFUMHl1UFJWN0FtUUtra1hieDBaV1JaL2hBUmJtNE5mTDBsU3dDd25YV1Fhc1NxQzVpOUFKMTRnTFJHaGR0Mmc4NEM3dTVGY1hqWFQreVhqWW1JTVE4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzc0MjYzCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xNC4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjEKem5iRTl2MGtWOGYvbDRoWkdKbWNJVXA3YzFDN3l1Z1lXb2U4N2hoK3UwejFhd0hkWWMxQ3ZLSEphWjZtamMzMXdrU0xNSFF6bmpXdjhRTmluWEYvQVE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.14.1/MehburMC-Launcher_0.14.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYU5kSmlmTlh2VWtrbk1pc1RBWlNLaDUvR0VqU3NMOXJCS1NuK2FsK0RrOHV4blVWRDkvOGdLQzBCNEpPUnlZRW5KVzFsd3dQcS9zaEwzamNubUFvT2d3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxMzc1NDY2CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xNC4yX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE0LjIKSEV1a29UU05PYW9ndXNLc054cEh2YnAzc0lFZ3d5bitXTUFVdW5CVWwzR2JpZkF3NCsrUVZIWVJONXZhVm5hUGdvTTRTQkJJakpwWGl0eHRGbUFnQkE9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.14.2/MehburMC-Launcher_0.14.2_x64-setup.exe"
     }
   }
 }
