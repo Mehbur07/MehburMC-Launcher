@@ -2481,7 +2481,7 @@ dependencies = [
 
 [[package]]
 name = "launcher-cli"
-version = "0.13.1"
+version = "0.14.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -2493,7 +2493,7 @@ dependencies = [
 
 [[package]]
 name = "launcher-core"
-version = "0.13.1"
+version = "0.14.0"
 dependencies = [
  "base64 0.23.1",
  "directories",
@@ -2650,7 +2650,7 @@ dependencies = [
 
 [[package]]
 name = "mehbur-launcher"
-version = "0.13.1"
+version = "0.14.0"
 dependencies = [
  "launcher-core",
  "serde",

@@ -17,7 +17,7 @@ import { useInstances } from "../../stores/instances";
 import { activeTaskFor, useTasks } from "../../stores/tasks";
 import { ImportResultDialog } from "./ImportResultDialog";
 import { InstalledMenu } from "./InstalledMenu";
-import { LibraryPanel } from "./LibraryPanel";
+import { LibraryHub } from "./LibraryTextures";
 import { ProjectDialog } from "./ProjectDialog";
 import {
   compactNumber,
@@ -204,7 +204,7 @@ export function BrowsePage() {
       </div>
 
       {isLibrary ? (
-        <LibraryPanel inst={inst} gameBusy={gameBusy} />
+        <LibraryHub inst={inst} gameBusy={gameBusy} />
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-3">

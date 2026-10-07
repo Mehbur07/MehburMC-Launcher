@@ -3,6 +3,15 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.14.0] — 2026-10-07
+
+### Eklendi
+- **MehburMC Kütüphanesi'nde Skinler ve Pelerinler:** Mod Tarayıcı → MehburMC Kütüphanesi'nde
+  artık **Modlar / Skinler / Pelerinler** var. 20 yeni özgün skin (aşçı, doktor, itfaiyeci,
+  vampir, elf, peri, basketbolcu, kayakçı, dört mevsim, madenci, oduncu…) ve 15 yeni pelerin
+  (okyanus, lav, sakura, ejderha pulu, dolunay, kamuflaj…). Hepsi ücretsiz: tıkla 3B önizle,
+  **Ekle** ile Skin & Cape kütüphanene al.
+
 ## [0.13.1] — 2026-10-07
 
 ### Eklendi
