@@ -64,10 +64,14 @@ describe("SkinsPage", () => {
     await waitFor(() =>
       expect(ipcMock.addSkinBytes).toHaveBeenCalledWith("skin", "Knight", "UE5H", "classic"),
     );
+    // The MehburMC Library collection is listed here too (K75).
+    expect(screen.getByText("Firefighter")).toBeInTheDocument();
+    expect(screen.getByText("Elf Archer")).toBeInTheDocument();
 
     // Capes have no game defaults, only the collection.
     fireEvent.click(screen.getByRole("tab", { name: "Cape" }));
     expect(screen.getByText("Crescent & Star")).toBeInTheDocument();
+    expect(screen.getByText("Dragon Scales")).toBeInTheDocument();
     expect(screen.queryByText("The game's default skins")).toBeNull();
   });
 

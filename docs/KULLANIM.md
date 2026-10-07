@@ -134,7 +134,7 @@ modlar.
 - **Mod Tarayıcı → MehburMC Kütüphanesi → Skinler / Pelerinler**: 20 skin ve 15 pelerinlik ücretsiz
   MehburMC koleksiyonu. Tıkla 3B önizle, **Ekle** ile buradaki kütüphanene al.
 - **Hazırlar**: oyunun varsayılan skinleri (Steve, Alex… — kurulu bir sürümün oyun dosyasından
-  okunur) ve launcher'ın özgün skin/pelerin koleksiyonu. Tıkla önizle, **+** ile kütüphaneye ekle.
+  okunur) ve launcher'ın özgün skin/pelerin koleksiyonu (MehburMC Kütüphanesi'ndeki 20 skin + 15 pelerin dahil). Tıkla önizle, **+** ile kütüphaneye ekle.
 - **Tasarla**: kendi skin'ini (64×64) veya pelerinini (64×32) çiz; soldaki 3B önizleme anında
   güncellenir. Araçlar: kalem (B), silgi (E), kova (G), damlalık (I), çizgi (L), ayna modu (M);
   sağ tık siler, Alt+tık renk alır, Ctrl+Z / Ctrl+Y geri/ileri alır. **Katman** ile yalnızca

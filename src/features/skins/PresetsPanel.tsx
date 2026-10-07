@@ -10,6 +10,7 @@ import type { SkinModel } from "../../lib/ipc/bindings/SkinModel";
 import type { TextureKind } from "../../lib/ipc/bindings/TextureKind";
 import { toDataUri } from "./editor/canvas";
 import { CAPE_PRESETS, SKIN_PRESETS } from "./presets";
+import { LIBRARY_CAPES, LIBRARY_SKINS } from "./presets/library";
 import { useApp } from "../../stores/app";
 import { useAuth } from "../../stores/auth";
 import { useCommunity } from "../../stores/community";
@@ -72,25 +73,36 @@ export function PresetsPanel({
     };
   }, []);
 
-  const ours = useMemo<LooseTexture[]>(
-    () =>
-      kind === "skin"
-        ? SKIN_PRESETS.map((p) => ({
-            key: `preset:${p.id}`,
-            kind: "skin",
-            name: t(`skins.presets.items.${p.id}`),
-            model: p.model,
-            dataUri: toDataUri(p.draw()),
-          }))
-        : CAPE_PRESETS.map((p) => ({
-            key: `preset:${p.id}`,
-            kind: "cape",
-            name: t(`skins.presets.items.${p.id}`),
-            model: "classic",
-            dataUri: toDataUri(p.draw()),
-          })),
-    [kind, t],
-  );
+  // The original presets, then the MehburMC Library collection (K75).
+  const ours = useMemo<LooseTexture[]>(() => {
+    const skin = (key: string, name: string, p: (typeof SKIN_PRESETS)[number]): LooseTexture => ({
+      key,
+      kind: "skin",
+      name,
+      model: p.model,
+      dataUri: toDataUri(p.draw()),
+    });
+    const cape = (key: string, name: string, p: (typeof CAPE_PRESETS)[number]): LooseTexture => ({
+      key,
+      kind: "cape",
+      name,
+      model: "classic",
+      dataUri: toDataUri(p.draw()),
+    });
+    return kind === "skin"
+      ? [
+          ...SKIN_PRESETS.map((p) => skin(`preset:${p.id}`, t(`skins.presets.items.${p.id}`), p)),
+          ...LIBRARY_SKINS.map((p) =>
+            skin(`library:${p.id}`, t(`library.textures.items.${p.id}`), p),
+          ),
+        ]
+      : [
+          ...CAPE_PRESETS.map((p) => cape(`preset:${p.id}`, t(`skins.presets.items.${p.id}`), p)),
+          ...LIBRARY_CAPES.map((p) =>
+            cape(`library:${p.id}`, t(`library.textures.items.${p.id}`), p),
+          ),
+        ];
+  }, [kind, t]);
 
   const game: LooseTexture[] =
     kind === "skin"
