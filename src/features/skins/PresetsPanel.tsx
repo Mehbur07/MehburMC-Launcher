@@ -2,20 +2,44 @@ import { Check, Flag, Paintbrush, Plus, RefreshCw, ShieldX, Undo2 } from "lucide
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Badge, Button, ConfirmDialog, IconButton } from "../../components/ui";
+import { Badge, Button, ConfirmDialog, IconButton, TextInput } from "../../components/ui";
 import { ipc } from "../../lib/ipc";
 import type { DefaultSkin } from "../../lib/ipc/bindings/DefaultSkin";
 import type { SharedTexture } from "../../lib/ipc/bindings/SharedTexture";
 import type { SkinModel } from "../../lib/ipc/bindings/SkinModel";
 import type { TextureKind } from "../../lib/ipc/bindings/TextureKind";
 import { toDataUri } from "./editor/canvas";
+import type { Pixels } from "./editor/ops";
 import { CAPE_PRESETS, SKIN_PRESETS } from "./presets";
+import { CATALOG_CAPES, CATALOG_SKINS } from "./presets/catalog";
 import { LIBRARY_CAPES, LIBRARY_SKINS } from "./presets/library";
 import { useApp } from "../../stores/app";
 import { useAuth } from "../../stores/auth";
 import { useCommunity } from "../../stores/community";
 import { ReportDialog, VisibilityIcon } from "./ShareDialogs";
 import { CapeThumb, SkinThumb } from "./SkinThumb";
+
+/** Collection items shown before "Show all". */
+const FIRST_ITEMS = 24;
+
+interface Drawable {
+  key: string;
+  kind: TextureKind;
+  name: string;
+  model: SkinModel;
+  draw: () => Pixels;
+}
+
+// Drawn textures are kept for the session; switching tabs does not redraw.
+const drawnCache = new Map<string, string>();
+function drawn(d: Drawable): string {
+  let uri = drawnCache.get(d.key);
+  if (!uri) {
+    uri = toDataUri(d.draw());
+    drawnCache.set(d.key, uri);
+  }
+  return uri;
+}
 
 /** A texture that is not (yet) in the library. */
 export interface LooseTexture {
@@ -73,32 +97,40 @@ export function PresetsPanel({
     };
   }, []);
 
-  // The original presets, then the phase 22 collection (K75).
-  const ours = useMemo<LooseTexture[]>(() => {
-    const skin = (key: string, name: string, p: (typeof SKIN_PRESETS)[number]): LooseTexture => ({
-      key,
-      kind: "skin",
-      name,
-      model: p.model,
-      dataUri: toDataUri(p.draw()),
-    });
-    const cape = (key: string, name: string, p: (typeof CAPE_PRESETS)[number]): LooseTexture => ({
-      key,
-      kind: "cape",
-      name,
-      model: "classic",
-      dataUri: toDataUri(p.draw()),
+  // The original presets, then the phase 22 collection (K75) and the
+  // catalogue (K77). Over 100 items per kind: only the visible ones are drawn.
+  const [query, setQuery] = useState("");
+  const [showAll, setShowAll] = useState(false);
+  const collection = useMemo<Drawable[]>(() => {
+    const entry = (
+      prefix: string,
+      p: { id: string; model?: SkinModel; draw: () => Pixels },
+    ): Drawable => ({
+      key: `${prefix}:${p.id}`,
+      kind,
+      name: t(`skins.presets.items.${p.id}`),
+      model: p.model ?? "classic",
+      draw: p.draw,
     });
     return kind === "skin"
       ? [
-          ...SKIN_PRESETS.map((p) => skin(`preset:${p.id}`, t(`skins.presets.items.${p.id}`), p)),
-          ...LIBRARY_SKINS.map((p) => skin(`library:${p.id}`, t(`skins.presets.items.${p.id}`), p)),
+          ...SKIN_PRESETS.map((p) => entry("preset", p)),
+          ...LIBRARY_SKINS.map((p) => entry("library", p)),
+          ...CATALOG_SKINS.map((p) => entry("catalog", p)),
         ]
       : [
-          ...CAPE_PRESETS.map((p) => cape(`preset:${p.id}`, t(`skins.presets.items.${p.id}`), p)),
-          ...LIBRARY_CAPES.map((p) => cape(`library:${p.id}`, t(`skins.presets.items.${p.id}`), p)),
+          ...CAPE_PRESETS.map((p) => entry("preset", p)),
+          ...LIBRARY_CAPES.map((p) => entry("library", p)),
+          ...CATALOG_CAPES.map((p) => entry("catalog", p)),
         ];
   }, [kind, t]);
+  const q = query.trim().toLocaleLowerCase();
+  const matching = q
+    ? collection.filter((d) => d.name.toLocaleLowerCase().includes(q))
+    : collection;
+  const ours: LooseTexture[] = (q || showAll ? matching : matching.slice(0, FIRST_ITEMS)).map(
+    (d) => ({ key: d.key, kind: d.kind, name: d.name, model: d.model, dataUri: drawn(d) }),
+  );
 
   const game: LooseTexture[] =
     kind === "skin"
@@ -282,7 +314,23 @@ export function PresetsPanel({
       <section className="flex flex-col gap-2">
         <h3 className="text-sm font-semibold">{t("skins.presets.collection")}</h3>
         <p className="text-xs text-muted">{t("skins.presets.collectionHint")}</p>
-        {grid(ours)}
+        <TextInput
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t("skins.presets.search")}
+          aria-label={t("skins.presets.search")}
+          className="max-w-72"
+        />
+        {ours.length === 0 ? (
+          <p className="text-xs text-muted">{t("skins.presets.noMatch")}</p>
+        ) : (
+          grid(ours)
+        )}
+        {!q && !showAll && matching.length > FIRST_ITEMS && (
+          <Button size="sm" variant="ghost" className="self-start" onClick={() => setShowAll(true)}>
+            {t("skins.presets.showAll", { count: matching.length })}
+          </Button>
+        )}
       </section>
 
       <ReportDialog

@@ -22,11 +22,15 @@ import {
   skinCanvas,
 } from "./paint";
 
-const SIDES = ["front", "back", "left", "right"] as const;
-const ARMS = ["rArm", "lArm"];
-const LEGS = ["rLeg", "lLeg"];
+export const SIDES = ["front", "back", "left", "right"] as const;
+export const ARMS = ["rArm", "lArm"];
+export const LEGS = ["rLeg", "lLeg"];
 
-function person(model: SkinModel, outfit: Outfit, paint: (c: SkinCanvas, r: () => number) => void) {
+export function person(
+  model: SkinModel,
+  outfit: Outfit,
+  paint: (c: SkinCanvas, r: () => number) => void,
+) {
   return (): Pixels => {
     const c = skinCanvas(model);
     drawPerson(c, outfit);
@@ -36,12 +40,12 @@ function person(model: SkinModel, outfit: Outfit, paint: (c: SkinCanvas, r: () =
 }
 
 /** Paints the four side faces of every listed box. */
-function around(c: SkinCanvas, ids: string[], fn: FacePainter | Color) {
+export function around(c: SkinCanvas, ids: string[], fn: FacePainter | Color) {
   for (const id of ids) paintBox(c.p, c.box(id), fn, [...SIDES]);
 }
 
 /** A helmet or cap on the hat layer: top plus the first `rows` rows. */
-function cap(c: SkinCanvas, color: Color, rows: number, r: () => number, brim?: Color) {
+export function cap(c: SkinCanvas, color: Color, rows: number, r: () => number, brim?: Color) {
   paintFace(c.p, c.face("hat", "top"), () => grain(color, r, 8));
   for (const s of SIDES) {
     paintFace(c.p, c.face("hat", s), (_x, y) =>
@@ -51,7 +55,7 @@ function cap(c: SkinCanvas, color: Color, rows: number, r: () => number, brim?: 
 }
 
 /** A hood on the hat layer that leaves the face open. */
-function hood(c: SkinCanvas, color: Color, r: () => number) {
+export function hood(c: SkinCanvas, color: Color, r: () => number) {
   paintFace(c.p, c.face("hat", "top"), () => grain(color, r, 8));
   paintFace(c.p, c.face("hat", "back"), () => grain(color, r, 8));
   for (const s of ["left", "right"] as const) {
@@ -63,27 +67,32 @@ function hood(c: SkinCanvas, color: Color, r: () => number) {
 }
 
 /** Bare forearms (or whole arms) in skin colour from row `from`. */
-function bareArms(c: SkinCanvas, skin: Color, from: number, r: () => number) {
+export function bareArms(c: SkinCanvas, skin: Color, from: number, r: () => number) {
   around(c, ARMS, (_x, y) => (y >= from ? grain(skin, r, 6) : null));
   for (const id of ARMS) paintFace(c.p, c.face(id, "bottom"), shade(skin, -10));
   if (from === 0) for (const id of ARMS) paintFace(c.p, c.face(id, "top"), skin);
 }
 
 /** Bare legs from row `from` down to the socks at `to` (exclusive). */
-function bareLegs(c: SkinCanvas, skin: Color, from: number, to: number, r: () => number) {
+export function bareLegs(c: SkinCanvas, skin: Color, from: number, to: number, r: () => number) {
   around(c, LEGS, (_x, y) => (y >= from && y < to ? grain(skin, r, 6) : null));
 }
 
 /** 3×5 digits for shirt numbers. */
-const DIGITS: Record<string, string[]> = {
+export const DIGITS: Record<string, string[]> = {
   "0": ["###", "#.#", "#.#", "#.#", "###"],
   "1": [".#.", "##.", ".#.", ".#.", "###"],
   "2": ["###", "..#", "###", "#..", "###"],
   "3": ["###", "..#", "###", "..#", "###"],
   "7": ["###", "..#", ".#.", ".#.", ".#."],
+  "4": ["#.#", "#.#", "###", "..#", "..#"],
+  "5": ["###", "#..", "###", "..#", "###"],
+  "6": ["###", "#..", "###", "#.#", "###"],
+  "8": ["###", "#.#", "###", "#.#", "###"],
+  "9": ["###", "#.#", "###", "..#", "###"],
 };
 
-function number(
+export function number(
   c: SkinCanvas,
   box: string,
   side: "front" | "back",
@@ -103,12 +112,12 @@ function number(
 }
 
 /** Small 2×2 check / plaid pattern. */
-const check =
+export const check =
   (a: Color, b: Color, r: () => number, size = 2): FacePainter =>
   (x, y) =>
     grain((Math.floor(x / size) + Math.floor(y / size)) % 2 ? a : b, r, 8);
 
-function plaid(a: Color, line: Color, r: () => number): FacePainter {
+export function plaid(a: Color, line: Color, r: () => number): FacePainter {
   return (x, y) => {
     const v = x % 4 === 1;
     const h = y % 4 === 1;
@@ -1019,7 +1028,7 @@ export const LIBRARY_SKINS: SkinPreset[] = [
 ];
 
 /** Smooth value noise for capes. */
-function noise(seed: number): (x: number, y: number) => number {
+export function noise(seed: number): (x: number, y: number) => number {
   const r = rng(seed);
   const grid = Array.from({ length: 64 }, () => r());
   const at = (x: number, y: number) => grid[((y & 7) * 8 + (x & 7)) & 63]!;
@@ -1035,7 +1044,7 @@ function noise(seed: number): (x: number, y: number) => number {
 }
 
 /** A pixel-art stamp centred on the cape. */
-function stamp(
+export function stamp(
   art: string[],
   colors: Record<string, string>,
   x: number,

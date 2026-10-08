@@ -3,6 +3,16 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.16.0] — 2026-10-08
+
+### Eklendi
+- **104 skin ve 104 pelerin:** MehburMC koleksiyonuna 73 yeni skin (pilot, hemşire, dedektif,
+  kovboy, sihirbaz, DJ, kaykaycı, hokeyci, kral, kraliçe, melek, viking, samuray, mumya, hayalet,
+  kardan adam, noel baba, dalgıç…) ve 80 yeni pelerin (kalp, kılıç, taç, çapa, roket, kale,
+  kelebek, şerit, şevron, puantiye, mermer, tuğla, kristal, kutup ışıkları…) eklendi.
+- **Koleksiyonda arama:** Skin & Cape → Hazırlar → MehburMC koleksiyonu'nda adıyla ara; liste ilk
+  24 tasarımla açılır, **Tümünü göster** ile hepsi görünür.
+
 ## [0.15.0] — 2026-10-08
 
 ### Eklendi

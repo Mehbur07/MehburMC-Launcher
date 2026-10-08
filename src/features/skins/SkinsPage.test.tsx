@@ -55,6 +55,7 @@ describe("SkinsPage", () => {
     expect(screen.getByRole("tab", { name: /Design/ })).toBeInTheDocument();
   });
 
+  // Role queries over 100+ cards are slow in jsdom.
   it("lists game defaults and the collection, and adds a preset", async () => {
     render(<SkinsPage />);
     fireEvent.click(screen.getByRole("tab", { name: /Presets/ }));
@@ -73,7 +74,25 @@ describe("SkinsPage", () => {
     expect(screen.getByText("Crescent & Star")).toBeInTheDocument();
     expect(screen.getByText("Dragon Scales")).toBeInTheDocument();
     expect(screen.queryByText("The game's default skins")).toBeNull();
-  });
+  }, 20_000);
+
+  it("searches the 100+ collection and shows everything on request", async () => {
+    render(<SkinsPage />);
+    fireEvent.click(screen.getByRole("tab", { name: /Presets/ }));
+    // The catalogue starts folded: a later design is not drawn yet.
+    expect(screen.queryByText("Viking")).toBeNull();
+    fireEvent.change(screen.getByLabelText("Search the collection…"), {
+      target: { value: "vik" },
+    });
+    expect(await screen.findByText("Viking")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Search the collection…"), {
+      target: { value: "zzz" },
+    });
+    expect(screen.getByText("No matching designs")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Search the collection…"), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: /Show all \(1\d\d\)/ }));
+    expect(screen.getByText("Engineer")).toBeInTheDocument();
+  }, 20_000);
 
   it("saves a design from the editor", async () => {
     render(<SkinsPage />);
