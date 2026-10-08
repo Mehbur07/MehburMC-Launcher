@@ -8,6 +8,7 @@ const task = (over: Partial<TaskInfo> = {}): TaskInfo => ({
   kind: "launch",
   instanceId: "a",
   title: "A",
+  account: null,
   status: "preparing",
   stage: null,
   done: 0,

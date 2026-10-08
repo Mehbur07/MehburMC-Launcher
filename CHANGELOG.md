@@ -3,6 +3,15 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.15.0] — 2026-10-08
+
+### Eklendi
+- **Aynı profili iki hesapla aynı anda aç:** oyun açıkken başka bir hesaba geçip **OYNA**'ya
+  basarak aynı profili ikinci kez başlatabilirsin (ör. ana hesabınla oynarken bir sunucuda AFK
+  hesabın açık kalsın). Oyna sayfası profilde açık olan her oyunu hesap adıyla ve kendi
+  **Durdur** düğmesiyle gösterir. Aynı hesapla iki kez girilemez; oyunlardan biri açıkken
+  modları değiştirme/silme ve onarım yine kilitlidir.
+
 ## [0.14.2] — 2026-10-07
 
 ### Değişti

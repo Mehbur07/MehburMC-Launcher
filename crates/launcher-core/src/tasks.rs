@@ -56,6 +56,9 @@ pub struct TaskInfo {
     pub kind: TaskKind,
     pub instance_id: Option<String>,
     pub title: String,
+    /// Account name a game task plays with (several accounts may play one
+    /// instance at once).
+    pub account: Option<String>,
     pub status: TaskStatus,
     pub stage: Option<Stage>,
     #[ts(type = "number")]
@@ -116,6 +119,7 @@ impl TaskRegistry {
             kind,
             instance_id: instance_id.map(str::to_owned),
             title: title.to_owned(),
+            account: None,
             status: TaskStatus::Preparing,
             stage: None,
             done: 0,
@@ -155,6 +159,10 @@ impl TaskRegistry {
             entry.info.clone()
         };
         self.sink.emit(CoreEvent::Task { task: snapshot });
+    }
+
+    pub fn set_account(&self, id: &str, account: &str) {
+        self.update(id, |t| t.account = Some(account.to_owned()));
     }
 
     pub fn set_status(&self, id: &str, status: TaskStatus) {

@@ -34,7 +34,10 @@
     "addAccount": "Add account",
     "showConsole": "Show console",
     "switch": "Switch instance",
-    "news": "Minecraft news"
+    "news": "Minecraft news",
+    "otherGames": "Games open in this instance",
+    "stopFor": "Stop {{name}}'s game",
+    "anotherAccountHint": "This instance is open with another account. You can join with the selected one too."
   },
   "settings": {
     "title": "Settings",
@@ -180,7 +183,8 @@
     "instance": {
       "notFound": "Instance not found: {{id}}",
       "busy": "\"{{name}}\" is busy (running or being prepared).",
-      "invalid": "Invalid instance: {{reason}}"
+      "invalid": "Invalid instance: {{reason}}",
+      "accountPlaying": "\"{{account}}\" is already playing this instance. Pick another account to open it again."
     },
     "account": {
       "none": "Add or select an account first.",

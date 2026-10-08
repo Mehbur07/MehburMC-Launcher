@@ -30,7 +30,8 @@ import type { MotdSpan } from "../../lib/ipc/bindings/MotdSpan";
 import { useApp } from "../../stores/app";
 import { selectedInstance, useInstances } from "../../stores/instances";
 import { addressKey, isFavorite, useServers, type PingState } from "../../stores/servers";
-import { activeTaskFor, useTasks } from "../../stores/tasks";
+import { selectedAccount, useAccounts } from "../../stores/accounts";
+import { activeTaskFor, playBlocked, useTasks } from "../../stores/tasks";
 
 /** Server description with its colours and styles. */
 export function Motd({ spans }: { spans: MotdSpan[] }) {
@@ -146,7 +147,8 @@ function ServerRow({
   const ping = useServers((s) => s.pings[addressKey(address)]);
   const join = useServers((s) => s.join);
   const setView = useApp((s) => s.setView);
-  const busy = useTasks((s) => activeTaskFor(s.tasks, inst?.id ?? null) !== null);
+  const account = useAccounts(selectedAccount);
+  const busy = useTasks((s) => playBlocked(s.tasks, inst?.id ?? null, account?.name ?? null));
   const [copied, setCopied] = useState(false);
 
   const icon = (ping?.state === "ok" && ping.status.icon) || storedIcon || null;

@@ -34,7 +34,10 @@
     "addAccount": "Hesap ekle",
     "showConsole": "Konsolu göster",
     "switch": "Profil değiştir",
-    "news": "Minecraft haberleri"
+    "news": "Minecraft haberleri",
+    "otherGames": "Bu profilde açık oyunlar",
+    "stopFor": "{{name}} oyununu durdur",
+    "anotherAccountHint": "Bu profil başka bir hesapla açık. Seçili hesapla da girebilirsin."
   },
   "settings": {
     "title": "Ayarlar",
@@ -180,7 +183,8 @@
     "instance": {
       "notFound": "Profil bulunamadı: {{id}}",
       "busy": "\"{{name}}\" şu anda kullanımda (çalışıyor veya hazırlanıyor).",
-      "invalid": "Geçersiz profil: {{reason}}"
+      "invalid": "Geçersiz profil: {{reason}}",
+      "accountPlaying": "\"{{account}}\" bu profilde zaten oyunda. Aynı profili açmak için başka bir hesap seç."
     },
     "account": {
       "none": "Önce bir hesap ekle veya seç.",

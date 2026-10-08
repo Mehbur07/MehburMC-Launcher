@@ -125,6 +125,14 @@ modlar.
   launcher'ında yeniden kontrol edilir; uyarı varsa önce sorulur. Hiçbir otomatik kontrol
   %100 güvenlik sağlamaz — şüpheli bir şey görürsen bayrak simgesiyle **Bildir**.
 
+### Aynı profili iki hesapla açmak
+
+Oyun açıkken **Hesaplar**'dan başka bir hesap seçip **OYNA**'ya basarsan aynı profil ikinci kez
+açılır (ör. ana hesabınla oynarken bir sunucuda AFK hesabın açık kalabilir). Oyna sayfası
+açık olan her oyunu hesap adıyla ve ayrı bir **Durdur** düğmesiyle gösterir. Aynı hesapla iki
+kez girilemez. İki oyun aynı profil klasörünü ve aynı konsolu paylaşır; oyunlardan biri
+açıkken mod ekleme/silme ve onarım kilitlidir. İki oyun için yeterli RAM'in olduğundan emin ol.
+
 ## 6. Skin ve pelerin
 
 **Skin & Cape** ekranı:

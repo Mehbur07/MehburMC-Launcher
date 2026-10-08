@@ -4,7 +4,7 @@
 pub mod files;
 pub mod transfer;
 
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -584,38 +584,96 @@ impl InstanceStore {
     }
 }
 
-/// Instances that are currently being prepared or played.
+/// Who holds an instance: an exclusive operation (`None`) or a game
+/// played with the account of that UUID.
+type Holders = Vec<(u64, Option<String>)>;
+
+#[derive(Default)]
+struct RunningInner {
+    next: u64,
+    by_instance: HashMap<String, Holders>,
+}
+
+/// Instances that are currently being prepared or played. One instance may
+/// run several games at once, each with a different account (e.g. a main
+/// account plus an AFK account on a server); everything else needs the
+/// instance to itself.
 #[derive(Clone, Default)]
-pub struct Running(Arc<Mutex<HashSet<String>>>);
+pub struct Running(Arc<Mutex<RunningInner>>);
 
 /// Released on drop.
 pub struct Claim {
-    set: Arc<Mutex<HashSet<String>>>,
+    set: Arc<Mutex<RunningInner>>,
     id: String,
+    key: u64,
 }
 
 impl Drop for Claim {
     fn drop(&mut self) {
-        self.set.lock().expect("running lock").remove(&self.id);
+        let mut inner = self.set.lock().expect("running lock");
+        if let Some(h) = inner.by_instance.get_mut(&self.id) {
+            h.retain(|(k, _)| *k != self.key);
+            if h.is_empty() {
+                inner.by_instance.remove(&self.id);
+            }
+        }
     }
 }
 
 impl Running {
+    fn claim(&self, inst: &Instance, holder: Option<String>) -> Claim {
+        let mut inner = self.0.lock().expect("running lock");
+        inner.next += 1;
+        let key = inner.next;
+        inner
+            .by_instance
+            .entry(inst.id.clone())
+            .or_default()
+            .push((key, holder));
+        Claim {
+            set: self.0.clone(),
+            id: inst.id.clone(),
+            key,
+        }
+    }
+
+    /// Exclusive use (repair, content changes): nothing else may run.
     pub fn try_claim(&self, inst: &Instance) -> Result<Claim> {
-        let mut set = self.0.lock().expect("running lock");
-        if !set.insert(inst.id.clone()) {
+        if self.is_running(&inst.id) {
             return Err(CoreError::InstanceBusy {
                 name: inst.name.clone(),
             });
         }
-        Ok(Claim {
-            set: self.0.clone(),
-            id: inst.id.clone(),
-        })
+        Ok(self.claim(inst, None))
+    }
+
+    /// Playing with one account: other accounts may play the same instance
+    /// at the same time, the same account may not.
+    pub fn try_claim_play(&self, inst: &Instance, uuid: &str, account: &str) -> Result<Claim> {
+        {
+            let inner = self.0.lock().expect("running lock");
+            if let Some(h) = inner.by_instance.get(&inst.id) {
+                if h.iter().any(|(_, who)| who.is_none()) {
+                    return Err(CoreError::InstanceBusy {
+                        name: inst.name.clone(),
+                    });
+                }
+                if h.iter().any(|(_, who)| who.as_deref() == Some(uuid)) {
+                    return Err(CoreError::AccountPlaying {
+                        account: account.to_owned(),
+                    });
+                }
+            }
+        }
+        Ok(self.claim(inst, Some(uuid.to_owned())))
     }
 
     pub fn is_running(&self, id: &str) -> bool {
-        self.0.lock().expect("running lock").contains(id)
+        self.0
+            .lock()
+            .expect("running lock")
+            .by_instance
+            .contains_key(id)
     }
 
     pub fn ensure_idle(&self, inst: &Instance) -> Result<()> {
@@ -823,6 +881,37 @@ pub(crate) mod tests {
         assert_eq!(r.try_claim(&a).err().unwrap().code(), "instance.busy");
         drop(claim);
         assert!(r.try_claim(&a).is_ok());
+    }
+
+    #[test]
+    fn one_instance_plays_with_several_accounts() {
+        let (_t, s) = store();
+        let a = s.create(new("A")).unwrap();
+        let r = Running::default();
+        let main = r.try_claim_play(&a, "uuid-main", "Main").unwrap();
+        // A second account may join the same instance, the same one may not.
+        let afk = r.try_claim_play(&a, "uuid-afk", "Afk").unwrap();
+        let again = r.try_claim_play(&a, "uuid-main", "Main").err().unwrap();
+        assert_eq!(again.code(), "instance.accountPlaying");
+        assert_eq!(again.params()["account"], "Main");
+        // Content changes and repairs wait until every game has closed.
+        assert_eq!(r.try_claim(&a).err().unwrap().code(), "instance.busy");
+        drop(main);
+        assert!(r.is_running(&a.id));
+        assert_eq!(r.try_claim(&a).err().unwrap().code(), "instance.busy");
+        drop(afk);
+        assert!(!r.is_running(&a.id));
+        // An exclusive operation keeps games out.
+        let repair = r.try_claim(&a).unwrap();
+        assert_eq!(
+            r.try_claim_play(&a, "uuid-main", "Main")
+                .err()
+                .unwrap()
+                .code(),
+            "instance.busy"
+        );
+        drop(repair);
+        assert!(r.try_claim_play(&a, "uuid-main", "Main").is_ok());
     }
 
     #[test]

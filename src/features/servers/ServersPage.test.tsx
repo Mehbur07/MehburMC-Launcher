@@ -20,6 +20,7 @@ vi.mock("../../lib/ipc", async (orig) => ({
 import "../../i18n";
 import { applyLanguage } from "../../i18n";
 import type { ServerStatus } from "../../lib/ipc/bindings/ServerStatus";
+import { useAccounts } from "../../stores/accounts";
 import { useApp } from "../../stores/app";
 import { useInstances } from "../../stores/instances";
 import { addressKey, useServers } from "../../stores/servers";
@@ -93,8 +94,14 @@ describe("ServersPage", () => {
     await waitFor(() => expect(useApp.getState().view).toBe("home"));
   });
 
-  it("disables joining while the profile is busy", async () => {
-    useTasks.setState({ tasks: { t: task({ id: "t", instanceId: "i1", status: "playing" }) } });
+  it("disables joining while the selected account plays the profile", async () => {
+    useAccounts.setState({
+      accounts: [{ id: "a", kind: "offline", name: "Steve", uuid: "u", addedAt: 1 }],
+      selected: "a",
+    });
+    useTasks.setState({
+      tasks: { t: task({ id: "t", instanceId: "i1", status: "playing", account: "Steve" }) },
+    });
     render(<ServersPage />);
     const row = (await screen.findByText("Hypixel")).closest("li")!;
     expect(within(row).getByRole("button", { name: /Game running/ })).toBeDisabled();
@@ -102,6 +109,23 @@ describe("ServersPage", () => {
     // No delete button for the game list while running.
     const local = (await screen.findByText("Local")).closest("li")!;
     expect(within(local).queryByRole("button", { name: "Remove" })).toBeNull();
+  });
+
+  it("lets another account join while an AFK account plays the profile", async () => {
+    useAccounts.setState({
+      accounts: [{ id: "a", kind: "offline", name: "Steve", uuid: "u", addedAt: 1 }],
+      selected: "a",
+    });
+    useTasks.setState({
+      tasks: { t: task({ id: "t", instanceId: "i1", status: "playing", account: "AfkBot" }) },
+    });
+    ipcMock.joinServer.mockResolvedValue("task-2");
+    render(<ServersPage />);
+    const row = (await screen.findByText("Hypixel")).closest("li")!;
+    fireEvent.click(within(row).getByRole("button", { name: /Join/ }));
+    await waitFor(() => expect(ipcMock.joinServer).toHaveBeenCalledWith("i1", "mc.hypixel.net"));
+    // The game's own server list stays locked while any game runs.
+    expect(screen.getByText(/cannot be changed while the game is running/)).toBeInTheDocument();
   });
 
   it("stars a game-list server into favourites", async () => {

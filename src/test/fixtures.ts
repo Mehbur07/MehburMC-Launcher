@@ -28,6 +28,7 @@ export function task(over: Partial<TaskInfo> = {}): TaskInfo {
     kind: "launch",
     instanceId: "pack-1",
     title: "My Pack",
+    account: null,
     status: "preparing",
     stage: null,
     done: 0,

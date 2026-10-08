@@ -132,12 +132,20 @@ impl Launcher {
             // Repair never starts the game; any identity will do.
             StartMode::Repair => crate::auth::LaunchAccount::offline("Player")?,
         };
-        let claim = self.running.try_claim(&inst)?;
+        let claim = match mode {
+            StartMode::Play => self
+                .running
+                .try_claim_play(&inst, &account.uuid, &account.name)?,
+            StartMode::Repair => self.running.try_claim(&inst)?,
+        };
         let kind = match mode {
             StartMode::Play => TaskKind::Launch,
             StartMode::Repair => TaskKind::Repair,
         };
         let (task_id, cancel) = self.tasks.create(kind, &inst.name, Some(&inst.id));
+        if mode == StartMode::Play {
+            self.tasks.set_account(&task_id, &account.name);
+        }
 
         let mut opts = LaunchOptions {
             // Filled in once the loader is installed.

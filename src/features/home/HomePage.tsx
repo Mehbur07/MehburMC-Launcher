@@ -1,9 +1,10 @@
 import { Clock, MemoryStick, Play, Plus, Square, SquareTerminal, Timer, X } from "lucide-react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { InstanceIcon } from "../../components/InstanceIcon";
 import { Badge, Button, IconButton, ProgressBar } from "../../components/ui";
-import { play, stop } from "../../lib/actions";
+import { play, stopTask } from "../../lib/actions";
 import { formatBytes, formatDate, formatDuration } from "../../lib/format";
 import { ipc } from "../../lib/ipc";
 import { selectedAccount, useAccounts } from "../../stores/accounts";
@@ -11,7 +12,7 @@ import { useFriends } from "../../stores/friends";
 import { useApp } from "../../stores/app";
 import { selectedInstance, useInstances } from "../../stores/instances";
 import { accountSkin, useSkins } from "../../stores/skins";
-import { activeTaskFor, fraction, useTasks } from "../../stores/tasks";
+import { activeTasksFor, fraction, useTasks } from "../../stores/tasks";
 import { loaderLabel, usePlayTimeUnits } from "../instances/loaderLabels";
 import { Avatar } from "../../components/Avatar";
 import { NewsFeed } from "./NewsFeed";
@@ -31,7 +32,15 @@ export function HomePage() {
   const setView = useApp((s) => s.setView);
   const setWizard = useApp((s) => s.setWizard);
   const openConsole = useApp((s) => s.openConsole);
-  const task = useTasks((s) => activeTaskFor(s.tasks, inst?.id ?? null));
+  const allTasks = useTasks((s) => s.tasks);
+  const tasks = useMemo(() => activeTasksFor(allTasks, inst?.id ?? null), [allTasks, inst?.id]);
+  // Repairs/installs own the instance; a game belongs to one account, and
+  // other accounts may still start the same instance (K76).
+  const task =
+    tasks.find((x) => x.kind !== "launch") ??
+    tasks.find((x) => account !== null && x.account === account.name) ??
+    null;
+  const others = tasks.filter((x) => x.kind === "launch" && x !== task);
 
   if (!inst) {
     return (
@@ -55,6 +64,7 @@ export function HomePage() {
   const memoryMb = inst.memoryMb ?? defaultMem;
   const preparing = task?.status === "preparing";
   const playing = task?.status === "playing";
+  const anyPlaying = tasks.some((x) => x.status === "playing");
 
   return (
     <div className="flex flex-col gap-5">
@@ -70,7 +80,7 @@ export function HomePage() {
               <div className="flex flex-wrap items-center gap-1.5">
                 <Badge tone="accent">{inst.mcVersion}</Badge>
                 <Badge>{loaderLabel(inst.loader.kind)}</Badge>
-                {playing && <Badge tone="success">{t("home.running")}</Badge>}
+                {anyPlaying && <Badge tone="success">{t("home.running")}</Badge>}
               </div>
               <h1
                 className="mt-2 truncate font-display text-4xl font-bold tracking-wide"
@@ -114,11 +124,11 @@ export function HomePage() {
               {account ? account.name : t("home.noAccount")}
             </button>
 
-            {playing ? (
+            {playing && task ? (
               <Button
                 variant="danger"
                 className="py-4 font-brand text-lg tracking-[0.15em]"
-                onClick={() => void stop(inst.id)}
+                onClick={() => void stopTask(task.id)}
               >
                 <Square size={18} fill="currentColor" />
                 {t("home.stop")}
@@ -161,7 +171,37 @@ export function HomePage() {
                 {t("home.addAccount")}
               </Button>
             )}
-            {task && (
+            {others.length > 0 && (
+              <ul className="flex flex-col gap-1.5" aria-label={t("home.otherGames")}>
+                {others.map((o) => (
+                  <li
+                    key={o.id}
+                    className="flex items-center gap-2 rounded-md border border-line bg-surface-2/70 px-2.5 py-1.5 text-xs"
+                  >
+                    <span
+                      className={`size-2 shrink-0 rounded-full ${o.status === "playing" ? "bg-success" : "animate-pulse bg-accent"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate font-semibold">
+                      {o.account ?? "?"}
+                    </span>
+                    <span className="text-muted">
+                      {o.status === "playing" ? t("home.running") : t("home.preparing")}
+                    </span>
+                    <IconButton
+                      label={t("home.stopFor", { name: o.account ?? "" })}
+                      className="h-6 w-6 hover:text-danger"
+                      onClick={() => void stopTask(o.id)}
+                    >
+                      <Square size={12} fill="currentColor" />
+                    </IconButton>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {anyPlaying && !task && (
+              <p className="text-right text-[11px] text-muted">{t("home.anotherAccountHint")}</p>
+            )}
+            {tasks.length > 0 && (
               <Button size="sm" variant="ghost" onClick={() => openConsole(inst.id)}>
                 <SquareTerminal size={14} />
                 {t("home.showConsole")}

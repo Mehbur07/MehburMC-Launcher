@@ -57,6 +57,28 @@ export const useTasks = create<TasksStore>((set) => ({
 
 export const isActive = (t: TaskInfo) => t.status === "preparing" || t.status === "playing";
 
+/** Every active task of an instance (several accounts may play it at once). */
+export function activeTasksFor(tasks: Record<string, TaskInfo>, instanceId: string | null) {
+  if (!instanceId) return [];
+  return Object.values(tasks)
+    .filter((t) => t.instanceId === instanceId && isActive(t))
+    .sort((a, b) => a.startedAt - b.startedAt);
+}
+
+/**
+ * Whether `account` cannot start the instance now: a repair/install owns
+ * it, or that account already plays it (other accounts may join, K76).
+ */
+export function playBlocked(
+  tasks: Record<string, TaskInfo>,
+  instanceId: string | null,
+  account: string | null,
+) {
+  return activeTasksFor(tasks, instanceId).some(
+    (t) => t.kind !== "launch" || (account !== null && t.account === account),
+  );
+}
+
 /** Active task for an instance, if any. */
 export function activeTaskFor(tasks: Record<string, TaskInfo>, instanceId: string | null) {
   if (!instanceId) return null;

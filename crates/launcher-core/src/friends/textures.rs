@@ -538,7 +538,13 @@ mod tests {
         assert_eq!(list.len(), 2);
         assert!(list[0].hidden);
         assert_eq!(list[0].owner, FRIEND);
-        assert!(list[0].data_uri.as_deref().unwrap().starts_with("data:image/png;base64,"));
+        assert!(
+            list[0]
+                .data_uri
+                .as_deref()
+                .unwrap()
+                .starts_with("data:image/png;base64,")
+        );
         assert!(list[1].data_uri.is_none());
     }
 

@@ -124,6 +124,9 @@ pub enum CoreError {
     #[error("instance {name} is busy (running or being prepared)")]
     InstanceBusy { name: String },
 
+    #[error("account {account} is already playing this instance")]
+    AccountPlaying { account: String },
+
     #[error("invalid instance: {0}")]
     InvalidInstance(String),
 
@@ -237,6 +240,7 @@ impl CoreError {
             Self::Spawn { .. } => "launch.spawnFailed",
             Self::InstanceNotFound(_) => "instance.notFound",
             Self::InstanceBusy { .. } => "instance.busy",
+            Self::AccountPlaying { .. } => "instance.accountPlaying",
             Self::InvalidInstance(_) => "instance.invalid",
             Self::NoAccount => "account.none",
             Self::AccountNotFound(_) => "account.notFound",
@@ -321,6 +325,7 @@ impl CoreError {
             Self::Spawn { program, .. } => put("path", program.display().to_string()),
             Self::InstanceNotFound(id) | Self::AccountNotFound(id) => put("id", id.clone()),
             Self::InstanceBusy { name } => put("name", name.clone()),
+            Self::AccountPlaying { account } => put("account", account.clone()),
             Self::InvalidInstance(reason) => put("reason", reason.clone()),
             Self::LoaderUnavailable { loader, mc } => {
                 put("loader", loader.clone());

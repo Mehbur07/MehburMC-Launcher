@@ -4,4 +4,9 @@ import type { Stage } from "./Stage";
 import type { TaskKind } from "./TaskKind";
 import type { TaskStatus } from "./TaskStatus";
 
-export type TaskInfo = { id: string, kind: TaskKind, instanceId: string | null, title: string, status: TaskStatus, stage: Stage | null, done: number, total: number, bytesDone: number, bytesTotal: number, error: ErrorPayload | null, startedAt: number, finishedAt: number | null, };
+export type TaskInfo = { id: string, kind: TaskKind, instanceId: string | null, title: string, 
+/**
+ * Account name a game task plays with (several accounts may play one
+ * instance at once).
+ */
+account: string | null, status: TaskStatus, stage: Stage | null, done: number, total: number, bytesDone: number, bytesTotal: number, error: ErrorPayload | null, startedAt: number, finishedAt: number | null, };
