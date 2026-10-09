@@ -142,6 +142,9 @@ açıkken mod ekleme/silme ve onarım kilitlidir. İki oyun için yeterli RAM'in
 - **Hazırlar**: oyunun varsayılan skinleri (Steve, Alex… — kurulu bir sürümün oyun dosyasından
   okunur) ve launcher'ın özgün koleksiyonu: **104 skin, 104 pelerin**. Üstteki kutuyla adına göre
   ara; liste ilk 24 tasarımla açılır, **Tümünü göster** ile hepsi görünür. Tıkla önizle, **+** ile kütüphaneye ekle.
+- **Hazırlar → SkinMC**: skinmc.net'teki skinler. Sıralama seç (en yeni, bugün, bu hafta, bu ay,
+  rastgele) ya da etiket ara (ör. `cat`, `ninja`); **Daha fazla yükle** ile sonraki sayfa gelir.
+  Skinler yaptıkları kişilere aittir; launcher yalnızca baktığın sayfayı indirir.
 - **Tasarla**: kendi skin'ini (64×64) veya pelerinini (64×32) çiz; soldaki 3B önizleme anında
   güncellenir. Araçlar: kalem (B), silgi (E), kova (G), damlalık (I), çizgi (L), ayna modu (M);
   sağ tık siler, Alt+tık renk alır, Ctrl+Z / Ctrl+Y geri/ileri alır. **Katman** ile yalnızca

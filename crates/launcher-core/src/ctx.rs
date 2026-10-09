@@ -28,6 +28,8 @@ pub struct Endpoints {
     pub launcher_content: String,
     /// MehburMC friends service (Supabase project URL).
     pub friends: String,
+    /// SkinMC skin gallery (K78).
+    pub skinmc: String,
 }
 
 impl Default for Endpoints {
@@ -47,6 +49,7 @@ impl Default for Endpoints {
             curseforge: "https://api.curseforge.com".into(),
             launcher_content: "https://launchercontent.mojang.com".into(),
             friends: "https://rcaifwsiutoxilpkceht.supabase.co".into(),
+            skinmc: "https://skinmc.net".into(),
         }
     }
 }

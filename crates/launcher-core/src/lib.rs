@@ -32,6 +32,7 @@ pub mod servers;
 pub mod session;
 pub mod settings;
 pub mod skin;
+pub mod skinmc;
 pub mod state;
 pub mod tasks;
 pub mod version;

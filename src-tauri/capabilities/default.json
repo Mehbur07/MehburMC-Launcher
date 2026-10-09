@@ -135,6 +135,7 @@
     "allow-admin-set-texture-grant",
     "allow-sync-private-textures",
     "allow-list-news",
+    "allow-skinmc-browse",
     "allow-analyze-crash-report",
     "allow-open-data-file",
     "allow-move-data-folder",

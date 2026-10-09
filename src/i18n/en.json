@@ -254,6 +254,10 @@
       "targetAdmin": "Admins cannot be banned and the founder's rank cannot change.",
       "userNotFound": "User not found (email accounts only).",
       "badUntil": "Invalid ban duration."
+    },
+    "skinmc": {
+      "badTag": "This tag cannot be searched; use letters or digits.",
+      "badLink": "Invalid SkinMC page link; refresh the list."
     }
   },
   "instances": {
@@ -872,7 +876,32 @@
       "submit": "Report",
       "thanks": "Thanks, your report was received."
     },
-    "private": "Private MehburMC texture — given to you only, cannot be shared."
+    "private": "Private MehburMC texture — given to you only, cannot be shared.",
+    "skinmc": {
+      "source": "Skin source",
+      "sources": {
+        "mehbur": "MehburMC",
+        "skinmc": "SkinMC"
+      },
+      "hint": "Skins from skinmc.net; each belongs to the person who made it. The launcher only downloads the page you look at. Click to preview, + to add to your library.",
+      "sort": {
+        "latest": "Newest",
+        "today": "Today",
+        "week": "This week",
+        "month": "This month",
+        "random": "Random"
+      },
+      "tag": "Tag",
+      "tagPlaceholder": "Search a tag (e.g. cat, ninja, girl)…",
+      "search": "Search",
+      "clearTag": "Clear tag",
+      "tagged": "Skins tagged \"{{tag}}\"",
+      "by": "{{name}} (SkinMC)",
+      "unnamed": "SkinMC skin",
+      "more": "Load more",
+      "empty": "No skins found",
+      "unavailable": "SkinMC could not be reached."
+    }
   },
   "crash": {
     "title": "{{name}} crashed",

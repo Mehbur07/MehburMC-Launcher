@@ -254,6 +254,10 @@
       "targetAdmin": "Adminler banlanamaz ve kurucunun rütbesi değiştirilemez.",
       "userNotFound": "Kullanıcı bulunamadı (yalnızca e-postalı hesaplar).",
       "badUntil": "Geçersiz ban süresi."
+    },
+    "skinmc": {
+      "badTag": "Bu etiket aranamaz; harf veya rakam kullan.",
+      "badLink": "SkinMC sayfa bağlantısı geçersiz; listeyi yenile."
     }
   },
   "instances": {
@@ -872,7 +876,32 @@
       "submit": "Bildir",
       "thanks": "Teşekkürler, bildirimin alındı."
     },
-    "private": "Özel MehburMC dokusu — yalnızca sana verildi, paylaşılamaz."
+    "private": "Özel MehburMC dokusu — yalnızca sana verildi, paylaşılamaz.",
+    "skinmc": {
+      "source": "Skin kaynağı",
+      "sources": {
+        "mehbur": "MehburMC",
+        "skinmc": "SkinMC"
+      },
+      "hint": "skinmc.net'teki skinler; her biri onu yapan kişiye aittir. Launcher yalnızca baktığın sayfayı indirir. Tıkla önizle, + ile kütüphanene ekle.",
+      "sort": {
+        "latest": "En yeni",
+        "today": "Bugün",
+        "week": "Bu hafta",
+        "month": "Bu ay",
+        "random": "Rastgele"
+      },
+      "tag": "Etiket",
+      "tagPlaceholder": "Etiket ara (ör. cat, ninja, girl)…",
+      "search": "Ara",
+      "clearTag": "Etiketi temizle",
+      "tagged": "\"{{tag}}\" etiketli skinler",
+      "by": "{{name}} (SkinMC)",
+      "unnamed": "SkinMC skini",
+      "more": "Daha fazla yükle",
+      "empty": "Skin bulunamadı",
+      "unavailable": "SkinMC'ye ulaşılamadı."
+    }
   },
   "crash": {
     "title": "{{name}} çöktü",

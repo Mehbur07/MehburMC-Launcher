@@ -58,6 +58,8 @@ import type { ManifestEntry } from "./bindings/ManifestEntry";
 import type { MoveProgress } from "./bindings/MoveProgress";
 import type { NewInstance } from "./bindings/NewInstance";
 import type { NewsItem } from "./bindings/NewsItem";
+import type { SkinMcPage } from "./bindings/SkinMcPage";
+import type { SkinMcSort } from "./bindings/SkinMcSort";
 import type { OptifineInfo } from "./bindings/OptifineInfo";
 import type { PickPurpose } from "./bindings/PickPurpose";
 import type { ProjectType } from "./bindings/ProjectType";
@@ -267,6 +269,9 @@ export const ipc = {
   exportSkin: (id: string) => invoke<void>("export_skin", { id }),
 
   listNews: () => invoke<NewsItem[]>("list_news"),
+  /** One page of skinmc.net skins: by sort, by tag, or the page after `next` (K78). */
+  skinmcBrowse: (sort: SkinMcSort, tag: string | null, next: string | null) =>
+    invoke<SkinMcPage>("skinmc_browse", { sort, tag, next }),
   analyzeCrashReport: (id: string, name: string) =>
     invoke<CrashInfo>("analyze_crash_report", { id, name }),
   openDataFile: (path: string) => invoke<void>("open_data_file", { path }),

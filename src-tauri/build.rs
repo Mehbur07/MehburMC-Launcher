@@ -123,6 +123,7 @@ const COMMANDS: &[&str] = &[
     "admin_set_texture_grant",
     "sync_private_textures",
     "list_news",
+    "skinmc_browse",
     "analyze_crash_report",
     "open_data_file",
     "move_data_folder",

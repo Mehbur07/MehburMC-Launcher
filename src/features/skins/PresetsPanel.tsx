@@ -17,6 +17,7 @@ import { useApp } from "../../stores/app";
 import { useAuth } from "../../stores/auth";
 import { useCommunity } from "../../stores/community";
 import { ReportDialog, VisibilityIcon } from "./ShareDialogs";
+import { SkinMcSection } from "./SkinMcSection";
 import { CapeThumb, SkinThumb } from "./SkinThumb";
 
 /** Collection items shown before "Show all". */
@@ -100,6 +101,8 @@ export function PresetsPanel({
   // The original presets, then the phase 22 collection (K75) and the
   // catalogue (K77). Over 100 items per kind: only the visible ones are drawn.
   const [query, setQuery] = useState("");
+  // Skins can also come from skinmc.net (K78).
+  const [source, setSource] = useState<"mehbur" | "skinmc">("mehbur");
   const [showAll, setShowAll] = useState(false);
   const collection = useMemo<Drawable[]>(() => {
     const entry = (
@@ -253,85 +256,113 @@ export function PresetsPanel({
     </div>
   );
 
+  const showSkinMc = kind === "skin" && source === "skinmc";
+
   return (
     <div className="flex flex-col gap-4">
-      <section className="flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold">{t("skins.community.title")}</h3>
-          <Badge tone="accent">{community.length}</Badge>
-          <IconButton
-            label={t("common.refresh")}
-            className="ml-auto h-7 w-7"
-            disabled={communityLoading}
-            onClick={() => void loadCommunity()}
-          >
-            <RefreshCw size={13} className={communityLoading ? "animate-spin" : ""} />
-          </IconButton>
-        </div>
-        <p className="text-xs text-muted">{t("skins.community.hint")}</p>
-        {reported && (
-          <p role="status" className="text-xs text-success">
-            {t("skins.report.thanks")}
-          </p>
-        )}
-        {communityError && shares === null ? (
-          <div className="flex items-center gap-2 text-xs text-danger">
-            {communityError.code === "friends.server"
-              ? t("skins.community.unavailable")
-              : t(`errors.${communityError.code}`, {
-                  ...communityError.params,
-                  defaultValue: t("skins.community.unavailable"),
-                })}
-            <Button size="sm" onClick={() => void loadCommunity()}>
-              {t("common.retry")}
-            </Button>
-          </div>
-        ) : shares === null ? (
-          <p className="text-xs text-muted">{t("common.loading")}</p>
-        ) : community.length === 0 ? (
-          <p className="text-xs text-muted">{t("skins.community.empty")}</p>
-        ) : (
-          grid(community)
-        )}
-      </section>
       {kind === "skin" && (
-        <section className="flex flex-col gap-2">
-          <h3 className="text-sm font-semibold">{t("skins.presets.gameDefaults")}</h3>
-          {defaults === null ? (
-            <p className="text-xs text-muted">{t("common.loading")}</p>
-          ) : game.length === 0 ? (
-            <p className="text-xs text-muted">{t("skins.presets.noDefaults")}</p>
-          ) : (
-            <>
-              <p className="text-xs text-muted">
-                {t("skins.presets.gameDefaultsHint", { version: defaults[0]?.source ?? "" })}
-              </p>
-              {grid(game)}
-            </>
-          )}
-        </section>
+        <div className="flex gap-1.5" role="group" aria-label={t("skins.skinmc.source")}>
+          {(["mehbur", "skinmc"] as const).map((s) => (
+            <Button
+              key={s}
+              size="sm"
+              variant={source === s ? "primary" : "ghost"}
+              aria-pressed={source === s}
+              onClick={() => setSource(s)}
+            >
+              {t(`skins.skinmc.sources.${s}`)}
+            </Button>
+          ))}
+        </div>
       )}
-      <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold">{t("skins.presets.collection")}</h3>
-        <p className="text-xs text-muted">{t("skins.presets.collectionHint")}</p>
-        <TextInput
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("skins.presets.search")}
-          aria-label={t("skins.presets.search")}
-          className="max-w-72"
-        />
-        {ours.length === 0 ? (
-          <p className="text-xs text-muted">{t("skins.presets.noMatch")}</p>
-        ) : (
-          grid(ours)
-        )}
-        {!q && !showAll && matching.length > FIRST_ITEMS && (
-          <Button size="sm" variant="ghost" className="self-start" onClick={() => setShowAll(true)}>
-            {t("skins.presets.showAll", { count: matching.length })}
-          </Button>
-        )}
-      </section>
+      {showSkinMc ? (
+        <SkinMcSection grid={grid} />
+      ) : (
+        <>
+          <section className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold">{t("skins.community.title")}</h3>
+              <Badge tone="accent">{community.length}</Badge>
+              <IconButton
+                label={t("common.refresh")}
+                className="ml-auto h-7 w-7"
+                disabled={communityLoading}
+                onClick={() => void loadCommunity()}
+              >
+                <RefreshCw size={13} className={communityLoading ? "animate-spin" : ""} />
+              </IconButton>
+            </div>
+            <p className="text-xs text-muted">{t("skins.community.hint")}</p>
+            {reported && (
+              <p role="status" className="text-xs text-success">
+                {t("skins.report.thanks")}
+              </p>
+            )}
+            {communityError && shares === null ? (
+              <div className="flex items-center gap-2 text-xs text-danger">
+                {communityError.code === "friends.server"
+                  ? t("skins.community.unavailable")
+                  : t(`errors.${communityError.code}`, {
+                      ...communityError.params,
+                      defaultValue: t("skins.community.unavailable"),
+                    })}
+                <Button size="sm" onClick={() => void loadCommunity()}>
+                  {t("common.retry")}
+                </Button>
+              </div>
+            ) : shares === null ? (
+              <p className="text-xs text-muted">{t("common.loading")}</p>
+            ) : community.length === 0 ? (
+              <p className="text-xs text-muted">{t("skins.community.empty")}</p>
+            ) : (
+              grid(community)
+            )}
+          </section>
+          {kind === "skin" && (
+            <section className="flex flex-col gap-2">
+              <h3 className="text-sm font-semibold">{t("skins.presets.gameDefaults")}</h3>
+              {defaults === null ? (
+                <p className="text-xs text-muted">{t("common.loading")}</p>
+              ) : game.length === 0 ? (
+                <p className="text-xs text-muted">{t("skins.presets.noDefaults")}</p>
+              ) : (
+                <>
+                  <p className="text-xs text-muted">
+                    {t("skins.presets.gameDefaultsHint", { version: defaults[0]?.source ?? "" })}
+                  </p>
+                  {grid(game)}
+                </>
+              )}
+            </section>
+          )}
+          <section className="flex flex-col gap-2">
+            <h3 className="text-sm font-semibold">{t("skins.presets.collection")}</h3>
+            <p className="text-xs text-muted">{t("skins.presets.collectionHint")}</p>
+            <TextInput
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("skins.presets.search")}
+              aria-label={t("skins.presets.search")}
+              className="max-w-72"
+            />
+            {ours.length === 0 ? (
+              <p className="text-xs text-muted">{t("skins.presets.noMatch")}</p>
+            ) : (
+              grid(ours)
+            )}
+            {!q && !showAll && matching.length > FIRST_ITEMS && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="self-start"
+                onClick={() => setShowAll(true)}
+              >
+                {t("skins.presets.showAll", { count: matching.length })}
+              </Button>
+            )}
+          </section>
+        </>
+      )}
 
       <ReportDialog
         item={reporting}

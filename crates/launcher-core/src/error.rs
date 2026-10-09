@@ -184,6 +184,10 @@ pub enum CoreError {
     #[error("friends service error (HTTP {status}): {reason}")]
     FriendsServer { status: u16, reason: String },
 
+    /// SkinMC browsing (`skinmc.badTag`, `skinmc.badLink`).
+    #[error("skinmc: {0}")]
+    SkinMc(&'static str),
+
     #[error("invalid server address: {0}")]
     ServerAddressInvalid(String),
 
@@ -256,7 +260,7 @@ impl CoreError {
             Self::SkinInvalid(_) => "skin.invalid",
             Self::SkinNotFound(_) => "skin.notFound",
             Self::DataMove(_) => "paths.moveFailed",
-            Self::Friends(code) => code,
+            Self::Friends(code) | Self::SkinMc(code) => code,
             Self::FriendsServer { .. } => "friends.server",
             Self::ServerAddressInvalid(_) => "server.addressInvalid",
             Self::ServerNotFound(_) => "server.notFound",
@@ -366,7 +370,8 @@ impl CoreError {
             | Self::Cancelled
             | Self::NoAccount
             | Self::CurseForgeKey
-            | Self::Friends(_) => {}
+            | Self::Friends(_)
+            | Self::SkinMc(_) => {}
         }
         p
     }

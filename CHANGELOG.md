@@ -3,6 +3,14 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.17.0] — 2026-10-09
+
+### Eklendi
+- **SkinMC:** Skin & Cape → Hazırlar'da yeni **SkinMC** bölümü. skinmc.net'teki skinlere launcher'dan
+  göz at: en yeni, bugünün, bu haftanın, bu ayın veya rastgele skinler; etiketle ara (ör. cat, ninja);
+  **Daha fazla yükle** ile sayfa sayfa devam et. Tıkla önizle, **+** ile kütüphanene ekle. Her skin
+  yapan kişinin adıyla gösterilir.
+
 ## [0.16.0] — 2026-10-08
 
 ### Eklendi

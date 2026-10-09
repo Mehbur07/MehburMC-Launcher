@@ -183,6 +183,7 @@ pub fn run() {
             admin::admin_set_texture_grant,
             auth::sync_private_textures,
             home::list_news,
+            home::skinmc_browse,
             home::analyze_crash_report,
             home::open_data_file,
             data::move_data_folder,

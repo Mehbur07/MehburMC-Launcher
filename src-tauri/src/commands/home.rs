@@ -1,9 +1,10 @@
-//! Home screen extras: news and crash analysis.
+//! Home screen extras: news, crash analysis and the SkinMC gallery.
 
 use launcher_core::CoreError;
 use launcher_core::crash::{self, CrashInfo};
 use launcher_core::instance::files::{self, Folder};
 use launcher_core::news::{self, NewsItem};
+use launcher_core::skinmc::{self, SkinMcPage, SkinMcSort};
 use tauri::{AppHandle, State};
 
 use super::{CmdResult, blocking, open_path};
@@ -14,6 +15,18 @@ use crate::state::AppState;
 pub async fn list_news(state: State<'_, AppState>) -> CmdResult<Vec<NewsItem>> {
     let launcher = state.launcher()?.clone();
     Ok(news::java_news(&launcher.ctx).await)
+}
+
+/// One page of the SkinMC gallery (K78): by sort, by tag, or the next page.
+#[tauri::command]
+pub async fn skinmc_browse(
+    state: State<'_, AppState>,
+    sort: SkinMcSort,
+    tag: Option<String>,
+    next: Option<String>,
+) -> CmdResult<SkinMcPage> {
+    let launcher = state.launcher()?.clone();
+    Ok(skinmc::browse(&launcher.ctx, sort, tag.as_deref(), next.as_deref()).await?)
 }
 
 /// Diagnoses a crash report from the instance's `crash-reports/` folder.

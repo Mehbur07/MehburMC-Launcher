@@ -42,6 +42,9 @@ const DEFAULT_RULES: &[(&str, Option<&str>)] = &[
     ("rcaifwsiutoxilpkceht.supabase.co", Some("/auth/v1/")),
     ("rcaifwsiutoxilpkceht.supabase.co", Some("/rest/v1/")),
     ("rcaifwsiutoxilpkceht.supabase.co", Some("/storage/v1/")),
+    // SkinMC gallery: list pages and skin PNGs only (K78)
+    ("skinmc.net", Some("/skins")),
+    ("skinmc.net", Some("/api/v1/renders/skins/")),
     // Adoptium (binaries are GitHub release assets)
     ("api.adoptium.net", None),
     ("objects.githubusercontent.com", None),
