@@ -1,15 +1,15 @@
 {
-  "version": "0.17.1",
-  "notes": "### Değişti\n- Launcher artık `%LOCALAPPDATA%`'ya hiçbir şey yazmıyor; her şey `%APPDATA%\\MehburMC` altında.\n  Program `%APPDATA%\\MehburMC\\app`'e kuruluyor, arayüzün tarayıcı verisi `game\\mc\\cache\\webview`'da.\n  Güncelleme eski kurulumu ve verisini otomatik taşır, Local'deki klasörleri siler, kısayolları düzeltir.",
-  "pub_date": "2026-10-14T12:13:08Z",
+  "version": "0.17.2",
+  "notes": "### Düzeltildi\n- 0.17.1 güncellemesinden sonra masaüstü ve Başlat menüsü kısayollarının simgesi boş görünüyordu;\n  kısayollar artık simgesiyle birlikte yeni yere yönlendiriliyor.",
+  "pub_date": "2026-10-14T15:56:21Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUh6b2pwbHFjWG1lTWJFM3F3bU5uaGFRc2RNc3k0UE1GRzQrbnRDOXd1OGdHN1N5aU5iYTRIQ3lCUW1LSklidHkwcUw1RG1PaWZPYXdHL0lKVmNuU1EwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxOTc5ODM5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xNy4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE3LjEKY29CeXBwWFB5dVZiak5lNGsxSXZYY000NGEyNlQydDRYWmV6VFBMNlk3NUNGNmo3SC9VdkRRdmQ0OTN6WXI2eTd4L0N2UFB1eTVjQmVuRTE2MTFCRGc9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.17.1/MehburMC-Launcher_0.17.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUhoN1RLMmtoajU0Zk9JR3hkNmpGeEM2bTZUTGlBMUMvQkI4UVNaMUlXWUZtZVdvTEozTFpNMmQ5TVVGVURJNmZZRUEwRnIvN1NkUXhlSXFqZ2E0cmdNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxOTkzMzU4CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xNy4yX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE3LjIKSTlvYWJGa0wwQWh5ZnNJVzBKV2VTWldNcExmUnBUck90aGpYempsMjdBK3lCdU40SWJwQWsyRWZBUTN5MFZCR2RPZHhsUC9qVTBVTDJzdFlPZ0pWREE9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.17.2/MehburMC-Launcher_0.17.2_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUh6b2pwbHFjWG1lTWJFM3F3bU5uaGFRc2RNc3k0UE1GRzQrbnRDOXd1OGdHN1N5aU5iYTRIQ3lCUW1LSklidHkwcUw1RG1PaWZPYXdHL0lKVmNuU1EwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxOTc5ODM5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xNy4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE3LjEKY29CeXBwWFB5dVZiak5lNGsxSXZYY000NGEyNlQydDRYWmV6VFBMNlk3NUNGNmo3SC9VdkRRdmQ0OTN6WXI2eTd4L0N2UFB1eTVjQmVuRTE2MTFCRGc9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.17.1/MehburMC-Launcher_0.17.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUhoN1RLMmtoajU0Zk9JR3hkNmpGeEM2bTZUTGlBMUMvQkI4UVNaMUlXWUZtZVdvTEozTFpNMmQ5TVVGVURJNmZZRUEwRnIvN1NkUXhlSXFqZ2E0cmdNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxOTkzMzU4CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xNy4yX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE3LjIKSTlvYWJGa0wwQWh5ZnNJVzBKV2VTWldNcExmUnBUck90aGpYempsMjdBK3lCdU40SWJwQWsyRWZBUTN5MFZCR2RPZHhsUC9qVTBVTDJzdFlPZ0pWREE9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.17.2/MehburMC-Launcher_0.17.2_x64-setup.exe"
     }
   }
 }
