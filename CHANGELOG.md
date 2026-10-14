@@ -3,6 +3,13 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.17.1] — 2026-10-14
+
+### Değişti
+- Launcher artık `%LOCALAPPDATA%`'ya hiçbir şey yazmıyor; her şey `%APPDATA%\MehburMC` altında.
+  Program `%APPDATA%\MehburMC\app`'e kuruluyor, arayüzün tarayıcı verisi `game\mc\cache\webview`'da.
+  Güncelleme eski kurulumu ve verisini otomatik taşır, Local'deki klasörleri siler, kısayolları düzeltir.
+
 ## [0.17.0] — 2026-10-09
 
 ### Eklendi

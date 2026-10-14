@@ -253,10 +253,26 @@ impl Paths {
     pub fn logs(&self) -> PathBuf {
         self.content.join("logs")
     }
-    /// WebView2 user data folder used in portable mode.
+    /// WebView2 user data folder (K5: always inside the data folder).
     pub fn webview_data(&self) -> PathBuf {
         self.cache().join("webview")
     }
+}
+
+/// Moves the WebView2 profile Tauri used to keep in `%LOCALAPPDATA%<id>`
+/// (before K79) into `new_root`, then drops the emptied old folder. Best
+/// effort: a locked or cross-drive profile is left alone and a fresh one is
+/// created. Returns true when the old profile was moved.
+pub fn adopt_legacy_webview(old_root: &Path, new_root: &Path) -> bool {
+    const PROFILE: &str = "EBWebView";
+    let (old, new) = (old_root.join(PROFILE), new_root.join(PROFILE));
+    let moved = old.is_dir()
+        && !new.exists()
+        && fs::create_dir_all(new_root).is_ok()
+        && fs::rename(&old, &new).is_ok();
+    // Only removes the folder when nothing else is left in it.
+    let _ = fs::remove_dir(old_root);
+    moved
 }
 
 fn read_redirect(path: &Path) -> Result<Option<PathBuf>> {
@@ -372,5 +388,23 @@ mod tests {
             .unwrap();
         let err = Paths::from_root(root, DataMode::Standard).unwrap_err();
         assert_eq!(err.code(), "paths.invalidRedirect");
+    }
+
+    #[test]
+    fn legacy_webview_profile_moves_once() {
+        let tmp = tempfile::tempdir().unwrap();
+        let old = tmp.path().join("local/com.mehbur.mclauncher");
+        let new = tmp.path().join("mc/cache/webview");
+        fs::create_dir_all(old.join("EBWebView/Default")).unwrap();
+        fs::write(old.join("EBWebView/Default/Local State"), b"x").unwrap();
+
+        assert!(adopt_legacy_webview(&old, &new));
+        assert_eq!(fs::read(new.join("EBWebView/Default/Local State")).unwrap(), b"x");
+        assert!(!old.exists());
+        // Nothing left to move; an existing profile is never overwritten.
+        assert!(!adopt_legacy_webview(&old, &new));
+        fs::create_dir_all(old.join("EBWebView")).unwrap();
+        assert!(!adopt_legacy_webview(&old, &new));
+        assert!(old.join("EBWebView").is_dir());
     }
 }

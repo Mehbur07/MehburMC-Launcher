@@ -27,7 +27,7 @@ Minecraft'a **offline hesaplarla** girer; launcher'ın kendisi için ücretsiz b
 
 | | Kurulum (`…_x64-setup.exe`) | Portable (`…_x64-portable.zip`) |
 |---|---|---|
-| Nereye kurulur | `%LOCALAPPDATA%\MehburMC Launcher` (yönetici izni gerekmez) | Zip'i çıkardığın klasör |
+| Nereye kurulur | `%APPDATA%\MehburMC\app` (yönetici izni gerekmez) | Zip'i çıkardığın klasör |
 | Oyun verileri | `%APPDATA%\MehburMC\game\mc` | Exe'nin yanındaki `MehburMC\` klasörü |
 | Güncelleme | Launcher içinden, otomatik | Yeni zip'i klasörün üzerine çıkar |
 

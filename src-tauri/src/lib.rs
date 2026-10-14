@@ -42,10 +42,13 @@ pub fn run() {
                 .resizable(true)
                 .center()
                 .background_color(BACKGROUND);
-            // Portable mode keeps WebView2 data inside the data folder too.
-            if let Some(paths) = &app_state.paths
-                && paths.mode() == launcher_core::DataMode::Portable
-            {
+            // WebView2 data lives inside the data folder, never in %LOCALAPPDATA% (K79).
+            if let Some(paths) = &app_state.paths {
+                if paths.mode() == launcher_core::DataMode::Standard
+                    && let Ok(legacy) = app.path().app_local_data_dir()
+                {
+                    launcher_core::paths::adopt_legacy_webview(&legacy, &paths.webview_data());
+                }
                 builder = builder.data_directory(paths.webview_data());
             }
             builder.build()?;
