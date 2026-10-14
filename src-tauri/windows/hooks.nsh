@@ -19,7 +19,11 @@ Var MehburOldInstDir
   !insertmacro IsShortcutTarget "${lnk}" "$MehburOldInstDir\${MAINBINARYNAME}.exe"
   Pop $0
   ${If} $0 = 1
-    !insertmacro SetShortcutTarget "${lnk}" "$INSTDIR\${MAINBINARYNAME}.exe"
+    ; Rewrite in place (keeps pins): a retarget alone leaves the icon
+    ; pointing at the deleted old exe, which shows a blank icon.
+    SetOutPath $INSTDIR
+    CreateShortcut "${lnk}" "$INSTDIR\${MAINBINARYNAME}.exe"
+    !insertmacro SetLnkAppUserModelId "${lnk}"
   ${EndIf}
 !macroend
 
@@ -29,6 +33,7 @@ Var MehburOldInstDir
     !insertmacro MehburRetarget "$DESKTOP\${PRODUCTNAME}.lnk"
     !insertmacro MehburRetarget "$SMPROGRAMS\${PRODUCTNAME}.lnk"
     !insertmacro MehburRetarget "$SMPROGRAMS\$AppStartMenuFolder\${PRODUCTNAME}.lnk"
+    !insertmacro MehburRetarget "$APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\${PRODUCTNAME}.lnk"
     Delete "$MehburOldInstDir\${MAINBINARYNAME}.exe"
     Delete "$MehburOldInstDir\uninstall.exe"
     RMDir "$MehburOldInstDir"

@@ -3,6 +3,12 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.17.2] — 2026-10-14
+
+### Düzeltildi
+- 0.17.1 güncellemesinden sonra masaüstü ve Başlat menüsü kısayollarının simgesi boş görünüyordu;
+  kısayollar artık simgesiyle birlikte yeni yere yönlendiriliyor.
+
 ## [0.17.1] — 2026-10-14
 
 ### Değişti
