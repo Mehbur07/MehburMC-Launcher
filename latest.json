@@ -1,15 +1,15 @@
 {
-  "version": "0.18.0",
-  "notes": "### Eklendi\n- **Admin → Oyuncular:** e-postayla kayıtlı bütün oyuncular tek listede; çevrimiçi olanlar üstte,\n  isim veya arkadaş koduyla süzme, katılma ve son görülme tarihi, satırdan banla / banı kaldır /\n  yönetici yap. E-posta adresleri gösterilmez.\n\n### Değişti\n- Mod şalterleri artık kayarak açılıp kapanıyor ve tıkladığın anda dönüyor.\n\n### Düzeltildi\n- Mod listelerinde şalterin animasyonu hiç oynamıyordu (satır her seferinde baştan çiziliyordu).\n- Profilin İçerik ve Dosyalar sekmesinde şaltere hızlı çift tıklamak \"dosya bulunamadı\" hatası veriyordu.\n- Mod Aç/Kapa'da hızlı profil değiştirince eski profilin modları görünebiliyordu.\n- **Tümünü aç/kapat** bir modda hata alınca geri kalanları işlemeden duruyordu.\n- \"Açık\"/\"Kapalı\" filtresindeyken kapatılan mod animasyon görünmeden kayboluyordu.",
-  "pub_date": "2026-10-15T12:37:51Z",
+  "version": "0.18.1",
+  "notes": "### Eklendi\n- **Admin → Oyuncular:** satırdan **Özel skin gönder** (kurucu): her özel skin/pelerin için şalterle ver veya\n  geri al. Yöneticiler için **Yöneticilikten çıkar** düğmesi; satır işlemleri tek yerde toplandı.",
+  "pub_date": "2026-10-15T15:59:10Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUc5RmlYVzF6Vm83T3JVOWdGVWpIa2JhZDQwZ2VGNUk2KzBxblJZRmJFQUtYRFZjMnl2ems4MlVqWlFjSk9KU0hPTUV1WkNLK0UyN3VlYktRWUZ4SXd3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMDY3ODU3CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xOC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE4LjAKeUlqR2s2dHlZMGkzb05tUGhIM3NjcFk2UzByaW5mTXg0VE5jL1Y3MlZkbjJURFNHYmhRK0FoMlVVTFIya0F6ZERkaHVic1BhM0w5SDFkb01qQ0Z1QXc9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.18.0/MehburMC-Launcher_0.18.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUVCam1jTWtqOFlNQmNGK2tXc2FBcTNRVXAzZ3pjM1haSTc5RDJ6aE1GRm5kemxaN1hPcHZMYVpyOWgvMFNkS294UXBHUTlmU3RsSHhyWnpycFB0T0FFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMDc5ODk3CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xOC4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE4LjEKRFVNYUhCbkdpSWt3MVcveGE1L2pKcVN6MHFyaU1xRlhCQjJGdW5Dck1XaFNvQ0NSMG96MVhWckorZVhDN3VLaTIreDBmQU1yOTczVEpQeUZwaWs4Q1E9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.18.1/MehburMC-Launcher_0.18.1_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUc5RmlYVzF6Vm83T3JVOWdGVWpIa2JhZDQwZ2VGNUk2KzBxblJZRmJFQUtYRFZjMnl2ems4MlVqWlFjSk9KU0hPTUV1WkNLK0UyN3VlYktRWUZ4SXd3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMDY3ODU3CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xOC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE4LjAKeUlqR2s2dHlZMGkzb05tUGhIM3NjcFk2UzByaW5mTXg0VE5jL1Y3MlZkbjJURFNHYmhRK0FoMlVVTFIya0F6ZERkaHVic1BhM0w5SDFkb01qQ0Z1QXc9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.18.0/MehburMC-Launcher_0.18.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUVCam1jTWtqOFlNQmNGK2tXc2FBcTNRVXAzZ3pjM1haSTc5RDJ6aE1GRm5kemxaN1hPcHZMYVpyOWgvMFNkS294UXBHUTlmU3RsSHhyWnpycFB0T0FFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMDc5ODk3CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xOC4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE4LjEKRFVNYUhCbkdpSWt3MVcveGE1L2pKcVN6MHFyaU1xRlhCQjJGdW5Dck1XaFNvQ0NSMG96MVhWckorZVhDN3VLaTIreDBmQU1yOTczVEpQeUZwaWs4Q1E9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.18.1/MehburMC-Launcher_0.18.1_x64-setup.exe"
     }
   }
 }
