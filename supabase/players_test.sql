@@ -14,6 +14,10 @@ declare
   r record;
   n int;
 begin
+  if to_regprocedure('public.admin_all_users(text, integer, integer)') is null then
+    raise exception 'FAIL: run players.sql first (admin_all_users is missing)';
+  end if;
+
   -- ---------------------------------------------------------------- setup (as postgres)
   insert into auth.users (id, email, aud, role, is_anonymous, created_at, updated_at) values
     (founder, 'plf' || sfx || '@test.invalid', 'authenticated', 'authenticated', false, now(), now()),
