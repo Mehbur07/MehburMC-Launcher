@@ -327,6 +327,67 @@ describe("AdminPage", () => {
     expect(ipcMock.adminAllUsers).toHaveBeenLastCalledWith("zz", 0);
   });
 
+  it("founder sends private skins and manages admins from the player list", async () => {
+    asRank(1);
+    const tex = (id: number, name: string) => ({
+      id,
+      kind: "skin" as const,
+      model: "classic" as const,
+      name,
+      sha1: String(id).repeat(40),
+      createdAt: "2026-10-07T10:00:00Z",
+      grants: 0,
+      dataUri: null,
+    });
+    ipcMock.adminAllUsers.mockResolvedValue({
+      players: [player("u1", "Steve"), player("u2", "Helper", { rank: 2 })],
+      total: 2,
+    });
+    ipcMock.adminPrivateTextures.mockResolvedValue([tex(4, "Neon"), tex(5, "Gold")]);
+    ipcMock.adminTextureGrants.mockImplementation(async (id: number) =>
+      id === 5 ? [{ userId: "u1", names: ["Steve"], createdAt: "2026-10-08T10:00:00Z" }] : [],
+    );
+    ipcMock.adminSetTextureGrant.mockResolvedValue(undefined);
+    ipcMock.adminSetRank.mockResolvedValue(undefined);
+    render(<AdminPage />);
+    fireEvent.click(screen.getByRole("tab", { name: "Players" }));
+
+    const helper = (await screen.findByText("Helper")).closest("li")!;
+    expect(within(helper).queryByRole("button", { name: /Ban/ })).toBeNull();
+    await act(async () =>
+      fireEvent.click(within(helper).getByRole("button", { name: /Remove admin/ })),
+    );
+    expect(ipcMock.adminSetRank).toHaveBeenCalledWith("u2", false);
+
+    const steve = screen.getByText("Steve").closest("li")!;
+    await act(async () =>
+      fireEvent.click(within(steve).getByRole("button", { name: /Send private skin/ })),
+    );
+    const dialog = await screen.findByRole("dialog", { name: "Private skins/capes for Steve" });
+    const neon = await within(dialog).findByRole("switch", { name: "Give Neon" });
+    const gold = within(dialog).getByRole("switch", { name: "Give Gold" });
+    expect(neon).toHaveAttribute("aria-checked", "false");
+    expect(gold).toHaveAttribute("aria-checked", "true");
+
+    await act(async () => fireEvent.click(neon));
+    expect(ipcMock.adminSetTextureGrant).toHaveBeenCalledWith(4, "u1", true);
+    expect(neon).toHaveAttribute("aria-checked", "true");
+    await act(async () => fireEvent.click(gold));
+    expect(ipcMock.adminSetTextureGrant).toHaveBeenLastCalledWith(5, "u1", false);
+    expect(gold).toHaveAttribute("aria-checked", "false");
+  });
+
+  it("rank 2 cannot send private skins or make admins", async () => {
+    asRank(2);
+    ipcMock.adminAllUsers.mockResolvedValue({ players: [player("u1", "Steve")], total: 1 });
+    render(<AdminPage />);
+    fireEvent.click(screen.getByRole("tab", { name: "Players" }));
+    const steve = (await screen.findByText("Steve")).closest("li")!;
+    expect(within(steve).getByRole("button", { name: /Ban/ })).toBeInTheDocument();
+    expect(within(steve).queryByRole("button", { name: /Send private skin/ })).toBeNull();
+    expect(within(steve).queryByRole("button", { name: /Make admin/ })).toBeNull();
+  });
+
   it("rank 2 has no private textures tab", () => {
     asRank(2);
     render(<AdminPage />);

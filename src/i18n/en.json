@@ -1369,7 +1369,11 @@
       "joined": "Joined {{date}}",
       "lastSeen": "Last seen {{date}}",
       "more": "Load more",
-      "hint": "Every account signed up with an email; online players first. Email addresses are never shown."
+      "hint": "Every account signed up with an email; online players first. Email addresses are never shown.",
+      "send": "Send private skin",
+      "sendTitle": "Private skins/capes for {{name}}",
+      "sendHint": "Switch on to give it to the player, off to take it back. Their launcher picks it up within a few minutes.",
+      "sendSwitch": "Give {{name}}"
     }
   }
 }

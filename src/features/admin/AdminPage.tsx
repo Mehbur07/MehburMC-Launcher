@@ -28,6 +28,7 @@ import {
   Field,
   Modal,
   TextInput,
+  Toggle,
 } from "../../components/ui";
 import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { AdminBan } from "../../lib/ipc/bindings/AdminBan";
@@ -729,6 +730,7 @@ function PlayersTab({
   const [more, setMore] = useState(false);
   const [error, setError] = useState<ErrorPayload | null>(null);
   const [notice, setNotice] = useState<ErrorPayload | null>(null);
+  const [sendTo, setSendTo] = useState<Target | null>(null);
   // Only the newest request may land (typing, reloads, Load more).
   const req = useRef(0);
 
@@ -833,27 +835,42 @@ function PlayersTab({
                       ` · ${t("admin.players.lastSeen", { date: formatIso(p.lastSeen, i18n.language) })}`}
                   </p>
                 </div>
-                {p.banned ? (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => void act(() => ipc.adminUnban(p.userId))}
-                  >
-                    {t("admin.bans.unban")}
-                  </Button>
-                ) : (
-                  p.rank === 0 && (
-                    <>
-                      {rank === 1 && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => void act(() => ipc.adminSetRank(p.userId, true))}
-                        >
-                          <ShieldPlus size={13} />
-                          {t("admin.admins.make")}
-                        </Button>
-                      )}
+                <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
+                  {rank === 1 && !p.banned && (
+                    <Button size="sm" onClick={() => setSendTo({ userId: p.userId, label })}>
+                      <Send size={13} />
+                      {t("admin.players.send")}
+                    </Button>
+                  )}
+                  {rank === 1 && p.rank === 0 && !p.banned && (
+                    <Button
+                      size="sm"
+                      onClick={() => void act(() => ipc.adminSetRank(p.userId, true))}
+                    >
+                      <ShieldPlus size={13} />
+                      {t("admin.admins.make")}
+                    </Button>
+                  )}
+                  {rank === 1 && p.rank === 2 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => void act(() => ipc.adminSetRank(p.userId, false))}
+                    >
+                      <ShieldMinus size={13} />
+                      {t("admin.admins.remove")}
+                    </Button>
+                  )}
+                  {p.banned ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => void act(() => ipc.adminUnban(p.userId))}
+                    >
+                      {t("admin.bans.unban")}
+                    </Button>
+                  ) : (
+                    p.rank === 0 && (
                       <Button
                         size="sm"
                         variant="danger"
@@ -862,9 +879,9 @@ function PlayersTab({
                         <Ban size={13} />
                         {t("admin.bans.submit")}
                       </Button>
-                    </>
-                  )
-                )}
+                    )
+                  )}
+                </div>
               </Row>
             );
           })
@@ -878,7 +895,125 @@ function PlayersTab({
           </Button>
         </div>
       )}
+      <PrivateSendDialog target={sendTo} onClose={() => setSendTo(null)} />
     </div>
+  );
+}
+
+/** Founder: gives or takes back each private texture for one player. */
+function PrivateSendDialog({ target, onClose }: { target: Target | null; onClose: () => void }) {
+  const { t } = useTranslation();
+  const [textures, setTextures] = useState<PrivateTexture[] | null>(null);
+  const [owned, setOwned] = useState<Set<number>>(new Set());
+  const [busy, setBusy] = useState<Set<number>>(new Set());
+  const [error, setError] = useState<ErrorPayload | null>(null);
+
+  useEffect(() => {
+    if (!target) return;
+    let cancelled = false;
+    setTextures(null);
+    setOwned(new Set());
+    setError(null);
+    void (async () => {
+      try {
+        const list = await ipc.adminPrivateTextures();
+        const has = await Promise.all(
+          list.map(async (p) => {
+            const grants = await ipc.adminTextureGrants(p.id);
+            return grants.some((g) => g.userId === target.userId) ? [p.id] : [];
+          }),
+        );
+        if (cancelled) return;
+        setOwned(new Set(has.flat()));
+        setTextures(list);
+      } catch (e) {
+        if (!cancelled) setError(toErrorPayload(e));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [target]);
+
+  const mark = (set: Set<number>, id: number, on: boolean) => {
+    const next = new Set(set);
+    if (on) next.add(id);
+    else next.delete(id);
+    return next;
+  };
+  const toggle = async (p: PrivateTexture, give: boolean) => {
+    if (!target) return;
+    setError(null);
+    setBusy((s) => mark(s, p.id, true));
+    try {
+      await ipc.adminSetTextureGrant(p.id, target.userId, give);
+      setOwned((s) => mark(s, p.id, give));
+    } catch (e) {
+      setError(toErrorPayload(e));
+    } finally {
+      setBusy((s) => mark(s, p.id, false));
+    }
+  };
+
+  return (
+    <Modal
+      open={target !== null}
+      onClose={onClose}
+      title={t("admin.players.sendTitle", { name: target?.label ?? "" })}
+      footer={
+        <Button variant="ghost" onClick={onClose}>
+          {t("common.close")}
+        </Button>
+      }
+    >
+      <div className="flex flex-col gap-3">
+        <p className="text-xs text-muted">{t("admin.players.sendHint")}</p>
+        <ErrorLine error={error} />
+        {textures === null ? (
+          !error && (
+            <div className="flex justify-center py-6">
+              <Loader2 className="animate-spin text-accent" aria-label={t("common.loading")} />
+            </div>
+          )
+        ) : textures.length === 0 ? (
+          <p className="text-sm text-muted">{t("admin.private.empty")}</p>
+        ) : (
+          <ul className="flex flex-col gap-1.5">
+            {textures.map((p) => (
+              <li
+                key={p.id}
+                className="flex items-center gap-3 rounded-md border border-line bg-surface-2/60 px-3 py-2"
+              >
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded bg-surface-3/40">
+                  {p.dataUri ? (
+                    <img
+                      src={p.dataUri}
+                      alt=""
+                      className="max-h-10 max-w-10 [image-rendering:pixelated]"
+                    />
+                  ) : (
+                    <X size={14} className="text-danger" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-semibold">{p.name}</div>
+                  <div className="text-xs text-muted">
+                    {p.kind === "skin" ? t("skins.skin") : t("skins.cape")}
+                    {p.kind === "skin" && ` · ${t(`skins.model.${p.model}`)}`}
+                  </div>
+                </div>
+                <Toggle
+                  checked={owned.has(p.id)}
+                  disabled={busy.has(p.id)}
+                  onChange={(give) => void toggle(p, give)}
+                  label={t("admin.players.sendSwitch", { name: p.name })}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </Modal>
   );
 }
 

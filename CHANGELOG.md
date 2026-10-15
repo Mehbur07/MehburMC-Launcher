@@ -3,6 +3,12 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.18.1] — 2026-10-15
+
+### Eklendi
+- **Admin → Oyuncular:** satırdan **Özel skin gönder** (kurucu): her özel skin/pelerin için şalterle ver veya
+  geri al. Yöneticiler için **Yöneticilikten çıkar** düğmesi; satır işlemleri tek yerde toplandı.
+
 ## [0.18.0] — 2026-10-15
 
 ### Eklendi

@@ -1369,7 +1369,11 @@
       "joined": "Katıldı: {{date}}",
       "lastSeen": "Son görülme: {{date}}",
       "more": "Daha fazla yükle",
-      "hint": "E-postayla kayıtlı tüm hesaplar; çevrimiçi olanlar üstte. E-posta adresleri gösterilmez."
+      "hint": "E-postayla kayıtlı tüm hesaplar; çevrimiçi olanlar üstte. E-posta adresleri gösterilmez.",
+      "send": "Özel skin gönder",
+      "sendTitle": "{{name}} için özel skin/pelerinler",
+      "sendHint": "Şalteri açınca oyuncuya gönderilir, kapatınca geri alınır. Oyuncunun launcher'ı birkaç dakika içinde günceller.",
+      "sendSwitch": "{{name}} gönder"
     }
   }
 }
