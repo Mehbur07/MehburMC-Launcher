@@ -1267,6 +1267,7 @@
       "published": "Published mods",
       "reports": "Reports",
       "community": "Community",
+      "players": "Players",
       "bans": "Bans",
       "admins": "Admins",
       "private": "Private textures"
@@ -1359,6 +1360,16 @@
       "restore": "Restore",
       "removeTitle": "Remove \"{{name}}\" from the community?",
       "removeBody": "The share is hidden from everyone (the owner still has it in their library). You can bring it back from the Removed list."
+    },
+    "players": {
+      "search": "Filter by name or friend code",
+      "count": "{{shown}} / {{total}} players",
+      "empty": "No players found.",
+      "noName": "Unnamed account",
+      "joined": "Joined {{date}}",
+      "lastSeen": "Last seen {{date}}",
+      "more": "Load more",
+      "hint": "Every account signed up with an email; online players first. Email addresses are never shown."
     }
   }
 }

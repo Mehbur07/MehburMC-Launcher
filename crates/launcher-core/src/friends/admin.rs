@@ -82,6 +82,34 @@ pub struct AdminUser {
     pub ban_until: Option<String>,
 }
 
+/// One row of the admin player list (K80). Never carries the email.
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct AdminPlayer {
+    pub user_id: String,
+    pub names: Vec<String>,
+    pub friend_code: Option<String>,
+    pub rank: u8,
+    pub banned: bool,
+    pub ban_until: Option<String>,
+    pub joined_at: String,
+    pub last_seen: Option<String>,
+    pub online: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct AdminPlayerPage {
+    pub players: Vec<AdminPlayer>,
+    /// Matching accounts in all pages.
+    pub total: u32,
+}
+
+/// Players per page of [`FriendsClient::admin_all_users`].
+pub const PLAYER_PAGE: u32 = 100;
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
@@ -136,6 +164,20 @@ struct UserRow {
     rank: i32,
     banned: bool,
     ban_until: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct PlayerRow {
+    user_id: String,
+    names: Option<Vec<String>>,
+    friend_code: Option<String>,
+    rank: i32,
+    banned: bool,
+    ban_until: Option<String>,
+    joined_at: String,
+    last_seen: Option<String>,
+    online: bool,
+    total: i64,
 }
 
 #[derive(Deserialize)]
@@ -299,6 +341,37 @@ impl FriendsClient {
             .collect())
     }
 
+    /// Every member account, online first, one page at a time; `query`
+    /// keeps only names containing it or an exact friend code.
+    pub async fn admin_all_users(&self, query: &str, offset: u32) -> Result<AdminPlayerPage> {
+        let q: String = query.trim().chars().take(32).collect();
+        let rows: Vec<PlayerRow> = self
+            .rpc(
+                "admin_all_users",
+                json!({ "p_query": q, "p_offset": offset, "p_limit": PLAYER_PAGE }),
+            )
+            .await?;
+        // Past the last page there is no row to carry the total.
+        let total = rows
+            .first()
+            .map_or(offset, |r| u32::try_from(r.total).unwrap_or(u32::MAX));
+        let players = rows
+            .into_iter()
+            .map(|r| AdminPlayer {
+                user_id: r.user_id,
+                names: r.names.unwrap_or_default(),
+                friend_code: r.friend_code,
+                rank: rank(r.rank),
+                banned: r.banned,
+                ban_until: r.ban_until,
+                joined_at: r.joined_at,
+                last_seen: r.last_seen,
+                online: r.online,
+            })
+            .collect();
+        Ok(AdminPlayerPage { players, total })
+    }
+
     /// Bans `user_id` for `hours` (`None` = permanent).
     pub async fn admin_ban(&self, user_id: &str, hours: Option<u32>, reason: &str) -> Result<()> {
         super::check_uuid(user_id)?;
@@ -456,6 +529,45 @@ mod tests {
         c.admin_review_mod(2, AdminModStatus::Pending, false, "zararlı")
             .await
             .unwrap();
+    }
+
+    #[tokio::test]
+    async fn all_users_pages_and_maps_rows() {
+        let server = MockServer::builder().start().await;
+        Mock::given(method("POST"))
+            .and(path("/rest/v1/rpc/admin_all_users"))
+            .and(body_json(
+                json!({ "p_query": "meh", "p_offset": 0, "p_limit": 100 }),
+            ))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!([{
+                "user_id": FRIEND, "names": null, "friend_code": "ABC-123", "rank": 7,
+                "banned": true, "ban_until": null, "joined_at": "2026-10-01T10:00:00Z",
+                "last_seen": "2026-10-15T10:00:00Z", "online": true, "total": 101
+            }])))
+            .expect(1)
+            .mount(&server)
+            .await;
+        Mock::given(method("POST"))
+            .and(path("/rest/v1/rpc/admin_all_users"))
+            .and(body_json(
+                json!({ "p_query": "", "p_offset": 200, "p_limit": 100 }),
+            ))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!([])))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let tmp = tempfile::tempdir().unwrap();
+        let c = signed_in(&tmp, &server).await;
+
+        let page = c.admin_all_users("  meh ", 0).await.unwrap();
+        assert_eq!(page.total, 101);
+        let p = &page.players[0];
+        assert!(p.names.is_empty() && p.banned && p.online);
+        assert_eq!((p.rank, p.friend_code.as_deref()), (2, Some("ABC-123")));
+
+        let past = c.admin_all_users("", 200).await.unwrap();
+        assert!(past.players.is_empty());
+        assert_eq!(past.total, 200);
     }
 
     #[tokio::test]

@@ -12,6 +12,7 @@ const ipcMock = vi.hoisted(() => ({
   adminTextures: vi.fn(),
   adminRestoreTexture: vi.fn(),
   adminFindUsers: vi.fn(),
+  adminAllUsers: vi.fn(),
   adminBan: vi.fn(),
   adminUnban: vi.fn(),
   adminBans: vi.fn(),
@@ -32,6 +33,7 @@ vi.mock("../../lib/ipc", async (orig) => ({
 import "../../i18n";
 import { applyLanguage } from "../../i18n";
 import type { AdminMod } from "../../lib/ipc/bindings/AdminMod";
+import type { AdminPlayer } from "../../lib/ipc/bindings/AdminPlayer";
 import { useAuth } from "../../stores/auth";
 import { AdminPage } from "./AdminPage";
 
@@ -60,6 +62,19 @@ const pending = (): AdminMod => ({
   },
 });
 
+const player = (userId: string, name: string, extra: Partial<AdminPlayer> = {}): AdminPlayer => ({
+  userId,
+  names: [name],
+  friendCode: null,
+  rank: 0,
+  banned: false,
+  banUntil: null,
+  joinedAt: "2026-10-01T10:00:00Z",
+  lastSeen: null,
+  online: false,
+  ...extra,
+});
+
 const asRank = (rank: number) =>
   useAuth.setState({
     status: {
@@ -80,6 +95,7 @@ describe("AdminPage", () => {
     ipcMock.adminReports.mockResolvedValue([]);
     ipcMock.adminBans.mockResolvedValue([]);
     ipcMock.adminList.mockResolvedValue([]);
+    ipcMock.adminAllUsers.mockResolvedValue({ players: [], total: 0 });
   });
 
   it("is empty without a rank", () => {
@@ -92,7 +108,7 @@ describe("AdminPage", () => {
     asRank(2);
     render(<AdminPage />);
     const tabs = screen.getAllByRole("tab").map((t) => t.textContent);
-    expect(tabs).toEqual(["Published mods", "Reports", "Bans"]);
+    expect(tabs).toEqual(["Published mods", "Reports", "Players", "Bans"]);
     expect(ipcMock.adminTextures).not.toHaveBeenCalled();
     expect(ipcMock.adminLibrary).toHaveBeenCalledWith("approved");
   });
@@ -262,6 +278,53 @@ describe("AdminPage", () => {
     expect(ipcMock.adminTextures).toHaveBeenCalledWith(true);
     await act(async () => fireEvent.click(within(gone).getByRole("button", { name: /Restore/ })));
     expect(ipcMock.adminRestoreTexture).toHaveBeenCalledWith(9);
+  });
+
+  it("lists every player, filters, loads more and acts on a row", async () => {
+    asRank(1);
+    ipcMock.adminAllUsers.mockImplementation(async (query: string, offset: number) => {
+      if (query === "zz") return { players: [], total: 0 };
+      if (offset === 0)
+        return {
+          players: [
+            player("u1", "Online", { online: true, friendCode: "ABC-123" }),
+            player("u2", "Griefer", { banned: true }),
+          ],
+          total: 3,
+        };
+      return { players: [player("u3", "Later", { names: [] })], total: 3 };
+    });
+    ipcMock.adminUnban.mockResolvedValue(undefined);
+    ipcMock.adminSetRank.mockResolvedValue(undefined);
+    render(<AdminPage />);
+    fireEvent.click(screen.getByRole("tab", { name: "Players" }));
+
+    const online = (await screen.findByText("Online")).closest("li")!;
+    expect(within(online).getByRole("img", { name: "Online" })).toBeInTheDocument();
+    expect(within(online).getByText(/ABC-123/)).toBeInTheDocument();
+    expect(screen.getByText("2 / 3 players")).toBeInTheDocument();
+    expect(ipcMock.adminAllUsers).toHaveBeenCalledWith("", 0);
+
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: /Load more/ })));
+    expect(ipcMock.adminAllUsers).toHaveBeenLastCalledWith("", 2);
+    expect(await screen.findByText("Unnamed account")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Load more/ })).toBeNull();
+
+    const banned = screen.getByText("Griefer").closest("li")!;
+    await act(async () =>
+      fireEvent.click(within(banned).getByRole("button", { name: /Lift ban/ })),
+    );
+    expect(ipcMock.adminUnban).toHaveBeenCalledWith("u2");
+    await act(async () =>
+      fireEvent.click(within(online).getByRole("button", { name: /Make admin/ })),
+    );
+    expect(ipcMock.adminSetRank).toHaveBeenCalledWith("u1", true);
+
+    fireEvent.change(screen.getByLabelText("Filter by name or friend code"), {
+      target: { value: " zz " },
+    });
+    expect(await screen.findByText("No players found.", {}, { timeout: 2000 })).toBeInTheDocument();
+    expect(ipcMock.adminAllUsers).toHaveBeenLastCalledWith("zz", 0);
   });
 
   it("rank 2 has no private textures tab", () => {

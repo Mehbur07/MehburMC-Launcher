@@ -399,7 +399,10 @@ mod tests {
         fs::write(old.join("EBWebView/Default/Local State"), b"x").unwrap();
 
         assert!(adopt_legacy_webview(&old, &new));
-        assert_eq!(fs::read(new.join("EBWebView/Default/Local State")).unwrap(), b"x");
+        assert_eq!(
+            fs::read(new.join("EBWebView/Default/Local State")).unwrap(),
+            b"x"
+        );
         assert!(!old.exists());
         // Nothing left to move; an existing profile is never overwritten.
         assert!(!adopt_legacy_webview(&old, &new));

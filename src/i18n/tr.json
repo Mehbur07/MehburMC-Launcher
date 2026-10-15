@@ -1267,6 +1267,7 @@
       "published": "Yayındaki modlar",
       "reports": "Bildirimler",
       "community": "Topluluk",
+      "players": "Oyuncular",
       "bans": "Banlar",
       "admins": "Yöneticiler",
       "private": "Özel dokular"
@@ -1359,6 +1360,16 @@
       "restore": "Geri getir",
       "removeTitle": "\"{{name}}\" topluluktan kaldırılsın mı?",
       "removeBody": "Paylaşım herkesten gizlenir (paylaşan kişi kendi kütüphanesinde görmeye devam eder). Kaldırılanlar listesinden geri getirebilirsin."
+    },
+    "players": {
+      "search": "İsim veya arkadaş kodu ile süz",
+      "count": "{{shown}} / {{total}} oyuncu",
+      "empty": "Oyuncu bulunamadı.",
+      "noName": "İsimsiz hesap",
+      "joined": "Katıldı: {{date}}",
+      "lastSeen": "Son görülme: {{date}}",
+      "more": "Daha fazla yükle",
+      "hint": "E-postayla kayıtlı tüm hesaplar; çevrimiçi olanlar üstte. E-posta adresleri gösterilmez."
     }
   }
 }

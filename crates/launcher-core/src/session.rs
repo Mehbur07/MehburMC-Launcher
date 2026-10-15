@@ -792,14 +792,24 @@ impl Launcher {
         let inst = self.instances.get(id)?;
         self.running.ensure_idle(&inst)?;
         let mut switched = 0;
+        let mut first_err = None;
         for name in names {
             let disabled = name.ends_with(crate::instance::files::DISABLED_SUFFIX);
             if disabled == enabled {
-                crate::instance::files::toggle(&self.instances, &inst.id, folder, name)?;
-                switched += 1;
+                // One bad file (e.g. both copies exist) must not leave the
+                // rest untouched; report the first failure at the end.
+                match crate::instance::files::toggle(&self.instances, &inst.id, folder, name) {
+                    Ok(_) => switched += 1,
+                    Err(e) => {
+                        first_err.get_or_insert(e);
+                    }
+                }
             }
         }
-        Ok(switched)
+        match first_err {
+            Some(e) => Err(e),
+            None => Ok(switched),
+        }
     }
 
     /// Deletes a file from an instance folder. Content (mods, resource and
@@ -921,6 +931,24 @@ mod tests {
             l.set_content_enabled(&inst.id, Folder::Saves, &names, true)
                 .is_err()
         );
+    }
+
+    #[test]
+    fn bulk_toggle_keeps_going_past_a_failing_file() {
+        let (_tmp, l) = launcher();
+        let inst = l.instances.create(new("A")).unwrap();
+        let mods = l.instances.dir(&inst.id).unwrap().join("mods");
+        // `a` has both copies, so switching it fails; `b` must still switch.
+        for f in ["a.jar", "a.jar.disabled", "b.jar"] {
+            std::fs::write(mods.join(f), b"x").unwrap();
+        }
+        let names = vec!["a.jar".to_owned(), "b.jar".to_owned()];
+        assert!(
+            l.set_content_enabled(&inst.id, Folder::Mods, &names, false)
+                .is_err()
+        );
+        assert!(mods.join("b.jar.disabled").exists());
+        assert!(mods.join("a.jar").exists() && mods.join("a.jar.disabled").exists());
     }
 
     #[test]

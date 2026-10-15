@@ -1,9 +1,10 @@
 import { FileArchive, FolderOpen, Globe, RefreshCw, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button, ConfirmDialog, EmptyState, IconButton, Toggle } from "../../components/ui";
 import { openFolder } from "../../lib/actions";
+import { baseName, stableKeys } from "../../lib/content";
 import { formatBytes, formatDate } from "../../lib/format";
 import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { FileEntry } from "../../lib/ipc/bindings/FileEntry";
@@ -26,6 +27,7 @@ export function FilesTab({
   const { t, i18n } = useTranslation();
   const [entries, setEntries] = useState<FileEntry[] | null>(null);
   const [pendingDelete, setPendingDelete] = useState<FileEntry | null>(null);
+  const [switching, setSwitching] = useState<Set<string>>(new Set());
 
   const refresh = useCallback(() => {
     ipc
@@ -39,11 +41,21 @@ export function FilesTab({
   useEffect(refresh, [refresh]);
 
   const toggle = async (e: FileEntry) => {
+    const key = baseName(e.name);
+    // A second click before the rename lands would send the old name.
+    if (switching.has(key)) return;
+    setSwitching((s) => new Set(s).add(key));
     try {
       const updated = await ipc.toggleInstanceFile(inst.id, folder, e.name);
       setEntries((list) => list?.map((x) => (x.name === e.name ? updated : x)) ?? null);
     } catch (err) {
       notify(err);
+    } finally {
+      setSwitching((s) => {
+        const next = new Set(s);
+        next.delete(key);
+        return next;
+      });
     }
   };
 
@@ -56,7 +68,8 @@ export function FilesTab({
     }
   };
 
-  const displayName = (name: string) => name.replace(/\.disabled$/, "");
+  const displayName = baseName;
+  const rowKey = useMemo(() => stableKeys((entries ?? []).map((e) => e.name)), [entries]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -88,7 +101,7 @@ export function FilesTab({
       {entries && entries.length > 0 && (
         <ul className="divide-y divide-line overflow-hidden rounded-md border border-line bg-surface-1/80">
           {entries.map((e) => (
-            <li key={e.name} className="flex items-center gap-3 px-4 py-2.5">
+            <li key={rowKey(e.name)} className="flex items-center gap-3 px-4 py-2.5">
               <div className="min-w-0 flex-1">
                 <div
                   className={`truncate text-sm font-medium ${e.enabled ? "" : "text-muted line-through"}`}
@@ -103,8 +116,9 @@ export function FilesTab({
               {toggleable && !e.isDir && (
                 <Toggle
                   checked={e.enabled}
+                  disabled={switching.has(baseName(e.name))}
                   onChange={() => void toggle(e)}
-                  label={t("files.enabled")}
+                  label={t("modToggle.switch", { name: displayName(e.name) })}
                 />
               )}
               <IconButton

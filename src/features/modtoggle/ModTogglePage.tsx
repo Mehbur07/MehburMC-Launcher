@@ -9,12 +9,13 @@ import {
   ToggleLeft,
   ToggleRight,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ProjectIcon } from "../../components/ProjectIcon";
 import { Badge, Button, EmptyState, IconButton, TextInput, Toggle } from "../../components/ui";
 import { openFolder } from "../../lib/actions";
+import { baseName, stableKeys, toggledName } from "../../lib/content";
 import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { InstalledItem } from "../../lib/ipc/bindings/InstalledItem";
 import { useApp } from "../../stores/app";
@@ -25,7 +26,6 @@ type Filter = "all" | "on" | "off";
 const FILTERS: Filter[] = ["all", "on", "off"];
 
 const notify = (e: unknown) => useApp.setState({ notice: toErrorPayload(e) });
-const baseName = (n: string) => n.replace(/\.disabled$/, "");
 const modLabel = (i: InstalledItem) => i.title ?? baseName(i.fileName).replace(/\.jar$/i, "");
 
 /** Every mod of a profile with an on/off switch. */
@@ -43,12 +43,17 @@ export function ModTogglePage() {
   const [bulk, setBulk] = useState(false);
 
   const instId = inst?.id ?? null;
+  // Only the newest scan may land: a slow one for a profile switched away
+  // from (or an older toggle) must not overwrite the list.
+  const scan = useRef(0);
   const load = useCallback(async () => {
     if (!instId) return;
+    const id = ++scan.current;
     try {
-      setItems(await ipc.scanContent(instId, "mods", false));
+      const next = await ipc.scanContent(instId, "mods", false);
+      if (id === scan.current) setItems(next);
     } catch (e) {
-      setItems((prev) => prev ?? []);
+      if (id === scan.current) setItems((prev) => prev ?? []);
       notify(e);
     }
   }, [instId]);
@@ -60,34 +65,48 @@ export function ModTogglePage() {
 
   const shown = useMemo(() => {
     const q = query.trim().toLocaleLowerCase();
-    return (items ?? [])
-      .filter((i) => filter === "all" || i.enabled === (filter === "on"))
-      .filter(
-        (i) =>
-          !q ||
-          modLabel(i).toLocaleLowerCase().includes(q) ||
-          i.fileName.toLocaleLowerCase().includes(q),
-      )
-      .sort((a, b) => modLabel(a).localeCompare(modLabel(b)));
-  }, [items, query, filter]);
+    return (
+      (items ?? [])
+        // A row being switched stays until its scan lands, so the switch animates.
+        .filter(
+          (i) =>
+            filter === "all" || i.enabled === (filter === "on") || busy.has(baseName(i.fileName)),
+        )
+        .filter(
+          (i) =>
+            !q ||
+            modLabel(i).toLocaleLowerCase().includes(q) ||
+            i.fileName.toLocaleLowerCase().includes(q),
+        )
+        .sort((a, b) => modLabel(a).localeCompare(modLabel(b)))
+    );
+  }, [items, query, filter, busy]);
+  const rowKey = useMemo(() => stableKeys((items ?? []).map((i) => i.fileName)), [items]);
 
   const enabledCount = items?.filter((i) => i.enabled).length ?? 0;
   const filtered = query.trim() !== "" || filter !== "all";
 
   const toggle = async (item: InstalledItem) => {
     if (!instId) return;
-    setBusy((s) => new Set(s).add(item.fileName));
+    const key = baseName(item.fileName);
+    setBusy((s) => new Set(s).add(key));
+    // Flip right away so the switch moves on click; the scan confirms it.
+    const flip = (i: InstalledItem) =>
+      i.fileName === item.fileName
+        ? { ...i, fileName: toggledName(i.fileName), enabled: !i.enabled }
+        : i;
+    setItems((list) => list?.map(flip) ?? null);
     try {
       await ipc.toggleInstanceFile(instId, "mods", item.fileName);
     } catch (e) {
       notify(e);
     } finally {
+      await load();
       setBusy((s) => {
         const next = new Set(s);
-        next.delete(item.fileName);
+        next.delete(key);
         return next;
       });
-      await load();
     }
   };
 
@@ -228,7 +247,7 @@ export function ModTogglePage() {
               <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface-1/85 backdrop-blur">
                 {shown.map((i) => (
                   <li
-                    key={i.fileName}
+                    key={rowKey(i.fileName)}
                     className={`flex items-center gap-3 px-3 py-2 transition-opacity ${
                       i.enabled ? "" : "opacity-60"
                     }`}
@@ -243,7 +262,7 @@ export function ModTogglePage() {
                         {baseName(i.fileName)}
                       </div>
                     </div>
-                    {busy.has(i.fileName) && (
+                    {busy.has(baseName(i.fileName)) && (
                       <Loader2 size={14} className="animate-spin text-accent" />
                     )}
                     <span
@@ -254,7 +273,7 @@ export function ModTogglePage() {
                     <span title={locked ? t("modToggle.locked") : undefined}>
                       <Toggle
                         checked={i.enabled}
-                        disabled={locked || bulk || busy.has(i.fileName)}
+                        disabled={locked || bulk || busy.has(baseName(i.fileName))}
                         onChange={() => void toggle(i)}
                         label={t("modToggle.switch", { name: modLabel(i) })}
                       />

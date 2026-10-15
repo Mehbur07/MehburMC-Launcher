@@ -123,6 +123,7 @@
     "allow-admin-textures",
     "allow-admin-restore-texture",
     "allow-admin-find-users",
+    "allow-admin-all-users",
     "allow-admin-ban",
     "allow-admin-unban",
     "allow-admin-bans",

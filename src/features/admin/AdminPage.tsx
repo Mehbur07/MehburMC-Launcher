@@ -17,7 +17,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -34,6 +34,7 @@ import type { AdminBan } from "../../lib/ipc/bindings/AdminBan";
 import type { AdminEntry } from "../../lib/ipc/bindings/AdminEntry";
 import type { AdminMod } from "../../lib/ipc/bindings/AdminMod";
 import type { AdminModStatus } from "../../lib/ipc/bindings/AdminModStatus";
+import type { AdminPlayer } from "../../lib/ipc/bindings/AdminPlayer";
 import type { AdminReport } from "../../lib/ipc/bindings/AdminReport";
 import type { AdminTexture } from "../../lib/ipc/bindings/AdminTexture";
 import type { AdminUser } from "../../lib/ipc/bindings/AdminUser";
@@ -47,7 +48,8 @@ import { formatBytes, formatIso } from "../../lib/format";
 import { useAuth } from "../../stores/auth";
 import { FindingList, LoaderBadges } from "../browse/LibraryPanel";
 
-type Tab = "queue" | "published" | "reports" | "community" | "bans" | "admins" | "private";
+type Tab =
+  "queue" | "published" | "reports" | "community" | "players" | "bans" | "admins" | "private";
 
 /** A user to act on: id plus a name to show. */
 interface Target {
@@ -709,6 +711,177 @@ function CommunityTab({ onBan }: { onBan: (t: Target) => void }) {
   );
 }
 
+/** Every member account, online first, filterable and paged (K80). */
+function PlayersTab({
+  rank,
+  onBan,
+  version,
+}: {
+  rank: number;
+  onBan: (t: Target) => void;
+  version: number;
+}) {
+  const { t, i18n } = useTranslation();
+  const [query, setQuery] = useState("");
+  const [applied, setApplied] = useState("");
+  const [players, setPlayers] = useState<AdminPlayer[] | null>(null);
+  const [total, setTotal] = useState(0);
+  const [more, setMore] = useState(false);
+  const [error, setError] = useState<ErrorPayload | null>(null);
+  const [notice, setNotice] = useState<ErrorPayload | null>(null);
+  // Only the newest request may land (typing, reloads, Load more).
+  const req = useRef(0);
+
+  useEffect(() => {
+    const id = setTimeout(() => setApplied(query.trim()), 300);
+    return () => clearTimeout(id);
+  }, [query]);
+
+  const load = useCallback(
+    async (offset: number) => {
+      const id = ++req.current;
+      try {
+        const page = await ipc.adminAllUsers(applied, offset);
+        if (id !== req.current) return;
+        setError(null);
+        setTotal(page.total);
+        setPlayers((prev) => {
+          if (offset === 0 || !prev) return page.players;
+          const seen = new Set(prev.map((p) => p.userId));
+          return [...prev, ...page.players.filter((p) => !seen.has(p.userId))];
+        });
+      } catch (e) {
+        if (id !== req.current) return;
+        if (offset === 0) setError(toErrorPayload(e));
+        else setNotice(toErrorPayload(e));
+      }
+    },
+    [applied],
+  );
+
+  useEffect(() => {
+    void load(0);
+  }, [load, version]);
+
+  const loadMore = async () => {
+    setMore(true);
+    setNotice(null);
+    await load(players?.length ?? 0);
+    setMore(false);
+  };
+
+  const act = async (run: () => Promise<unknown>) => {
+    setNotice(null);
+    try {
+      await run();
+      await load(0);
+    } catch (e) {
+      setNotice(toErrorPayload(e));
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-xs text-muted">{t("admin.players.hint")}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative min-w-56 flex-1">
+          <Search
+            size={15}
+            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted"
+          />
+          <TextInput
+            value={query}
+            maxLength={32}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("admin.players.search")}
+            aria-label={t("admin.players.search")}
+            className="pl-9"
+          />
+        </div>
+        {players && (
+          <Badge tone="accent">{t("admin.players.count", { shown: players.length, total })}</Badge>
+        )}
+      </div>
+      <ErrorLine error={notice} />
+      <ListState items={players} error={error} empty={t("admin.players.empty")}>
+        {(list) =>
+          list.map((p) => {
+            const label = p.names[0] ?? p.friendCode ?? p.userId;
+            return (
+              <Row key={p.userId}>
+                <div className="min-w-0 flex-1 text-sm">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {p.online && (
+                      <span
+                        role="img"
+                        aria-label={t("friends.online")}
+                        title={t("friends.online")}
+                        className="online-dot inline-block h-2.5 w-2.5 rounded-full"
+                      />
+                    )}
+                    <span className="font-semibold">
+                      {p.names.join(", ") || t("admin.players.noName")}
+                    </span>
+                    {p.rank > 0 && <Badge tone="accent">{t(`admin.rank.${p.rank}`)}</Badge>}
+                    {p.banned && <Badge tone="danger">{t("admin.bans.active")}</Badge>}
+                  </div>
+                  <p className="text-xs text-muted">
+                    {p.friendCode && `${p.friendCode} · `}
+                    {t("admin.players.joined", { date: formatIso(p.joinedAt, i18n.language) })}
+                    {!p.online &&
+                      p.lastSeen &&
+                      ` · ${t("admin.players.lastSeen", { date: formatIso(p.lastSeen, i18n.language) })}`}
+                  </p>
+                </div>
+                {p.banned ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => void act(() => ipc.adminUnban(p.userId))}
+                  >
+                    {t("admin.bans.unban")}
+                  </Button>
+                ) : (
+                  p.rank === 0 && (
+                    <>
+                      {rank === 1 && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => void act(() => ipc.adminSetRank(p.userId, true))}
+                        >
+                          <ShieldPlus size={13} />
+                          {t("admin.admins.make")}
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => onBan({ userId: p.userId, label })}
+                      >
+                        <Ban size={13} />
+                        {t("admin.bans.submit")}
+                      </Button>
+                    </>
+                  )
+                )}
+              </Row>
+            );
+          })
+        }
+      </ListState>
+      {players && players.length < total && (
+        <div className="flex justify-center">
+          <Button size="sm" disabled={more} onClick={() => void loadMore()}>
+            {more ? <Loader2 size={14} className="animate-spin" /> : <Users size={14} />}
+            {t("admin.players.more")}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function BansTab({ onBan, version }: { onBan: (t: Target) => void; version: number }) {
   const { t, i18n } = useTranslation();
   const fetch = useCallback(() => ipc.adminBans(), []);
@@ -1074,8 +1247,8 @@ export function AdminPage() {
   const rank = useAuth((s) => s.status?.rank ?? 0);
   const tabs: Tab[] =
     rank === 1
-      ? ["queue", "published", "reports", "community", "bans", "admins", "private"]
-      : ["published", "reports", "bans"];
+      ? ["queue", "published", "reports", "community", "players", "bans", "admins", "private"]
+      : ["published", "reports", "players", "bans"];
   const [tab, setTab] = useState<Tab>(rank === 1 ? "queue" : "published");
   const [banTarget, setBanTarget] = useState<Target | null>(null);
   const [bansVersion, setBansVersion] = useState(0);
@@ -1118,6 +1291,7 @@ export function AdminPage() {
         {tab === "published" && <QueueTab status="approved" />}
         {tab === "reports" && <ReportsTab rank={rank} onBan={setBanTarget} />}
         {tab === "community" && <CommunityTab onBan={setBanTarget} />}
+        {tab === "players" && <PlayersTab rank={rank} onBan={setBanTarget} version={bansVersion} />}
         {tab === "bans" && <BansTab onBan={setBanTarget} version={bansVersion} />}
         {tab === "admins" && <AdminsTab />}
         {tab === "private" && <PrivateTab />}

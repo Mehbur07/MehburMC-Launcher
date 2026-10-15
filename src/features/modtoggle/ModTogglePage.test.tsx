@@ -74,6 +74,27 @@ describe("ModTogglePage", () => {
     expect(ipcMock.scanContent).toHaveBeenCalledTimes(2);
   });
 
+  it("flips the switch on click and keeps the same row so it animates", async () => {
+    let finish!: () => void;
+    ipcMock.toggleInstanceFile.mockReturnValue(new Promise<void>((r) => (finish = r)));
+    render(<ModTogglePage />);
+    await screen.findByText("Sodium");
+    fireEvent.click(screen.getByRole("tab", { name: "On" }));
+    const sw = screen.getByRole("switch", { name: "Toggle Sodium" });
+    await act(async () => fireEvent.click(sw));
+    // Moved before the backend answered, still listed under "On" while pending.
+    expect(sw).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByRole("switch", { name: "Toggle Sodium" })).toBe(sw);
+
+    ipcMock.scanContent.mockResolvedValue([
+      mod("sodium-0.6.jar.disabled", "Sodium", "0.6.0"),
+      mod("iris.jar.disabled", "Iris"),
+      mod("mystery-1.0.jar", null),
+    ]);
+    await act(async () => finish());
+    await waitFor(() => expect(screen.queryByText("Sodium")).toBeNull());
+  });
+
   it("filters and searches, and bulk actions apply to what is shown", async () => {
     render(<ModTogglePage />);
     await screen.findByText("Sodium");

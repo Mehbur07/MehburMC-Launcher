@@ -107,13 +107,16 @@ export function Toggle(props: {
       aria-label={props.label}
       disabled={props.disabled}
       onClick={() => props.onChange(!props.checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={`group relative h-6 w-11 shrink-0 rounded-full border transition-[background-color,border-color,box-shadow] duration-300 ease-out disabled:cursor-not-allowed disabled:opacity-50 ${
         props.checked ? "border-accent bg-accent/25 neon-ring" : "border-line bg-surface-3"
       }`}
     >
+      {/* Springy slide; the knob stretches while pressed. */}
       <span
-        className={`absolute top-0.5 h-4 w-4 rounded-full transition-all ${
-          props.checked ? "left-[22px] bg-accent" : "left-0.5 bg-muted"
+        className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full transition-[translate,width,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-enabled:group-active:w-5 ${
+          props.checked
+            ? "translate-x-5 bg-accent shadow-[0_0_8px_rgb(var(--mc-accent-rgb)/0.7)] group-enabled:group-active:translate-x-4"
+            : "translate-x-0 bg-muted shadow-[0_1px_2px_rgb(0_0_0/0.35)]"
         }`}
       />
     </button>

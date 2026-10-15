@@ -261,4 +261,9 @@ Launcher açılınca MehburMC hesabınla giriş yapman istenir.
 (ve geri getirir), ayrıca **Özel dokular** sekmesinden özel
 MehburMC skin/pelerinlerini yükler ve seçtiği kişilere gönderir.
 
+**Oyuncular** sekmesi (her iki rütbe) e-postayla kayıtlı bütün hesapları listeler: çevrimiçi olanlar
+üstte, oyun içi isimler, arkadaş kodu, katılma ve son görülme tarihi. İsim veya arkadaş koduyla
+süzülür, 100'er 100'er **Daha fazla yükle** ile devam eder; satırdan doğrudan banlanır, ban kaldırılır,
+kurucu ise yönetici atar. E-posta adresleri gösterilmez.
+
 Sorun mu yaşıyorsun? → [Sorun giderme](SORUN_GIDERME.md)

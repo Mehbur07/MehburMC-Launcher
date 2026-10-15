@@ -7,12 +7,13 @@ import {
   RefreshCw,
   Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ProjectIcon } from "../../components/ProjectIcon";
 import { Badge, Button, ConfirmDialog, EmptyState, IconButton, Toggle } from "../../components/ui";
 import { openFolder } from "../../lib/actions";
+import { baseName, stableKeys, toggledName } from "../../lib/content";
 import { formatBytes } from "../../lib/format";
 import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { Folder } from "../../lib/ipc/bindings/Folder";
@@ -40,18 +41,24 @@ export function ContentTab({ inst, folder }: { inst: Instance; folder: Folder })
   const [checked, setChecked] = useState(false);
   const [updating, setUpdating] = useState<Set<string>>(new Set());
   const [pendingDelete, setPendingDelete] = useState<InstalledItem | null>(null);
+  const [switching, setSwitching] = useState<Set<string>>(new Set());
 
+  // Only the newest scan may land (tab switches, overlapping toggles).
+  const scan = useRef(0);
   const load = useCallback(
     async (checkUpdates: boolean) => {
+      const id = ++scan.current;
       if (checkUpdates) setChecking(true);
       try {
-        setItems(await ipc.scanContent(inst.id, folder, checkUpdates));
+        const next = await ipc.scanContent(inst.id, folder, checkUpdates);
+        if (id !== scan.current) return;
+        setItems(next);
         if (checkUpdates) setChecked(true);
       } catch (e) {
-        setItems((prev) => prev ?? []);
+        if (id === scan.current) setItems((prev) => prev ?? []);
         notify(e);
       } finally {
-        setChecking(false);
+        if (id === scan.current) setChecking(false);
       }
     },
     [inst.id, folder],
@@ -64,11 +71,30 @@ export function ContentTab({ inst, folder }: { inst: Instance; folder: Folder })
   }, [load]);
 
   const toggle = async (item: InstalledItem) => {
+    const key = baseName(item.fileName);
+    // A second click before the rename lands would send the old name.
+    if (switching.has(key)) return;
+    setSwitching((s) => new Set(s).add(key));
+    // Flip right away so the switch moves on click; the scan confirms it.
+    setItems(
+      (list) =>
+        list?.map((i) =>
+          i.fileName === item.fileName
+            ? { ...i, fileName: toggledName(i.fileName), enabled: !i.enabled }
+            : i,
+        ) ?? null,
+    );
     try {
       await ipc.toggleInstanceFile(inst.id, folder, item.fileName);
-      await load(checked);
     } catch (e) {
       notify(e);
+    } finally {
+      await load(checked);
+      setSwitching((s) => {
+        const next = new Set(s);
+        next.delete(key);
+        return next;
+      });
     }
   };
 
@@ -94,7 +120,8 @@ export function ContentTab({ inst, folder }: { inst: Instance; folder: Folder })
   };
 
   const outdated = items?.filter((i) => i.update) ?? [];
-  const displayName = (n: string) => n.replace(/\.disabled$/, "");
+  const displayName = baseName;
+  const rowKey = useMemo(() => stableKeys((items ?? []).map((i) => i.fileName)), [items]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -148,7 +175,7 @@ export function ContentTab({ inst, folder }: { inst: Instance; folder: Folder })
       {items && items.length > 0 && (
         <ul className="divide-y divide-line overflow-hidden rounded-md border border-line bg-surface-1/80">
           {items.map((i) => (
-            <li key={i.fileName} className="flex items-center gap-3 px-3 py-2">
+            <li key={rowKey(i.fileName)} className="flex items-center gap-3 px-3 py-2">
               <ProjectIcon url={i.iconUrl} size={36} />
               <div className="min-w-0 flex-1">
                 <div
@@ -183,8 +210,9 @@ export function ContentTab({ inst, folder }: { inst: Instance; folder: Folder })
               )}
               <Toggle
                 checked={i.enabled}
+                disabled={busyInstance || switching.has(baseName(i.fileName))}
                 onChange={() => void toggle(i)}
-                label={t("files.enabled")}
+                label={t("modToggle.switch", { name: i.title ?? displayName(i.fileName) })}
               />
               <IconButton
                 label={t("common.delete")}

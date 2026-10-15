@@ -3,6 +3,23 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.18.0] — 2026-10-15
+
+### Eklendi
+- **Admin → Oyuncular:** e-postayla kayıtlı bütün oyuncular tek listede; çevrimiçi olanlar üstte,
+  isim veya arkadaş koduyla süzme, katılma ve son görülme tarihi, satırdan banla / banı kaldır /
+  yönetici yap. E-posta adresleri gösterilmez.
+
+### Değişti
+- Mod şalterleri artık kayarak açılıp kapanıyor ve tıkladığın anda dönüyor.
+
+### Düzeltildi
+- Mod listelerinde şalterin animasyonu hiç oynamıyordu (satır her seferinde baştan çiziliyordu).
+- Profilin İçerik ve Dosyalar sekmesinde şaltere hızlı çift tıklamak "dosya bulunamadı" hatası veriyordu.
+- Mod Aç/Kapa'da hızlı profil değiştirince eski profilin modları görünebiliyordu.
+- **Tümünü aç/kapat** bir modda hata alınca geri kalanları işlemeden duruyordu.
+- "Açık"/"Kapalı" filtresindeyken kapatılan mod animasyon görünmeden kayboluyordu.
+
 ## [0.17.2] — 2026-10-14
 
 ### Düzeltildi

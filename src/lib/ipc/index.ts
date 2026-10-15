@@ -9,6 +9,7 @@ import type { AdminMod } from "./bindings/AdminMod";
 import type { AdminModStatus } from "./bindings/AdminModStatus";
 import type { AdminReport } from "./bindings/AdminReport";
 import type { AdminTexture } from "./bindings/AdminTexture";
+import type { AdminPlayerPage } from "./bindings/AdminPlayerPage";
 import type { AdminUser } from "./bindings/AdminUser";
 import type { PrivateTexture } from "./bindings/PrivateTexture";
 import type { TextureGrant } from "./bindings/TextureGrant";
@@ -200,6 +201,8 @@ export const ipc = {
   adminTextures: (hidden: boolean) => invoke<AdminTexture[]>("admin_textures", { hidden }),
   adminRestoreTexture: (id: number) => invoke<void>("admin_restore_texture", { id }),
   adminFindUsers: (query: string) => invoke<AdminUser[]>("admin_find_users", { query }),
+  adminAllUsers: (query: string, offset: number) =>
+    invoke<AdminPlayerPage>("admin_all_users", { query, offset }),
   /** `hours` null = permanent. */
   adminBan: (userId: string, hours: number | null, reason: string) =>
     invoke<void>("admin_ban", { userId, hours, reason }),

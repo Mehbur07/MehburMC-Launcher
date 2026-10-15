@@ -2,7 +2,8 @@
 
 use launcher_core::content::scan::ScanReport;
 use launcher_core::friends::admin::{
-    AdminBan, AdminEntry, AdminMod, AdminModStatus, AdminReport, AdminUser, ReportKind,
+    AdminBan, AdminEntry, AdminMod, AdminModStatus, AdminPlayerPage, AdminReport, AdminUser,
+    ReportKind,
 };
 use launcher_core::friends::private_textures::{PrivateTexture, TextureGrant};
 use launcher_core::friends::textures::AdminTexture;
@@ -98,6 +99,16 @@ pub async fn admin_find_users(
 ) -> CmdResult<Vec<AdminUser>> {
     let l = state.launcher()?.clone();
     Ok(l.friends.admin_find_users(&query).await?)
+}
+
+#[tauri::command]
+pub async fn admin_all_users(
+    state: State<'_, AppState>,
+    query: String,
+    offset: u32,
+) -> CmdResult<AdminPlayerPage> {
+    let l = state.launcher()?.clone();
+    Ok(l.friends.admin_all_users(&query, offset).await?)
 }
 
 /// `hours` = `None` bans permanently.

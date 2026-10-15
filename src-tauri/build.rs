@@ -111,6 +111,7 @@ const COMMANDS: &[&str] = &[
     "admin_textures",
     "admin_restore_texture",
     "admin_find_users",
+    "admin_all_users",
     "admin_ban",
     "admin_unban",
     "admin_bans",

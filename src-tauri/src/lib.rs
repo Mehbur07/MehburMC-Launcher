@@ -174,6 +174,7 @@ pub fn run() {
             admin::admin_textures,
             admin::admin_restore_texture,
             admin::admin_find_users,
+            admin::admin_all_users,
             admin::admin_ban,
             admin::admin_unban,
             admin::admin_bans,
