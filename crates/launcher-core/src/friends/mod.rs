@@ -7,6 +7,7 @@ pub mod admin;
 pub mod avatar;
 pub mod library;
 pub mod names;
+pub mod oauth;
 pub mod presence;
 pub mod private_textures;
 pub mod share;
@@ -251,6 +252,8 @@ pub struct FriendsClient {
     allow_anonymous: std::sync::atomic::AtomicBool,
     /// Local-only (offline) account (K82): nothing reaches the server.
     local: std::sync::atomic::AtomicBool,
+    /// Cancels a Google sign-in waiting for the browser (K83).
+    google: std::sync::Mutex<Option<tokio_util::sync::CancellationToken>>,
 }
 
 impl FriendsClient {
@@ -263,6 +266,7 @@ impl FriendsClient {
             online: std::sync::atomic::AtomicBool::new(false),
             allow_anonymous: std::sync::atomic::AtomicBool::new(false),
             local: std::sync::atomic::AtomicBool::new(ctx.paths.local_account_file().is_file()),
+            google: std::sync::Mutex::new(None),
             ctx,
         }
     }

@@ -114,6 +114,8 @@
     "allow-auth-sign-in",
     "allow-auth-sign-out",
     "allow-auth-create-local",
+    "allow-auth-google",
+    "allow-auth-google-cancel",
     "allow-admin-library",
     "allow-admin-scan-mod",
     "allow-admin-review-mod",

@@ -29,6 +29,11 @@ pub const AUTH_ERRORS: &[&str] = &[
     "auth.sessionExpired",
     "auth.emailSendFailed",
     "auth.localOnly",
+    "auth.googleDisabled",
+    "auth.googleFailed",
+    "auth.googleCancelled",
+    "auth.googleTimeout",
+    "auth.googlePortBusy",
 ];
 
 const MIN_PASSWORD: usize = 8;
@@ -392,6 +397,12 @@ impl FriendsClient {
                 json!({ "email": email, "password": password }),
             )
             .await?;
+        self.finish_sign_in(s).await
+    }
+
+    /// Installs a fresh sign-in (email or Google, K83). An anonymous
+    /// identity of another user is deleted first.
+    pub(super) async fn finish_sign_in(&self, s: Session) -> Result<()> {
         if let Some(old) = self.snapshot().await
             && old.anonymous
             && old.user_id != s.user_id

@@ -175,7 +175,12 @@
       "samePassword": "Yeni şifre eskisiyle aynı olamaz.",
       "sessionExpired": "Oturumun sona erdi; tekrar giriş yap.",
       "emailSendFailed": "Doğrulama e-postası gönderilemedi (e-posta servisi hatası). Lütfen biraz sonra tekrar dene.",
-      "localOnly": "Çevrim dışı hesapla bu özellik kullanılamaz."
+      "localOnly": "Çevrim dışı hesapla bu özellik kullanılamaz.",
+      "googleDisabled": "Google ile giriş henüz açılmadı. E-postayla giriş yap ya da daha sonra tekrar dene.",
+      "googleFailed": "Google ile giriş yapılamadı. Tekrar dene.",
+      "googleCancelled": "Google ile giriş iptal edildi.",
+      "googleTimeout": "Google ile giriş zaman aşımına uğradı (5 dakika). Tekrar dene.",
+      "googlePortBusy": "Google girişi için gereken yerel bağlantı noktası (47823) kullanımda. Diğer launcher pencerelerini kapatıp tekrar dene."
     },
     "launch": {
       "commandTooLong": "Komut satırı Java {{major}} için çok uzun.",
@@ -1269,17 +1274,21 @@
         "admin": "Admin olunamaz ve adminlerin gönderdiği özel skinler alınamaz.",
         "friends": "Arkadaşlar ve topluluk skinleri de kapalıdır (sunucu hesabı gerektirir)."
       },
-      "later": "İstediğin zaman Ayarlar → Hesap'tan çıkıp e-postayla kayıt olabilirsin; profillerin, oyun hesapların ve skinlerin kalır.",
+      "later": "İstediğin zaman Ayarlar'ın en altındaki Çıkış yap ile çıkıp e-postayla kayıt olabilirsin; profillerin, oyun hesapların ve skinlerin kalır.",
       "confirm": "Çevrim dışı hesap oluştur",
       "name": "Çevrim dışı hesap",
-      "settingsHint": "Demo modunda oynarsın; sunucular, Mod Tarayıcısı, SkinMC ve paylaşım kapalı. Tüm özellikler için çıkış yap ve e-postayla kayıt ol.",
+      "settingsHint": "Demo modunda oynarsın; sunucular, Mod Tarayıcısı, SkinMC ve paylaşım kapalı. Tüm özellikler için en alttaki Çıkış yap ile çık ve e-postayla kayıt ol.",
       "signOutTitle": "Çevrim dışı hesaptan çıkılsın mı?",
       "signOutMessage": "Profillerin, oyun hesapların ve skinlerin bu bilgisayarda kalır. Giriş ekranına dönersin.",
       "locked": {
         "title": "Çevrim dışı hesapta kapalı",
-        "body": "Bu bölüm e-posta hesabı gerektirir. Ayarlar → Hesap'tan çıkıp e-postayla kayıt olabilirsin.",
+        "body": "Bu bölüm e-posta hesabı gerektirir. Ayarlar'ın en altındaki Çıkış yap ile çıkıp e-postayla kayıt olabilirsin.",
         "settings": "Ayarlara git"
       }
+    },
+    "google": {
+      "button": "Google ile giriş yap",
+      "waiting": "Tarayıcıda Google hesabını seç, sonra buraya dön…"
     }
   },
   "admin": {

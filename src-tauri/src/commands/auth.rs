@@ -2,7 +2,7 @@
 //! Supabase over HTTPS; they are never stored or logged.
 
 use launcher_core::friends::account::{AuthStatus, CodePurpose, SignUpResult};
-use tauri::State;
+use tauri::{AppHandle, State};
 
 use super::CmdResult;
 use crate::state::AppState;
@@ -52,6 +52,32 @@ pub async fn auth_resend(
 ) -> CmdResult<()> {
     let l = state.launcher()?.clone();
     Ok(l.friends.resend_code(&email, purpose).await?)
+}
+
+/// Signs in with Google in the default browser (K83); resolves once the
+/// browser comes back, on cancel or after five minutes.
+#[tauri::command]
+pub async fn auth_google(app: AppHandle, state: State<'_, AppState>) -> CmdResult<()> {
+    use tauri_plugin_opener::OpenerExt;
+    let l = state.launcher()?.clone();
+    l.friends
+        .google_sign_in(|url| {
+            app.opener().open_url(url, None::<&str>).map_err(|e| {
+                launcher_core::CoreError::UrlNotAllowed {
+                    url: format!("{url} ({e})"),
+                }
+            })
+        })
+        .await?;
+    // Re-reserve this launcher's account names for the signed-in account.
+    l.sync_account_names().await;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn auth_google_cancel(state: State<'_, AppState>) -> CmdResult<()> {
+    state.launcher()?.friends.cancel_google_sign_in();
+    Ok(())
 }
 
 #[tauri::command]

@@ -9,7 +9,7 @@ import {
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "neonDanger";
 
 const VARIANTS: Record<Variant, string> = {
   primary:
@@ -17,6 +17,8 @@ const VARIANTS: Record<Variant, string> = {
   secondary: "border border-accent/50 text-accent hover:bg-accent/10",
   ghost: "text-muted hover:bg-surface-3 hover:text-fg",
   danger: "border border-danger/50 text-danger hover:bg-danger/10",
+  neonDanger:
+    "border border-danger bg-danger/15 font-semibold text-[#ff6b85] neon-danger hover:bg-danger/25",
 };
 
 export function Button({

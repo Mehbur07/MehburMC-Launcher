@@ -3,6 +3,15 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.20.0] — 2026-10-20
+
+### Eklendi
+- **Google ile giriş yap:** giriş ekranında yeni düğme. Tarayıcıda Google hesabını seçip launcher'a
+  dönmen yeterli; parolan launcher'a hiç gelmez.
+
+### Değişti
+- **Çıkış yap** artık Ayarlar'ın en altında neon kırmızı bir düğme (onay sorar).
+
 ## [0.19.0] — 2026-10-20
 
 ### Eklendi

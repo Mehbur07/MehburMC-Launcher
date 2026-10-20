@@ -102,6 +102,8 @@ const COMMANDS: &[&str] = &[
     "auth_sign_in",
     "auth_sign_out",
     "auth_create_local",
+    "auth_google",
+    "auth_google_cancel",
     "admin_library",
     "admin_scan_mod",
     "admin_review_mod",

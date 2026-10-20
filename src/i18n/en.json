@@ -175,7 +175,12 @@
       "samePassword": "The new password must differ from the old one.",
       "sessionExpired": "Your session ended; please sign in again.",
       "emailSendFailed": "The verification email could not be sent (email service error). Please try again later.",
-      "localOnly": "This is not available with an offline account."
+      "localOnly": "This is not available with an offline account.",
+      "googleDisabled": "Sign-in with Google is not set up yet. Sign in with email or try again later.",
+      "googleFailed": "Could not sign in with Google. Try again.",
+      "googleCancelled": "Google sign-in was cancelled.",
+      "googleTimeout": "Google sign-in timed out (5 minutes). Try again.",
+      "googlePortBusy": "The local port Google sign-in needs (47823) is in use. Close other launcher windows and try again."
     },
     "launch": {
       "commandTooLong": "The command line is too long for Java {{major}}.",
@@ -1269,17 +1274,21 @@
         "admin": "You cannot become an admin or receive private skins from admins.",
         "friends": "Friends and community skins are off too (they need a server account)."
       },
-      "later": "You can sign out in Settings → Account and sign up with an email any time; your profiles, game accounts and skins stay.",
+      "later": "You can sign out with Sign out at the bottom of Settings and sign up with an email any time; your profiles, game accounts and skins stay.",
       "confirm": "Create offline account",
       "name": "Offline account",
-      "settingsHint": "You play in Demo mode; servers, Mod Browser, SkinMC and sharing are off. Sign out and sign up with an email for everything.",
+      "settingsHint": "You play in Demo mode; servers, Mod Browser, SkinMC and sharing are off. Sign out at the bottom and sign up with an email for everything.",
       "signOutTitle": "Sign out of the offline account?",
       "signOutMessage": "Your profiles, game accounts and skins stay on this computer. You return to the sign-in screen.",
       "locked": {
         "title": "Not available offline",
-        "body": "This needs an email account. Sign out in Settings → Account and sign up with an email.",
+        "body": "This needs an email account. Sign out at the bottom of Settings and sign up with an email.",
         "settings": "Go to Settings"
       }
+    },
+    "google": {
+      "button": "Sign in with Google",
+      "waiting": "Pick your Google account in the browser, then come back…"
     }
   },
   "admin": {

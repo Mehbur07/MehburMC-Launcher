@@ -74,6 +74,7 @@ export function AuthScreen({ status }: { status: AuthStatus }) {
   const [error, setError] = useState<ErrorPayload | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [localOpen, setLocalOpen] = useState(false);
+  const [google, setGoogle] = useState(false);
 
   const go = (m: Mode) => {
     setMode(m);
@@ -138,6 +139,21 @@ export function AuthScreen({ status }: { status: AuthStatus }) {
       setPassword2("");
       await load(true);
     });
+  };
+
+  // Google (K83): the browser signs in; cancelling is not an error.
+  const googleSignIn = async () => {
+    setGoogle(true);
+    setError(null);
+    try {
+      await ipc.authGoogle();
+      await load(true);
+    } catch (e) {
+      const p = toErrorPayload(e);
+      if (p.code !== "auth.googleCancelled") setError(p);
+    } finally {
+      setGoogle(false);
+    }
   };
 
   // Local-only account (K82): offered on the sign-up screen only.
@@ -357,7 +373,49 @@ export function AuthScreen({ status }: { status: AuthStatus }) {
           {link(t("auth.createAccount"), { kind: "signUp" })}
         </div>
       </form>
+      <div className="mt-5 flex flex-col gap-2 border-t border-line pt-4">
+        {google ? (
+          <>
+            <p role="status" className="flex items-center justify-center gap-2 text-sm text-muted">
+              <Loader2 size={14} className="animate-spin text-accent" />
+              {t("auth.google.waiting")}
+            </p>
+            <Button variant="ghost" onClick={() => void ipc.authGoogleCancel()}>
+              {t("common.cancel")}
+            </Button>
+          </>
+        ) : (
+          <Button disabled={busy} onClick={() => void googleSignIn()}>
+            <GoogleIcon />
+            {t("auth.google.button")}
+          </Button>
+        )}
+      </div>
     </Card>
+  );
+}
+
+/** Google's "G" mark for the sign-in button. */
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 48 48" width="16" height="16" aria-hidden="true">
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+      />
+      <path
+        fill="#4285F4"
+        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+      />
+    </svg>
   );
 }
 

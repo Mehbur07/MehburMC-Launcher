@@ -186,6 +186,9 @@ export const ipc = {
     invoke<void>("auth_sign_in", { email, password }),
   authSignOut: () => invoke<void>("auth_sign_out"),
   authCreateLocal: () => invoke<void>("auth_create_local"),
+  /** Resolves when the browser sign-in finishes (or is cancelled). */
+  authGoogle: () => invoke<void>("auth_google"),
+  authGoogleCancel: () => invoke<void>("auth_google_cancel"),
 
   adminLibrary: (status: AdminModStatus) => invoke<AdminMod[]>("admin_library", { status }),
   /** Downloads a library mod and scans it in this launcher. */

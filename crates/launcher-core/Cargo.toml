@@ -11,6 +11,7 @@ base64.workspace = true
 directories.workspace = true
 fs4.workspace = true
 futures-util.workspace = true
+getrandom.workspace = true
 hex.workspace = true
 hickory-resolver.workspace = true
 md-5.workspace = true

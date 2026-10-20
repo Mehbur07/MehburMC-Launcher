@@ -10,6 +10,8 @@ const ipcMock = vi.hoisted(() => ({
   authRequestReset: vi.fn(),
   authSignOut: vi.fn(),
   authCreateLocal: vi.fn(),
+  authGoogle: vi.fn(),
+  authGoogleCancel: vi.fn(),
 }));
 vi.mock("../../lib/ipc", async (orig) => ({
   ...(await orig<typeof import("../../lib/ipc")>()),
@@ -42,6 +44,42 @@ describe("AuthScreen", () => {
     vi.clearAllMocks();
     ipcMock.authStatus.mockResolvedValue(status({ signedIn: true, email: "a@b.co" }));
     useAuth.setState({ status: null });
+  });
+
+  it("signs in with Google in the browser", async () => {
+    let finish!: () => void;
+    ipcMock.authGoogle.mockReturnValue(new Promise<void>((r) => (finish = r)));
+    render(<AuthScreen status={status()} />);
+    await act(async () =>
+      fireEvent.click(screen.getByRole("button", { name: /Sign in with Google/ })),
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(/browser/);
+    await act(async () => finish());
+    expect(ipcMock.authStatus).toHaveBeenCalledWith(true);
+    expect(useAuth.getState().status?.signedIn).toBe(true);
+  });
+
+  it("cancels Google quietly and shows real Google errors", async () => {
+    let fail!: (e: unknown) => void;
+    ipcMock.authGoogle.mockReturnValue(new Promise<void>((_, r) => (fail = r)));
+    ipcMock.authGoogleCancel.mockImplementation(async () =>
+      fail({ code: "auth.googleCancelled", params: {}, detail: "" }),
+    );
+    render(<AuthScreen status={status()} />);
+    await act(async () =>
+      fireEvent.click(screen.getByRole("button", { name: /Sign in with Google/ })),
+    );
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Cancel" })));
+    expect(ipcMock.authGoogleCancel).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByRole("button", { name: /Sign in with Google/ })).toBeInTheDocument();
+
+    ipcMock.authGoogle.mockRejectedValue({ code: "auth.googleDisabled", params: {}, detail: "" });
+    await act(async () =>
+      fireEvent.click(screen.getByRole("button", { name: /Sign in with Google/ })),
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(/not set up/);
+    expect(ipcMock.authStatus).not.toHaveBeenCalled();
   });
 
   it("offers an offline account on the sign-up screen only", async () => {

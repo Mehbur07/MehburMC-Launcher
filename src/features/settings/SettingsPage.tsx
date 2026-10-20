@@ -208,6 +208,7 @@ export function SettingsPage() {
           )}
         </div>
       </Section>
+      <SignOutButton />
     </div>
   );
 }
@@ -227,25 +228,12 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 function AccountSection() {
   const { t } = useTranslation();
   const auth = useAuth((s) => s.status);
-  const signOut = useAuth((s) => s.signOut);
-  const [confirm, setConfirm] = useState(false);
   if (auth?.localAccount) {
     return (
       <Section title={t("settings.account.title")}>
         <Row label={t("auth.local.name")} hint={t("auth.local.settingsHint")}>
-          <Button variant="ghost" onClick={() => setConfirm(true)}>
-            <LogOut size={14} />
-            {t("auth.signOut")}
-          </Button>
+          {null}
         </Row>
-        <ConfirmDialog
-          open={confirm}
-          title={t("auth.local.signOutTitle")}
-          message={t("auth.local.signOutMessage")}
-          confirmLabel={t("auth.signOut")}
-          onClose={() => setConfirm(false)}
-          onConfirm={() => void signOut()}
-        />
       </Section>
     );
   }
@@ -253,23 +241,36 @@ function AccountSection() {
   return (
     <Section title={t("settings.account.title")}>
       <Row label={auth.email ?? ""} hint={t("settings.account.hint")}>
-        <div className="flex items-center gap-2">
-          {auth.rank > 0 && <Badge tone="accent">{t(`admin.rank.${auth.rank}`)}</Badge>}
-          <Button variant="ghost" onClick={() => setConfirm(true)}>
-            <LogOut size={14} />
-            {t("auth.signOut")}
-          </Button>
-        </div>
+        {auth.rank > 0 && <Badge tone="accent">{t(`admin.rank.${auth.rank}`)}</Badge>}
       </Row>
+    </Section>
+  );
+}
+
+/** Red "Sign out" at the very bottom of Settings (email or offline account). */
+function SignOutButton() {
+  const { t } = useTranslation();
+  const auth = useAuth((s) => s.status);
+  const signOut = useAuth((s) => s.signOut);
+  const [confirm, setConfirm] = useState(false);
+  if (!auth?.signedIn && !auth?.localAccount) return null;
+  const local = auth.localAccount;
+  return (
+    <div className="flex justify-end border-t border-line pt-5">
+      <Button variant="neonDanger" onClick={() => setConfirm(true)}>
+        <LogOut size={14} />
+        {t("auth.signOut")}
+      </Button>
       <ConfirmDialog
         open={confirm}
-        title={t("settings.account.signOutTitle")}
-        message={t("settings.account.signOutMessage")}
+        danger
+        title={local ? t("auth.local.signOutTitle") : t("settings.account.signOutTitle")}
+        message={local ? t("auth.local.signOutMessage") : t("settings.account.signOutMessage")}
         confirmLabel={t("auth.signOut")}
         onClose={() => setConfirm(false)}
         onConfirm={() => void signOut()}
       />
-    </Section>
+    </div>
   );
 }
 

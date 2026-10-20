@@ -1,9 +1,11 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const ipcMock = vi.hoisted(() => ({
   saveSettings: vi.fn(async (s: unknown) => s),
   checkAppUpdate: vi.fn(),
+  authSignOut: vi.fn(),
+  authStatus: vi.fn(),
 }));
 vi.mock("../../lib/ipc", async (orig) => ({
   ...(await orig<typeof import("../../lib/ipc")>()),
@@ -15,6 +17,7 @@ import { applyLanguage } from "../../i18n";
 import type { Bootstrap } from "../../lib/ipc/bindings/Bootstrap";
 import type { Settings } from "../../lib/ipc/bindings/Settings";
 import { useApp } from "../../stores/app";
+import { useAuth } from "../../stores/auth";
 import { useUpdate } from "../../stores/update";
 import { SettingsPage } from "./SettingsPage";
 
@@ -35,6 +38,7 @@ describe("SettingsPage", () => {
     applyLanguage("en");
     vi.clearAllMocks();
     useUpdate.setState({ info: null, checking: false, installing: null });
+    useAuth.setState({ status: null });
     useApp.setState({
       settings,
       boot: {
@@ -55,6 +59,40 @@ describe("SettingsPage", () => {
   });
 
   const saved = () => ipcMock.saveSettings.mock.calls.at(-1)?.[0] as Settings | undefined;
+
+  it("signs out with a red button at the very bottom", async () => {
+    const status = {
+      signedIn: true,
+      email: "a@b.co",
+      anonymousIdentity: false,
+      rank: 0,
+      ban: null,
+      offline: false,
+      localAccount: false,
+    };
+    useAuth.setState({ status });
+    ipcMock.authSignOut.mockResolvedValue(undefined);
+    ipcMock.authStatus.mockResolvedValue({ ...status, signedIn: false, email: null });
+    const { container } = render(<SettingsPage />);
+    const button = screen.getByRole("button", { name: "Sign out" });
+    expect(button.className).toMatch(/neon-danger/);
+    // Last control on the page.
+    const buttons = container.querySelectorAll("button");
+    expect(buttons[buttons.length - 1]).toBe(button);
+
+    fireEvent.click(button);
+    const dialog = await screen.findByRole("dialog");
+    await act(async () =>
+      fireEvent.click(within(dialog).getByRole("button", { name: "Sign out" })),
+    );
+    expect(ipcMock.authSignOut).toHaveBeenCalledOnce();
+    expect(useAuth.getState().status?.signedIn).toBe(false);
+  });
+
+  it("has no sign-out button when signed out", () => {
+    render(<SettingsPage />);
+    expect(screen.queryByRole("button", { name: "Sign out" })).toBeNull();
+  });
 
   it("saves game settings", async () => {
     render(<SettingsPage />);
