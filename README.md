@@ -16,6 +16,7 @@ Tauri 2 (Rust) + React + TypeScript ile geliştirilmektedir.
 
 - **Kullanım kılavuzu:** [docs/KULLANIM.md](docs/KULLANIM.md)
 - **Sorun giderme:** [docs/SORUN_GIDERME.md](docs/SORUN_GIDERME.md)
+- **Gizlilik politikası:** [docs/GIZLILIK.md](docs/GIZLILIK.md)
 - **Geliştirici rehberi:** [docs/GELISTIRME.md](docs/GELISTIRME.md)
 - Mimari ve kararlar: [ARCHITECTURE.md](ARCHITECTURE.md) · Güvenlik: [SECURITY.md](SECURITY.md) · [CHANGELOG.md](CHANGELOG.md)
 
