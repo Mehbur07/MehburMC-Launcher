@@ -67,8 +67,6 @@
     "about": "About",
     "version": "Version {{version}}",
     "telemetry": "No telemetry: MehburMC Launcher sends no usage data.",
-    "curseforgeKey": "CurseForge API key",
-    "curseforgeKeyHint": "Your own key (console.curseforge.com) for installing CurseForge modpacks (.zip). Stored on this computer only.",
     "game": "Game",
     "launchBehavior": "When the game starts",
     "launchBehaviorHint": "With \"Close\", the launcher quits once the game reaches the main menu; the game keeps running (play time is not recorded for that session).",
@@ -211,7 +209,7 @@
     },
     "content": {
       "modpackInvalid": "Invalid modpack: {{reason}}",
-      "curseforgeKey": "A valid CurseForge API key is required for this modpack (Settings → Advanced)."
+      "curseforgeKey": "This CurseForge pack (.zip) cannot be installed. Download the pack's Modrinth version (.mrpack) and import that, or install it from the Mod Browser."
     },
     "skin": {
       "invalid": "Invalid skin/cape image: {{reason}}",

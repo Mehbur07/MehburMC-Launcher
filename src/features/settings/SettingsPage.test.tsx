@@ -94,6 +94,11 @@ describe("SettingsPage", () => {
     expect(screen.queryByRole("button", { name: "Sign out" })).toBeNull();
   });
 
+  it("has no CurseForge key field", () => {
+    render(<SettingsPage />);
+    expect(screen.queryByText(/CurseForge/)).toBeNull();
+  });
+
   it("saves game settings", async () => {
     render(<SettingsPage />);
     fireEvent.change(screen.getByDisplayValue("Minimize"), { target: { value: "close" } });

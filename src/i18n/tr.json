@@ -67,8 +67,6 @@
     "about": "Hakkında",
     "version": "Sürüm {{version}}",
     "telemetry": "Telemetri yok: MehburMC Launcher hiçbir kullanım verisi göndermez.",
-    "curseforgeKey": "CurseForge API anahtarı",
-    "curseforgeKeyHint": "CurseForge modpack'lerini (.zip) kurmak için kendi anahtarın (console.curseforge.com). Yalnızca bu bilgisayarda saklanır.",
     "game": "Oyun",
     "launchBehavior": "Oyun açılınca",
     "launchBehaviorHint": "\"Kapat\" seçiliyse launcher, oyun ana menüye gelince kapanır; oyun çalışmaya devam eder (oynama süresi o oturum için kaydedilmez).",
@@ -211,7 +209,7 @@
     },
     "content": {
       "modpackInvalid": "Geçersiz modpack: {{reason}}",
-      "curseforgeKey": "CurseForge modpack'i için geçerli bir API anahtarı gerekiyor (Ayarlar → Gelişmiş)."
+      "curseforgeKey": "Bu CurseForge paketi (.zip) kurulamıyor. Paketin Modrinth sürümünü (.mrpack) indirip onu içe aktar ya da Mod Tarayıcısı'ndan kur."
     },
     "skin": {
       "invalid": "Geçersiz skin/pelerin görseli: {{reason}}",

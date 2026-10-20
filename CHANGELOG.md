@@ -3,6 +3,12 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.20.1] — 2026-10-20
+
+### Kaldırıldı
+- Ayarlar → Gelişmiş'teki **CurseForge API anahtarı** alanı. CurseForge `.zip` paketi kurulamazsa launcher
+  artık paketin Modrinth (`.mrpack`) sürümünü kullanmanı önerir.
+
 ## [0.20.0] — 2026-10-20
 
 ### Eklendi

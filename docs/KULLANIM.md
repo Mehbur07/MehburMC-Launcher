@@ -108,7 +108,7 @@ Profil ayrıntılarındaki **Modlar** sekmesinde modları açıp kapatabilir, si
 **Modpack'ler**:
 - Mod Tarayıcı'da tür olarak **Modpack** seçip kur, ya da
 - **Profiller → Modpack içe aktar** ile `.mrpack` veya CurseForge `.zip` dosyası seç.
-  CurseForge paketleri için kendi API anahtarın gerekir (**Ayarlar → Gelişmiş**).
+  CurseForge `.zip` paketleri çoğu zaman kurulamaz; mümkünse paketin Modrinth (`.mrpack`) sürümünü kullan.
 
 **Shader desteği**: Fabric/Quilt/NeoForge'da Iris + Sodium, Forge'da Oculus + Embeddium tek
 tıkla kurulur (profil → Genel → **Tek tıkla kur**).
@@ -180,7 +180,7 @@ bilgisayara taşımak için **Profiller → İçe aktar**.
   - "Kapat" seçiliyse launcher oyun ana menüye gelince kapanır, oyun çalışmaya devam eder
     (o oturumun oynama süresi kaydedilmez).
 - **Veri klasörü**: konum, klasörü aç, taşı (aşağıda).
-- **Gelişmiş**: hata ayıklama günlüğü, CurseForge API anahtarı.
+- **Gelişmiş**: hata ayıklama günlüğü.
 - **Hakkında**: sürüm, otomatik güncelleme denetimi.
 
 ## 9. Veri klasörü, taşıma ve portable kullanım

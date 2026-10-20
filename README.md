@@ -25,7 +25,7 @@ Tauri 2 (Rust) + React + TypeScript ile geliştirilmektedir.
 - Offline hesaplar (çoklu hesap)
 - İzole instance'lar (her profil kendi `mods`, `saves`, `config` klasörüyle)
 - Vanilla, Fabric, Quilt, Legacy Fabric, Forge, NeoForge; OptiFine içe aktarma + Sodium/Iris önerileri
-- Modrinth tarayıcısı, `.mrpack` ve CurseForge (kendi API anahtarınızla) modpack içe aktarma
+- Modrinth tarayıcısı, `.mrpack` modpack içe aktarma
 - Otomatik Java (Adoptium Temurin) yönetimi
 - Skin/cape yöneticisi, hazır skin/pelerinler, 3B önizlemeli piksel editörü
 - Neon cyan × siyah tema, TR/EN arayüz, portable mod
