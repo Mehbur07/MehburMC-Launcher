@@ -31,7 +31,16 @@ export const useAuth = create<AuthStore>((set) => ({
   },
 }));
 
-/** The launcher is usable: signed in with an email account, not banned. */
+/** The launcher is usable: a local-only account (K82), or signed in with an
+ * email account and not banned. */
 export function canUse(s: AuthStatus | null): boolean {
-  return s !== null && s.signedIn && s.ban === null;
+  return s !== null && (s.localAccount || (s.signedIn && s.ban === null));
 }
+
+/** Server features are open: an email account, not banned, not local-only. */
+export function isMember(s: AuthStatus | null): boolean {
+  return s !== null && !s.localAccount && s.signedIn && s.ban === null;
+}
+
+/** Views a local-only account cannot open (K82). */
+export const LOCAL_LOCKED = new Set(["browse", "servers", "friends", "admin"]);

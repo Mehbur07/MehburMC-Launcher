@@ -229,6 +229,26 @@ function AccountSection() {
   const auth = useAuth((s) => s.status);
   const signOut = useAuth((s) => s.signOut);
   const [confirm, setConfirm] = useState(false);
+  if (auth?.localAccount) {
+    return (
+      <Section title={t("settings.account.title")}>
+        <Row label={t("auth.local.name")} hint={t("auth.local.settingsHint")}>
+          <Button variant="ghost" onClick={() => setConfirm(true)}>
+            <LogOut size={14} />
+            {t("auth.signOut")}
+          </Button>
+        </Row>
+        <ConfirmDialog
+          open={confirm}
+          title={t("auth.local.signOutTitle")}
+          message={t("auth.local.signOutMessage")}
+          confirmLabel={t("auth.signOut")}
+          onClose={() => setConfirm(false)}
+          onConfirm={() => void signOut()}
+        />
+      </Section>
+    );
+  }
   if (!auth?.signedIn) return null;
   return (
     <Section title={t("settings.account.title")}>

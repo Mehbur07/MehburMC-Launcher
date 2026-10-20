@@ -84,6 +84,7 @@ const asRank = (rank: number) =>
       rank,
       ban: null,
       offline: false,
+      localAccount: false,
     },
   });
 

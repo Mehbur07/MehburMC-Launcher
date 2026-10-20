@@ -174,7 +174,8 @@
       "signupDisabled": "New accounts cannot be created right now. Try again later.",
       "samePassword": "The new password must differ from the old one.",
       "sessionExpired": "Your session ended; please sign in again.",
-      "emailSendFailed": "The verification email could not be sent (email service error). Please try again later."
+      "emailSendFailed": "The verification email could not be sent (email service error). Please try again later.",
+      "localOnly": "This is not available with an offline account."
     },
     "launch": {
       "commandTooLong": "The command line is too long for Java {{major}}.",
@@ -1253,6 +1254,32 @@
       "permanent": "This ban is permanent.",
       "reason": "Reason: {{reason}}",
       "recheck": "Check again"
+    },
+    "local": {
+      "button": "Create an offline account",
+      "hint": "No email needed; some features are off.",
+      "title": "Create an offline account?",
+      "intro": "No email or password; the account lives only on this computer. With it:",
+      "rules": {
+        "demo": "The game starts in Demo mode: no Multiplayer menu, no servers, and the world is limited to 5 in-game days.",
+        "browser": "The Mod Browser is unavailable.",
+        "library": "Mods cannot be uploaded to the MehburMC Library.",
+        "share": "Skins cannot be uploaded to Presets (the community).",
+        "skinmc": "SkinMC is unavailable in Presets.",
+        "admin": "You cannot become an admin or receive private skins from admins.",
+        "friends": "Friends and community skins are off too (they need a server account)."
+      },
+      "later": "You can sign out in Settings → Account and sign up with an email any time; your profiles, game accounts and skins stay.",
+      "confirm": "Create offline account",
+      "name": "Offline account",
+      "settingsHint": "You play in Demo mode; servers, Mod Browser, SkinMC and sharing are off. Sign out and sign up with an email for everything.",
+      "signOutTitle": "Sign out of the offline account?",
+      "signOutMessage": "Your profiles, game accounts and skins stay on this computer. You return to the sign-in screen.",
+      "locked": {
+        "title": "Not available offline",
+        "body": "This needs an email account. Sign out in Settings → Account and sign up with an email.",
+        "settings": "Go to Settings"
+      }
     }
   },
   "admin": {

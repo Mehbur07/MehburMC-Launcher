@@ -203,6 +203,10 @@ impl Paths {
     pub fn friends_file(&self) -> PathBuf {
         self.launcher_dir().join("friends.json")
     }
+    /// Marks a local-only (offline) MehburMC account (K82).
+    pub fn local_account_file(&self) -> PathBuf {
+        self.launcher_dir().join("local-account.json")
+    }
 
     pub fn accounts_file(&self) -> PathBuf {
         self.launcher_dir().join("accounts.json")

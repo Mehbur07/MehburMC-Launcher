@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-auth-create-local"
+description = "Enables the auth_create_local command without any pre-configured scope."
+commands.allow = ["auth_create_local"]
+
+[[permission]]
+identifier = "deny-auth-create-local"
+description = "Denies the auth_create_local command without any pre-configured scope."
+commands.deny = ["auth_create_local"]

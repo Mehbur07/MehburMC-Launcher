@@ -25,6 +25,7 @@ import "../../i18n";
 import { applyLanguage } from "../../i18n";
 import type { SkinMcSkin } from "../../lib/ipc/bindings/SkinMcSkin";
 import { useAccounts } from "../../stores/accounts";
+import { useAuth } from "../../stores/auth";
 import { useSkinMc } from "../../stores/skinmc";
 import { useSkins } from "../../stores/skins";
 import { SkinsPage } from "./SkinsPage";
@@ -49,6 +50,7 @@ describe("SkinMC gallery", () => {
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
     ipcMock.listSkins.mockResolvedValue({ skins: [], capes: [], assignments: {}, private: [] });
     ipcMock.listDefaultSkins.mockResolvedValue([]);
+    useAuth.setState({ status: null });
     ipcMock.communityTextures.mockResolvedValue([]);
     ipcMock.addSkinBytes.mockResolvedValue("a".repeat(40));
     useSkins.setState({ skins: [], capes: [], assignments: {}, loaded: true });
@@ -64,6 +66,27 @@ describe("SkinMC gallery", () => {
       tag: "",
       sort: "latest",
     });
+  });
+
+  it("is not offered to an offline account, nor is the community", async () => {
+    useAuth.setState({
+      status: {
+        signedIn: false,
+        email: null,
+        anonymousIdentity: false,
+        rank: 0,
+        ban: null,
+        offline: false,
+        localAccount: true,
+      },
+    });
+    render(<SkinsPage />);
+    fireEvent.click(screen.getByRole("tab", { name: /Presets/ }));
+    await screen.findAllByRole("button");
+    expect(screen.queryByRole("button", { name: "SkinMC" })).toBeNull();
+    expect(screen.queryByText("Community")).toBeNull();
+    expect(ipcMock.communityTextures).not.toHaveBeenCalled();
+    expect(ipcMock.skinmcBrowse).not.toHaveBeenCalled();
   });
 
   it("shows the newest skins and adds one to the library", async () => {

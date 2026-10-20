@@ -575,6 +575,7 @@ already present: {:?}",
                 resolution: width.zip(height),
                 verify: if verify { Verify::Full } else { Verify::Quick },
                 join_server,
+                demo: false,
             };
             let started = std::time::Instant::now();
             let prepared = launch::prepare(ctx, &opts, &version_id, &cancel)

@@ -171,6 +171,7 @@ describe("Sharing skins", () => {
           rank: 1,
           ban: null,
           offline: false,
+          localAccount: false,
         },
       }),
     );

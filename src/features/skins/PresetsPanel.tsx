@@ -85,6 +85,8 @@ export function PresetsPanel({
   const unshare = useCommunity((s) => s.unshare);
   const adminRemove = useCommunity((s) => s.adminRemove);
   const isFounder = useAuth((s) => s.status?.rank === 1);
+  // Local-only accounts (K82): no SkinMC and no community.
+  const local = useAuth((s) => s.status?.localAccount ?? false);
   const [removing, setRemoving] = useState<SharedTexture | null>(null);
   const [reporting, setReporting] = useState<SharedTexture | null>(null);
   const [withdrawing, setWithdrawing] = useState<SharedTexture | null>(null);
@@ -256,11 +258,11 @@ export function PresetsPanel({
     </div>
   );
 
-  const showSkinMc = kind === "skin" && source === "skinmc";
+  const showSkinMc = kind === "skin" && source === "skinmc" && !local;
 
   return (
     <div className="flex flex-col gap-4">
-      {kind === "skin" && (
+      {kind === "skin" && !local && (
         <div className="flex gap-1.5" role="group" aria-label={t("skins.skinmc.source")}>
           {(["mehbur", "skinmc"] as const).map((s) => (
             <Button
@@ -279,45 +281,47 @@ export function PresetsPanel({
         <SkinMcSection grid={grid} />
       ) : (
         <>
-          <section className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold">{t("skins.community.title")}</h3>
-              <Badge tone="accent">{community.length}</Badge>
-              <IconButton
-                label={t("common.refresh")}
-                className="ml-auto h-7 w-7"
-                disabled={communityLoading}
-                onClick={() => void loadCommunity()}
-              >
-                <RefreshCw size={13} className={communityLoading ? "animate-spin" : ""} />
-              </IconButton>
-            </div>
-            <p className="text-xs text-muted">{t("skins.community.hint")}</p>
-            {reported && (
-              <p role="status" className="text-xs text-success">
-                {t("skins.report.thanks")}
-              </p>
-            )}
-            {communityError && shares === null ? (
-              <div className="flex items-center gap-2 text-xs text-danger">
-                {communityError.code === "friends.server"
-                  ? t("skins.community.unavailable")
-                  : t(`errors.${communityError.code}`, {
-                      ...communityError.params,
-                      defaultValue: t("skins.community.unavailable"),
-                    })}
-                <Button size="sm" onClick={() => void loadCommunity()}>
-                  {t("common.retry")}
-                </Button>
+          {!local && (
+            <section className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold">{t("skins.community.title")}</h3>
+                <Badge tone="accent">{community.length}</Badge>
+                <IconButton
+                  label={t("common.refresh")}
+                  className="ml-auto h-7 w-7"
+                  disabled={communityLoading}
+                  onClick={() => void loadCommunity()}
+                >
+                  <RefreshCw size={13} className={communityLoading ? "animate-spin" : ""} />
+                </IconButton>
               </div>
-            ) : shares === null ? (
-              <p className="text-xs text-muted">{t("common.loading")}</p>
-            ) : community.length === 0 ? (
-              <p className="text-xs text-muted">{t("skins.community.empty")}</p>
-            ) : (
-              grid(community)
-            )}
-          </section>
+              <p className="text-xs text-muted">{t("skins.community.hint")}</p>
+              {reported && (
+                <p role="status" className="text-xs text-success">
+                  {t("skins.report.thanks")}
+                </p>
+              )}
+              {communityError && shares === null ? (
+                <div className="flex items-center gap-2 text-xs text-danger">
+                  {communityError.code === "friends.server"
+                    ? t("skins.community.unavailable")
+                    : t(`errors.${communityError.code}`, {
+                        ...communityError.params,
+                        defaultValue: t("skins.community.unavailable"),
+                      })}
+                  <Button size="sm" onClick={() => void loadCommunity()}>
+                    {t("common.retry")}
+                  </Button>
+                </div>
+              ) : shares === null ? (
+                <p className="text-xs text-muted">{t("common.loading")}</p>
+              ) : community.length === 0 ? (
+                <p className="text-xs text-muted">{t("skins.community.empty")}</p>
+              ) : (
+                grid(community)
+              )}
+            </section>
+          )}
           {kind === "skin" && (
             <section className="flex flex-col gap-2">
               <h3 className="text-sm font-semibold">{t("skins.presets.gameDefaults")}</h3>

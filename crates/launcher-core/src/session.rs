@@ -126,6 +126,11 @@ impl Launcher {
         join_server: Option<ServerAddress>,
     ) -> Result<String> {
         let inst = self.instances.get(instance_id)?;
+        // Local-only accounts (K82) play demo mode and join no servers.
+        let demo = mode == StartMode::Play && self.friends.is_local();
+        if demo && join_server.is_some() {
+            return Err(CoreError::Friends("auth.localOnly"));
+        }
         let account_id = self.accounts.view().selected;
         let account = match mode {
             StartMode::Play => self.accounts.launch_account()?,
@@ -168,6 +173,7 @@ impl Launcher {
                 StartMode::Repair => Verify::Full,
             },
             join_server,
+            demo,
         };
 
         let this = self.clone();
@@ -686,7 +692,7 @@ impl Launcher {
     /// removed (with their assignments). Offline or signed out nothing
     /// changes. Returns whether the library changed.
     pub async fn sync_private_textures(&self) -> Result<bool> {
-        if !self.friends.can_play().await {
+        if !self.friends.is_member().await {
             return Ok(false);
         }
         let grants = self.friends.my_private_textures().await?;
@@ -841,6 +847,27 @@ mod tests {
         let paths = Paths::at(tmp.path().join("MehburMC"));
         paths.ensure_layout().unwrap();
         (tmp, Launcher::new(paths, Arc::new(NullSink), 2).unwrap())
+    }
+
+    #[tokio::test]
+    async fn local_account_cannot_join_a_server() {
+        let (_tmp, l) = launcher();
+        let inst = l.instances.create(new("A")).unwrap();
+        l.friends.create_local_account().await.unwrap();
+        // Game accounts still work: no name is reserved on the server.
+        l.create_account("Steve").await.unwrap();
+        let addr = crate::servers::ServerAddress::parse("play.example.com").unwrap();
+        let err = l
+            .start_with(
+                &inst.id,
+                Settings::default(),
+                StartMode::Play,
+                Arc::new(NoHooks),
+                Some(addr),
+            )
+            .unwrap_err();
+        assert_eq!(err.code(), "auth.localOnly");
+        assert!(l.tasks.list().is_empty());
     }
 
     #[tokio::test]

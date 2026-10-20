@@ -250,6 +250,11 @@ Launcher açılınca MehburMC hesabınla giriş yapman istenir.
   bu bilgisayardaki kimliğini hesaba **dönüştürür**: arkadaşların, ayrılmış adların ve
   paylaşımların korunur. (Bunun yerine başka bir hesaba giriş yaparsan o eski kimlik silinir.)
 - **Şifremi unuttum:** e-postanı yaz, gelen kodu ve yeni şifreni gir.
+- **Çevrim dışı hesap** (yalnız **Hesap oluştur** ekranında): e-posta ve şifre gerekmez, hesap yalnızca
+  bu bilgisayarda durur. Ama oyun **Demo modunda** açılır (Çok Oyunculu yok, sunuculara girilemez,
+  dünya 5 oyun günüyle sınırlı); Mod Tarayıcısı, Sunucular, Arkadaşlar, SkinMC, topluluk skinleri ve
+  skin paylaşma kapalıdır; MehburMC Kütüphanesine mod yüklenemez, admin olunamaz, özel skin alınamaz.
+  **Ayarlar → Hesap → Çıkış yap** ile çıkıp istediğin zaman e-postayla kayıt olabilirsin.
 - Bir kez giriş yaptıktan sonra internet yokken de oynayabilirsin.
 - **Ayarlar → MehburMC hesabı → Çıkış yap** bu bilgisayardan çıkış yapar; profillerin, modların ve
   dünyaların silinmez.

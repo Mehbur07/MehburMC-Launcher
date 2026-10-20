@@ -174,7 +174,8 @@
       "signupDisabled": "Şu an yeni hesap açılamıyor. Daha sonra tekrar dene.",
       "samePassword": "Yeni şifre eskisiyle aynı olamaz.",
       "sessionExpired": "Oturumun sona erdi; tekrar giriş yap.",
-      "emailSendFailed": "Doğrulama e-postası gönderilemedi (e-posta servisi hatası). Lütfen biraz sonra tekrar dene."
+      "emailSendFailed": "Doğrulama e-postası gönderilemedi (e-posta servisi hatası). Lütfen biraz sonra tekrar dene.",
+      "localOnly": "Çevrim dışı hesapla bu özellik kullanılamaz."
     },
     "launch": {
       "commandTooLong": "Komut satırı Java {{major}} için çok uzun.",
@@ -1253,6 +1254,32 @@
       "permanent": "Bu yasak kalıcı.",
       "reason": "Sebep: {{reason}}",
       "recheck": "Tekrar kontrol et"
+    },
+    "local": {
+      "button": "Çevrim dışı hesap oluştur",
+      "hint": "E-posta gerekmez; bazı özellikler kapalıdır.",
+      "title": "Çevrim dışı hesap oluşturulsun mu?",
+      "intro": "E-posta ve şifre gerekmez, hesap yalnızca bu bilgisayarda durur. Ama bu hesapla:",
+      "rules": {
+        "demo": "Oyun Demo modunda açılır: Çok Oyunculu menüsü yoktur, sunuculara girilemez ve dünya 5 oyun günüyle sınırlıdır.",
+        "browser": "Mod Tarayıcısı kullanılamaz.",
+        "library": "MehburMC Kütüphanesine mod yüklenemez.",
+        "share": "Hazır skinlere (topluluğa) skin yüklenemez.",
+        "skinmc": "Hazır skinlerde SkinMC açılmaz.",
+        "admin": "Admin olunamaz ve adminlerin gönderdiği özel skinler alınamaz.",
+        "friends": "Arkadaşlar ve topluluk skinleri de kapalıdır (sunucu hesabı gerektirir)."
+      },
+      "later": "İstediğin zaman Ayarlar → Hesap'tan çıkıp e-postayla kayıt olabilirsin; profillerin, oyun hesapların ve skinlerin kalır.",
+      "confirm": "Çevrim dışı hesap oluştur",
+      "name": "Çevrim dışı hesap",
+      "settingsHint": "Demo modunda oynarsın; sunucular, Mod Tarayıcısı, SkinMC ve paylaşım kapalı. Tüm özellikler için çıkış yap ve e-postayla kayıt ol.",
+      "signOutTitle": "Çevrim dışı hesaptan çıkılsın mı?",
+      "signOutMessage": "Profillerin, oyun hesapların ve skinlerin bu bilgisayarda kalır. Giriş ekranına dönersin.",
+      "locked": {
+        "title": "Çevrim dışı hesapta kapalı",
+        "body": "Bu bölüm e-posta hesabı gerektirir. Ayarlar → Hesap'tan çıkıp e-postayla kayıt olabilirsin.",
+        "settings": "Ayarlara git"
+      }
     }
   },
   "admin": {

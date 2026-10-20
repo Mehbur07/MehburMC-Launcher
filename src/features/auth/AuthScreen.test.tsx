@@ -9,6 +9,7 @@ const ipcMock = vi.hoisted(() => ({
   authResend: vi.fn(),
   authRequestReset: vi.fn(),
   authSignOut: vi.fn(),
+  authCreateLocal: vi.fn(),
 }));
 vi.mock("../../lib/ipc", async (orig) => ({
   ...(await orig<typeof import("../../lib/ipc")>()),
@@ -28,6 +29,7 @@ const status = (over: Partial<AuthStatus> = {}): AuthStatus => ({
   rank: 0,
   ban: null,
   offline: false,
+  localAccount: false,
   ...over,
 });
 
@@ -40,6 +42,27 @@ describe("AuthScreen", () => {
     vi.clearAllMocks();
     ipcMock.authStatus.mockResolvedValue(status({ signedIn: true, email: "a@b.co" }));
     useAuth.setState({ status: null });
+  });
+
+  it("offers an offline account on the sign-up screen only", async () => {
+    ipcMock.authCreateLocal.mockResolvedValue(undefined);
+    ipcMock.authStatus.mockResolvedValue(status({ localAccount: true }));
+    render(<AuthScreen status={status()} />);
+    expect(screen.queryByRole("button", { name: /offline account/ })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Create account" }));
+    fireEvent.click(screen.getByRole("button", { name: /Create an offline account/ }));
+    const dialog = await screen.findByRole("dialog", { name: "Create an offline account?" });
+    expect(dialog).toHaveTextContent(/Demo mode/);
+    expect(dialog).toHaveTextContent(/Mod Browser/);
+    expect(dialog).toHaveTextContent(/SkinMC/);
+    expect(dialog).toHaveTextContent(/admin/);
+    await act(async () =>
+      fireEvent.click(screen.getByRole("button", { name: "Create offline account" })),
+    );
+    expect(ipcMock.authCreateLocal).toHaveBeenCalledOnce();
+    expect(ipcMock.authStatus).toHaveBeenCalledWith(false);
+    expect(useAuth.getState().status?.localAccount).toBe(true);
   });
 
   it("signs in and reloads the account state", async () => {

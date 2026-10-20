@@ -249,6 +249,8 @@ pub struct FriendsClient {
     /// Live tests may still create anonymous identities (K73); the
     /// launcher never does.
     allow_anonymous: std::sync::atomic::AtomicBool,
+    /// Local-only (offline) account (K82): nothing reaches the server.
+    local: std::sync::atomic::AtomicBool,
 }
 
 impl FriendsClient {
@@ -257,10 +259,11 @@ impl FriendsClient {
             .ok()
             .and_then(|b| serde_json::from_slice::<Session>(&b).ok());
         Self {
-            ctx,
             session: Mutex::new(session),
             online: std::sync::atomic::AtomicBool::new(false),
             allow_anonymous: std::sync::atomic::AtomicBool::new(false),
+            local: std::sync::atomic::AtomicBool::new(ctx.paths.local_account_file().is_file()),
+            ctx,
         }
     }
 
@@ -272,13 +275,16 @@ impl FriendsClient {
         format!("{}{path}", self.ctx.endpoints.friends.trim_end_matches('/'))
     }
 
-    /// Friends are on (the user agreed; an identity exists).
+    /// Friends are on (the user agreed; an identity exists). Never for a
+    /// local-only account (K82).
     pub async fn is_enabled(&self) -> bool {
-        self.session
-            .lock()
-            .await
-            .as_ref()
-            .is_some_and(|s| s.friends_enabled)
+        !self.is_local()
+            && self
+                .session
+                .lock()
+                .await
+                .as_ref()
+                .is_some_and(|s| s.friends_enabled)
     }
 
     /// An anonymous identity exists (friends on or off).
@@ -380,8 +386,13 @@ impl FriendsClient {
         }
     }
 
-    /// A valid access token, refreshed shortly before it expires.
+    /// A valid access token, refreshed shortly before it expires. Every
+    /// authenticated request comes through here, so a local-only account
+    /// (K82) never reaches the server, even with an old identity saved.
     async fn token(&self) -> Result<String> {
+        if self.is_local() {
+            return Err(CoreError::Friends("auth.localOnly"));
+        }
         let mut guard = self.session.lock().await;
         let s = guard
             .as_ref()

@@ -164,6 +164,7 @@ pub fn run() {
             auth::auth_request_reset,
             auth::auth_sign_in,
             auth::auth_sign_out,
+            auth::auth_create_local,
             admin::admin_library,
             admin::admin_scan_mod,
             admin::admin_review_mod,

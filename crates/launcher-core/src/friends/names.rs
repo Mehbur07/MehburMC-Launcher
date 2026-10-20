@@ -45,6 +45,10 @@ fn name_error(e: CoreError) -> CoreError {
 impl FriendsClient {
     /// Reserves `name` for this installation (idempotent).
     pub async fn claim_name(&self, name: &str) -> Result<()> {
+        // Local-only accounts (K82) reserve nothing.
+        if self.is_local() {
+            return Ok(());
+        }
         self.ensure_identity().await.map_err(name_error)?;
         self.rpc_void("claim_name", json!({ "name": name }))
             .await
@@ -53,6 +57,9 @@ impl FriendsClient {
 
     /// Moves the reservation from `old` to `new` in one step.
     pub async fn rename_name(&self, old: &str, new: &str) -> Result<()> {
+        if self.is_local() {
+            return Ok(());
+        }
         self.ensure_identity().await.map_err(name_error)?;
         self.rpc_void("rename_name", json!({ "old_name": old, "new_name": new }))
             .await
@@ -61,7 +68,7 @@ impl FriendsClient {
 
     /// Lets `name` go. Offline failures are queued and retried later.
     pub async fn release_name(&self, name: &str) {
-        if !self.has_identity().await {
+        if self.is_local() || !self.has_identity().await {
             return;
         }
         if let Err(e) = self.rpc_void("release_name", json!({ "name": name })).await {
@@ -97,6 +104,9 @@ impl FriendsClient {
     /// Startup: releases queued names (except ones still in use locally),
     /// then claims every local name. Returns the outcome per name.
     pub async fn sync_names(&self, local: &[String]) -> Result<HashMap<String, ClaimResult>> {
+        if self.is_local() {
+            return Ok(HashMap::new());
+        }
         let in_use: BTreeSet<String> = local.iter().map(|n| n.to_ascii_lowercase()).collect();
         let mut pending = self.pending_releases();
         pending.retain(|n| !in_use.contains(&n.to_ascii_lowercase()));

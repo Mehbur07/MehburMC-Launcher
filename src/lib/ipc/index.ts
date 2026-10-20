@@ -185,6 +185,7 @@ export const ipc = {
   authSignIn: (email: string, password: string) =>
     invoke<void>("auth_sign_in", { email, password }),
   authSignOut: () => invoke<void>("auth_sign_out"),
+  authCreateLocal: () => invoke<void>("auth_create_local"),
 
   adminLibrary: (status: AdminModStatus) => invoke<AdminMod[]>("admin_library", { status }),
   /** Downloads a library mod and scans it in this launcher. */

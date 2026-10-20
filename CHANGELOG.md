@@ -3,6 +3,15 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.19.0] — 2026-10-20
+
+### Eklendi
+- **Çevrim dışı hesap:** Hesap oluştur ekranında **Çevrim dışı hesap oluştur**. E-posta ve şifre gerekmez,
+  hesap yalnızca bu bilgisayarda durur. Bu hesapla oyun Demo modunda açılır (sunuculara girilemez);
+  Mod Tarayıcısı, Sunucular, Arkadaşlar, SkinMC, topluluk skinleri ve skin paylaşma kapalıdır;
+  MehburMC Kütüphanesine mod yüklenemez, admin olunamaz ve özel skin alınamaz. Ayarlar → Hesap'tan
+  çıkıp istediğin zaman e-postayla kayıt olabilirsin.
+
 ## [0.18.1] — 2026-10-15
 
 ### Eklendi

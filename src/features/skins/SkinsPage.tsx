@@ -33,6 +33,7 @@ import type { SkinModel } from "../../lib/ipc/bindings/SkinModel";
 import type { TextureKind } from "../../lib/ipc/bindings/TextureKind";
 import { useAccounts } from "../../stores/accounts";
 import { useApp } from "../../stores/app";
+import { useAuth } from "../../stores/auth";
 import { myShare, useCommunity } from "../../stores/community";
 import { accountCape, accountSkin, useSkins } from "../../stores/skins";
 import { type EditorSeed, SkinEditor } from "./editor/SkinEditor";
@@ -101,9 +102,11 @@ export function SkinsPage() {
   }, [loaded, load]);
 
   // Own shares mark library cards; the community list fills "Presets".
+  // Local-only accounts (K82) neither see nor share community skins.
+  const local = useAuth((s) => s.status?.localAccount ?? false);
   useEffect(() => {
-    void loadCommunity();
-  }, [loadCommunity]);
+    if (!local) void loadCommunity();
+  }, [loadCommunity, local]);
 
   const resetPreview = () => {
     setPreviewSkin(null);
@@ -491,7 +494,7 @@ export function SkinsPage() {
                           >
                             <Lock size={14} />
                           </span>
-                        ) : (
+                        ) : local ? null : (
                           <IconButton
                             label={shared ? t("skins.share.manage") : t("skins.share.button")}
                             className={`absolute top-1 right-1 z-10 h-7 w-7 bg-surface-1/80 ${

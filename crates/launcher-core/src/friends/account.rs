@@ -28,6 +28,7 @@ pub const AUTH_ERRORS: &[&str] = &[
     "auth.samePassword",
     "auth.sessionExpired",
     "auth.emailSendFailed",
+    "auth.localOnly",
 ];
 
 const MIN_PASSWORD: usize = 8;
@@ -96,6 +97,10 @@ pub struct AuthStatus {
     pub ban: Option<BanInfo>,
     /// The server could not be reached; rank/ban are the last known ones.
     pub offline: bool,
+    /// Local-only account without email (K82): the launcher is usable, but
+    /// nothing that needs the server, no servers (demo mode), no Mod
+    /// Browser and no SkinMC.
+    pub local_account: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -192,7 +197,38 @@ impl FriendsClient {
         s.friends_enabled = friends_enabled;
         self.save(&s)?;
         *self.session.lock().await = Some(s);
+        // An email account replaces a local-only one.
+        self.end_local()
+    }
+
+    /// Local-only (offline) account (K82).
+    pub fn is_local(&self) -> bool {
+        self.local.load(std::sync::atomic::Ordering::Relaxed)
+    }
+
+    /// Starts a local-only account: no email, nothing on the server. Not
+    /// while signed in with an email account.
+    pub async fn create_local_account(&self) -> Result<()> {
+        if self.snapshot().await.is_some_and(|s| !s.anonymous) {
+            return Err(CoreError::Friends("auth.localOnly"));
+        }
+        crate::fsutil::write_json_atomic(
+            &self.ctx().paths.local_account_file(),
+            &json!({ "createdAt": super::now_secs() }),
+        )?;
+        self.local.store(true, std::sync::atomic::Ordering::Relaxed);
         Ok(())
+    }
+
+    fn end_local(&self) -> Result<()> {
+        self.local
+            .store(false, std::sync::atomic::Ordering::Relaxed);
+        let file = self.ctx().paths.local_account_file();
+        match std::fs::remove_file(&file) {
+            Ok(()) => Ok(()),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            Err(e) => Err(CoreError::io(file, e)),
+        }
     }
 
     async fn snapshot(&self) -> Option<Session> {
@@ -366,8 +402,12 @@ impl FriendsClient {
         self.install_session(s, false).await
     }
 
-    /// Signs out here (other devices stay signed in).
+    /// Signs out here (other devices stay signed in). A local-only account
+    /// just ends; an older identity saved alongside it is kept.
     pub async fn sign_out(&self) -> Result<()> {
+        if self.is_local() {
+            return self.end_local();
+        }
         if self.has_identity().await {
             if let Err(e) = self.go_offline().await {
                 tracing::debug!(error = %e.detail(), "go_offline before sign-out failed");
@@ -403,7 +443,14 @@ impl FriendsClient {
             rank: 0,
             ban: None,
             offline: false,
+            local_account: false,
         };
+        if self.is_local() {
+            return AuthStatus {
+                local_account: true,
+                ..signed_out(false)
+            };
+        }
         let Some(s) = self.snapshot().await else {
             return signed_out(false);
         };
@@ -417,6 +464,7 @@ impl FriendsClient {
             rank: s.account.rank,
             ban: s.account.ban.clone(),
             offline: !check,
+            local_account: false,
         };
         if !check {
             return status;
@@ -463,11 +511,20 @@ impl FriendsClient {
         status
     }
 
-    /// Signed in with an email account and not known to be banned.
+    /// A local-only account, or signed in with an email account and not
+    /// known to be banned.
     pub async fn can_play(&self) -> bool {
-        self.snapshot()
-            .await
-            .is_some_and(|s| !s.anonymous && s.account.ban.is_none())
+        self.is_local() || self.is_member().await
+    }
+
+    /// Signed in with an email account (not local-only) and not known to be
+    /// banned: server features are open.
+    pub async fn is_member(&self) -> bool {
+        !self.is_local()
+            && self
+                .snapshot()
+                .await
+                .is_some_and(|s| !s.anonymous && s.account.ban.is_none())
     }
 }
 
@@ -801,6 +858,59 @@ mod tests {
         let st = c.auth_status(true).await;
         assert!(!st.signed_in);
         assert!(!c.ctx().paths.friends_file().exists());
+    }
+
+    #[tokio::test]
+    async fn local_account_plays_but_never_reaches_the_server() {
+        // No mocks: any request would fail the expectations below loudly.
+        let server = MockServer::builder().start().await;
+        let tmp = tempfile::tempdir().unwrap();
+        let c = FriendsClient::new(ctx(&tmp, &server));
+        assert!(!c.can_play().await);
+        c.create_local_account().await.unwrap();
+
+        let st = c.auth_status(true).await;
+        assert!(st.local_account && !st.signed_in && st.rank == 0 && st.ban.is_none());
+        assert!(c.can_play().await);
+        assert!(!c.is_member().await);
+        assert_eq!(c.my_account_token_check().await, "auth.localOnly");
+        // Survives a restart.
+        let again = FriendsClient::new(ctx(&tmp, &server));
+        assert!(again.is_local());
+        assert!(server.received_requests().await.unwrap().is_empty());
+
+        again.sign_out().await.unwrap();
+        assert!(!again.is_local() && !again.can_play().await);
+        assert!(!again.ctx().paths.local_account_file().exists());
+    }
+
+    #[tokio::test]
+    async fn local_account_keeps_an_old_identity_but_blocks_it() {
+        let server = MockServer::builder().start().await;
+        let tmp = tempfile::tempdir().unwrap();
+        let c = signed_in(&tmp, &server).await;
+        // Not while signed in with an email account.
+        assert_eq!(
+            c.create_local_account().await.unwrap_err().code(),
+            "auth.localOnly"
+        );
+        c.session.lock().await.as_mut().unwrap().anonymous = true;
+        c.create_local_account().await.unwrap();
+        assert_eq!(c.my_account_token_check().await, "auth.localOnly");
+        assert!(server.received_requests().await.unwrap().is_empty());
+        // Ending it keeps the old identity for a later sign-up.
+        c.sign_out().await.unwrap();
+        assert!(c.has_identity().await);
+    }
+
+    impl FriendsClient {
+        /// Error code of an authenticated call.
+        async fn my_account_token_check(&self) -> &'static str {
+            match self.rpc::<Value>("my_account", json!({})).await {
+                Err(CoreError::Friends(code)) => code,
+                other => panic!("unexpected {other:?}"),
+            }
+        }
     }
 
     #[tokio::test]

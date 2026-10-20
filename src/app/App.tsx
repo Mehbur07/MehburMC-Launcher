@@ -2,16 +2,19 @@ import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { lazy, Suspense, useEffect, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Lock } from "lucide-react";
+
 import { ErrorNotice } from "../components/ErrorNotice";
 import { Logo } from "../components/Logo";
 import { NeonBackground } from "../components/NeonBackground";
 import { Sidebar } from "../components/Sidebar";
+import { Button } from "../components/ui";
 import { TitleBar } from "../components/TitleBar";
 import { HomePage } from "../features/home/HomePage";
 import { applyLanguage } from "../i18n";
 import { ipc } from "../lib/ipc";
 import { useAccounts } from "../stores/accounts";
-import { canUse, useAuth } from "../stores/auth";
+import { canUse, isMember, LOCAL_LOCKED, useAuth } from "../stores/auth";
 import { AuthScreen, BanScreen } from "../features/auth/AuthScreen";
 import { useApp, type View } from "../stores/app";
 import { useInstances } from "../stores/instances";
@@ -42,6 +45,22 @@ const ModTogglePage = named(() => import("../features/modtoggle/ModTogglePage"),
 const ServersPage = named(() => import("../features/servers/ServersPage"), "ServersPage");
 const WhatsNewPage = named(() => import("../features/whatsnew/WhatsNewPage"), "WhatsNewPage");
 const AdminPage = named(() => import("../features/admin/AdminPage"), "AdminPage");
+
+/** In place of pages a local-only account cannot use (K82). */
+function LocalLocked() {
+  const { t } = useTranslation();
+  const setView = useApp((s) => s.setView);
+  return (
+    <div className="mx-auto flex max-w-md flex-col items-center gap-3 py-16 text-center">
+      <Lock size={30} className="text-muted" />
+      <h1 className="font-display text-2xl font-bold">{t("auth.local.locked.title")}</h1>
+      <p className="text-sm text-muted">{t("auth.local.locked.body")}</p>
+      <Button size="sm" onClick={() => setView("settings")}>
+        {t("auth.local.locked.settings")}
+      </Button>
+    </div>
+  );
+}
 
 function Page({ view }: { view: View }) {
   switch (view) {
@@ -114,12 +133,14 @@ export function App() {
   const auth = useAuth((s) => s.status);
   const loadAuth = useAuth((s) => s.load);
   const usable = canUse(auth);
+  const member = isMember(auth);
+  const local = auth?.localAccount ?? false;
   useEffect(() => {
     if (status !== "ready") return;
     // Private MehburMC textures follow the server's grants (K74).
     const check = () =>
       loadAuth(true).then(async () => {
-        if (!canUse(useAuth.getState().status)) return;
+        if (!isMember(useAuth.getState().status)) return;
         if (await ipc.syncPrivateTextures().catch(() => false)) void loadSkins();
       });
     void loadAuth(false).then(check);
@@ -131,11 +152,11 @@ export function App() {
   const friendsStatus = useFriends((s) => s.status);
   const refreshFriends = useFriends((s) => s.refresh);
   useEffect(() => {
-    if (status !== "ready" || !usable) return;
+    if (status !== "ready" || !member) return;
     void friendsStatus();
     const id = window.setInterval(() => void refreshFriends(), 20_000);
     return () => window.clearInterval(id);
-  }, [status, usable, friendsStatus, refreshFriends]);
+  }, [status, member, friendsStatus, refreshFriends]);
 
   // Apply theme + language whenever settings change.
   useEffect(() => {
@@ -198,7 +219,7 @@ export function App() {
                   transition={{ duration: 0.16, ease: "easeOut" }}
                 >
                   <Suspense fallback={pageFallback}>
-                    <Page view={view} />
+                    {local && LOCAL_LOCKED.has(view) ? <LocalLocked /> : <Page view={view} />}
                   </Suspense>
                 </motion.div>
               </AnimatePresence>

@@ -18,4 +18,10 @@ rank: number, ban: BanInfo | null,
 /**
  * The server could not be reached; rank/ban are the last known ones.
  */
-offline: boolean, };
+offline: boolean, 
+/**
+ * Local-only account without email (K82): the launcher is usable, but
+ * nothing that needs the server, no servers (demo mode), no Mod
+ * Browser and no SkinMC.
+ */
+localAccount: boolean, };

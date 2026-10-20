@@ -110,6 +110,7 @@ fn fixture(server_uri: &str) -> Fixture {
         resolution: Some((1280, 720)),
         verify: Verify::Quick,
         join_server: None,
+        demo: false,
     };
     Fixture {
         _tmp: tmp,
@@ -181,6 +182,25 @@ async fn prepares_a_complete_launch_and_reuses_files() {
     for t in p.temp_files.iter().chain(&again.temp_files) {
         let _ = std::fs::remove_file(t);
     }
+}
+
+#[tokio::test]
+async fn demo_mode_adds_demo_once() {
+    let server = MockServer::builder().start().await;
+    serve(&server, 1).await;
+    let f = fixture(&server.uri());
+    let cancel = CancellationToken::new();
+    let normal = launch::prepare(&f.ctx, &f.opts, "t", &cancel)
+        .await
+        .unwrap();
+    assert!(!normal.args.iter().any(|a| a == "--demo"));
+
+    // Local-only accounts (K82): this version has no rule-gated --demo.
+    let mut demo = f.opts.clone();
+    demo.demo = true;
+    let p = launch::prepare(&f.ctx, &demo, "t", &cancel).await.unwrap();
+    let cmd = full_command(&p);
+    assert_eq!(cmd.matches("--demo").count(), 1, "{cmd}");
 }
 
 #[tokio::test]

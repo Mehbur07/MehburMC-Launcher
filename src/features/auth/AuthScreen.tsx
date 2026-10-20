@@ -7,12 +7,13 @@ import {
   RefreshCw,
   ShieldBan,
   UserPlus,
+  WifiOff,
 } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Logo } from "../../components/Logo";
-import { Button, Field, TextInput } from "../../components/ui";
+import { Button, Field, Modal, TextInput } from "../../components/ui";
 import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { AuthStatus } from "../../lib/ipc/bindings/AuthStatus";
 import type { CodePurpose } from "../../lib/ipc/bindings/CodePurpose";
@@ -27,6 +28,9 @@ type Mode =
   | { kind: "code"; purpose: CodePurpose };
 
 const MIN_PASSWORD = 8;
+
+/** What a local-only account cannot do (K82), in the order shown. */
+const LOCAL_RULES = ["demo", "browser", "library", "share", "skinmc", "admin", "friends"] as const;
 
 function Card({ title, icon, children }: { title: string; icon: ReactNode; children: ReactNode }) {
   return (
@@ -69,6 +73,7 @@ export function AuthScreen({ status }: { status: AuthStatus }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<ErrorPayload | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [localOpen, setLocalOpen] = useState(false);
 
   const go = (m: Mode) => {
     setMode(m);
@@ -132,6 +137,15 @@ export function AuthScreen({ status }: { status: AuthStatus }) {
       setPassword("");
       setPassword2("");
       await load(true);
+    });
+  };
+
+  // Local-only account (K82): offered on the sign-up screen only.
+  const createLocal = () => {
+    void run(async () => {
+      await ipc.authCreateLocal();
+      setLocalOpen(false);
+      await load(false);
     });
   };
 
@@ -280,6 +294,40 @@ export function AuthScreen({ status }: { status: AuthStatus }) {
             {link(t("auth.haveAccount"), { kind: "signIn" })}
           </div>
         </form>
+        <div className="mt-5 flex flex-col gap-2 border-t border-line pt-4">
+          <Button variant="ghost" disabled={busy} onClick={() => setLocalOpen(true)}>
+            <WifiOff size={14} />
+            {t("auth.local.button")}
+          </Button>
+          <p className="text-center text-xs text-muted">{t("auth.local.hint")}</p>
+        </div>
+        <Modal
+          open={localOpen}
+          onClose={() => setLocalOpen(false)}
+          title={t("auth.local.title")}
+          footer={
+            <>
+              <Button variant="ghost" onClick={() => setLocalOpen(false)}>
+                {t("common.cancel")}
+              </Button>
+              <Button variant="primary" disabled={busy} onClick={createLocal}>
+                {spinner}
+                {t("auth.local.confirm")}
+              </Button>
+            </>
+          }
+        >
+          <div className="flex flex-col gap-3 text-sm">
+            <p>{t("auth.local.intro")}</p>
+            <ul className="flex list-disc flex-col gap-1 pl-5 text-muted">
+              {LOCAL_RULES.map((k) => (
+                <li key={k}>{t(`auth.local.rules.${k}`)}</li>
+              ))}
+            </ul>
+            <p className="text-xs text-muted">{t("auth.local.later")}</p>
+            <ErrorLine error={error} />
+          </div>
+        </Modal>
       </Card>
     );
   }

@@ -73,6 +73,13 @@ pub async fn auth_sign_in(
     Ok(())
 }
 
+/// Starts a local-only account without email (K82).
+#[tauri::command]
+pub async fn auth_create_local(state: State<'_, AppState>) -> CmdResult<()> {
+    let l = state.launcher()?.clone();
+    Ok(l.friends.create_local_account().await?)
+}
+
 #[tauri::command]
 pub async fn auth_sign_out(state: State<'_, AppState>) -> CmdResult<()> {
     let l = state.launcher()?.clone();

@@ -40,6 +40,8 @@ pub struct LaunchOptions {
     pub verify: Verify,
     /// Join this multiplayer server once the game has started.
     pub join_server: Option<crate::servers::ServerAddress>,
+    /// Demo mode (`--demo`): no multiplayer menu. Local-only accounts (K82).
+    pub demo: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -71,7 +73,7 @@ pub async fn prepare(
     tracing::info!(version = %v.id, chain = ?resolved.chain, java = v.java_major(), "version resolved");
 
     let mut env = RuleEnv::new(ctx.os.clone())
-        .with_feature("is_demo_user", false)
+        .with_feature("is_demo_user", opts.demo)
         .with_feature("has_custom_resolution", opts.resolution.is_some());
     for f in [
         "has_quick_plays_support",
@@ -264,6 +266,10 @@ pub async fn prepare(
             "--height".into(),
             h.to_string(),
         ]);
+    }
+    // Legacy `minecraftArguments` have no rule-gated `--demo`.
+    if opts.demo && !full.iter().any(|a| a == "--demo") {
+        full.push("--demo".into());
     }
     full.extend(opts.extra_game_args.iter().cloned());
     if let Some(server) = &opts.join_server {

@@ -113,6 +113,7 @@
     "allow-auth-request-reset",
     "allow-auth-sign-in",
     "allow-auth-sign-out",
+    "allow-auth-create-local",
     "allow-admin-library",
     "allow-admin-scan-mod",
     "allow-admin-review-mod",

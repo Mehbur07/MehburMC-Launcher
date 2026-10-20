@@ -18,7 +18,7 @@ import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 
 import { useApp, type View } from "../stores/app";
-import { useAuth } from "../stores/auth";
+import { LOCAL_LOCKED, useAuth } from "../stores/auth";
 import { totalUnread, useFriends } from "../stores/friends";
 import { isActive, useTasks } from "../stores/tasks";
 
@@ -45,6 +45,7 @@ export function Sidebar() {
     (s) => Object.values(s.tasks).filter((t) => t.status === "preparing").length,
   );
   const isAdmin = useAuth((s) => (s.status?.rank ?? 0) > 0);
+  const local = useAuth((s) => s.status?.localAccount ?? false);
   const playing = useTasks((s) =>
     Object.values(s.tasks).some((t) => isActive(t) && t.status === "playing"),
   );
@@ -100,7 +101,11 @@ export function Sidebar() {
 
   return (
     <nav className="relative z-10 flex w-56 shrink-0 flex-col border-r border-line bg-surface-1/80 p-3 backdrop-blur">
-      <ul className="flex flex-col gap-1">{ITEMS.map(({ view: v, icon }) => item(v, icon))}</ul>
+      <ul className="flex flex-col gap-1">
+        {ITEMS.filter(({ view: v }) => !local || !LOCAL_LOCKED.has(v)).map(({ view: v, icon }) =>
+          item(v, icon),
+        )}
+      </ul>
       <ul className="mt-auto flex flex-col gap-1 border-t border-line pt-3">
         {isAdmin && item("admin", ShieldAlert)}
         {item("whatsNew", Sparkles)}
