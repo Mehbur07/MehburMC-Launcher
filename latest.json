@@ -1,15 +1,15 @@
 {
-  "version": "0.19.0",
-  "notes": "### Eklendi\n- **Çevrim dışı hesap:** Hesap oluştur ekranında **Çevrim dışı hesap oluştur**. E-posta ve şifre gerekmez,\n  hesap yalnızca bu bilgisayarda durur. Bu hesapla oyun Demo modunda açılır (sunuculara girilemez);\n  Mod Tarayıcısı, Sunucular, Arkadaşlar, SkinMC, topluluk skinleri ve skin paylaşma kapalıdır;\n  MehburMC Kütüphanesine mod yüklenemez, admin olunamaz ve özel skin alınamaz. Ayarlar → Hesap'tan\n  çıkıp istediğin zaman e-postayla kayıt olabilirsin.",
-  "pub_date": "2026-10-20T13:01:26Z",
+  "version": "0.20.0",
+  "notes": "### Eklendi\n- **Google ile giriş yap:** giriş ekranında yeni düğme. Tarayıcıda Google hesabını seçip launcher'a\n  dönmen yeterli; parolan launcher'a hiç gelmez.\n\n### Değişti\n- **Çıkış yap** artık Ayarlar'ın en altında neon kırmızı bir düğme (onay sorar).",
+  "pub_date": "2026-10-20T16:37:33Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUJKRHlGSS82eWZzR2ZDRFFXcFp3Vm9zUTA4bldNOFlHQXlvRGVpR05NTitEenZheG9EZGdFd08wYjdNZ2R0Q3VnbEUvbnRFc01SNnJIVGtNMGx0ZndVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNTAxMjc0CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xOS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE5LjAKWnVwb1dPRWt6bjRSNHJHNG4zUTFFcFNpMXgvN1FvbnZxa3dacGhuWC9OS3BKNnJSSVRHS2RWVUFXNWptVHAyNFN2REJ5ZFNwYXltK3JYdk0rWkRHQ0E9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.19.0/MehburMC-Launcher_0.19.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYURLNnJsbWRMK1ZUd3htS3BuYi9VYzFzRUNRWUttdzFkUXRCeTVmTmNLdDFYRDBTQjFKZ0pmK2lldjFqUk82aVZSOHRFWEwraFdab1lIN21RQXVuUFFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNTE0MjM5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIwLjAKN3M4d29WQ0FDVDJVQzg3RTBUdG1CVUFYZzJyMHhLd2VtR1ZQTi90NGt5NUZvRHF6TDVxRS9GL01kWnRDemltZmxBWmgvRjRxL3FaVEJ1dXY5SWd6QkE9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.20.0/MehburMC-Launcher_0.20.0_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUJKRHlGSS82eWZzR2ZDRFFXcFp3Vm9zUTA4bldNOFlHQXlvRGVpR05NTitEenZheG9EZGdFd08wYjdNZ2R0Q3VnbEUvbnRFc01SNnJIVGtNMGx0ZndVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNTAxMjc0CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4xOS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjE5LjAKWnVwb1dPRWt6bjRSNHJHNG4zUTFFcFNpMXgvN1FvbnZxa3dacGhuWC9OS3BKNnJSSVRHS2RWVUFXNWptVHAyNFN2REJ5ZFNwYXltK3JYdk0rWkRHQ0E9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.19.0/MehburMC-Launcher_0.19.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYURLNnJsbWRMK1ZUd3htS3BuYi9VYzFzRUNRWUttdzFkUXRCeTVmTmNLdDFYRDBTQjFKZ0pmK2lldjFqUk82aVZSOHRFWEwraFdab1lIN21RQXVuUFFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNTE0MjM5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIwLjAKN3M4d29WQ0FDVDJVQzg3RTBUdG1CVUFYZzJyMHhLd2VtR1ZQTi90NGt5NUZvRHF6TDVxRS9GL01kWnRDemltZmxBWmgvRjRxL3FaVEJ1dXY5SWd6QkE9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.20.0/MehburMC-Launcher_0.20.0_x64-setup.exe"
     }
   }
 }
