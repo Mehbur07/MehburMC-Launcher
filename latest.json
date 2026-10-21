@@ -1,15 +1,15 @@
 {
-  "version": "0.20.1",
-  "notes": "### Kaldırıldı\n- Ayarlar → Gelişmiş'teki **CurseForge API anahtarı** alanı. CurseForge `.zip` paketi kurulamazsa launcher\n  artık paketin Modrinth (`.mrpack`) sürümünü kullanmanı önerir.",
-  "pub_date": "2026-10-20T17:26:39Z",
+  "version": "0.21.0",
+  "notes": "### Eklendi\n- **Takma ad:** Arkadaşlar'da bir arkadaşının sohbet başlığındaki kalem simgesiyle ona kendi\n  verdiğin bir ad koy. Bu adı yalnızca sen görürsün; gerçek adı yanında parantez içinde durur.\n- **Grup sohbetleri:** Arkadaşlar sayfasının solunda **Gruplar** bölümü. **+** ile ad verip\n  arkadaşlarını seç (en fazla 16 kişi). Grubun kurucusu adı değiştirir, üye ekler veya çıkarır;\n  herkes gruptan ayrılabilir. Okunmamış grup mesajları da kenar çubuğundaki sayıya eklenir.",
+  "pub_date": "2026-10-21T16:33:49Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUtHaFcwRXZ6c0t4RFppdkFITFNsSkk5SEdhYVJHRURHVk8wTDFvL0k4eTFlMjREVHRrSWZYVEtzZzRubkNtc1JsME9Wbjk5VjFXOWo5cDMvTXliSndrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNTE3MTg3CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMC4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIwLjEKYWdTNmwyQ1hPNGpSRDBHY1UyU25idWQ0UmhoekNWdTN1elltS1hKK1dtdUlFTG51NWg3UWVQelpUMHdTZmVyNWx3NXU3bThBYWlUTmpsV2ZyajZwRFE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.20.1/MehburMC-Launcher_0.20.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUcxMnZxQ3k0UEtmTmwwS2lBWkdCTnQzazV3eEF1MlV3V09zT3N5STIreWYxeVBpVkdrelA0VFprNklqZGpKNnUydjNuWUtvNm04aUx2cDY5Rm1FSFFZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNjAwNDA4CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIxLjAKR1prcXNnNU5HNmpsZmR0ckxXWmdqeW1YeWV1Q0tWcmpETVNqb1U5THRsazk0ZnVCZ1U1REJRWW5jMHdUcGgyMEx0ZUZrT0FZVmdnSzM3M2FvVlNpQVE9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.21.0/MehburMC-Launcher_0.21.0_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUtHaFcwRXZ6c0t4RFppdkFITFNsSkk5SEdhYVJHRURHVk8wTDFvL0k4eTFlMjREVHRrSWZYVEtzZzRubkNtc1JsME9Wbjk5VjFXOWo5cDMvTXliSndrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNTE3MTg3CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMC4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIwLjEKYWdTNmwyQ1hPNGpSRDBHY1UyU25idWQ0UmhoekNWdTN1elltS1hKK1dtdUlFTG51NWg3UWVQelpUMHdTZmVyNWx3NXU3bThBYWlUTmpsV2ZyajZwRFE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.20.1/MehburMC-Launcher_0.20.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUcxMnZxQ3k0UEtmTmwwS2lBWkdCTnQzazV3eEF1MlV3V09zT3N5STIreWYxeVBpVkdrelA0VFprNklqZGpKNnUydjNuWUtvNm04aUx2cDY5Rm1FSFFZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNjAwNDA4CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIxLjAKR1prcXNnNU5HNmpsZmR0ckxXWmdqeW1YeWV1Q0tWcmpETVNqb1U5THRsazk0ZnVCZ1U1REJRWW5jMHdUcGgyMEx0ZUZrT0FZVmdnSzM3M2FvVlNpQVE9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.21.0/MehburMC-Launcher_0.21.0_x64-setup.exe"
     }
   }
 }
