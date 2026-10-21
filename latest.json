@@ -1,15 +1,15 @@
 {
-  "version": "0.21.0",
-  "notes": "### Eklendi\n- **Takma ad:** Arkadaşlar'da bir arkadaşının sohbet başlığındaki kalem simgesiyle ona kendi\n  verdiğin bir ad koy. Bu adı yalnızca sen görürsün; gerçek adı yanında parantez içinde durur.\n- **Grup sohbetleri:** Arkadaşlar sayfasının solunda **Gruplar** bölümü. **+** ile ad verip\n  arkadaşlarını seç (en fazla 16 kişi). Grubun kurucusu adı değiştirir, üye ekler veya çıkarır;\n  herkes gruptan ayrılabilir. Okunmamış grup mesajları da kenar çubuğundaki sayıya eklenir.",
-  "pub_date": "2026-10-21T16:33:49Z",
+  "version": "0.22.0",
+  "notes": "### Eklendi\n- **Sesli sohbet:** arkadaşını sohbet başlığındaki telefon simgesiyle ara ya da bir grupta\n  **Sesli sohbet başlat** (en fazla 16 kişi). Gelen aramada zil çalar ve görev çubuğu yanıp söner.\n  Aramadayken sağ alttaki çubukta konuşanın etrafında yeşil halka, kişi başı ses düzeyi,\n  **Mikrofonu kapat**, **Sesi kapat** ve **Aramadan ayrıl** var. Launcher küçültülmüşken ve oyun\n  açıkken de arama sürer.\n- **Ayarlar → Sesli sohbet:** mikrofon seçimi, mikrofon testi ve **IP adresimi gizle** (varsayılan\n  açık: ses aktarım sunucusundan geçer, aramadaki kişiler IP adresini görmez).\n\n### Değişti\n- \"Oyun açılınca kapat\" seçiliyken sesli aramadaysan launcher kapanmaz, küçülür.",
+  "pub_date": "2026-10-21T17:35:47Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUcxMnZxQ3k0UEtmTmwwS2lBWkdCTnQzazV3eEF1MlV3V09zT3N5STIreWYxeVBpVkdrelA0VFprNklqZGpKNnUydjNuWUtvNm04aUx2cDY5Rm1FSFFZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNjAwNDA4CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIxLjAKR1prcXNnNU5HNmpsZmR0ckxXWmdqeW1YeWV1Q0tWcmpETVNqb1U5THRsazk0ZnVCZ1U1REJRWW5jMHdUcGgyMEx0ZUZrT0FZVmdnSzM3M2FvVlNpQVE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.21.0/MehburMC-Launcher_0.21.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUs1dXZuamwzOTZHc2Rncy9hTEJUdFRQK1JwYkQ3eUN5MTZOZ2loNW10NzJCOC8zREVWcy8vczV3WG52emtQSDk1eGVieVExa3JkWkxGemNRRCtJbmdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNjA0MTMxCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMi4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIyLjAKZFNkdVcxSjdIZG91blVObU5aUms5aGNLQzhmQ0FmeWJkVlBFaTFFMHJyazJuRkozNEVCSjk4R2tMZjJVSW9LanNhTzVHQ1o5Uk1LMXh2aEVZOUNxRHc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.22.0/MehburMC-Launcher_0.22.0_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUcxMnZxQ3k0UEtmTmwwS2lBWkdCTnQzazV3eEF1MlV3V09zT3N5STIreWYxeVBpVkdrelA0VFprNklqZGpKNnUydjNuWUtvNm04aUx2cDY5Rm1FSFFZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNjAwNDA4CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIxLjAKR1prcXNnNU5HNmpsZmR0ckxXWmdqeW1YeWV1Q0tWcmpETVNqb1U5THRsazk0ZnVCZ1U1REJRWW5jMHdUcGgyMEx0ZUZrT0FZVmdnSzM3M2FvVlNpQVE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.21.0/MehburMC-Launcher_0.21.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUs1dXZuamwzOTZHc2Rncy9hTEJUdFRQK1JwYkQ3eUN5MTZOZ2loNW10NzJCOC8zREVWcy8vczV3WG52emtQSDk1eGVieVExa3JkWkxGemNRRCtJbmdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNjA0MTMxCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMi4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIyLjAKZFNkdVcxSjdIZG91blVObU5aUms5aGNLQzhmQ0FmeWJkVlBFaTFFMHJyazJuRkozNEVCSjk4R2tMZjJVSW9LanNhTzVHQ1o5Uk1LMXh2aEVZOUNxRHc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.22.0/MehburMC-Launcher_0.22.0_x64-setup.exe"
     }
   }
 }
