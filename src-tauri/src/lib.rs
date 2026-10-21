@@ -2,11 +2,12 @@ mod bridge;
 mod commands;
 mod state;
 
+use tauri::webview::{PermissionKind, PermissionResponse};
 use tauri::window::Color;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 use crate::commands::{
-    accounts, admin, auth, content, data, dialogs, files, friends, home, instances, library,
+    accounts, admin, auth, calls, content, data, dialogs, files, friends, home, instances, library,
     loaders, play, servers, skins, textures, update,
 };
 use crate::state::AppState;
@@ -32,6 +33,12 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        // Voice calls (K86): the microphone is granted without a WebView2
+        // prompt (the call UI asks first); everything else keeps the default.
+        .on_permission_request(|_, kind| match kind {
+            PermissionKind::Microphone => PermissionResponse::Allow,
+            _ => PermissionResponse::Default,
+        })
         .setup(move |app| {
             let mut builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
                 .title(launcher_core::LAUNCHER_NAME)
@@ -59,7 +66,8 @@ pub fn run() {
             if let Some(launcher) = app_state.launcher.clone() {
                 let names = launcher.clone();
                 tauri::async_runtime::spawn(async move { names.sync_account_names().await });
-                tauri::async_runtime::spawn(friends::heartbeat_loop(launcher));
+                tauri::async_runtime::spawn(friends::heartbeat_loop(launcher.clone()));
+                tauri::async_runtime::spawn(calls::poll_loop(app.handle().clone(), launcher));
             }
             app.manage(app_state);
             Ok(())
@@ -209,6 +217,12 @@ pub fn run() {
             update::check_app_update,
             update::install_app_update,
             dialogs::pick_path,
+            calls::call_start,
+            calls::call_join,
+            calls::call_leave,
+            calls::call_signal,
+            calls::call_ice_config,
+            calls::calls_snapshot,
         ])
         .build(tauri::generate_context!())
         .expect("error while building MehburMC Launcher")

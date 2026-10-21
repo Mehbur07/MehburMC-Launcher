@@ -26,6 +26,7 @@ const settings: Settings = {
   language: "en",
   accent: "cyan",
   backgroundEffects: true,
+  voiceHideIp: true,
   debugLogging: false,
   downloadConcurrency: 8,
   defaultMemoryMb: 4096,

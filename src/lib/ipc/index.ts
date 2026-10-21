@@ -23,6 +23,9 @@ import type { AccountFaces } from "./bindings/AccountFaces";
 import type { AccountsView } from "./bindings/AccountsView";
 import type { Bootstrap } from "./bindings/Bootstrap";
 import type { CoreEvent } from "./bindings/CoreEvent";
+import type { CallPoll } from "./bindings/CallPoll";
+import type { IceConfig } from "./bindings/IceConfig";
+import type { OutgoingSignal } from "./bindings/OutgoingSignal";
 import type { ChatGroup } from "./bindings/ChatGroup";
 import type { ChatMessage } from "./bindings/ChatMessage";
 import type { GroupMessage } from "./bindings/GroupMessage";
@@ -273,6 +276,18 @@ export const ipc = {
     invoke<GroupMessage[]>("group_messages", { group, after: after ?? null }),
   groupSend: (group: number, body: string) => invoke<GroupMessage>("group_send", { group, body }),
   groupMarkRead: (group: number) => invoke<void>("group_mark_read", { group }),
+  // Voice calls (K86); exactly one of friend / group.
+  callStart: (target: { friend: string } | { group: number }) =>
+    invoke<number>("call_start", {
+      friend: "friend" in target ? target.friend : null,
+      group: "group" in target ? target.group : null,
+    }),
+  callJoin: (call: number) => invoke<void>("call_join", { call }),
+  callLeave: (call: number) => invoke<void>("call_leave", { call }),
+  callSignal: (call: number, signals: OutgoingSignal[]) =>
+    invoke<number>("call_signal", { call, signals }),
+  callIceConfig: () => invoke<IceConfig>("call_ice_config"),
+  callsSnapshot: () => invoke<CallPoll>("calls_snapshot"),
   myShares: () => invoke<SharedList[]>("my_shares"),
   shareInstance: (id: string) => invoke<SharedList>("share_instance", { id }),
   unshareInstance: (id: string) => invoke<void>("unshare_instance", { id }),
@@ -335,6 +350,11 @@ export async function subscribe(handlers: {
     a();
     b();
   };
+}
+
+/** Call state and set-up messages from the Rust poll loop (K86). */
+export function subscribeCalls(onPoll: (p: CallPoll) => void): Promise<UnlistenFn> {
+  return listen<CallPoll>("calls://poll", (e) => onPoll(e.payload));
 }
 
 export function isErrorPayload(e: unknown): e is ErrorPayload {

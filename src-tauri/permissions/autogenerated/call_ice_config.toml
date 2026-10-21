@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-call-ice-config"
+description = "Enables the call_ice_config command without any pre-configured scope."
+commands.allow = ["call_ice_config"]
+
+[[permission]]
+identifier = "deny-call-ice-config"
+description = "Denies the call_ice_config command without any pre-configured scope."
+commands.deny = ["call_ice_config"]

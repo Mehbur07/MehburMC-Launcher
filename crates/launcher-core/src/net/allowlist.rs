@@ -42,6 +42,11 @@ const DEFAULT_RULES: &[(&str, Option<&str>)] = &[
     ("rcaifwsiutoxilpkceht.supabase.co", Some("/auth/v1/")),
     ("rcaifwsiutoxilpkceht.supabase.co", Some("/rest/v1/")),
     ("rcaifwsiutoxilpkceht.supabase.co", Some("/storage/v1/")),
+    // TURN credentials for voice calls (K86)
+    (
+        "rcaifwsiutoxilpkceht.supabase.co",
+        Some("/functions/v1/turn-credentials"),
+    ),
     // SkinMC gallery: list pages and skin PNGs only (K78)
     ("skinmc.net", Some("/skins")),
     ("skinmc.net", Some("/api/v1/renders/skins/")),
@@ -126,6 +131,20 @@ mod tests {
         assert!(ok(
             "https://github.com/adoptium/temurin25-binaries/releases/download/x/y.zip"
         ));
+    }
+
+    #[test]
+    fn friends_service_paths_only() {
+        assert!(ok(
+            "https://rcaifwsiutoxilpkceht.supabase.co/rest/v1/rpc/call_poll"
+        ));
+        assert!(ok(
+            "https://rcaifwsiutoxilpkceht.supabase.co/functions/v1/turn-credentials"
+        ));
+        assert!(!ok(
+            "https://rcaifwsiutoxilpkceht.supabase.co/functions/v1/other"
+        ));
+        assert!(!ok("https://rcaifwsiutoxilpkceht.supabase.co/"));
     }
 
     #[test]

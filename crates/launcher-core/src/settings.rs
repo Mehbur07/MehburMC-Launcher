@@ -69,6 +69,12 @@ pub struct Settings {
     #[ts(optional)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub curseforge_api_key: Option<String>,
+    /// Microphone for voice calls (a WebRTC device id); `None` = system default.
+    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub voice_input_device: Option<String>,
+    /// Send call audio through the TURN relay so others never see our IP (K86).
+    pub voice_hide_ip: bool,
 }
 
 impl Default for Settings {
@@ -84,6 +90,8 @@ impl Default for Settings {
             launch_behavior: LaunchBehavior::Minimize,
             check_updates: true,
             curseforge_api_key: None,
+            voice_input_device: None,
+            voice_hide_ip: true,
         }
     }
 }
@@ -132,6 +140,13 @@ impl Settings {
         }
         if !MEMORY_MB_RANGE.contains(&self.default_memory_mb) {
             return Err(CoreError::InvalidSetting("defaultMemoryMb".into()));
+        }
+        if self
+            .voice_input_device
+            .as_deref()
+            .is_some_and(|d| d.len() > 256 || d.chars().any(char::is_control))
+        {
+            return Err(CoreError::InvalidSetting("voiceInputDevice".into()));
         }
         Ok(())
     }
@@ -231,6 +246,25 @@ mod tests {
         let s = Settings::load(&paths).unwrap();
         assert_eq!(s.accent, Accent::Green);
         assert_eq!(s.download_concurrency, 8);
+        // Settings from before K86 hide the IP in calls by default.
+        assert!(s.voice_hide_ip);
+        assert_eq!(s.voice_input_device, None);
+    }
+
+    #[test]
+    fn rejects_odd_microphone_ids() {
+        let ok = Settings {
+            voice_input_device: Some("a1b2c3".into()),
+            ..Settings::default()
+        };
+        assert!(ok.validate().is_ok());
+        for bad in ["x".repeat(257), "a\nb".to_owned()] {
+            let s = Settings {
+                voice_input_device: Some(bad),
+                ..Settings::default()
+            };
+            assert_eq!(s.validate().unwrap_err().code(), "settings.invalid");
+        }
     }
 
     #[test]

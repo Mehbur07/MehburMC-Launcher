@@ -29,6 +29,11 @@ struct WindowHooks {
 
 impl WindowHooks {
     fn quit(app: &AppHandle) {
+        // Closing would end the voice call (K86); stay minimised instead.
+        if super::calls::in_call(app) {
+            tracing::info!("in a voice call; keeping the launcher open (minimised)");
+            return;
+        }
         tracing::info!("game is running; closing the launcher (launch behaviour: close)");
         app.exit(0);
     }

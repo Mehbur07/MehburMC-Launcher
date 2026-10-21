@@ -15,6 +15,7 @@ import type { ChatGroup } from "../../lib/ipc/bindings/ChatGroup";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
 import type { Friend } from "../../lib/ipc/bindings/Friend";
 import { friendName, memberName, useFriends } from "../../stores/friends";
+import { GroupCallButton, GroupLiveMark } from "../calls/CallButtons";
 import { ChatView, ErrorText } from "./ChatView";
 
 /** Members besides the creator (the database allows 16 in all). */
@@ -172,6 +173,7 @@ export function GroupList({ active }: { active: number | null }) {
             >
               <GroupIcon />
               <span className="min-w-0 flex-1 truncate font-semibold">{g.name}</span>
+              <GroupLiveMark groupId={g.id} />
               {g.unread > 0 && (
                 <span className="rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-accent">
                   {g.unread}
@@ -363,7 +365,8 @@ export function GroupPanel({ group }: { group: ChatGroup }) {
         >
           {t("friends.groups.members", { count: group.members.length })}
         </button>
-        <div className="ml-auto flex gap-1">
+        <div className="ml-auto flex items-center gap-1">
+          <GroupCallButton groupId={group.id} />
           {group.isOwner && (
             <IconButton label={t("friends.groups.rename")} onClick={() => setDialog("rename")}>
               <Pencil size={15} />

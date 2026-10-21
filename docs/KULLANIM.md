@@ -178,7 +178,9 @@ bilgisayara taşımak için **Profiller → İçe aktar**.
 - **Oyun**: oyun açılınca launcher'ın ne yapacağı (küçült / kapat / açık bırak), varsayılan
   RAM, eşzamanlı indirme sayısı.
   - "Kapat" seçiliyse launcher oyun ana menüye gelince kapanır, oyun çalışmaya devam eder
-    (o oturumun oynama süresi kaydedilmez).
+    (o oturumun oynama süresi kaydedilmez). Sesli aramadaysan launcher kapanmaz, küçülür.
+- **Sesli sohbet**: mikrofon seçimi, mikrofon testi (konuşunca çubuk hareket eder) ve
+  **IP adresimi gizle** (bkz. Arkadaşlar → Sesli sohbet).
 - **Veri klasörü**: konum, klasörü aç, taşı (aşağıda).
 - **Gelişmiş**: hata ayıklama günlüğü.
 - **Hakkında**: sürüm, otomatik güncelleme denetimi.
@@ -230,6 +232,19 @@ açışta neyin saklandığını anlatan bir onay ekranı çıkar.
   **Gruptan ayrıl** diyebilir; kurucu ayrılırsa grup en eski üyeye geçer, son kişi ayrılınca grup
   silinir. Gruba eklediğin kişiler senin arkadaşın olmalı; gruptaki diğer üyelerle arkadaş
   olmanız gerekmez. Sonradan katılan biri eski mesajları görür ama okunmamış sayılmaz.
+- **Sesli sohbet:** arkadaşının sohbet başlığındaki **telefon** simgesiyle onu ara; bir grupta
+  **Sesli sohbet başlat** (sürüyorsa **Sesli sohbete katıl**). Aranan kişide sağ üstte zil sesiyle
+  bir kart çıkar ve görev çubuğundaki simge yanıp söner; **Kabul et** / **Reddet**. 45 saniye
+  cevaplanmayan arama cevapsız sayılır. Aramadayken sağ altta bir çubuk durur: konuşanın
+  fotoğrafının etrafında yeşil halka, her kişi için ses düzeyi, **Mikrofonu kapat**, **Sesi kapat**
+  (mikrofonu da kapatır) ve **Aramadan ayrıl**. Bir grup aramasına seninle birlikte 16 kişi
+  katılabilir; grupta herkes ayrılınca arama biter, ikili aramada biri kapatınca. Aynı anda tek
+  bir aramada olabilirsin. Launcher küçültülmüşken ya da oyun açıkken arama sürer. Mikrofon
+  bulunamazsa ya da Windows izin vermezse yalnızca dinlersin (Windows Ayarları → Gizlilik ve
+  güvenlik → Mikrofon → masaüstü uygulamaları). Ses kişiden kişiye gider, sunucuda kaydedilmez.
+  **IP adresimi gizle** (Ayarlar → Sesli sohbet, varsayılan açık) sesi Cloudflare aktarım
+  sunucusundan geçirir; böylece aramadaki kişiler (gruptaki tanımadıkların dahil) IP adresini
+  göremez.
 - **Mod paylaşma:** sayfanın altındaki **Paylaştığım profiller** bölümünde bir profili
   **Paylaş**. Modrinth'te bulunan modlar yalnızca bağlantı olarak, diğer jar'lar (≤50 MB)
   dosya olarak paylaşılır. Modları değiştirdikten sonra **Güncelle**, bırakmak için **Kaldır**.
@@ -247,7 +262,8 @@ açışta neyin saklandığını anlatan bir onay ekranı çıkar.
   ve yüklediğin dosyaları sunucudan siler.
 
 Saklanan veriler: arkadaş kodun, görünen adın (seçili hesabının adı), mesajların, grupların ve
-grup mesajların, verdiğin takma adlar ve paylaştığın mod listeleri/dosyaları. Bunları yalnızca sen
+grup mesajların, verdiğin takma adlar, kısa süreli arama kayıtları (kim kimi aradı; arama bittikten
+bir gün sonra silinir) ve paylaştığın mod listeleri/dosyaları. Bunları yalnızca sen
 ve arkadaşların (grup mesajlarını grubun üyeleri, takma adları yalnızca sen) görebilir. Arkadaşlar internet
 gerektirir; bağlantı yoksa sayfada "çevrimdışı" yazar, launcher'ın geri kalanı etkilenmez.
 

@@ -27,6 +27,7 @@ import {
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
 import type { Friend } from "../../lib/ipc/bindings/Friend";
 import { friendName, useFriends } from "../../stores/friends";
+import { FriendCallButton } from "../calls/CallButtons";
 import { ChatView, ErrorText } from "./ChatView";
 import { FriendMods } from "./FriendMods";
 import { GroupList, GroupPanel, NicknameDialog } from "./Groups";
@@ -328,6 +329,7 @@ export function FriendsPage() {
                       </span>
                     )}
                     <span className="font-mono text-xs text-muted">{current.friendCode}</span>
+                    <FriendCallButton friendId={current.id} />
                     <IconButton
                       label={t("friends.nickname.edit")}
                       onClick={() => setNaming(true)}

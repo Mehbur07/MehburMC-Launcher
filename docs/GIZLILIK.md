@@ -28,6 +28,7 @@ E-posta ya da Google hesabıyla giriş yaparsan aşağıdakiler [Supabase](https
 | Oyun hesabı adların | Aynı adın iki kişide olmaması için |
 | Arkadaş kodun, görünen adın, profil fotoğrafın, son görülme zamanın | Arkadaşlar özelliği (açarsan) |
 | Arkadaşlıkların, mesajların, sohbet grupların ve grup mesajların, arkadaşlarına verdiğin takma adlar (yalnızca sen görürsün) | Arkadaşlar özelliği |
+| Sesli aramalar: kim kimi ne zaman aradı (arama bittikten bir gün sonra silinir) ve bağlantıyı kurmak için gereken teknik bilgiler (teslim edilince, en geç 2 dakikada silinir). **Ses kaydedilmez ve sunucumuzdan geçmez** | Sesli sohbet |
 | Paylaştığın skin/pelerinler, yüklediğin modlar ve bunların güvenlik tarama sonuçları, bildirimler | Topluluk ve MehburMC Kütüphanesi |
 | Yönetici rütbeleri, yasaklar ve yönetici işlem kayıtları | Kuralların uygulanması |
 
@@ -38,6 +39,10 @@ tarihlerini görebilir; **e-posta adreslerini göremez**.
 
 - **Supabase** — hesap ve sunucu verilerinin barındırıldığı hizmet.
 - **Google** — yalnızca "Google ile giriş yap"ı seçersen; giriş Google'ın kendi sayfasında yapılır.
+- **Cloudflare** — sesli aramalarda ses aktarım (TURN) sunucusu. "IP adresimi gizle" açıkken (varsayılan)
+  ses şifreli olarak Cloudflare üzerinden gider ve aramadaki diğer kişiler IP adresini göremez; kapalıysa
+  ses doğrudan gider ve karşı taraf IP adresini görebilir. Bağlantı adresini bulmak için Cloudflare ve
+  Google STUN sunucuları da kullanılır.
 - **Mojang/Microsoft, Modrinth, CurseForge, SkinMC, Adoptium** — oyun dosyaları, modlar, skinler
   ve Java bu sitelerden doğrudan indirilir. Bu istekler o sitelerin kendi gizlilik politikalarına tabidir.
 

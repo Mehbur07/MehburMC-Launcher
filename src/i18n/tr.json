@@ -93,6 +93,20 @@
       "hint": "Bu bilgisayarda bu hesapla giriş yaptın.",
       "signOutTitle": "Çıkış yapılsın mı?",
       "signOutMessage": "Launcher'ı kullanmak için tekrar giriş yapman gerekecek. Profillerin, modların ve dünyaların bu bilgisayarda kalır."
+    },
+    "voice": {
+      "title": "Sesli sohbet",
+      "mic": "Mikrofon",
+      "micHint": "Aramalarda kullanılan giriş aygıtı.",
+      "micDefault": "Sistem varsayılanı",
+      "micUnnamed": "Mikrofon {{n}}",
+      "test": "Mikrofon testi",
+      "testHint": "Konuş; çubuk hareket ediyorsa mikrofon çalışıyor.",
+      "level": "Mikrofon seviyesi",
+      "startTest": "Test et",
+      "stopTest": "Durdur",
+      "hideIp": "IP adresimi gizle",
+      "hideIpHint": "Ses Cloudflare aktarım sunucusu üzerinden gider, aramadaki kişiler IP adresini göremez. Kapatırsan ses doğrudan gider (biraz daha az gecikme), ama karşı taraf IP adresini görebilir."
     }
   },
   "startup": {
@@ -267,6 +281,14 @@
     "skinmc": {
       "badTag": "Bu etiket aranamaz; harf veya rakam kullan.",
       "badLink": "SkinMC sayfa bağlantısı geçersiz; listeyi yenile."
+    },
+    "calls": {
+      "invalid": "Arama isteği geçersiz.",
+      "notFound": "Bu arama artık yok.",
+      "ended": "Arama sona erdi.",
+      "turnUnavailable": "Ses aktarım sunucusuna ulaşılamadı.",
+      "micDenied": "Mikrofon izni yok. Windows Ayarları → Gizlilik ve güvenlik → Mikrofon'dan masaüstü uygulamalarına izin ver.",
+      "micMissing": "Mikrofon bulunamadı."
     }
   },
   "instances": {
@@ -1446,5 +1468,32 @@
       "sendHint": "Şalteri açınca oyuncuya gönderilir, kapatınca geri alınır. Oyuncunun launcher'ı birkaç dakika içinde günceller.",
       "sendSwitch": "{{name}} gönder"
     }
+  },
+  "calls": {
+    "title": "Sesli arama",
+    "call": "Sesli ara",
+    "inCall": "Aramadasın",
+    "startGroup": "Sesli sohbet başlat",
+    "joinGroup": "Sesli sohbete katıl ({{count}})",
+    "groupLive": "Sesli sohbet sürüyor",
+    "incoming": "Gelen sesli arama",
+    "groupIncoming": "{{name}} sesli sohbet başlattı",
+    "accept": "Kabul et",
+    "decline": "Reddet",
+    "calling": "Aranıyor…",
+    "connecting": "Bağlanıyor…",
+    "ringing": "Çalıyor",
+    "peerConnecting": "Bağlanıyor",
+    "peerFailed": "Bağlantı kurulamadı",
+    "you": "Sen",
+    "volume": "{{name}} ses düzeyi",
+    "mute": "Mikrofonu kapat",
+    "unmute": "Mikrofonu aç",
+    "deafen": "Sesi kapat",
+    "undeafen": "Sesi aç",
+    "leave": "Aramadan ayrıl",
+    "collapse": "Küçült",
+    "expand": "Genişlet",
+    "listenOnly": "Yalnızca dinliyorsun: {{reason}}"
   }
 }

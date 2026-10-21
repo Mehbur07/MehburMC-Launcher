@@ -10,6 +10,7 @@ import { useApp } from "../../stores/app";
 import { useAuth } from "../../stores/auth";
 import { useUpdate } from "../../stores/update";
 import { DataFolderSection } from "./DataFolderSection";
+import { VoiceSection } from "./VoiceSection";
 
 /** Swatch colors mirror tokens.css presets. */
 const ACCENTS: { id: Accent; color: string }[] = [
@@ -25,6 +26,7 @@ export function SettingsPage() {
   const boot = useApp((s) => s.boot);
   const update = useApp((s) => s.updateSettings);
   const upd = useUpdate();
+  const auth = useAuth((s) => s.status);
 
   if (!settings || !boot) return null;
 
@@ -130,6 +132,12 @@ export function SettingsPage() {
           />
         </Row>
       </Section>
+
+      {!(auth?.localAccount ?? false) && (
+        <Section title={t("settings.voice.title")}>
+          <VoiceSection />
+        </Section>
+      )}
 
       <Section title={t("settings.dataFolder")}>
         <DataFolderSection />

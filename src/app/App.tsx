@@ -21,6 +21,7 @@ import { useInstances } from "../stores/instances";
 import { useFriends } from "../stores/friends";
 import { useSkins } from "../stores/skins";
 import { useUpdate } from "../stores/update";
+import { CallLayer } from "../features/calls/CallLayer";
 import { CrashDialog } from "../features/crash/CrashDialog";
 import { connectEvents } from "./events";
 
@@ -230,6 +231,7 @@ export function App() {
               </Suspense>
             )}
             <CrashDialog />
+            {!local && <CallLayer />}
           </div>
         )}
       </div>

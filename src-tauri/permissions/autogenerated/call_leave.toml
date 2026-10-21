@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-call-leave"
+description = "Enables the call_leave command without any pre-configured scope."
+commands.allow = ["call_leave"]
+
+[[permission]]
+identifier = "deny-call-leave"
+description = "Denies the call_leave command without any pre-configured scope."
+commands.deny = ["call_leave"]

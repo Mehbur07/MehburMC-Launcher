@@ -5,6 +5,7 @@
 pub mod account;
 pub mod admin;
 pub mod avatar;
+pub mod calls;
 pub mod groups;
 pub mod library;
 pub mod names;
@@ -219,6 +220,7 @@ fn server_error(status: u16, body: &[u8]) -> CoreError {
         .chain(library::LIBRARY_ERRORS)
         .chain(account::AUTH_ERRORS)
         .chain(admin::ADMIN_ERRORS)
+        .chain(calls::CALL_ERRORS)
         .find(|c| **c == message)
     {
         return CoreError::Friends(code);
@@ -264,6 +266,8 @@ pub struct FriendsClient {
     local: std::sync::atomic::AtomicBool,
     /// Cancels a Google sign-in waiting for the browser (K83).
     google: std::sync::Mutex<Option<tokio_util::sync::CancellationToken>>,
+    /// Active voice call and cached ICE servers (K86).
+    calls: calls::CallCache,
 }
 
 impl FriendsClient {
@@ -277,6 +281,7 @@ impl FriendsClient {
             allow_anonymous: std::sync::atomic::AtomicBool::new(false),
             local: std::sync::atomic::AtomicBool::new(ctx.paths.local_account_file().is_file()),
             google: std::sync::Mutex::new(None),
+            calls: calls::CallCache::default(),
             ctx,
         }
     }

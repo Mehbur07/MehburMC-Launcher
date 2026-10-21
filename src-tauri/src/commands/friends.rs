@@ -43,10 +43,11 @@ pub fn go_offline_on_exit(app: &tauri::AppHandle) {
         return;
     };
     tauri::async_runtime::block_on(async move {
-        let _ = tokio::time::timeout(
-            std::time::Duration::from_secs(2),
-            launcher.friends.go_offline(),
-        )
+        let _ = tokio::time::timeout(std::time::Duration::from_secs(2), async {
+            // Others see us leave the call at once, not after the 20 s time-out.
+            super::calls::leave_on_exit(&launcher).await;
+            launcher.friends.go_offline().await
+        })
         .await;
     });
 }

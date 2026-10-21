@@ -167,6 +167,33 @@
   animation: online-pulse 2.4s ease-in-out infinite;
 }
 
+/* Voice calls (K86): green ring around whoever is speaking. */
+@utility speaking-ring {
+  box-shadow:
+    0 0 0 2px var(--mc-online),
+    0 0 12px rgb(var(--mc-online-rgb) / 0.75);
+  transition: box-shadow 0.12s ease-out;
+}
+
+/* Incoming call card: the ring breathes while it rings. */
+@utility call-ringing {
+  animation: call-ringing 1.2s ease-in-out infinite;
+}
+
+@keyframes call-ringing {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgb(var(--mc-online-rgb) / 0.6),
+      0 0 12px rgb(var(--mc-online-rgb) / 0.25);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgb(var(--mc-online-rgb) / 1),
+      0 0 30px rgb(var(--mc-online-rgb) / 0.6);
+  }
+}
+
 @keyframes online-pulse {
   0%,
   100% {

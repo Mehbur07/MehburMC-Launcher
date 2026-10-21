@@ -93,6 +93,20 @@
       "hint": "This computer is signed in with this account.",
       "signOutTitle": "Sign out?",
       "signOutMessage": "You will need to sign in again to use the launcher. Your instances, mods and worlds stay on this computer."
+    },
+    "voice": {
+      "title": "Voice chat",
+      "mic": "Microphone",
+      "micHint": "Input device used in calls.",
+      "micDefault": "System default",
+      "micUnnamed": "Microphone {{n}}",
+      "test": "Microphone test",
+      "testHint": "Speak; if the bar moves, the microphone works.",
+      "level": "Microphone level",
+      "startTest": "Test",
+      "stopTest": "Stop",
+      "hideIp": "Hide my IP address",
+      "hideIpHint": "Audio goes through the Cloudflare relay so people in the call cannot see your IP address. Off: audio goes direct (slightly lower latency), but others can see your IP address."
     }
   },
   "startup": {
@@ -267,6 +281,14 @@
     "skinmc": {
       "badTag": "This tag cannot be searched; use letters or digits.",
       "badLink": "Invalid SkinMC page link; refresh the list."
+    },
+    "calls": {
+      "invalid": "The call request is invalid.",
+      "notFound": "This call no longer exists.",
+      "ended": "The call has ended.",
+      "turnUnavailable": "The voice relay server could not be reached.",
+      "micDenied": "No microphone permission. Allow desktop apps in Windows Settings → Privacy & security → Microphone.",
+      "micMissing": "No microphone found."
     }
   },
   "instances": {
@@ -1446,5 +1468,32 @@
       "sendHint": "Switch on to give it to the player, off to take it back. Their launcher picks it up within a few minutes.",
       "sendSwitch": "Give {{name}}"
     }
+  },
+  "calls": {
+    "title": "Voice call",
+    "call": "Voice call",
+    "inCall": "In call",
+    "startGroup": "Start voice chat",
+    "joinGroup": "Join voice chat ({{count}})",
+    "groupLive": "Voice chat in progress",
+    "incoming": "Incoming voice call",
+    "groupIncoming": "{{name}} started a voice chat",
+    "accept": "Accept",
+    "decline": "Decline",
+    "calling": "Calling…",
+    "connecting": "Connecting…",
+    "ringing": "Ringing",
+    "peerConnecting": "Connecting",
+    "peerFailed": "Could not connect",
+    "you": "You",
+    "volume": "Volume of {{name}}",
+    "mute": "Mute microphone",
+    "unmute": "Unmute microphone",
+    "deafen": "Deafen",
+    "undeafen": "Undeafen",
+    "leave": "Leave call",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "listenOnly": "Listening only: {{reason}}"
   }
 }

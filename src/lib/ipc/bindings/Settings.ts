@@ -19,4 +19,12 @@ checkUpdates: boolean,
 /**
  * The user's own CurseForge API key (needed for CurseForge modpacks).
  */
-curseforgeApiKey?: string, };
+curseforgeApiKey?: string, 
+/**
+ * Microphone for voice calls (a WebRTC device id); `None` = system default.
+ */
+voiceInputDevice?: string, 
+/**
+ * Send call audio through the TURN relay so others never see our IP (K86).
+ */
+voiceHideIp: boolean, };

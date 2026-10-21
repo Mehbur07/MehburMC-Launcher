@@ -3,6 +3,20 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.22.0] — 2026-10-21
+
+### Eklendi
+- **Sesli sohbet:** arkadaşını sohbet başlığındaki telefon simgesiyle ara ya da bir grupta
+  **Sesli sohbet başlat** (en fazla 16 kişi). Gelen aramada zil çalar ve görev çubuğu yanıp söner.
+  Aramadayken sağ alttaki çubukta konuşanın etrafında yeşil halka, kişi başı ses düzeyi,
+  **Mikrofonu kapat**, **Sesi kapat** ve **Aramadan ayrıl** var. Launcher küçültülmüşken ve oyun
+  açıkken de arama sürer.
+- **Ayarlar → Sesli sohbet:** mikrofon seçimi, mikrofon testi ve **IP adresimi gizle** (varsayılan
+  açık: ses aktarım sunucusundan geçer, aramadaki kişiler IP adresini görmez).
+
+### Değişti
+- "Oyun açılınca kapat" seçiliyken sesli aramadaysan launcher kapanmaz, küçülür.
+
 ## [0.21.0] — 2026-10-21
 
 ### Eklendi
