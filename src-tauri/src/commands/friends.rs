@@ -1,5 +1,6 @@
 //! Friends: identity, friend requests, chat and shared mod lists (K64).
 
+use launcher_core::friends::groups::{ChatGroup, GroupMessage};
 use launcher_core::friends::share::{FriendInstallResult, SharedList};
 use launcher_core::friends::{ChatMessage, Friend, FriendsStatus, Profile};
 use std::sync::Arc;
@@ -124,6 +125,94 @@ pub async fn chat_send(
 pub async fn chat_mark_read(state: State<'_, AppState>, friend: String) -> CmdResult<()> {
     let launcher = state.launcher()?.clone();
     Ok(launcher.friends.mark_read(&friend).await?)
+}
+
+/// The caller's own name for a friend (K85); `None` removes it.
+#[tauri::command]
+pub async fn friend_set_nickname(
+    state: State<'_, AppState>,
+    friend: String,
+    nickname: Option<String>,
+) -> CmdResult<()> {
+    let launcher = state.launcher()?.clone();
+    Ok(launcher
+        .friends
+        .set_nickname(&friend, nickname.as_deref())
+        .await?)
+}
+
+#[tauri::command]
+pub async fn groups_list(state: State<'_, AppState>) -> CmdResult<Vec<ChatGroup>> {
+    let launcher = state.launcher()?.clone();
+    Ok(launcher.friends.groups().await?)
+}
+
+#[tauri::command]
+pub async fn group_create(
+    state: State<'_, AppState>,
+    name: String,
+    members: Vec<String>,
+) -> CmdResult<i64> {
+    let launcher = state.launcher()?.clone();
+    Ok(launcher.friends.create_group(&name, &members).await?)
+}
+
+#[tauri::command]
+pub async fn group_rename(state: State<'_, AppState>, group: i64, name: String) -> CmdResult<()> {
+    let launcher = state.launcher()?.clone();
+    Ok(launcher.friends.rename_group(group, &name).await?)
+}
+
+#[tauri::command]
+pub async fn group_add_members(
+    state: State<'_, AppState>,
+    group: i64,
+    members: Vec<String>,
+) -> CmdResult<()> {
+    let launcher = state.launcher()?.clone();
+    Ok(launcher.friends.add_group_members(group, &members).await?)
+}
+
+#[tauri::command]
+pub async fn group_remove_member(
+    state: State<'_, AppState>,
+    group: i64,
+    member: String,
+) -> CmdResult<()> {
+    let launcher = state.launcher()?.clone();
+    Ok(launcher.friends.remove_group_member(group, &member).await?)
+}
+
+#[tauri::command]
+pub async fn group_leave(state: State<'_, AppState>, group: i64) -> CmdResult<()> {
+    let launcher = state.launcher()?.clone();
+    Ok(launcher.friends.leave_group(group).await?)
+}
+
+#[tauri::command]
+pub async fn group_messages(
+    state: State<'_, AppState>,
+    group: i64,
+    after: Option<i64>,
+) -> CmdResult<Vec<GroupMessage>> {
+    let launcher = state.launcher()?.clone();
+    Ok(launcher.friends.group_messages(group, after).await?)
+}
+
+#[tauri::command]
+pub async fn group_send(
+    state: State<'_, AppState>,
+    group: i64,
+    body: String,
+) -> CmdResult<GroupMessage> {
+    let launcher = state.launcher()?.clone();
+    Ok(launcher.friends.send_group_message(group, &body).await?)
+}
+
+#[tauri::command]
+pub async fn group_mark_read(state: State<'_, AppState>, group: i64) -> CmdResult<()> {
+    let launcher = state.launcher()?.clone();
+    Ok(launcher.friends.mark_group_read(group).await?)
 }
 
 #[tauri::command]

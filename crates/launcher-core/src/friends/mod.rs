@@ -5,6 +5,7 @@
 pub mod account;
 pub mod admin;
 pub mod avatar;
+pub mod groups;
 pub mod library;
 pub mod names;
 pub mod oauth;
@@ -43,6 +44,11 @@ pub const FRIEND_ERRORS: &[&str] = &[
     "friends.messageInvalid",
     "friends.listNotFound",
     "friends.badItem",
+    "friends.groupNotFound",
+    "friends.groupFull",
+    "friends.groupNameInvalid",
+    "friends.notOwner",
+    "friends.nicknameInvalid",
 ];
 
 /// Longest chat message (matches the database check).
@@ -111,6 +117,8 @@ pub struct Friend {
     pub avatar: Option<String>,
     /// Launcher open right now (accepted friends only).
     pub online: bool,
+    /// The caller's own name for this friend (K85); only the caller sees it.
+    pub nickname: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -151,6 +159,8 @@ struct FriendRow {
     avatar_sha1: Option<String>,
     #[serde(default)]
     online: bool,
+    #[serde(default)]
+    nickname: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -637,6 +647,7 @@ impl FriendsClient {
                 unread: r.unread,
                 avatar,
                 online: r.online && r.status == FriendStatus::Accepted,
+                nickname: r.nickname.filter(|_| r.status == FriendStatus::Accepted),
             });
         }
         Ok(out)

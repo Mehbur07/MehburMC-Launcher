@@ -3,6 +3,15 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.21.0] — 2026-10-21
+
+### Eklendi
+- **Takma ad:** Arkadaşlar'da bir arkadaşının sohbet başlığındaki kalem simgesiyle ona kendi
+  verdiğin bir ad koy. Bu adı yalnızca sen görürsün; gerçek adı yanında parantez içinde durur.
+- **Grup sohbetleri:** Arkadaşlar sayfasının solunda **Gruplar** bölümü. **+** ile ad verip
+  arkadaşlarını seç (en fazla 16 kişi). Grubun kurucusu adı değiştirir, üye ekler veya çıkarır;
+  herkes gruptan ayrılabilir. Okunmamış grup mesajları da kenar çubuğundaki sayıya eklenir.
+
 ## [0.20.1] — 2026-10-20
 
 ### Kaldırıldı

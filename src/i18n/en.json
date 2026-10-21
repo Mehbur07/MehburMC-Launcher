@@ -226,7 +226,12 @@
       "messageInvalid": "Messages cannot be empty and are at most 2000 characters.",
       "listNotFound": "This mod list is no longer shared.",
       "badItem": "The list contains an invalid file.",
-      "server": "Friends server error: {{reason}}"
+      "server": "Friends server error: {{reason}}",
+      "groupNotFound": "This group is gone or you are no longer in it.",
+      "groupFull": "A group can have at most 16 people.",
+      "groupNameInvalid": "Group names are 1–48 characters.",
+      "notOwner": "Only the group's owner can do that.",
+      "nicknameInvalid": "Nicknames are 1–32 characters."
     },
     "server": {
       "addressInvalid": "Invalid server address: {{address}}",
@@ -1066,7 +1071,39 @@
       "stop": "Stop sharing",
       "working": "Uploading…"
     },
-    "online": "Online"
+    "online": "Online",
+    "nickname": {
+      "edit": "Set a nickname",
+      "title": "Nickname for {{name}}",
+      "label": "Nickname",
+      "hint": "Only you see this name; {{name}} does not know.",
+      "remove": "Remove nickname",
+      "realName": "({{name}})"
+    },
+    "groups": {
+      "title": "Groups ({{count}})",
+      "none": "No groups yet. Use + to start one with your friends.",
+      "create": "Create group",
+      "createSubmit": "Create",
+      "name": "Group name",
+      "pickMembers": "Pick friends (up to {{max}})",
+      "noFriends": "Add some friends first.",
+      "members": "{{count}} members",
+      "membersButton": "Members",
+      "membersTitle": "{{name}} — members",
+      "owner": "Owner",
+      "you": "You",
+      "formerMember": "Former member",
+      "addTitle": "Add friends",
+      "allIn": "All your friends are already in this group.",
+      "add": "Add",
+      "remove": "Remove {{name}} from the group",
+      "rename": "Rename group",
+      "leave": "Leave group",
+      "leaveTitle": "Leave {{name}}?",
+      "leaveBody": "You will no longer see this group's messages. If you own it, the longest-standing member takes over; if you are the last one, the group is deleted.",
+      "chatLabel": "{{name}} group chat"
+    }
   },
   "servers": {
     "title": "Servers",

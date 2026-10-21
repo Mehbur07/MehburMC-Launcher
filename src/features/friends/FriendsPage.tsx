@@ -4,7 +4,7 @@ import {
   Copy,
   MessageCircle,
   Package,
-  Send,
+  Pencil,
   ShieldCheck,
   UserMinus,
   UserPlus,
@@ -12,7 +12,7 @@ import {
   WifiOff,
   X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "../../components/Avatar";
@@ -26,22 +26,11 @@ import {
 } from "../../components/ui";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
 import type { Friend } from "../../lib/ipc/bindings/Friend";
-import { useFriends } from "../../stores/friends";
+import { friendName, useFriends } from "../../stores/friends";
+import { ChatView, ErrorText } from "./ChatView";
 import { FriendMods } from "./FriendMods";
+import { GroupList, GroupPanel, NicknameDialog } from "./Groups";
 import { MyShares } from "./MyShares";
-
-const CHAT_POLL_MS = 3000;
-const MAX_CHARS = 2000;
-
-function ErrorText({ error }: { error: ErrorPayload | null }) {
-  const { t } = useTranslation();
-  if (!error) return null;
-  return (
-    <p className="text-xs text-warn">
-      {t(`errors.${error.code}`, { ...error.params, defaultValue: error.detail })}
-    </p>
-  );
-}
 
 function Consent() {
   const { t } = useTranslation();
@@ -193,109 +182,22 @@ function Requests({ friends }: { friends: Friend[] }) {
 }
 
 function Chat({ friend }: { friend: Friend }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const messages = useFriends((s) => s.messages[friend.id]);
   const pollChat = useFriends((s) => s.pollChat);
   const send = useFriends((s) => s.send);
-  const [text, setText] = useState("");
-  const [error, setError] = useState<ErrorPayload | null>(null);
-  const [sending, setSending] = useState(false);
-  const bottom = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const id = window.setInterval(() => void pollChat(), CHAT_POLL_MS);
-    return () => window.clearInterval(id);
-  }, [pollChat]);
-
-  useEffect(() => {
-    bottom.current?.scrollIntoView?.({ block: "end" });
-  }, [messages?.length]);
-
-  const submit = async () => {
-    const body = text.trim();
-    if (!body || sending) return;
-    setSending(true);
-    const err = await send(body);
-    setSending(false);
-    setError(err);
-    if (!err) setText("");
-  };
-
-  const time = (iso: string) =>
-    new Date(iso).toLocaleTimeString(i18n.language, { hour: "2-digit", minute: "2-digit" });
-
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div
-        className="flex min-h-[240px] flex-1 flex-col gap-1.5 overflow-y-auto p-3"
-        role="log"
-        aria-label={t("friends.chatWith", { name: friend.displayName })}
-      >
-        {messages === undefined ? (
-          <p className="m-auto text-xs text-muted">{t("common.loading")}</p>
-        ) : messages.length === 0 ? (
-          <p className="m-auto text-xs text-muted">{t("friends.noMessages")}</p>
-        ) : (
-          messages.map((m) => {
-            const mine = m.sender !== friend.id;
-            return (
-              <div
-                key={m.id}
-                className={`flex max-w-[80%] flex-col rounded-lg px-3 py-1.5 text-sm ${
-                  mine
-                    ? "self-end bg-accent/20 text-fg"
-                    : "self-start border border-line bg-surface-2/80"
-                }`}
-              >
-                <span data-selectable className="whitespace-pre-wrap break-words">
-                  {m.body}
-                </span>
-                <span className="self-end text-[10px] text-muted">{time(m.createdAt)}</span>
-              </div>
-            );
-          })
-        )}
-        <div ref={bottom} />
-      </div>
-      <form
-        className="flex flex-col gap-1 border-t border-line p-3"
-        onSubmit={(e) => {
-          e.preventDefault();
-          void submit();
-        }}
-      >
-        <div className="flex items-end gap-2">
-          <textarea
-            value={text}
-            rows={2}
-            maxLength={MAX_CHARS}
-            placeholder={t("friends.messagePlaceholder")}
-            aria-label={t("friends.messagePlaceholder")}
-            onChange={(e) => {
-              setText(e.target.value);
-              setError(null);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                void submit();
-              }
-            }}
-            className="min-h-[2.5rem] flex-1 resize-none rounded-md border border-line bg-surface-2/80 px-3 py-2 text-sm outline-none focus:border-accent/60"
-          />
-          <Button type="submit" variant="primary" disabled={!text.trim() || sending}>
-            <Send size={14} />
-            {t("friends.sendMessage")}
-          </Button>
-        </div>
-        <div className="flex justify-between text-[11px] text-muted">
-          <ErrorText error={error} />
-          <span className="ml-auto">
-            {text.length}/{MAX_CHARS}
-          </span>
-        </div>
-      </form>
-    </div>
+    <ChatView
+      label={t("friends.chatWith", { name: friendName(friend) })}
+      lines={messages?.map((m) => ({
+        id: m.id,
+        mine: m.sender !== friend.id,
+        body: m.body,
+        createdAt: m.createdAt,
+      }))}
+      onPoll={pollChat}
+      onSend={send}
+    />
   );
 }
 
@@ -303,7 +205,10 @@ export function FriendsPage() {
   const { t } = useTranslation();
   const { enabled, friends, chatWith, offline, status, openChat, remove, block, disable } =
     useFriends();
+  const groupWith = useFriends((s) => s.groupWith);
+  const group = useFriends((s) => s.groups.find((g) => g.id === s.groupWith) ?? null);
   const [tab, setTab] = useState<"chat" | "mods">("chat");
+  const [naming, setNaming] = useState(false);
   const [confirm, setConfirm] = useState<"remove" | "block" | "disable" | null>(null);
 
   useEffect(() => {
@@ -366,7 +271,7 @@ export function FriendsPage() {
                         online={f.online}
                         dot="sm"
                       />
-                      <span className="min-w-0 flex-1 truncate font-semibold">{f.displayName}</span>
+                      <span className="min-w-0 flex-1 truncate font-semibold">{friendName(f)}</span>
                       {f.unread > 0 && (
                         <span className="rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-accent">
                           {f.unread}
@@ -376,6 +281,7 @@ export function FriendsPage() {
                   );
                 })
               )}
+              <GroupList active={groupWith} />
               {blocked.length > 0 && (
                 <div className="mt-auto border-t border-line pt-2">
                   <h3 className="px-2 text-[11px] text-muted">{t("friends.blocked")}</h3>
@@ -399,7 +305,9 @@ export function FriendsPage() {
             </section>
 
             <section className="flex min-w-0 flex-col rounded-lg border border-line bg-surface-1/85 backdrop-blur">
-              {!current ? (
+              {group ? (
+                <GroupPanel key={group.id} group={group} />
+              ) : !current ? (
                 <EmptyState icon={<MessageCircle size={30} />} title={t("friends.pickFriend")}>
                   <p>{t("friends.pickFriendHint")}</p>
                 </EmptyState>
@@ -412,9 +320,21 @@ export function FriendsPage() {
                       online={current.online}
                     />
                     <span className="font-display text-lg font-semibold">
-                      {current.displayName}
+                      {friendName(current)}
                     </span>
+                    {current.nickname && (
+                      <span className="text-xs text-muted">
+                        {t("friends.nickname.realName", { name: current.displayName })}
+                      </span>
+                    )}
                     <span className="font-mono text-xs text-muted">{current.friendCode}</span>
+                    <IconButton
+                      label={t("friends.nickname.edit")}
+                      onClick={() => setNaming(true)}
+                      className="h-7 w-7"
+                    >
+                      <Pencil size={13} />
+                    </IconButton>
                     <div role="tablist" className="ml-auto flex gap-1">
                       <Button
                         size="sm"
@@ -475,10 +395,10 @@ export function FriendsPage() {
       <ConfirmDialog
         open={confirm !== null}
         title={t(`friends.confirm.${confirm ?? "remove"}Title`, {
-          name: current?.displayName ?? "",
+          name: current ? friendName(current) : "",
         })}
         message={t(`friends.confirm.${confirm ?? "remove"}Body`, {
-          name: current?.displayName ?? "",
+          name: current ? friendName(current) : "",
         })}
         confirmLabel={t(`friends.confirm.${confirm ?? "remove"}Action`)}
         danger
@@ -489,6 +409,9 @@ export function FriendsPage() {
         }}
         onClose={() => setConfirm(null)}
       />
+      {naming && current && (
+        <NicknameDialog key={current.id} friend={current} onClose={() => setNaming(false)} />
+      )}
     </div>
   );
 }

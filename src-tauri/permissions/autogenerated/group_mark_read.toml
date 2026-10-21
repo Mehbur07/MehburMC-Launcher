@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-group-mark-read"
+description = "Enables the group_mark_read command without any pre-configured scope."
+commands.allow = ["group_mark_read"]
+
+[[permission]]
+identifier = "deny-group-mark-read"
+description = "Denies the group_mark_read command without any pre-configured scope."
+commands.deny = ["group_mark_read"]

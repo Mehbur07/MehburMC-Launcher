@@ -23,7 +23,9 @@ import type { AccountFaces } from "./bindings/AccountFaces";
 import type { AccountsView } from "./bindings/AccountsView";
 import type { Bootstrap } from "./bindings/Bootstrap";
 import type { CoreEvent } from "./bindings/CoreEvent";
+import type { ChatGroup } from "./bindings/ChatGroup";
 import type { ChatMessage } from "./bindings/ChatMessage";
+import type { GroupMessage } from "./bindings/GroupMessage";
 import type { CrashInfo } from "./bindings/CrashInfo";
 import type { ErrorPayload } from "./bindings/ErrorPayload";
 import type { FileEntry } from "./bindings/FileEntry";
@@ -255,6 +257,22 @@ export const ipc = {
     invoke<ChatMessage[]>("chat_messages", { friend, after }),
   chatSend: (friend: string, body: string) => invoke<ChatMessage>("chat_send", { friend, body }),
   chatMarkRead: (friend: string) => invoke<void>("chat_mark_read", { friend }),
+  /** Our own name for a friend; null removes it (K85). */
+  friendSetNickname: (friend: string, nickname: string | null) =>
+    invoke<void>("friend_set_nickname", { friend, nickname }),
+  groupsList: () => invoke<ChatGroup[]>("groups_list"),
+  groupCreate: (name: string, members: string[]) =>
+    invoke<number>("group_create", { name, members }),
+  groupRename: (group: number, name: string) => invoke<void>("group_rename", { group, name }),
+  groupAddMembers: (group: number, members: string[]) =>
+    invoke<void>("group_add_members", { group, members }),
+  groupRemoveMember: (group: number, member: string) =>
+    invoke<void>("group_remove_member", { group, member }),
+  groupLeave: (group: number) => invoke<void>("group_leave", { group }),
+  groupMessages: (group: number, after?: number) =>
+    invoke<GroupMessage[]>("group_messages", { group, after: after ?? null }),
+  groupSend: (group: number, body: string) => invoke<GroupMessage>("group_send", { group, body }),
+  groupMarkRead: (group: number) => invoke<void>("group_mark_read", { group }),
   myShares: () => invoke<SharedList[]>("my_shares"),
   shareInstance: (id: string) => invoke<SharedList>("share_instance", { id }),
   unshareInstance: (id: string) => invoke<void>("unshare_instance", { id }),

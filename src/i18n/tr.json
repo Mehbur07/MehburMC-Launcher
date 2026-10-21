@@ -226,7 +226,12 @@
       "messageInvalid": "Mesaj boş olamaz ve en fazla 2000 karakter olabilir.",
       "listNotFound": "Bu mod listesi artık paylaşılmıyor.",
       "badItem": "Listede geçersiz bir dosya var.",
-      "server": "Arkadaş sunucusunda hata: {{reason}}"
+      "server": "Arkadaş sunucusunda hata: {{reason}}",
+      "groupNotFound": "Bu grup artık yok ya da üyesi değilsin.",
+      "groupFull": "Bir grupta en fazla 16 kişi olabilir.",
+      "groupNameInvalid": "Grup adı 1–48 karakter olmalı.",
+      "notOwner": "Bunu yalnızca grubun kurucusu yapabilir.",
+      "nicknameInvalid": "Takma ad 1–32 karakter olmalı."
     },
     "server": {
       "addressInvalid": "Geçersiz sunucu adresi: {{address}}",
@@ -1066,7 +1071,39 @@
       "stop": "Paylaşmayı bırak",
       "working": "Yükleniyor…"
     },
-    "online": "Çevrimiçi"
+    "online": "Çevrimiçi",
+    "nickname": {
+      "edit": "Takma ad ver",
+      "title": "{{name}} için takma ad",
+      "label": "Takma ad",
+      "hint": "Bu adı yalnızca sen görürsün; {{name}} bilmez.",
+      "remove": "Takma adı kaldır",
+      "realName": "({{name}})"
+    },
+    "groups": {
+      "title": "Gruplar ({{count}})",
+      "none": "Henüz grup yok. + ile arkadaşlarınla bir grup kur.",
+      "create": "Grup oluştur",
+      "createSubmit": "Oluştur",
+      "name": "Grup adı",
+      "pickMembers": "Arkadaşlarını seç (en fazla {{max}})",
+      "noFriends": "Önce arkadaş eklemelisin.",
+      "members": "{{count}} üye",
+      "membersButton": "Üyeler",
+      "membersTitle": "{{name}} — üyeler",
+      "owner": "Kurucu",
+      "you": "Sen",
+      "formerMember": "Ayrılan üye",
+      "addTitle": "Arkadaş ekle",
+      "allIn": "Tüm arkadaşların zaten bu grupta.",
+      "add": "Ekle",
+      "remove": "{{name}} gruptan çıkar",
+      "rename": "Grubu yeniden adlandır",
+      "leave": "Gruptan ayrıl",
+      "leaveTitle": "{{name}} grubundan ayrılınsın mı?",
+      "leaveBody": "Bu grubun mesajlarını artık görmezsin. Kurucuysan grup en eski üyeye geçer; son üyeysen grup silinir.",
+      "chatLabel": "{{name}} grup sohbeti"
+    }
   },
   "servers": {
     "title": "Sunucular",

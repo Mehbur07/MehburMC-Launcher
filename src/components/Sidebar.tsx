@@ -40,7 +40,7 @@ export function Sidebar() {
   const view = useApp((s) => s.view);
   const setView = useApp((s) => s.setView);
   const whatsNewUnseen = useApp((s) => s.whatsNewUnseen);
-  const unread = useFriends((s) => totalUnread(s.friends));
+  const unread = useFriends((s) => totalUnread(s.friends, s.groups));
   const busy = useTasks(
     (s) => Object.values(s.tasks).filter((t) => t.status === "preparing").length,
   );

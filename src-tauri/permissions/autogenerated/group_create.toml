@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-group-create"
+description = "Enables the group_create command without any pre-configured scope."
+commands.allow = ["group_create"]
+
+[[permission]]
+identifier = "deny-group-create"
+description = "Denies the group_create command without any pre-configured scope."
+commands.deny = ["group_create"]

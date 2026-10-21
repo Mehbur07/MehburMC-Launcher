@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-group-rename"
+description = "Enables the group_rename command without any pre-configured scope."
+commands.allow = ["group_rename"]
+
+[[permission]]
+identifier = "deny-group-rename"
+description = "Denies the group_rename command without any pre-configured scope."
+commands.deny = ["group_rename"]

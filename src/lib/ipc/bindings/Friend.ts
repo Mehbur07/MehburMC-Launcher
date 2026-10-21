@@ -13,4 +13,8 @@ avatar: string | null,
 /**
  * Launcher open right now (accepted friends only).
  */
-online: boolean, };
+online: boolean, 
+/**
+ * The caller's own name for this friend (K85); only the caller sees it.
+ */
+nickname: string | null, };

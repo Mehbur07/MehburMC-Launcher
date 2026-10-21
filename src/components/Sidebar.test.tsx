@@ -75,6 +75,7 @@ describe("Sidebar", () => {
         {
           id: "f1",
           friendCode: "MEHBUR-AAAA",
+          nickname: null,
           displayName: "Ali",
           status: "accepted",
           incoming: false,

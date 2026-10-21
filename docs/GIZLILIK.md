@@ -1,6 +1,6 @@
 # Gizlilik Politikası — MehburMC Launcher
 
-Son güncelleme: 20 Ekim 2026
+Son güncelleme: 21 Ekim 2026
 
 MehburMC Launcher, Minecraft Java Edition'ı başlatmak için ücretsiz bir masaüstü uygulamasıdır.
 Bu sayfa, launcher'ın hangi verileri nerede tuttuğunu anlatır. Reklam yoktur, veriler satılmaz
@@ -27,7 +27,7 @@ E-posta ya da Google hesabıyla giriş yaparsan aşağıdakiler [Supabase](https
 | Şifren | Yalnızca Supabase'de, şifrelenmiş (hash) olarak; launcher saklamaz. Google ile girişte şifren bize hiç gelmez |
 | Oyun hesabı adların | Aynı adın iki kişide olmaması için |
 | Arkadaş kodun, görünen adın, profil fotoğrafın, son görülme zamanın | Arkadaşlar özelliği (açarsan) |
-| Arkadaşlıkların ve mesajların | Arkadaşlar özelliği |
+| Arkadaşlıkların, mesajların, sohbet grupların ve grup mesajların, arkadaşlarına verdiğin takma adlar (yalnızca sen görürsün) | Arkadaşlar özelliği |
 | Paylaştığın skin/pelerinler, yüklediğin modlar ve bunların güvenlik tarama sonuçları, bildirimler | Topluluk ve MehburMC Kütüphanesi |
 | Yönetici rütbeleri, yasaklar ve yönetici işlem kayıtları | Kuralların uygulanması |
 
@@ -44,7 +44,7 @@ tarihlerini görebilir; **e-posta adreslerini göremez**.
 ## 4. Verilerini silmek
 
 - **Arkadaşlar → Arkadaşları kapat ve verilerimi sil**: profilin, fotoğrafın, arkadaşlıkların,
-  mesajların ve paylaşımların sunucudan silinir.
+  mesajların, grup üyeliklerin ve grup mesajların, takma adların ve paylaşımların sunucudan silinir.
 - Paylaştığın skinleri ve yüklediğin modları istediğin an geri çekebilirsin.
 - Hesabının tamamen silinmesi için [GitHub Issues](https://github.com/Mehbur07/MehburMC-Launcher/issues)
   üzerinden istekte bulun (e-posta adresini oraya yazma; seninle iletişime geçilir).

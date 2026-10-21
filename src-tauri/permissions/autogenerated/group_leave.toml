@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-group-leave"
+description = "Enables the group_leave command without any pre-configured scope."
+commands.allow = ["group_leave"]
+
+[[permission]]
+identifier = "deny-group-leave"
+description = "Denies the group_leave command without any pre-configured scope."
+commands.deny = ["group_leave"]

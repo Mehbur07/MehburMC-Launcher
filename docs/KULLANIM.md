@@ -220,6 +220,16 @@ açışta neyin saklandığını anlatan bir onay ekranı çıkar.
   görünür; **Kabul et** dersen arkadaş olursunuz.
 - **Sohbet:** listeden arkadaşını seç. Enter gönderir, Shift+Enter yeni satır; mesajlar en
   fazla 2000 karakter. Okunmamış mesaj sayısı kenar çubuğunda görünür.
+- **Takma ad:** sohbetin üstündeki kalem simgesine bas ve arkadaşına kendi verdiğin adı yaz
+  (en fazla 32 karakter). Bu ad listede, sohbette ve gruplarda görünür; **yalnızca sen
+  görürsün**, arkadaşın bilmez. Gerçek adı sohbet başlığında parantez içinde durur.
+  Kaldırmak için aynı pencerede **Takma adı kaldır**.
+- **Grup sohbeti:** soldaki **Gruplar** bölümünde **+** → grup adı yaz, arkadaşlarını işaretle →
+  **Oluştur**. Bir grupta seninle birlikte en fazla 16 kişi olur. Grubu kuran kişi **Kurucu**dur:
+  adı değiştirir, **Üyeler** penceresinden arkadaşlarını ekler veya üyeleri çıkarır. Herkes
+  **Gruptan ayrıl** diyebilir; kurucu ayrılırsa grup en eski üyeye geçer, son kişi ayrılınca grup
+  silinir. Gruba eklediğin kişiler senin arkadaşın olmalı; gruptaki diğer üyelerle arkadaş
+  olmanız gerekmez. Sonradan katılan biri eski mesajları görür ama okunmamış sayılmaz.
 - **Mod paylaşma:** sayfanın altındaki **Paylaştığım profiller** bölümünde bir profili
   **Paylaş**. Modrinth'te bulunan modlar yalnızca bağlantı olarak, diğer jar'lar (≤50 MB)
   dosya olarak paylaşılır. Modları değiştirdikten sonra **Güncelle**, bırakmak için **Kaldır**.
@@ -236,8 +246,9 @@ açışta neyin saklandığını anlatan bir onay ekranı çıkar.
 - **Kapatma:** **Arkadaşları kapat ve verilerimi sil** hesabını, mesajlarını, arkadaşlıklarını
   ve yüklediğin dosyaları sunucudan siler.
 
-Saklanan veriler: arkadaş kodun, görünen adın (seçili hesabının adı), mesajların ve paylaştığın
-mod listeleri/dosyaları. Bunları yalnızca sen ve arkadaşların görebilir. Arkadaşlar internet
+Saklanan veriler: arkadaş kodun, görünen adın (seçili hesabının adı), mesajların, grupların ve
+grup mesajların, verdiğin takma adlar ve paylaştığın mod listeleri/dosyaları. Bunları yalnızca sen
+ve arkadaşların (grup mesajlarını grubun üyeleri, takma adları yalnızca sen) görebilir. Arkadaşlar internet
 gerektirir; bağlantı yoksa sayfada "çevrimdışı" yazar, launcher'ın geri kalanı etkilenmez.
 
 ## 12. MehburMC hesabı

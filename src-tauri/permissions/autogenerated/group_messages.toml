@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-group-messages"
+description = "Enables the group_messages command without any pre-configured scope."
+commands.allow = ["group_messages"]
+
+[[permission]]
+identifier = "deny-group-messages"
+description = "Denies the group_messages command without any pre-configured scope."
+commands.deny = ["group_messages"]
