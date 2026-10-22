@@ -35,6 +35,7 @@
     "showConsole": "Show console",
     "switch": "Switch instance",
     "news": "Minecraft news",
+    "newsNew": "New",
     "otherGames": "Games open in this instance",
     "stopFor": "Stop {{name}}'s game",
     "anotherAccountHint": "This instance is open with another account. You can join with the selected one too."

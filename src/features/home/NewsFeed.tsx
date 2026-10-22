@@ -8,18 +8,72 @@ import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { NewsItem } from "../../lib/ipc/bindings/NewsItem";
 import { useApp } from "../../stores/app";
 
-/** Loaded once per session; the backend caches the feed for an hour. */
-const useNews = create<{ items: NewsItem[] | null; load: () => void }>((set, get) => ({
+/** While Home is shown the feed is re-read this often (Mojang refreshes every 4 min). */
+export const NEWS_REFRESH_MS = 3 * 60 * 1000;
+/** Coming back to the window refreshes if the last load is older than this. */
+const STALE_MS = 60 * 1000;
+
+const same = (a: NewsItem[], b: NewsItem[]) =>
+  a.length === b.length &&
+  a.every((x, i) => x.id === b[i]?.id && x.title === b[i]?.title && x.image === b[i]?.image);
+
+interface NewsStore {
+  items: NewsItem[] | null;
+  /** Ids that appeared after the first load of this session. */
+  fresh: Set<string>;
+  loadedAt: number;
+  busy: boolean;
+  /** First load, or a silent refresh (`force`) that keeps the list on failure. */
+  load: (force?: boolean) => void;
+}
+
+export const useNews = create<NewsStore>((set, get) => ({
   items: null,
-  load: () => {
-    if (get().items) return;
-    set({ items: [] });
+  fresh: new Set(),
+  loadedAt: 0,
+  busy: false,
+  load: (force = false) => {
+    const { items, busy } = get();
+    if (busy || (items && !force)) return;
+    set({ busy: true });
     void ipc
       .listNews()
-      .then((items) => set({ items }))
-      .catch(() => set({ items: [] }));
+      .then((next) => {
+        const prev = get().items;
+        if (prev && same(prev, next)) return set({ loadedAt: Date.now() });
+        const known = new Set(prev?.map((n) => n.id) ?? []);
+        const fresh = new Set(get().fresh);
+        // Empty first: nothing counts as new on the first load.
+        if (prev && prev.length > 0) for (const n of next) if (!known.has(n.id)) fresh.add(n.id);
+        // Offline returns []: keep what is on screen.
+        set({ items: next.length > 0 || !prev ? next : prev, fresh, loadedAt: Date.now() });
+      })
+      .catch(() => set({ items: get().items ?? [] }))
+      .finally(() => set({ busy: false }));
   },
 }));
+
+/** Refreshes on a timer while visible and when the window comes back. */
+function useLiveNews() {
+  const load = useNews((s) => s.load);
+  useEffect(() => {
+    load();
+    const refresh = () => {
+      if (document.visibilityState === "visible") load(true);
+    };
+    const timer = window.setInterval(refresh, NEWS_REFRESH_MS);
+    const onShow = () => {
+      if (Date.now() - useNews.getState().loadedAt > STALE_MS) refresh();
+    };
+    document.addEventListener("visibilitychange", onShow);
+    window.addEventListener("focus", onShow);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onShow);
+      window.removeEventListener("focus", onShow);
+    };
+  }, [load]);
+}
 
 function NewsImage({ url }: { url?: string }) {
   const [src, setSrc] = useState<string | null>(null);
@@ -54,8 +108,8 @@ function NewsImage({ url }: { url?: string }) {
 export function NewsFeed({ limit = 6 }: { limit?: number }) {
   const { t, i18n } = useTranslation();
   const items = useNews((s) => s.items);
-  const load = useNews((s) => s.load);
-  useEffect(load, [load]);
+  const fresh = useNews((s) => s.fresh);
+  useLiveNews();
 
   if (!items || items.length === 0) return null;
 
@@ -85,7 +139,12 @@ export function NewsFeed({ limit = 6 }: { limit?: number }) {
             <NewsImage url={n.image} />
             <div className="flex flex-1 flex-col gap-1 p-3">
               <div className="flex items-center justify-between text-[11px] text-muted">
-                <span>
+                <span className="flex items-center gap-1.5">
+                  {fresh.has(n.id) && (
+                    <span className="rounded bg-accent px-1.5 text-[10px] font-bold tracking-wide text-on-accent uppercase">
+                      {t("home.newsNew")}
+                    </span>
+                  )}
                   {n.date
                     ? new Date(n.date).toLocaleDateString(i18n.language, { dateStyle: "medium" })
                     : ""}

@@ -1,6 +1,7 @@
 //! Java Edition news from the official launcher content feed.
 //!
-//! The feed is cached for an hour (stale copy used offline). Any failure
+//! The feed is cached for two minutes (Mojang's CDN itself refreshes every
+//! four), so the home screen can poll it; the stale copy is used offline. Any failure
 //! yields an empty list: news is decoration and must never block the UI.
 
 use std::time::Duration;
@@ -11,7 +12,7 @@ use ts_rs::TS;
 use crate::ctx::Ctx;
 use crate::net::cache::get_json_cached;
 
-const TTL: Duration = Duration::from_secs(60 * 60);
+const TTL: Duration = Duration::from_secs(2 * 60);
 const MAX_ITEMS: usize = 12;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]

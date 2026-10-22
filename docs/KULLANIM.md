@@ -82,6 +82,9 @@ sürüm dosyaları ve kütüphaneler profiller arasında paylaşılır (disk tas
 **Oyna** ekranında profili seç ve **OYNA**'ya bas. İlk başlatmada eksik dosyalar indirilir
 (ilerleme **İndirmeler** ekranında); sonraki başlatmalar saniyeler içinde hazırdır.
 
+Altındaki **Minecraft haberleri** ana sayfa açıkken birkaç dakikada bir kendiliğinden yenilenir;
+launcher açıkken yayınlanan haberlerde **Yeni** rozeti çıkar.
+
 - **Konsol**: oyunun çıktısını canlı gösterir; seviyeye göre filtreleyebilir, arayabilir,
   kopyalayabilir veya dosyaya kaydedebilirsin.
 - **Durdur**: oyunu kapatır.
