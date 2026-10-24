@@ -1,15 +1,15 @@
 {
-  "version": "0.22.1",
-  "notes": "### Değişti\n- **Minecraft haberleri** ana sayfada canlı yenilenir: sayfa açıkken birkaç dakikada bir ve\n  launcher'a geri döndüğünde. Sonradan gelen haberlerde **Yeni** rozeti çıkar.",
-  "pub_date": "2026-10-22T16:27:09Z",
+  "version": "0.23.0",
+  "notes": "### Eklendi\n- **MehburMC Kütüphanesi** artık modların yanında **modpack** (Modrinth `.mrpack`), **resource\n  pack** ve **shader** (`.zip`) da kabul eder. **Yükle**'ye basınca önce türü seçersin; her dosya\n  yine otomatik kontrolden geçer ve admin onayından sonra yayınlanır. Paketler 50 MB'ye kadar.\n- Kütüphanede **Tümü / Modlar / Modpackler / Resource packler / Shaderlar** süzgeci ve her\n  kartta tür rozeti.\n- Modpack'i **Profil olarak kur** ile yeni bir profil olarak kurarsın; resource pack ve shader\n  seçili profile kurulur (shader için profilde Iris veya OptiFine gerekir).\n\n### Değişti\n- Kütüphanedeki yüklemelerin toplamı kişi başı 200 MB ile sınırlı.",
+  "pub_date": "2026-10-24T16:46:17Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYURSMDAzQnJQMTNJbVZwckljYTdzRkRKcFdVTVNnd29BMGNvVVdCL3BaeFgrMWNMRnNlZUZISWhIY2RseFpXb1ZUdGRUdjNkemIyR2pwbFNqMzdHTEFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNjg2NDIwCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMi4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIyLjEKUldmR3dVZXA1cC9KTkQ3eURiYmZaNXRTOUJRVTZFU0NyWWlkeFNicWs5Yk55bzBGdzRheDUvODZ6c0dYZmp2S3N4bFpwNG9wWXp2SFFWK1YwajZDQlE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.22.1/MehburMC-Launcher_0.22.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUh5UjkxcDJJOGhMdk9WU25FSnVpREp3aWRscERVUFMwaWVBazBTVk1EeTRHVVR6MkVDZ1hiT09JT3hTV3pKZFZoK2RZN0E0VUE5clgwb2MrYmw1dXdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyODYwMzUwCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMy4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIzLjAKT3VwQk80SGVSZ1dydThaUi9OSU45RmZkQnIyb2tqaTFVR0FoeXkyaUFybWxJL2xqbE43TEhJVnNQWTZlZFVJSWdEODRKUk5GanhiUVl2QTJwUmQ3Qmc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.23.0/MehburMC-Launcher_0.23.0_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYURSMDAzQnJQMTNJbVZwckljYTdzRkRKcFdVTVNnd29BMGNvVVdCL3BaeFgrMWNMRnNlZUZISWhIY2RseFpXb1ZUdGRUdjNkemIyR2pwbFNqMzdHTEFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNjg2NDIwCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMi4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIyLjEKUldmR3dVZXA1cC9KTkQ3eURiYmZaNXRTOUJRVTZFU0NyWWlkeFNicWs5Yk55bzBGdzRheDUvODZ6c0dYZmp2S3N4bFpwNG9wWXp2SFFWK1YwajZDQlE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.22.1/MehburMC-Launcher_0.22.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUh5UjkxcDJJOGhMdk9WU25FSnVpREp3aWRscERVUFMwaWVBazBTVk1EeTRHVVR6MkVDZ1hiT09JT3hTV3pKZFZoK2RZN0E0VUE5clgwb2MrYmw1dXdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyODYwMzUwCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yMy4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjIzLjAKT3VwQk80SGVSZ1dydThaUi9OSU45RmZkQnIyb2tqaTFVR0FoeXkyaUFybWxJL2xqbE43TEhJVnNQWTZlZFVJSWdEODRKUk5GanhiUVl2QTJwUmQ3Qmc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.23.0/MehburMC-Launcher_0.23.0_x64-setup.exe"
     }
   }
 }
