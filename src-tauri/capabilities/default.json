@@ -14,6 +14,7 @@
     "core:window:allow-is-maximized",
     "core:window:allow-start-dragging",
     "core:window:allow-close",
+    "core:window:allow-set-fullscreen",
     "allow-get-bootstrap",
     "allow-save-settings",
     "allow-open-data-dir",

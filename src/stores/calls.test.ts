@@ -10,10 +10,15 @@ const ipcMock = vi.hoisted(() => ({
 }));
 const meshes = vi.hoisted(() => [] as MockMesh[]);
 type MockMesh = {
-  opts: { relayOnly: boolean; send: (s: unknown[]) => Promise<unknown> };
+  opts: {
+    relayOnly: boolean;
+    send: (s: unknown[]) => Promise<unknown>;
+    onRemoteScreen: (peer: string, screen: unknown) => void;
+  };
   sync: ReturnType<typeof vi.fn>;
   handle: ReturnType<typeof vi.fn>;
   setTrack: ReturnType<typeof vi.fn>;
+  setScreen: ReturnType<typeof vi.fn>;
   close: ReturnType<typeof vi.fn>;
 };
 
@@ -22,11 +27,13 @@ vi.mock("../lib/ipc", async (orig) => ({
   ipc: ipcMock,
   subscribeCalls: vi.fn(async () => () => undefined),
 }));
-vi.mock("../lib/voice/mesh", () => ({
+vi.mock("../lib/voice/mesh", async (orig) => ({
+  ...(await orig<typeof import("../lib/voice/mesh")>()),
   VoiceMesh: class {
     sync = vi.fn();
     handle = vi.fn(async () => undefined);
     setTrack = vi.fn(async () => undefined);
+    setScreen = vi.fn(async () => undefined);
     close = vi.fn();
     constructor(public opts: MockMesh["opts"]) {
       meshes.push(this as unknown as MockMesh);
@@ -47,6 +54,49 @@ import { useFriends } from "./friends";
 const track = { enabled: true, stop: vi.fn() };
 const stream = { getAudioTracks: () => [track], getTracks: () => [track] };
 const getUserMedia = vi.fn();
+const getDisplayMedia = vi.fn();
+
+/** jsdom has no MediaStream; enough of one for the screen streams. */
+class FakeStream {
+  constructor(public tracks: unknown[] = []) {}
+  getTracks() {
+    return this.tracks;
+  }
+}
+vi.stubGlobal("MediaStream", FakeStream);
+vi.stubGlobal(
+  "Audio",
+  class {
+    autoplay = false;
+    muted = false;
+    volume = 1;
+    srcObject: unknown = null;
+    pause() {}
+    play() {
+      return Promise.resolve();
+    }
+  },
+);
+
+function screenCapture(withAudio: boolean) {
+  const video = {
+    kind: "video",
+    contentHint: "",
+    onended: null as null | (() => void),
+    stop: vi.fn(),
+  };
+  const audio = { kind: "audio", stop: vi.fn() };
+  const tracks = withAudio ? [video, audio] : [video];
+  return {
+    video,
+    audio,
+    stream: {
+      getVideoTracks: () => [video],
+      getAudioTracks: () => (withAudio ? [audio] : []),
+      getTracks: () => tracks,
+    },
+  };
+}
 
 const call = (over: Partial<Call> = {}): Call => ({
   id: 7,
@@ -75,7 +125,7 @@ describe("calls store", () => {
     meshes.length = 0;
     track.enabled = true;
     Object.defineProperty(navigator, "mediaDevices", {
-      value: { getUserMedia },
+      value: { getUserMedia, getDisplayMedia },
       configurable: true,
     });
     getUserMedia.mockResolvedValue(stream);
@@ -97,6 +147,9 @@ describe("calls store", () => {
       volumes: {},
       micError: null,
       error: null,
+      sharing: null,
+      sharingAudio: false,
+      screens: {},
     });
   });
 
@@ -212,5 +265,76 @@ describe("calls store", () => {
     expect(ipcMock.callSignal).toHaveBeenCalledWith(7, [
       { recipient: "f1", kind: "ice", payload: "{}" },
     ]);
+  });
+
+  it("shares the picked screen with system audio and stops it", async () => {
+    await useCalls.getState().start({ friend: "f1" });
+    const cap = screenCapture(true);
+    getDisplayMedia.mockResolvedValue(cap.stream);
+    await useCalls.getState().startShare("1080p60");
+    expect(getDisplayMedia).toHaveBeenCalledWith(
+      expect.objectContaining({
+        video: expect.objectContaining({ frameRate: { ideal: 60, max: 60 } }),
+        audio: expect.objectContaining({ restrictOwnAudio: true }),
+        systemAudio: "include",
+      }),
+    );
+    expect(meshes[0]!.setScreen).toHaveBeenCalledWith({
+      video: cap.video,
+      audio: cap.audio,
+      quality: "1080p60",
+    });
+    expect(cap.video.contentHint).toBe("motion");
+    let s = useCalls.getState();
+    expect(s.sharing).toBe("1080p60");
+    expect(s.sharingAudio).toBe(true);
+    expect(s.shareQuality).toBe("1080p60");
+
+    // The browser's own "Stop sharing" ends the track.
+    cap.video.onended?.();
+    expect(meshes[0]!.setScreen).toHaveBeenLastCalledWith(null);
+    expect(cap.video.stop).toHaveBeenCalled();
+    expect(cap.audio.stop).toHaveBeenCalled();
+    s = useCalls.getState();
+    expect(s.sharing).toBeNull();
+  });
+
+  it("treats a closed picker as no share and other failures as an error", async () => {
+    await useCalls.getState().start({ friend: "f1" });
+    getDisplayMedia.mockRejectedValueOnce(new DOMException("no", "NotAllowedError"));
+    await useCalls.getState().startShare("1080p30");
+    expect(useCalls.getState().error).toBeNull();
+    expect(useCalls.getState().sharing).toBeNull();
+    getDisplayMedia.mockRejectedValueOnce(new DOMException("x", "NotReadableError"));
+    await useCalls.getState().startShare("1080p30");
+    expect(useCalls.getState().error?.code).toBe("calls.screenFailed");
+    expect(meshes[0]!.setScreen).not.toHaveBeenCalled();
+  });
+
+  it("does nothing outside a call", async () => {
+    await useCalls.getState().startShare("720p30");
+    expect(getDisplayMedia).not.toHaveBeenCalled();
+  });
+
+  it("tracks others' shares and clears everything when leaving", async () => {
+    await useCalls.getState().start({ friend: "f1" });
+    const cap = screenCapture(false);
+    getDisplayMedia.mockResolvedValue(cap.stream);
+    await useCalls.getState().startShare("720p30");
+    expect(cap.video.contentHint).toBe("detail");
+    expect(useCalls.getState().sharingAudio).toBe(false);
+    const video = { kind: "video" };
+    meshes[0]!.opts.onRemoteScreen("f1", { video, audio: { kind: "audio" } });
+    expect(useCalls.getState().screens).toEqual({ f1: 1 });
+    meshes[0]!.opts.onRemoteScreen("f1", { video, audio: null });
+    expect(useCalls.getState().screens).toEqual({ f1: 2 });
+    meshes[0]!.opts.onRemoteScreen("f1", null);
+    expect(useCalls.getState().screens).toEqual({});
+    meshes[0]!.opts.onRemoteScreen("f1", { video, audio: null });
+    await useCalls.getState().leave();
+    const s = useCalls.getState();
+    expect(s.screens).toEqual({});
+    expect(s.sharing).toBeNull();
+    expect(cap.video.stop).toHaveBeenCalled();
   });
 });

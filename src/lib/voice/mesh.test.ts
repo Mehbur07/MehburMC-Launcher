@@ -3,9 +3,45 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { CallMember } from "../ipc/bindings/CallMember";
 import type { CallSignal } from "../ipc/bindings/CallSignal";
 import type { OutgoingSignal } from "../ipc/bindings/OutgoingSignal";
-import { isOfferer, type MeshOptions, type PeerStatus, VoiceMesh } from "./mesh";
+import {
+  isOfferer,
+  type MeshOptions,
+  type PeerStatus,
+  type RemoteScreen,
+  screenEncoding,
+  VoiceMesh,
+} from "./mesh";
 
-/** Just enough of RTCPeerConnection: connects once both descriptions and a candidate are in. */
+interface FakeTransceiver {
+  direction: string;
+  receiver: { track: { kind: string } };
+  sender: {
+    track: unknown;
+    replaceTrack: (t: unknown) => Promise<void>;
+    params: { encodings: Record<string, unknown>[]; degradationPreference?: string };
+    getParameters: () => FakeTransceiver["sender"]["params"];
+    setParameters: (p: FakeTransceiver["sender"]["params"]) => Promise<void>;
+  };
+}
+
+/** Negotiated data channel; delivers to its twin on the other connection. */
+class FakeChannel {
+  readyState: RTCDataChannelState = "connecting";
+  twin: FakeChannel | null = null;
+  onopen: (() => void) | null = null;
+  onmessage: ((e: { data: string }) => void) | null = null;
+  onclose: (() => void) | null = null;
+  send(data: string) {
+    if (this.readyState !== "open") throw new Error("not open");
+    if (this.twin?.readyState === "open") this.twin.onmessage?.({ data });
+  }
+}
+
+/**
+ * Just enough of RTCPeerConnection: connects once both descriptions and a
+ * candidate are in. The fake SDP carries the offer's transceiver kinds and
+ * whether it has a data channel, so the answer side mirrors them.
+ */
 class FakePC {
   static all: FakePC[] = [];
   static autoConnect = true;
@@ -13,47 +49,65 @@ class FakePC {
   connectionState: RTCPeerConnectionState = "new";
   localDescription: RTCSessionDescriptionInit | null = null;
   remoteDescription: RTCSessionDescriptionInit | null = null;
-  transceivers: {
-    direction: string;
-    sender: { track: unknown; replaceTrack: (t: unknown) => Promise<void> };
-  }[] = [];
+  transceivers: FakeTransceiver[] = [];
+  channel: FakeChannel | null = null;
+  /** Index of the connection at the other end (from the fake SDP). */
+  other = -1;
+  remoteChannel = false;
   candidates: RTCIceCandidateInit[] = [];
   onicecandidate: ((e: { candidate: { toJSON(): RTCIceCandidateInit } | null }) => void) | null =
     null;
-  ontrack: ((e: { streams: unknown[]; track: unknown }) => void) | null = null;
+  ontrack:
+    ((e: { streams: unknown[]; track: unknown; transceiver: FakeTransceiver }) => void) | null =
+    null;
   onconnectionstatechange: (() => void) | null = null;
   closed = false;
   constructor(public config: RTCConfiguration) {
     FakePC.all.push(this);
   }
-  private transceiver(direction: string) {
-    const t = {
+  private transceiver(kind: string, direction: string) {
+    const t: FakeTransceiver = {
       direction,
+      receiver: { track: { kind } },
       sender: {
-        track: null as unknown,
+        track: null,
         replaceTrack: async (track: unknown) => {
           t.sender.track = track;
+        },
+        params: { encodings: [] },
+        getParameters: () => ({ ...t.sender.params }),
+        setParameters: async (p) => {
+          t.sender.params = p;
         },
       },
     };
     this.transceivers.push(t);
     return t;
   }
-  addTransceiver(_kind: string, init: { direction: string }) {
-    return this.transceiver(init.direction);
+  addTransceiver(kind: string, init: { direction: string }) {
+    return this.transceiver(kind, init.direction);
   }
   getTransceivers() {
     return this.transceivers;
   }
+  createDataChannel() {
+    this.channel = new FakeChannel();
+    return this.channel;
+  }
+  private sdp(type: string) {
+    const kinds = this.transceivers.map((t) => t.receiver.track.kind).join(",");
+    return `${type}-${FakePC.all.indexOf(this)}|${kinds}|${this.channel ? "dc" : ""}`;
+  }
   async createOffer() {
-    return { type: "offer" as const, sdp: `offer-${FakePC.all.indexOf(this)}` };
+    return { type: "offer" as const, sdp: this.sdp("offer") };
   }
   async createAnswer() {
-    return { type: "answer" as const, sdp: `answer-${FakePC.all.indexOf(this)}` };
+    return { type: "answer" as const, sdp: this.sdp("answer") };
   }
   async setLocalDescription(d: RTCSessionDescriptionInit) {
     this.localDescription = d;
     this.signalingState = d.type === "offer" ? "have-local-offer" : "stable";
+    for (const t of this.transceivers) t.sender.params = { encodings: [{}] };
     queueMicrotask(() =>
       this.onicecandidate?.({
         candidate: {
@@ -65,9 +119,13 @@ class FakePC {
   }
   async setRemoteDescription(d: RTCSessionDescriptionInit) {
     this.remoteDescription = d;
+    const [head = "", kinds = "", dc = ""] = (d.sdp ?? "").split("|");
+    this.other = Number(head.split("-")[1] ?? -1);
+    this.remoteChannel = dc === "dc";
     if (d.type === "offer") {
       this.signalingState = "have-remote-offer";
-      if (this.transceivers.length === 0) this.transceiver("recvonly");
+      const list = kinds ? kinds.split(",") : ["audio"];
+      if (this.transceivers.length === 0) for (const k of list) this.transceiver(k, "recvonly");
     } else {
       this.signalingState = "stable";
     }
@@ -87,8 +145,30 @@ class FakePC {
       this.connectionState !== "connected"
     ) {
       this.connectionState = "connected";
-      this.ontrack?.({ streams: [{ id: "remote" }], track: {} });
+      this.transceivers.forEach((t, i) =>
+        this.ontrack?.({
+          streams: i === 0 ? [{ id: "remote" }] : [],
+          track: t.receiver.track,
+          transceiver: t,
+        }),
+      );
       this.onconnectionstatechange?.();
+      // Both ends negotiated a channel: open the pair.
+      const other = FakePC.all[this.other];
+      if (
+        this.channel &&
+        this.remoteChannel &&
+        other?.channel &&
+        other.connectionState === "connected"
+      ) {
+        this.channel.twin = other.channel;
+        other.channel.twin = this.channel;
+        // Like SCTP: both ends are open before either hears about it.
+        other.channel.readyState = "open";
+        this.channel.readyState = "open";
+        other.channel.onopen?.();
+        this.channel.onopen?.();
+      }
     }
   }
   fail() {
@@ -98,6 +178,14 @@ class FakePC {
   close() {
     this.closed = true;
     this.connectionState = "closed";
+    if (this.channel) {
+      this.channel.readyState = "closed";
+      const twin = this.channel.twin;
+      if (twin && twin.readyState === "open") {
+        twin.readyState = "closed";
+        twin.onclose?.();
+      }
+    }
   }
 }
 
@@ -123,11 +211,13 @@ function network(ids: string[], opts: Partial<MeshOptions> = {}) {
   const meshes = new Map<string, VoiceMesh>();
   const status = new Map<string, Map<string, PeerStatus | null>>();
   const streams = new Map<string, Map<string, unknown>>();
+  const screens = new Map<string, Map<string, RemoteScreen | null>>();
   const sent: { from: string; batch: OutgoingSignal[] }[] = [];
   const hold: { on: boolean; queue: CallSignal[] } = { on: false, queue: [] };
   for (const id of ids) {
     status.set(id, new Map());
     streams.set(id, new Map());
+    screens.set(id, new Map());
     meshes.set(
       id,
       new VoiceMesh({
@@ -138,6 +228,7 @@ function network(ids: string[], opts: Partial<MeshOptions> = {}) {
         createPeer: (c) => new FakePC(c) as unknown as RTCPeerConnection,
         onPeerStatus: (p, s) => status.get(id)!.set(p, s),
         onRemoteStream: (p, s) => streams.get(id)!.set(p, s),
+        onRemoteScreen: (p, s) => screens.get(id)!.set(p, s),
         send: async (batch) => {
           sent.push({ from: id, batch });
           for (const s of batch) {
@@ -156,7 +247,7 @@ function network(ids: string[], opts: Partial<MeshOptions> = {}) {
       }),
     );
   }
-  return { meshes, status, streams, sent, hold };
+  return { meshes, status, streams, screens, sent, hold };
 }
 
 describe("isOfferer", () => {
@@ -375,5 +466,135 @@ describe("VoiceMesh", () => {
     await vi.waitFor(() => expect(batches.reduce((x, y) => x + y, 0)).toBe(120));
     expect(Math.max(...batches)).toBeLessThanOrEqual(50);
     mesh.close();
+  });
+
+  it("sets up mic, screen video and screen audio plus a channel on every connection", async () => {
+    const { meshes, status } = network(["a", "b"]);
+    const members = [member("a", T0), member("b", T1)];
+    meshes.get("a")!.sync(members);
+    meshes.get("b")!.sync(members);
+    await vi.waitFor(() => expect(status.get("a")!.get("b")).toBe("connected"));
+    for (const pc of FakePC.all) {
+      expect(pc.transceivers.map((t) => t.receiver.track.kind)).toEqual([
+        "audio",
+        "video",
+        "audio",
+      ]);
+      expect(pc.transceivers.every((t) => t.direction === "sendrecv")).toBe(true);
+      expect(pc.channel?.readyState).toBe("open");
+    }
+  });
+
+  it("shares and stops a screen without renegotiating", async () => {
+    const { meshes, status, screens, streams, sent } = network(["a", "b"]);
+    const members = [member("a", T0), member("b", T1)];
+    meshes.get("a")!.sync(members);
+    meshes.get("b")!.sync(members);
+    await vi.waitFor(() => expect(status.get("b")!.get("a")).toBe("connected"));
+    const video = { id: "screen" } as unknown as MediaStreamTrack;
+    const audio = { id: "sys" } as unknown as MediaStreamTrack;
+    // "a" answered, so its transceivers came from b's offer.
+    await meshes.get("a")!.setScreen({ video, audio, quality: "1080p60" });
+    const answerer = FakePC.all[1]!;
+    expect(answerer.transceivers[1]!.sender.track).toBe(video);
+    expect(answerer.transceivers[2]!.sender.track).toBe(audio);
+    expect(answerer.transceivers[0]!.sender.track).toBeNull();
+    expect(answerer.transceivers[1]!.sender.params.encodings[0]).toMatchObject({
+      maxBitrate: 6_000_000,
+      maxFramerate: 60,
+    });
+    expect(answerer.transceivers[1]!.sender.params.degradationPreference).toBe(
+      "maintain-resolution",
+    );
+    const got = screens.get("b")!.get("a");
+    expect(got?.video).toEqual({ kind: "video" });
+    expect(got?.audio).toEqual({ kind: "audio" });
+    // The microphone stream is untouched by the share.
+    expect(streams.get("b")!.get("a")).toEqual({ id: "remote" });
+
+    await meshes.get("a")!.setScreen(null);
+    expect(screens.get("b")!.get("a")).toBeNull();
+    expect(answerer.transceivers[1]!.sender.track).toBeNull();
+    const offers = sent.flatMap((s) => s.batch).filter((x) => x.kind === "offer");
+    expect(offers).toHaveLength(1);
+  });
+
+  it("leaves out system audio that was not picked", async () => {
+    const { meshes, status, screens } = network(["a", "b"]);
+    const members = [member("a", T0), member("b", T1)];
+    meshes.get("a")!.sync(members);
+    meshes.get("b")!.sync(members);
+    await vi.waitFor(() => expect(status.get("a")!.get("b")).toBe("connected"));
+    const video = { id: "screen" } as unknown as MediaStreamTrack;
+    await meshes.get("b")!.setScreen({ video, audio: null, quality: "720p30" });
+    expect(screens.get("a")!.get("b")).toEqual({ video: { kind: "video" }, audio: null });
+  });
+
+  it("shows a running share to a member who joins later and to each viewer", async () => {
+    const { meshes, status, screens } = network(["a", "b", "c"]);
+    const two = [member("a", T0), member("b", T1)];
+    meshes.get("a")!.sync(two);
+    meshes.get("b")!.sync(two);
+    await vi.waitFor(() => expect(status.get("a")!.get("b")).toBe("connected"));
+    const video = { id: "screen" } as unknown as MediaStreamTrack;
+    await meshes.get("a")!.setScreen({ video, audio: null, quality: "1080p30" });
+    const three = [...two, member("c", T2)];
+    for (const id of ["a", "b", "c"]) meshes.get(id)!.sync(three);
+    await vi.waitFor(() => expect(screens.get("c")!.get("a")?.video).toBeTruthy());
+    expect(screens.get("b")!.get("a")?.video).toBeTruthy();
+    // Two viewers share the upload budget.
+    const fromA = FakePC.all.filter((pc) => pc.transceivers[1]?.sender.track === video);
+    expect(fromA).toHaveLength(2);
+    for (const pc of fromA)
+      expect(pc.transceivers[1]!.sender.params.encodings[0]).toMatchObject({
+        maxBitrate: 4_000_000,
+      });
+    // The sharer leaving the call clears the share for the others.
+    meshes.get("b")!.sync([member("b", T1), member("c", T2)]);
+    expect(screens.get("b")!.get("a")).toBeNull();
+  });
+
+  it("keeps working with a launcher that only offers a microphone", async () => {
+    const { meshes, screens } = network(["a"]);
+    const a = meshes.get("a")!;
+    const mic = { id: "mic" } as unknown as MediaStreamTrack;
+    await a.setTrack(mic);
+    a.sync([member("a", T0), member("old", T1)]);
+    await a.handle({
+      id: 1,
+      callId: 1,
+      sender: "old",
+      kind: "offer",
+      payload: JSON.stringify({ s: "s1", type: "offer", sdp: "offer-x|audio|" }),
+    });
+    const pc = FakePC.all[0]!;
+    expect(pc.transceivers).toHaveLength(1);
+    expect(pc.transceivers[0]!.sender.track).toBe(mic);
+    const video = { id: "screen" } as unknown as MediaStreamTrack;
+    await a.setScreen({ video, audio: null, quality: "1080p30" });
+    // Nowhere to send it: the microphone stays on its transceiver.
+    expect(pc.transceivers[0]!.sender.track).toBe(mic);
+    expect(screens.get("a")!.size).toBe(0);
+  });
+});
+
+describe("screenEncoding", () => {
+  it("splits the upload budget and lowers size and rate when it gets thin", () => {
+    expect(screenEncoding("1080p60", 1)).toEqual({
+      maxBitrate: 6_000_000,
+      maxFramerate: 60,
+      scaleResolutionDownBy: 1,
+    });
+    expect(screenEncoding("1080p60", 4)).toEqual({
+      maxBitrate: 2_000_000,
+      maxFramerate: 30,
+      scaleResolutionDownBy: 1,
+    });
+    expect(screenEncoding("1080p30", 15)).toEqual({
+      maxBitrate: 600_000,
+      maxFramerate: 30,
+      scaleResolutionDownBy: 1.5,
+    });
+    expect(screenEncoding("720p30", 15).scaleResolutionDownBy).toBe(1);
   });
 });

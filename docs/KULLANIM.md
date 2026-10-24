@@ -254,6 +254,15 @@ açışta neyin saklandığını anlatan bir onay ekranı çıkar.
   **IP adresimi gizle** (Ayarlar → Sesli sohbet, varsayılan açık) sesi Cloudflare aktarım
   sunucusundan geçirir; böylece aramadaki kişiler (gruptaki tanımadıkların dahil) IP adresini
   göremez.
+- **Ekran paylaşma:** aramadayken çubuktaki **Ekranı paylaş** simgesine bas, kaliteyi seç
+  (720p 30 FPS / 1080p 30 FPS / 1080p 60 FPS — oyun için 60) ve **Ekran veya pencere seç**.
+  Açılan pencerede tüm ekranı ya da tek bir pencereyi (ör. Minecraft) seç; bilgisayar sesinin de
+  gitmesini istiyorsan **Sistem sesini paylaş** kutusunu işaretle. Paylaşırken çubukta küçük bir
+  önizleme görünür; **Paylaşımı durdur** ile bitir. Grupta herkes görür; kişi sayısı arttıkça
+  internet yükün bölüşüldüğü için kalite otomatik düşer. Karşı tarafta paylaşım, arama çubuğunun
+  solunda bir panelde açılır: **Tam ekran** (Esc ile çık), **Küçült**, **Gizle**; birden çok kişi
+  paylaşıyorsa üstteki adlarla seç. Oyun tam ekran (exclusive) modundaysa pencere siyah
+  görünebilir; oyunu pencereli/kenarlıksız modda paylaş.
 - **Mod paylaşma:** sayfanın altındaki **Paylaştığım profiller** bölümünde bir profili
   **Paylaş**. Modrinth'te bulunan modlar yalnızca bağlantı olarak, diğer jar'lar (≤50 MB)
   dosya olarak paylaşılır. Modları değiştirdikten sonra **Güncelle**, bırakmak için **Kaldır**.

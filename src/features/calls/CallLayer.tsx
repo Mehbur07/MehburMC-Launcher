@@ -22,6 +22,7 @@ import type { CallMember } from "../../lib/ipc/bindings/CallMember";
 import { playTone } from "../../lib/voice/audio";
 import { callTitle, useCalls } from "../../stores/calls";
 import { useFriends } from "../../stores/friends";
+import { LocalSharePreview, ScreenPanel, ShareButton } from "./ScreenShare";
 
 const memberName = (m: CallMember) => m.nickname ?? m.displayName;
 
@@ -203,72 +204,77 @@ function CallBar() {
         : "";
 
   return (
-    <section
-      aria-label={t("calls.title")}
-      className="pointer-events-auto fixed right-4 bottom-4 z-50 w-72 rounded-lg border border-line bg-surface-1/95 p-3 neon-ring backdrop-blur"
-    >
-      <div className="flex items-center gap-2">
-        <span
-          className={`grid h-8 w-8 place-items-center rounded bg-online/15 text-online ${speakingMe ? "speaking-ring" : ""}`}
-        >
-          {call?.groupId !== null && call ? <Users size={15} /> : <Phone size={15} />}
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{callTitle(call) || t("calls.title")}</p>
-          <p className="font-mono text-[11px] text-muted" aria-live="polite">
-            {status}
-          </p>
+    <>
+      {call && <ScreenPanel members={call.members.filter((m) => m.id !== me)} />}
+      <section
+        aria-label={t("calls.title")}
+        className="pointer-events-auto fixed right-4 bottom-4 z-50 w-72 rounded-lg border border-line bg-surface-1/95 p-3 neon-ring backdrop-blur"
+      >
+        <div className="flex items-center gap-2">
+          <span
+            className={`grid h-8 w-8 place-items-center rounded bg-online/15 text-online ${speakingMe ? "speaking-ring" : ""}`}
+          >
+            {call?.groupId !== null && call ? <Users size={15} /> : <Phone size={15} />}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">{callTitle(call) || t("calls.title")}</p>
+            <p className="font-mono text-[11px] text-muted" aria-live="polite">
+              {status}
+            </p>
+          </div>
+          <IconButton
+            label={open ? t("calls.collapse") : t("calls.expand")}
+            onClick={() => setOpen(!open)}
+            className="h-7 w-7"
+          >
+            {open ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+          </IconButton>
         </div>
-        <IconButton
-          label={open ? t("calls.collapse") : t("calls.expand")}
-          onClick={() => setOpen(!open)}
-          className="h-7 w-7"
-        >
-          {open ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-        </IconButton>
-      </div>
 
-      {open && call && (
-        <ul className="mt-3 flex max-h-64 flex-col gap-2 overflow-y-auto pr-1">
-          {call.members.map((m) => (
-            <MemberRow key={m.id} m={m} me={me} />
-          ))}
-        </ul>
-      )}
-      {micError && (
-        <p className="mt-2 flex items-start gap-1.5 text-[11px] text-warn">
-          <AlertTriangle size={12} className="mt-px shrink-0" />
-          {t("calls.listenOnly", { reason: t(`errors.${micError}`) })}
-        </p>
-      )}
+        {open && call && (
+          <ul className="mt-3 flex max-h-64 flex-col gap-2 overflow-y-auto pr-1">
+            {call.members.map((m) => (
+              <MemberRow key={m.id} m={m} me={me} />
+            ))}
+          </ul>
+        )}
+        <LocalSharePreview />
+        {micError && (
+          <p className="mt-2 flex items-start gap-1.5 text-[11px] text-warn">
+            <AlertTriangle size={12} className="mt-px shrink-0" />
+            {t("calls.listenOnly", { reason: t(`errors.${micError}`) })}
+          </p>
+        )}
 
-      <div className="mt-3 flex items-center justify-center gap-2">
-        <IconButton
-          label={muted ? t("calls.unmute") : t("calls.mute")}
-          aria-pressed={muted}
-          onClick={toggleMute}
-          disabled={micError !== null}
-          className={`h-10 w-10 ${muted ? "bg-danger/15 text-danger hover:text-danger" : "bg-surface-2"}`}
-        >
-          {muted ? <MicOff size={17} /> : <Mic size={17} />}
-        </IconButton>
-        <IconButton
-          label={deafened ? t("calls.undeafen") : t("calls.deafen")}
-          aria-pressed={deafened}
-          onClick={toggleDeafen}
-          className={`h-10 w-10 ${deafened ? "bg-danger/15 text-danger hover:text-danger" : "bg-surface-2"}`}
-        >
-          {deafened ? <HeadphoneOff size={17} /> : <Headphones size={17} />}
-        </IconButton>
-        <IconButton
-          label={t("calls.leave")}
-          onClick={() => void leave()}
-          className="h-10 w-14 bg-danger text-white hover:bg-danger/85 hover:text-white"
-        >
-          <PhoneOff size={17} />
-        </IconButton>
-      </div>
-    </section>
+        <div className="mt-3 flex items-center justify-center gap-2">
+          <IconButton
+            label={muted ? t("calls.unmute") : t("calls.mute")}
+            aria-pressed={muted}
+            onClick={toggleMute}
+            disabled={micError !== null}
+            className={`h-10 w-10 ${muted ? "bg-danger/15 text-danger hover:text-danger" : "bg-surface-2"}`}
+          >
+            {muted ? <MicOff size={17} /> : <Mic size={17} />}
+          </IconButton>
+          <IconButton
+            label={deafened ? t("calls.undeafen") : t("calls.deafen")}
+            aria-pressed={deafened}
+            onClick={toggleDeafen}
+            className={`h-10 w-10 ${deafened ? "bg-danger/15 text-danger hover:text-danger" : "bg-surface-2"}`}
+          >
+            {deafened ? <HeadphoneOff size={17} /> : <Headphones size={17} />}
+          </IconButton>
+          {activeId !== null && !joining && <ShareButton />}
+          <IconButton
+            label={t("calls.leave")}
+            onClick={() => void leave()}
+            className="h-10 w-14 bg-danger text-white hover:bg-danger/85 hover:text-white"
+          >
+            <PhoneOff size={17} />
+          </IconButton>
+        </div>
+      </section>
+    </>
   );
 }
 

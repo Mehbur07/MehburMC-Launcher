@@ -5,6 +5,13 @@
  * has a session tag; signals of an older attempt are ignored. A connection
  * that fails is rebuilt from scratch with a new session (no ICE restarts,
  * which would need both sides to keep the same DTLS state).
+ *
+ * Screen sharing (K89): every connection is set up with three transceivers
+ * in a fixed order — microphone, screen video, screen audio — plus a
+ * negotiated data channel for the sharing state, so starting or stopping a
+ * share only swaps tracks (no renegotiation). Launchers before K89 offer the
+ * microphone only; with them the extra transceivers and the channel simply
+ * stay unused.
  */
 import type { CallMember } from "../ipc/bindings/CallMember";
 import type { CallSignal } from "../ipc/bindings/CallSignal";
@@ -12,6 +19,48 @@ import type { OutgoingSignal } from "../ipc/bindings/OutgoingSignal";
 import type { SignalKind } from "../ipc/bindings/SignalKind";
 
 export type PeerStatus = "connecting" | "connected" | "failed";
+
+export type ScreenQuality = "720p30" | "1080p30" | "1080p60";
+
+/** Capture size and the bitrate one viewer gets at most. */
+export const SCREEN_QUALITY: Record<
+  ScreenQuality,
+  { width: number; height: number; fps: number; bitrate: number }
+> = {
+  "720p30": { width: 1280, height: 720, fps: 30, bitrate: 2_500_000 },
+  "1080p30": { width: 1920, height: 1080, fps: 30, bitrate: 4_000_000 },
+  "1080p60": { width: 1920, height: 1080, fps: 60, bitrate: 6_000_000 },
+};
+
+/** Upload for a screen share, split across the viewers (full mesh). */
+const SCREEN_UPLOAD_BUDGET = 8_000_000;
+const SCREEN_MIN_BITRATE = 600_000;
+
+/** Per-viewer encoding: the budget split, smaller and slower when it gets thin. */
+export function screenEncoding(quality: ScreenQuality, viewers: number) {
+  const q = SCREEN_QUALITY[quality];
+  const bitrate = Math.min(
+    q.bitrate,
+    Math.max(SCREEN_MIN_BITRATE, Math.floor(SCREEN_UPLOAD_BUDGET / Math.max(1, viewers))),
+  );
+  return {
+    maxBitrate: bitrate,
+    maxFramerate: bitrate < 2_500_000 ? Math.min(q.fps, 30) : q.fps,
+    scaleResolutionDownBy: bitrate < 1_500_000 && q.height > 720 ? q.height / 720 : 1,
+  };
+}
+
+export interface LocalScreen {
+  video: MediaStreamTrack;
+  /** System audio, when the user ticked it in the picker. */
+  audio: MediaStreamTrack | null;
+  quality: ScreenQuality;
+}
+
+export interface RemoteScreen {
+  video: MediaStreamTrack;
+  audio: MediaStreamTrack | null;
+}
 
 export interface MeshOptions {
   me: string;
@@ -21,6 +70,8 @@ export interface MeshOptions {
   send: (signals: OutgoingSignal[]) => Promise<unknown>;
   onRemoteStream: (peer: string, stream: MediaStream | null) => void;
   onPeerStatus: (peer: string, status: PeerStatus | null) => void;
+  /** A member started (tracks) or stopped (null) sharing their screen. */
+  onRemoteScreen?: (peer: string, screen: RemoteScreen | null) => void;
   createPeer?: (config: RTCConfiguration) => RTCPeerConnection;
   /** ICE candidates are batched for this long. */
   flushMs?: number;
@@ -32,6 +83,12 @@ export interface MeshOptions {
 const MAX_ATTEMPTS = 5;
 const SIGNALS_PER_REQUEST = 50;
 
+/** Transceiver order of every connection (K89). */
+const MIC = 0;
+const SCREEN_VIDEO = 1;
+const SCREEN_AUDIO = 2;
+const KINDS = ["audio", "video", "audio"] as const;
+
 interface Peer {
   id: string;
   joinedAt: string;
@@ -40,6 +97,23 @@ interface Peer {
   pc: RTCPeerConnection;
   attempts: number;
   timer: ReturnType<typeof setTimeout> | null;
+  /** Sharing state channel; never opens with launchers before K89. */
+  channel: RTCDataChannel | null;
+  /** Their screen tracks (always there once negotiated) and whether they share. */
+  remote: {
+    video: MediaStreamTrack | null;
+    audio: MediaStreamTrack | null;
+    on: boolean;
+    withAudio: boolean;
+    shown: boolean;
+  };
+}
+
+/** Sharing state sent on the data channel. */
+interface ScreenMessage {
+  t: "screen";
+  on: boolean;
+  audio: boolean;
 }
 
 interface Payload {
@@ -77,6 +151,7 @@ export class VoiceMesh {
   private queue: OutgoingSignal[] = [];
   private flushTimer: ReturnType<typeof setTimeout> | null = null;
   private track: MediaStreamTrack | null = null;
+  private screen: LocalScreen | null = null;
   private myJoinedAt: string | null = null;
   private closed = false;
 
@@ -85,6 +160,7 @@ export class VoiceMesh {
       flushMs: 120,
       connectTimeoutMs: 20000,
       createPeer: (config) => new RTCPeerConnection(config),
+      onRemoteScreen: () => undefined,
       ...opts,
     };
   }
@@ -92,13 +168,20 @@ export class VoiceMesh {
   /** The microphone track sent to everyone (null = listen only). */
   async setTrack(track: MediaStreamTrack | null) {
     this.track = track;
+    await Promise.all([...this.peers.values()].map((p) => this.sendTrack(p, MIC)));
+  }
+
+  /** Starts (tracks) or stops (null) sharing our screen with everyone. */
+  async setScreen(screen: LocalScreen | null) {
+    this.screen = screen;
     await Promise.all(
-      [...this.peers.values()].map((p) =>
-        Promise.all(
-          p.pc.getTransceivers().map((t) => t.sender.replaceTrack(track).catch(() => undefined)),
-        ),
-      ),
+      [...this.peers.values()].map(async (p) => {
+        await this.sendTrack(p, SCREEN_VIDEO);
+        await this.sendTrack(p, SCREEN_AUDIO);
+        this.sendState(p);
+      }),
     );
+    await this.applyEncodings();
   }
 
   /** Applies the server's member list of this call. */
@@ -120,9 +203,12 @@ export class VoiceMesh {
         .map((m) => [m.id, m.joinedAt as string]),
     );
     this.joined = others;
+    const before = this.peers.size;
     for (const [id, peer] of this.peers) {
       if (others.get(id) !== peer.joinedAt) this.dropPeer(id);
     }
+    // Fewer viewers: the screen share may use more of the budget again.
+    if (this.peers.size !== before) void this.applyEncodings();
     for (const id of this.waiting) {
       if (!others.has(id)) {
         this.waiting.delete(id);
@@ -183,23 +269,149 @@ export class VoiceMesh {
       if (e.candidate) this.enqueue(id, "ice", { s: session, candidate: e.candidate.toJSON() });
     };
     pc.ontrack = (e) => {
-      if (this.peers.get(id)?.session !== session) return;
+      const peer = this.peers.get(id);
+      if (peer?.session !== session) return;
+      // The role is the transceiver's place (both sides keep the offer's order).
+      const role = e.transceiver ? pc.getTransceivers().indexOf(e.transceiver) : MIC;
+      if (role === SCREEN_VIDEO || role === SCREEN_AUDIO) {
+        if (role === SCREEN_VIDEO) peer.remote.video = e.track;
+        else peer.remote.audio = e.track;
+        this.emitScreen(peer);
+        return;
+      }
+      if (role !== MIC && role !== -1) return;
       this.opts.onRemoteStream(id, e.streams[0] ?? new MediaStream([e.track]));
     };
     pc.onconnectionstatechange = () => this.onState(id, session);
     return pc;
   }
 
+  private newPeer(
+    id: string,
+    joinedAt: string,
+    offerer: boolean,
+    session: string,
+    attempts: number,
+  ): Peer {
+    const pc = this.createPc(id, session);
+    const peer: Peer = {
+      id,
+      joinedAt,
+      offerer,
+      session,
+      pc,
+      attempts,
+      timer: null,
+      channel: null,
+      remote: { video: null, audio: null, on: false, withAudio: false, shown: false },
+    };
+    this.peers.set(id, peer);
+    return peer;
+  }
+
+  /** The negotiated channel both sides open with the same id, before the answer. */
+  private openChannel(peer: Peer) {
+    let ch: RTCDataChannel;
+    try {
+      ch = peer.pc.createDataChannel("screen", { negotiated: true, id: 0 });
+    } catch {
+      return;
+    }
+    peer.channel = ch;
+    ch.onopen = () => this.sendState(peer);
+    ch.onmessage = (e) => {
+      if (this.peers.get(peer.id) !== peer || typeof e.data !== "string") return;
+      let msg: ScreenMessage;
+      try {
+        msg = JSON.parse(e.data) as ScreenMessage;
+      } catch {
+        return;
+      }
+      if (msg?.t !== "screen") return;
+      peer.remote.on = msg.on === true;
+      peer.remote.withAudio = msg.audio === true;
+      this.emitScreen(peer);
+    };
+    ch.onclose = () => {
+      if (this.peers.get(peer.id) !== peer) return;
+      peer.remote.on = false;
+      this.emitScreen(peer);
+    };
+  }
+
+  private sendState(peer: Peer) {
+    if (peer.channel?.readyState !== "open") return;
+    const msg: ScreenMessage = {
+      t: "screen",
+      on: this.screen !== null,
+      audio: this.screen?.audio != null,
+    };
+    try {
+      peer.channel.send(JSON.stringify(msg));
+    } catch {
+      // Closing; the other side sees the channel close.
+    }
+  }
+
+  /** Tells the store about a remote share only when it changes. */
+  private emitScreen(peer: Peer) {
+    const r = peer.remote;
+    const show = r.on && r.video !== null;
+    if (!show && !r.shown) return;
+    r.shown = show;
+    this.opts.onRemoteScreen(
+      peer.id,
+      show ? { video: r.video as MediaStreamTrack, audio: r.withAudio ? r.audio : null } : null,
+    );
+  }
+
+  /** What our transceiver `role` sends. */
+  private trackFor(role: number): MediaStreamTrack | null {
+    if (role === MIC) return this.track;
+    if (role === SCREEN_VIDEO) return this.screen?.video ?? null;
+    if (role === SCREEN_AUDIO) return this.screen?.audio ?? null;
+    return null;
+  }
+
+  private async sendTrack(peer: Peer, role: number) {
+    const t = peer.pc.getTransceivers()[role];
+    if (!t) return;
+    // A launcher before K89 may offer something else in that place.
+    const kind = t.receiver?.track?.kind;
+    if (kind && kind !== KINDS[role]) return;
+    await t.sender.replaceTrack(this.trackFor(role)).catch(() => undefined);
+  }
+
+  /** Bitrate, frame rate and size of the screen video for each viewer. */
+  private async applyEncodings() {
+    const screen = this.screen;
+    if (!screen) return;
+    const enc = screenEncoding(screen.quality, this.peers.size);
+    await Promise.all(
+      [...this.peers.values()].map(async (p) => {
+        const sender = p.pc.getTransceivers()[SCREEN_VIDEO]?.sender;
+        if (!sender?.getParameters) return;
+        const params = sender.getParameters();
+        if (!params.encodings?.length) return; // Not negotiated yet; "connected" retries.
+        params.encodings = params.encodings.map((e) => ({ ...e, ...enc }));
+        // Sharp text and HUD; frames drop first when the network is thin. With
+        // maintain-framerate (even at 60 FPS) Chromium stayed at 480p in tests.
+        params.degradationPreference = "maintain-resolution";
+        await sender.setParameters(params).catch(() => undefined);
+      }),
+    );
+  }
+
   private async offer(id: string, joinedAt: string, attempts: number) {
     this.waiting.delete(id);
     const session = newSession();
-    const pc = this.createPc(id, session);
-    const peer: Peer = { id, joinedAt, offerer: true, session, pc, attempts, timer: null };
-    this.peers.set(id, peer);
+    const peer = this.newPeer(id, joinedAt, true, session, attempts);
+    const pc = peer.pc;
     this.opts.onPeerStatus(id, "connecting");
     this.armTimer(peer);
-    const t = pc.addTransceiver("audio", { direction: "sendrecv" });
-    await t.sender.replaceTrack(this.track).catch(() => undefined);
+    for (const kind of KINDS) pc.addTransceiver(kind, { direction: "sendrecv" });
+    for (let role = 0; role < KINDS.length; role++) await this.sendTrack(peer, role);
+    this.openChannel(peer);
     const desc = await pc.createOffer();
     if (this.peers.get(id) !== peer) return;
     await pc.setLocalDescription(desc);
@@ -215,23 +427,16 @@ export class VoiceMesh {
     const known = this.peers.get(from);
     if (known) this.dropPeer(from, false);
     this.waiting.delete(from);
-    const pc = this.createPc(from, data.s);
-    const peer: Peer = {
-      id: from,
-      joinedAt,
-      offerer: false,
-      session: data.s,
-      pc,
-      attempts: 0,
-      timer: null,
-    };
-    this.peers.set(from, peer);
+    const peer = this.newPeer(from, joinedAt, false, data.s, 0);
+    const pc = peer.pc;
     this.opts.onPeerStatus(from, "connecting");
     await pc.setRemoteDescription({ type: data.type ?? "offer", sdp: data.sdp });
-    for (const t of pc.getTransceivers()) {
-      t.direction = "sendrecv";
-      await t.sender.replaceTrack(this.track).catch(() => undefined);
+    const transceivers = pc.getTransceivers();
+    for (let role = 0; role < transceivers.length; role++) {
+      transceivers[role]!.direction = "sendrecv";
+      await this.sendTrack(peer, role);
     }
+    this.openChannel(peer);
     await this.flushEarly(peer);
     const answer = await pc.createAnswer();
     if (this.peers.get(from) !== peer) return;
@@ -276,6 +481,8 @@ export class VoiceMesh {
       peer.timer = null;
       peer.attempts = 0;
       this.opts.onPeerStatus(id, "connected");
+      // Encodings exist only now; a share running already gets its limits.
+      void this.applyEncodings();
     } else if (state === "failed") {
       this.retry(peer);
     } else if (state === "disconnected") {
@@ -317,9 +524,15 @@ export class VoiceMesh {
       peer.pc.onicecandidate = null;
       peer.pc.ontrack = null;
       peer.pc.onconnectionstatechange = null;
+      if (peer.channel) {
+        peer.channel.onopen = null;
+        peer.channel.onmessage = null;
+        peer.channel.onclose = null;
+      }
       peer.pc.close();
       this.peers.delete(id);
       this.opts.onRemoteStream(id, null);
+      if (peer.remote.shown) this.opts.onRemoteScreen(id, null);
     }
     for (const key of this.early.keys()) if (key.startsWith(`${id}/`)) this.early.delete(key);
     this.queue = this.queue.filter((s) => s.recipient !== id);

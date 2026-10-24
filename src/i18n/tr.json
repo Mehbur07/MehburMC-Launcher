@@ -292,7 +292,8 @@
       "ended": "Arama sona erdi.",
       "turnUnavailable": "Ses aktarım sunucusuna ulaşılamadı.",
       "micDenied": "Mikrofon izni yok. Windows Ayarları → Gizlilik ve güvenlik → Mikrofon'dan masaüstü uygulamalarına izin ver.",
-      "micMissing": "Mikrofon bulunamadı."
+      "micMissing": "Mikrofon bulunamadı.",
+      "screenFailed": "Ekran paylaşımı başlatılamadı."
     }
   },
   "instances": {
@@ -1547,6 +1548,28 @@
     "leave": "Aramadan ayrıl",
     "collapse": "Küçült",
     "expand": "Genişlet",
-    "listenOnly": "Yalnızca dinliyorsun: {{reason}}"
+    "listenOnly": "Yalnızca dinliyorsun: {{reason}}",
+    "screen": {
+      "share": "Ekranı paylaş",
+      "stop": "Paylaşımı durdur",
+      "quality": "Görüntü kalitesi",
+      "qualities": {
+        "720p30": "720p · 30 FPS (az internet)",
+        "1080p30": "1080p · 30 FPS",
+        "1080p60": "1080p · 60 FPS (oyun için)"
+      },
+      "audioHint": "Seçim penceresinde \"Sistem sesini paylaş\" kutusunu işaretlersen bilgisayar sesi de gider.",
+      "start": "Ekran veya pencere seç",
+      "preview": "Paylaştığın ekran",
+      "sharing": "Ekranın paylaşılıyor",
+      "withAudio": "Sistem sesi de gidiyor",
+      "watching": "{{name}} ekranını paylaşıyor",
+      "manySharing": "{{count}} kişi ekranını paylaşıyor",
+      "pick": "Kimin ekranı",
+      "full": "Tam ekran",
+      "exitFull": "Tam ekrandan çık (Esc)",
+      "minimize": "Küçült",
+      "close": "Gizle"
+    }
   }
 }

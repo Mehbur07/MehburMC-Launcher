@@ -3,6 +3,14 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.24.0] — 2026-10-24
+
+### Eklendi
+- **Ekran paylaşma:** sesli aramada (ikili veya grup) çubuktaki **Ekranı paylaş** ile tüm ekranı
+  ya da bir pencereyi paylaş. Kalite seçilebilir (720p 30 / 1080p 30 / 1080p 60 FPS);
+  istersen bilgisayar sesi de gider. İzleyen taraf paylaşımı launcher içinde bir panelde ya da
+  **tam ekran** görür; birden çok kişi paylaşıyorsa aralarında geçiş yapar.
+
 ## [0.23.0] — 2026-10-24
 
 ### Eklendi

@@ -292,7 +292,8 @@
       "ended": "The call has ended.",
       "turnUnavailable": "The voice relay server could not be reached.",
       "micDenied": "No microphone permission. Allow desktop apps in Windows Settings → Privacy & security → Microphone.",
-      "micMissing": "No microphone found."
+      "micMissing": "No microphone found.",
+      "screenFailed": "Screen sharing could not start."
     }
   },
   "instances": {
@@ -1547,6 +1548,28 @@
     "leave": "Leave call",
     "collapse": "Collapse",
     "expand": "Expand",
-    "listenOnly": "Listening only: {{reason}}"
+    "listenOnly": "Listening only: {{reason}}",
+    "screen": {
+      "share": "Share screen",
+      "stop": "Stop sharing",
+      "quality": "Video quality",
+      "qualities": {
+        "720p30": "720p · 30 FPS (less data)",
+        "1080p30": "1080p · 30 FPS",
+        "1080p60": "1080p · 60 FPS (for games)"
+      },
+      "audioHint": "Tick \"Share system audio\" in the picker to send your computer sound too.",
+      "start": "Choose a screen or window",
+      "preview": "Your shared screen",
+      "sharing": "Sharing your screen",
+      "withAudio": "System audio included",
+      "watching": "{{name}} is sharing their screen",
+      "manySharing": "{{count}} people are sharing their screen",
+      "pick": "Whose screen",
+      "full": "Full screen",
+      "exitFull": "Exit full screen (Esc)",
+      "minimize": "Minimize",
+      "close": "Hide"
+    }
   }
 }

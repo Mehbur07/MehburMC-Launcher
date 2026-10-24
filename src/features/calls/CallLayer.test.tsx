@@ -1,10 +1,12 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const ipcMock = vi.hoisted(() => ({
   callsSnapshot: vi.fn(),
   callLeave: vi.fn(),
 }));
+const win = vi.hoisted(() => ({ setFullscreen: vi.fn(async () => undefined) }));
+vi.mock("@tauri-apps/api/window", () => ({ getCurrentWindow: () => win }));
 const tones = vi.hoisted(() => ({ playTone: vi.fn(() => () => undefined) }));
 
 vi.mock("../../lib/ipc", async (orig) => ({
@@ -57,6 +59,9 @@ describe("CallLayer", () => {
       volumes: {},
       micError: null,
       error: null,
+      sharing: null,
+      sharingAudio: false,
+      screens: {},
     });
   });
 
@@ -135,5 +140,70 @@ describe("CallLayer", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("The call has ended.");
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
     expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  const joinedCall = (): Call => ({
+    ...ringing,
+    groupId: 3,
+    myState: "joined",
+    members: [
+      { id: "f1", displayName: "Ali", nickname: null, state: "joined", joinedAt: "t0" },
+      { id: "f2", displayName: "Veli", nickname: null, state: "joined", joinedAt: "t0" },
+      { id: "me", displayName: "Ben", nickname: null, state: "joined", joinedAt: "t1" },
+    ],
+  });
+
+  it("picks a quality and starts sharing, then stops", async () => {
+    const startShare = vi.fn(async () => undefined);
+    const stopShare = vi.fn();
+    const c = joinedCall();
+    ipcMock.callsSnapshot.mockResolvedValue({ calls: [c], signals: [] });
+    useCalls.setState({ startShare, stopShare, calls: [c], activeId: 7, since: Date.now() });
+    const { rerender } = render(<CallLayer />);
+    fireEvent.click(await screen.findByRole("button", { name: "Share screen" }));
+    const menu = screen.getByRole("dialog", { name: "Video quality" });
+    expect(within(menu).getByRole("radio", { name: /1080p · 30 FPS/ })).toBeChecked();
+    fireEvent.click(within(menu).getByRole("radio", { name: /60 FPS/ }));
+    fireEvent.click(within(menu).getByRole("button", { name: "Choose a screen or window" }));
+    expect(startShare).toHaveBeenCalledWith("1080p60");
+    expect(screen.queryByRole("dialog", { name: "Video quality" })).toBeNull();
+
+    useCalls.setState({ sharing: "1080p60", sharingAudio: true });
+    rerender(<CallLayer />);
+    expect(screen.getByText("Sharing your screen")).toBeInTheDocument();
+    expect(screen.getByLabelText("System audio included")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Stop sharing" }));
+    expect(stopShare).toHaveBeenCalled();
+  });
+
+  it("shows others' screens, switches between sharers and goes full screen", async () => {
+    const c = joinedCall();
+    ipcMock.callsSnapshot.mockResolvedValue({ calls: [c], signals: [] });
+    useCalls.setState({ calls: [c], activeId: 7, since: Date.now(), screens: { f1: 1 } });
+    const { rerender } = render(<CallLayer />);
+    const panel = await screen.findByRole("region", { name: "Ali is sharing their screen" });
+    expect(within(panel).getByLabelText("Ali is sharing their screen")).toBeInTheDocument();
+
+    useCalls.setState({ screens: { f1: 1, f2: 1 } });
+    rerender(<CallLayer />);
+    fireEvent.click(screen.getByRole("button", { name: "Veli" }));
+    expect(
+      screen.getByRole("region", { name: "Veli is sharing their screen" }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Full screen" }));
+    await waitFor(() => expect(win.setFullscreen).toHaveBeenCalledWith(true));
+    fireEvent.keyDown(window, { key: "Escape" });
+    await waitFor(() => expect(win.setFullscreen).toHaveBeenCalledWith(false));
+    expect(screen.getByRole("button", { name: "Full screen" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Hide" }));
+    const chip = screen.getByRole("button", { name: /2 people are sharing/ });
+    fireEvent.click(chip);
+    expect(screen.getByRole("button", { name: "Full screen" })).toBeInTheDocument();
+
+    useCalls.setState({ screens: {} });
+    rerender(<CallLayer />);
+    expect(screen.queryByRole("button", { name: "Full screen" })).toBeNull();
   });
 });
