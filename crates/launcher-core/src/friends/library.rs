@@ -150,6 +150,13 @@ pub(crate) struct Row {
     kind: Option<String>,
 }
 
+/// PostgREST's PGRST202: no function with these parameter names, i.e. the
+/// server predates the SQL file that added them.
+fn missing_function(e: &CoreError) -> bool {
+    matches!(e, CoreError::FriendsServer { status: 404, reason }
+        if reason.contains("Could not find the function"))
+}
+
 fn parse_kind(s: Option<&str>) -> Option<LibraryKind> {
     match s {
         None => Some(LibraryKind::Mod),
@@ -442,25 +449,29 @@ impl FriendsClient {
         )
         .await?;
         let loaders: Vec<&str> = d.loaders.iter().map(|l| loader_str(*l)).collect();
-        let id = self
-            .rpc(
-                "submit_library_mod",
-                json!({
-                    "p_name": name,
-                    "p_description": clean_text(description, MAX_DESCRIPTION_CHARS, true),
-                    "p_author": author.trim(),
-                    "p_mod_id": mod_id,
-                    "p_version": version,
-                    "p_loaders": loaders,
-                    "p_game_versions": d.game_versions,
-                    "p_sha1": report.sha1,
-                    "p_size": report.size,
-                    "p_file_name": file_name,
-                    "p_scan": report,
-                    "p_kind": kind.as_str(),
-                }),
-            )
-            .await?;
+        let mut args = json!({
+            "p_name": name,
+            "p_description": clean_text(description, MAX_DESCRIPTION_CHARS, true),
+            "p_author": author.trim(),
+            "p_mod_id": mod_id,
+            "p_version": version,
+            "p_loaders": loaders,
+            "p_game_versions": d.game_versions,
+            "p_sha1": report.sha1,
+            "p_size": report.size,
+            "p_file_name": file_name,
+            "p_scan": report,
+            "p_kind": kind.as_str(),
+        });
+        let id = match self.rpc("submit_library_mod", args.clone()).await {
+            // Server without library_packs.sql: no `p_kind` yet; mods still work.
+            Err(e) if missing_function(&e) && kind == LibraryKind::Mod => {
+                args.as_object_mut().map(|o| o.remove("p_kind"));
+                self.rpc("submit_library_mod", args).await?
+            }
+            Err(e) if missing_function(&e) => return Err(CoreError::Friends("library.badKind")),
+            r => r?,
+        };
         Ok((id, report))
     }
 
@@ -503,8 +514,16 @@ impl FriendsClient {
         if !self.has_identity().await {
             self.ensure_identity().await?;
         }
-        self.rpc("library_list", json!({ "p_max": 300, "p_all": true }))
+        match self
+            .rpc("library_list", json!({ "p_max": 300, "p_all": true }))
             .await
+        {
+            // Server without library_packs.sql: the mods-only list.
+            Err(e) if missing_function(&e) => {
+                self.rpc("library_list", json!({ "p_max": 300 })).await
+            }
+            r => r,
+        }
     }
 
     pub async fn report_library_mod(
@@ -691,7 +710,7 @@ impl FriendsClient {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
-    use wiremock::matchers::{body_partial_json, method, path};
+    use wiremock::matchers::{body_json, body_partial_json, method, path};
     use wiremock::{Mock, MockServer, ResponseTemplate};
 
     use super::super::tests::{FRIEND, ME, signed_in};
@@ -849,6 +868,35 @@ mod tests {
         assert_eq!(m.file_name, "cool_mod.jar");
         assert_eq!(m.findings.len(), 1);
         assert_eq!(m.findings[0].code, "network");
+    }
+
+    #[tokio::test]
+    async fn falls_back_to_the_mods_only_list_on_an_old_server() {
+        let server = MockServer::builder().start().await;
+        let bytes = good_jar();
+        Mock::given(method("POST"))
+            .and(path("/rest/v1/rpc/library_list"))
+            .and(body_partial_json(json!({ "p_all": true })))
+            .respond_with(ResponseTemplate::new(404).set_body_json(json!({
+                "code": "PGRST202",
+                "message": "Could not find the function public.library_list(p_all, p_max) in the schema cache"
+            })))
+            .mount(&server)
+            .await;
+        Mock::given(method("POST"))
+            .and(path("/rest/v1/rpc/library_list"))
+            .and(body_json(json!({ "p_max": 300 })))
+            .respond_with(
+                ResponseTemplate::new(200)
+                    .set_body_json(json!([row(1, &bytes, "approved", false)])),
+            )
+            .mount(&server)
+            .await;
+        let tmp = tempfile::tempdir().unwrap();
+        let c = signed_in(&tmp, &server).await;
+        let list = c.library_mods().await.unwrap();
+        assert_eq!(list.len(), 1);
+        assert_eq!(list[0].kind, LibraryKind::Mod);
     }
 
     #[tokio::test]
