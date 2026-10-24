@@ -105,6 +105,7 @@ const COMMANDS: &[&str] = &[
     "unshare_texture",
     "report_texture",
     "library_scan_pick",
+    "library_scan_instance",
     "library_submit",
     "library_mods",
     "library_withdraw",

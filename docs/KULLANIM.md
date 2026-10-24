@@ -119,8 +119,12 @@ tıkla kurulur (profil → Genel → **Tek tıkla kur**).
 **MehburMC Kütüphanesi** (Mod Tarayıcı'nın son sekmesi): MehburMC kullanıcılarının yüklediği
 modlar, modpackler, resource packler ve shaderlar. Üstteki **Tümü / Modlar / Modpackler /
 Resource packler / Shaderlar** düğmeleriyle türe göre süz.
-- **Yükle** → türü seç → dosyayı seç: mod = `.jar` (en fazla 25 MB), modpack = Modrinth
-  `.mrpack`, resource pack ve shader = `.zip` (paketler en fazla 50 MB). Launcher dosyayı hemen
+- **Yükle** → türü seç → dosyayı seç: mod = `.jar` (en fazla 25 MB), resource pack ve shader =
+  `.zip` (en fazla 50 MB). **Modpack** için profillerinden birini seç: launcher onu otomatik
+  paketler — Modrinth'te bulunan mod, resource pack ve shader'lar bağlantı olarak eklenir, diğer
+  dosyalar ve ayarlar (config) pakete konur (en fazla 50 MB); dünyalar, loglar, ekran
+  görüntüleri, options.txt ve sunucu listesi eklenmez. Hazır bir `.mrpack` dosyan varsa
+  **Hazır .mrpack dosyası seç**. Launcher dosyayı hemen
   kontrol eder ve sonucu gösterir: yeşil = şüpheli bir şey yok, sarı = dikkat edilecek şeyler var
   (ör. internete bağlanma — meşru modlarda da olur; modpack'te Modrinth dışından indirilen dosya),
   kırmızı = yüklenemez (ör. Discord webhook'u, hesap dosyalarına erişim, gömülü .exe, mod tanımı

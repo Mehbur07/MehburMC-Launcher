@@ -118,6 +118,7 @@
     "allow-unshare-texture",
     "allow-report-texture",
     "allow-library-scan-pick",
+    "allow-library-scan-instance",
     "allow-library-submit",
     "allow-library-mods",
     "allow-library-withdraw",

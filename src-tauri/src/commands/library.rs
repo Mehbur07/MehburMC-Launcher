@@ -18,6 +18,10 @@ use crate::state::AppState;
 pub struct LibraryScan {
     pub file_name: String,
     pub report: ScanReport,
+    /// A profile packed as a modpack (K90): files linked from Modrinth and
+    /// files copied into the pack.
+    pub linked: Option<u32>,
+    pub embedded: Option<u32>,
 }
 
 /// The file dialog each kind opens with `pick_path`.
@@ -30,8 +34,7 @@ fn purpose(kind: LibraryKind) -> PickPurpose {
     }
 }
 
-/// Scans the file picked for `kind`. A file that is not blocked is kept
-/// for `library_submit`.
+/// Scans the file picked for `kind`.
 #[tauri::command]
 pub async fn library_scan_pick(
     state: State<'_, AppState>,
@@ -39,6 +42,31 @@ pub async fn library_scan_pick(
 ) -> CmdResult<LibraryScan> {
     let path = take_pick(&state, purpose(kind))?;
     state.launcher()?;
+    scan_and_keep(&state, path, kind).await
+}
+
+/// Packs one of the user's instances as a modpack (Modrinth files linked,
+/// the rest embedded) and scans it like a picked `.mrpack`.
+#[tauri::command]
+pub async fn library_scan_instance(
+    state: State<'_, AppState>,
+    instance_id: String,
+) -> CmdResult<LibraryScan> {
+    let l = state.launcher()?.clone();
+    let pack = l.pack_instance_for_library(&instance_id).await?;
+    let mut scan = scan_and_keep(&state, pack.path, LibraryKind::Modpack).await?;
+    scan.linked = Some(pack.linked as u32);
+    scan.embedded = Some(pack.embedded as u32);
+    Ok(scan)
+}
+
+/// Scans `path` as `kind`; a file that is not blocked is kept for
+/// `library_submit`.
+async fn scan_and_keep(
+    state: &State<'_, AppState>,
+    path: std::path::PathBuf,
+    kind: LibraryKind,
+) -> CmdResult<LibraryScan> {
     let p = path.clone();
     let report = tauri::async_runtime::spawn_blocking(move || scan::scan_file_as(&p, kind))
         .await
@@ -49,7 +77,12 @@ pub async fn library_scan_pick(
         .unwrap_or_default();
     *state.library_upload.lock().expect("library upload lock") =
         (report.verdict != Verdict::Block).then(|| (path, report.sha1.clone(), kind));
-    Ok(LibraryScan { file_name, report })
+    Ok(LibraryScan {
+        file_name,
+        report,
+        linked: None,
+        embedded: None,
+    })
 }
 
 /// Uploads the scanned file for admin review; returns its library id.

@@ -235,6 +235,9 @@ export const ipc = {
 
   /** Scans the file chosen with the kind's `pickPath` purpose (K88). */
   libraryScanPick: (kind: LibraryKind) => invoke<LibraryScan>("library_scan_pick", { kind }),
+  /** Packs one of the user's instances as a modpack and scans it (K90). */
+  libraryScanInstance: (instanceId: string) =>
+    invoke<LibraryScan>("library_scan_instance", { instanceId }),
   /** Uploads the scanned file for review; returns its library id. */
   librarySubmit: (name: string, description: string) =>
     invoke<number>("library_submit", { name, description }),

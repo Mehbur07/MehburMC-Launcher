@@ -43,6 +43,7 @@ import type { ModLoader } from "../../lib/ipc/bindings/ModLoader";
 import type { PickPurpose } from "../../lib/ipc/bindings/PickPurpose";
 import { selectedAccount, useAccounts } from "../../stores/accounts";
 import { useInstances } from "../../stores/instances";
+import { loaderLabel } from "../instances/loaderLabels";
 
 type InstallState = "busy" | "done" | ErrorPayload;
 
@@ -260,6 +261,11 @@ function UploadDialog({
               <LoaderBadges loaders={d.loaders} gameVersions={d.gameVersions} />
             </div>
           )}
+          {scan?.linked != null && (
+            <p className="text-xs text-muted">
+              {t("library.upload.packed", { linked: scan.linked, embedded: scan.embedded ?? 0 })}
+            </p>
+          )}
           <FindingList findings={report.findings} kind={kind} />
           {!blocked && (
             <>
@@ -378,17 +384,71 @@ function ReportDialog({
   );
 }
 
-/** First upload step: what is being uploaded (decides the file dialog). */
+/**
+ * First upload step: what is being uploaded (decides the file dialog). A
+ * modpack is one of the user's profiles, packed by the launcher (K90).
+ */
 function KindPickDialog({
   open,
   onClose,
   onPick,
+  onPickInstance,
 }: {
   open: boolean;
   onClose: () => void;
   onPick: (kind: LibraryKind) => void;
+  onPickInstance: (id: string) => void;
 }) {
   const { t } = useTranslation();
+  const instances = useInstances((s) => s.instances);
+  const [profiles, setProfiles] = useState(false);
+  useEffect(() => {
+    if (open) setProfiles(false);
+  }, [open]);
+
+  if (profiles) {
+    return (
+      <Modal
+        open={open}
+        onClose={onClose}
+        title={t("library.upload.profileTitle")}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setProfiles(false)}>
+              {t("common.back")}
+            </Button>
+            <Button variant="ghost" onClick={() => onPick("modpack")}>
+              {t("library.upload.packFile")}
+            </Button>
+          </>
+        }
+      >
+        <p className="mb-3 text-xs text-muted">{t("library.upload.profileHint")}</p>
+        {instances.length === 0 ? (
+          <p className="text-sm text-muted">{t("library.upload.noProfiles")}</p>
+        ) : (
+          <ul className="flex max-h-80 flex-col gap-1.5 overflow-y-auto pr-1">
+            {instances.map((i) => (
+              <li key={i.id}>
+                <button
+                  type="button"
+                  onClick={() => onPickInstance(i.id)}
+                  className="flex w-full items-center gap-3 rounded-lg border border-line bg-surface-2 px-3 py-2 text-left hover:border-accent focus:border-accent focus:outline-none"
+                >
+                  <Boxes size={16} className="shrink-0 text-accent" />
+                  <span className="min-w-0 flex-1 truncate font-semibold">{i.name}</span>
+                  <span className="shrink-0 text-xs text-muted">
+                    {i.mcVersion} · {loaderLabel(i.loader.kind)}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Modal>
+    );
+  }
+
   return (
     <Modal open={open} onClose={onClose} title={t("library.upload.kindTitle")}>
       <div className="grid grid-cols-2 gap-2">
@@ -398,7 +458,7 @@ function KindPickDialog({
             <button
               key={k}
               type="button"
-              onClick={() => onPick(k)}
+              onClick={() => (k === "modpack" ? setProfiles(true) : onPick(k))}
               className="flex flex-col items-start gap-1 rounded-lg border border-line bg-surface-2 px-3 py-2.5 text-left hover:border-accent focus:border-accent focus:outline-none"
             >
               <span className="flex items-center gap-2 font-semibold">
@@ -474,6 +534,19 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
     setScanning(true);
     try {
       setScan(await ipc.libraryScanPick(kind));
+    } catch (e) {
+      setNotice(toErrorPayload(e));
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  const pickInstance = async (id: string) => {
+    setChoosingKind(false);
+    setNotice(null);
+    setScanning(true);
+    try {
+      setScan(await ipc.libraryScanInstance(id));
     } catch (e) {
       setNotice(toErrorPayload(e));
     } finally {
@@ -732,6 +805,7 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
         open={choosingKind}
         onClose={() => setChoosingKind(false)}
         onPick={(k) => void pick(k)}
+        onPickInstance={(id) => void pickInstance(id)}
       />
       <UploadDialog scan={scan} onClose={() => setScan(null)} onSubmitted={refresh} />
       <ReportDialog item={reporting} onClose={() => setReporting(null)} onReported={refresh} />

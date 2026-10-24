@@ -273,7 +273,9 @@
       "wrongLoader": "This mod does not match the selected instance's mod loader.",
       "badKind": "The library does not accept this file type.",
       "storageFull": "Your library uploads reached the 200 MB limit; withdraw an older one to make room.",
-      "wrongKind": "This item cannot be installed that way."
+      "wrongKind": "This item cannot be installed that way.",
+      "packLoader": "This profile's loader (Legacy Fabric, OptiFine) or version cannot be shared as a modpack.",
+      "packTooLarge": "Files not on Modrinth plus configs are over 50 MB; remove big mods or use their Modrinth versions."
     },
     "admin": {
       "forbidden": "You are not allowed to do this.",
@@ -1242,7 +1244,7 @@
       "kindTitle": "What do you want to upload?",
       "kindHint": {
         "mod": ".jar · Fabric, Quilt, Forge, NeoForge · up to 25 MB",
-        "modpack": ".mrpack (Modrinth modpack) · up to 50 MB",
+        "modpack": "One of your profiles (packed for you) · up to 50 MB",
         "resourcepack": ".zip (with pack.mcmeta) · up to 50 MB",
         "shader": ".zip (with a shaders/ folder) · up to 50 MB"
       },
@@ -1251,7 +1253,12 @@
         "modpack": "Choose the .mrpack file to upload",
         "resourcepack": "Choose the resource pack .zip to upload",
         "shader": "Choose the shader .zip to upload"
-      }
+      },
+      "profileTitle": "Which profile do you want to share as a modpack?",
+      "profileHint": "The launcher turns the profile into a modpack: mods, resource packs and shaders on Modrinth are linked, other files and configs go into the pack. Worlds, logs, screenshots and personal settings (options.txt, server list) are left out.",
+      "packFile": "Choose a ready .mrpack file",
+      "noProfiles": "You have no profiles yet.",
+      "packed": "{{linked}} files will download from Modrinth, {{embedded}} files are in the pack."
     },
     "report": {
       "button": "Report",

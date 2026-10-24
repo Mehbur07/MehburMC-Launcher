@@ -3,6 +3,15 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.25.0] — 2026-10-25
+
+### Değişti
+- **Kütüphaneye modpack yüklemek** artık dosya seçmek yerine **profillerinden birini seçmek**:
+  launcher profili otomatik olarak Modrinth modpack'ine çevirir. Modrinth'teki mod, resource
+  pack ve shader'lar bağlantı olarak eklenir; diğer dosyalar ve ayarlar pakete konur. Dünyalar,
+  loglar, ekran görüntüleri ve kişisel ayarlar eklenmez. Hazır `.mrpack` dosyası seçmek hâlâ
+  mümkün.
+
 ## [0.24.0] — 2026-10-24
 
 ### Eklendi

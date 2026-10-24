@@ -721,6 +721,43 @@ impl Launcher {
         Ok(changed)
     }
 
+    /// Packs an instance as a Modrinth `.mrpack` for a library upload (K90);
+    /// returns the file, named after the instance, in the cache.
+    pub async fn pack_instance_for_library(
+        &self,
+        instance_id: &str,
+    ) -> Result<crate::content::pack_export::PackExport> {
+        let inst = self.instances.get(instance_id)?;
+        let dir = self.instances.dir(&inst.id)?;
+        let name: String = inst
+            .name
+            .chars()
+            .map(|c| {
+                if c.is_alphanumeric() || " -_().+".contains(c) {
+                    c
+                } else {
+                    '_'
+                }
+            })
+            .take(60)
+            .collect();
+        let name = match name.trim() {
+            "" => "modpack".to_owned(),
+            n => n.to_owned(),
+        };
+        let out = self.ctx.paths.cache().join("library-upload").join(&inst.id);
+        // Only the newest pack of this instance is kept.
+        let _ = std::fs::remove_dir_all(&out);
+        crate::content::pack_export::export_mrpack(
+            &self.ctx,
+            &inst,
+            &dir,
+            &out.join(format!("{name}.mrpack")),
+            crate::friends::library::LibraryKind::Modpack.max_bytes() as u64,
+        )
+        .await
+    }
+
     /// Submits the picked file as `kind` to the MehburMC Library; the file
     /// must still be the one that was scanned.
     pub async fn submit_library_mod(

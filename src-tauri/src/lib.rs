@@ -170,6 +170,7 @@ pub fn run() {
             textures::unshare_texture,
             textures::report_texture,
             library::library_scan_pick,
+            library::library_scan_instance,
             library::library_submit,
             library::library_mods,
             library::library_withdraw,

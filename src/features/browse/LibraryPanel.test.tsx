@@ -5,6 +5,7 @@ const ipcMock = vi.hoisted(() => ({
   libraryMods: vi.fn(),
   pickPath: vi.fn(),
   libraryScanPick: vi.fn(),
+  libraryScanInstance: vi.fn(),
   librarySubmit: vi.fn(),
   libraryInstall: vi.fn(),
   libraryWithdraw: vi.fn(),
@@ -69,6 +70,8 @@ const scan = (verdict: "pass" | "warn" | "block"): LibraryScan => ({
     scanner: 2,
     kind: "mod",
   },
+  linked: null,
+  embedded: null,
 });
 
 /** Upload → pick the kind in the first dialog. */
@@ -215,6 +218,8 @@ describe("LibraryPanel", () => {
         scanner: 2,
         kind: "shader",
       },
+      linked: null,
+      embedded: null,
     } satisfies LibraryScan);
     render(<LibraryPanel inst={instance()} gameBusy={false} />);
     await upload("Shader");
@@ -267,5 +272,54 @@ describe("LibraryPanel", () => {
     expect(load).toHaveBeenCalled();
     expect(await screen.findByRole("status")).toHaveTextContent('Created the instance "Big Pack"');
     expect(within(row).getByRole("button", { name: /Instance created/ })).toBeDisabled();
+  });
+
+  it("packs a picked profile as a modpack, or takes a ready .mrpack", async () => {
+    ipcMock.libraryMods.mockResolvedValue([]);
+    useInstances.setState({
+      instances: [instance({ id: "golem", name: "Iron Golem", mcVersion: "1.21.4" })],
+    });
+    ipcMock.libraryScanInstance.mockResolvedValue({
+      fileName: "Iron Golem.mrpack",
+      report: {
+        verdict: "pass",
+        descriptor: {
+          modId: "",
+          name: "Iron Golem",
+          version: "1",
+          loaders: ["fabric"],
+          gameVersions: "1.21.4",
+        },
+        findings: [],
+        sha1: "d".repeat(40),
+        size: 9000,
+        classes: 0,
+        scanner: 2,
+        kind: "modpack",
+      },
+      linked: 12,
+      embedded: 3,
+    } satisfies LibraryScan);
+    render(<LibraryPanel inst={instance()} gameBusy={false} />);
+    await upload("Modpack");
+    const list = await screen.findByRole("dialog", { name: /Which profile/ });
+    expect(ipcMock.pickPath).not.toHaveBeenCalled();
+    await act(async () =>
+      fireEvent.click(within(list).getByRole("button", { name: /Iron Golem/ })),
+    );
+    expect(ipcMock.libraryScanInstance).toHaveBeenCalledWith("golem");
+    const dialog = await screen.findByRole("dialog", { name: /Upload to the library/ });
+    expect(dialog).toHaveTextContent(
+      "12 files will download from Modrinth, 3 files are in the pack.",
+    );
+    expect(within(dialog).getByRole("textbox", { name: "Name" })).toHaveValue("Iron Golem");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+    await upload("Modpack");
+    const again = await screen.findByRole("dialog", { name: /Which profile/ });
+    await act(async () =>
+      fireEvent.click(within(again).getByRole("button", { name: "Choose a ready .mrpack file" })),
+    );
+    expect(ipcMock.pickPath).toHaveBeenCalledWith("libraryModpack", undefined, expect.any(String));
   });
 });

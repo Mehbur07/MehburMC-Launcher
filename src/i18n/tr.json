@@ -273,7 +273,9 @@
       "wrongLoader": "Bu mod seçili profilin mod loader'ıyla uyumlu değil.",
       "badKind": "Bu dosya türü kütüphanede kabul edilmiyor.",
       "storageFull": "Kütüphanedeki yüklemelerin 200 MB sınırına ulaştı; yer açmak için eskilerden birini geri çek.",
-      "wrongKind": "Bu içerik bu şekilde kurulamaz."
+      "wrongKind": "Bu içerik bu şekilde kurulamaz.",
+      "packLoader": "Bu profilin mod loader'ı (Legacy Fabric, OptiFine) ya da sürümü modpack olarak paylaşılamaz.",
+      "packTooLarge": "Modrinth'te bulunmayan dosyalar ve ayarlar 50 MB'yi aşıyor; büyük modları çıkar ya da Modrinth sürümlerini kullan."
     },
     "admin": {
       "forbidden": "Bu işlem için yetkin yok.",
@@ -1242,7 +1244,7 @@
       "kindTitle": "Ne yüklemek istiyorsun?",
       "kindHint": {
         "mod": ".jar · Fabric, Quilt, Forge, NeoForge · en fazla 25 MB",
-        "modpack": ".mrpack (Modrinth modpack) · en fazla 50 MB",
+        "modpack": "Profillerinden biri (otomatik paketlenir) · en fazla 50 MB",
         "resourcepack": ".zip (pack.mcmeta ile) · en fazla 50 MB",
         "shader": ".zip (shaders/ klasörü ile) · en fazla 50 MB"
       },
@@ -1251,7 +1253,12 @@
         "modpack": "Yüklenecek .mrpack dosyasını seç",
         "resourcepack": "Yüklenecek resource pack .zip dosyasını seç",
         "shader": "Yüklenecek shader .zip dosyasını seç"
-      }
+      },
+      "profileTitle": "Hangi profili modpack olarak paylaşacaksın?",
+      "profileHint": "Launcher profili modpack'e çevirir: Modrinth'teki modlar, resource pack'ler ve shader'lar bağlantı olarak eklenir, diğer dosyalar ve ayarlar (config) pakete konur. Dünyalar, loglar, ekran görüntüleri ve kişisel ayarların (options.txt, sunucu listesi) eklenmez.",
+      "packFile": "Hazır .mrpack dosyası seç",
+      "noProfiles": "Henüz profilin yok.",
+      "packed": "{{linked}} dosya Modrinth'ten indirilecek, {{embedded}} dosya pakete eklendi."
     },
     "report": {
       "button": "Bildir",
