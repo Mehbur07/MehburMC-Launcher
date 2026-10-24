@@ -75,6 +75,53 @@ pub struct ModDescriptor {
     pub game_versions: String,
 }
 
+/// What a library item is (K88); decides the file type, the rules and
+/// where it is installed.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
+#[serde(rename_all = "lowercase")]
+#[ts(export)]
+pub enum LibraryKind {
+    #[default]
+    Mod,
+    /// Modrinth `.mrpack`.
+    Modpack,
+    ResourcePack,
+    Shader,
+}
+
+/// Upload limit of packs (the Supabase free plan's per-file limit).
+pub const MAX_PACK_BYTES: usize = 50 * 1024 * 1024;
+
+impl LibraryKind {
+    pub const ALL: [LibraryKind; 4] = [Self::Mod, Self::Modpack, Self::ResourcePack, Self::Shader];
+
+    /// File extension, also in the bucket (`<owner>/<sha1>.<ext>`).
+    pub fn ext(self) -> &'static str {
+        match self {
+            Self::Mod => "jar",
+            Self::Modpack => "mrpack",
+            Self::ResourcePack | Self::Shader => "zip",
+        }
+    }
+
+    pub fn max_bytes(self) -> usize {
+        match self {
+            Self::Mod => MAX_JAR_BYTES,
+            _ => MAX_PACK_BYTES,
+        }
+    }
+
+    /// The value stored on the server.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Mod => "mod",
+            Self::Modpack => "modpack",
+            Self::ResourcePack => "resourcepack",
+            Self::Shader => "shader",
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
@@ -89,9 +136,12 @@ pub struct ScanReport {
     pub classes: u32,
     /// Version of these rules, so old reports can be told apart.
     pub scanner: u32,
+    /// What was checked; reports before scanner 2 are mods.
+    #[serde(default)]
+    pub kind: LibraryKind,
 }
 
-pub const SCANNER_VERSION: u32 = 1;
+pub const SCANNER_VERSION: u32 = 2;
 
 #[derive(Default)]
 struct Collector {
@@ -546,6 +596,15 @@ pub fn scan(bytes: &[u8]) -> ScanReport {
             &format!("{}/{}", c.short_names, c.classes),
         );
     }
+    finish(c, descriptor, bytes, LibraryKind::Mod)
+}
+
+fn finish(
+    c: Collector,
+    descriptor: Option<ModDescriptor>,
+    bytes: &[u8],
+    kind: LibraryKind,
+) -> ScanReport {
     let findings: Vec<Finding> = c
         .found
         .iter()
@@ -571,29 +630,288 @@ pub fn scan(bytes: &[u8]) -> ScanReport {
         size: bytes.len() as u64,
         classes: c.classes,
         scanner: SCANNER_VERSION,
+        kind,
     }
 }
 
-/// Reads a jar for the library, at most [`MAX_JAR_BYTES`].
-pub fn read_jar(path: &std::path::Path) -> crate::error::Result<Vec<u8>> {
+// ------------------------------------------------------------------ packs (K88)
+
+/// Hosts a `.mrpack` may download from (the Modrinth format's own list).
+const MRPACK_HOSTS: &[&str] = &[
+    "cdn.modrinth.com",
+    "github.com",
+    "raw.githubusercontent.com",
+    "gitlab.com",
+];
+const MRPACK_INDEX: &str = "modrinth.index.json";
+
+fn is_code_name(lower: &str) -> bool {
+    lower.ends_with(".class") || lower.ends_with(".jar")
+}
+
+/// A path inside an instance: relative, no `..`, no drive or backslash.
+fn safe_rel_path(p: &str) -> bool {
+    !p.is_empty()
+        && !p.starts_with('/')
+        && !p.contains('\\')
+        && !p.contains(':')
+        && p.split('/').all(|s| !s.is_empty() && s != "." && s != "..")
+}
+
+/// Walks a resource pack, shader or `.mrpack`. Packs carry no code: classes,
+/// jars, executables and native libraries are refused — except mod jars in
+/// a modpack's `overrides/`, which are scanned with the mod rules.
+fn scan_pack_zip(c: &mut Collector, bytes: &[u8], kind: LibraryKind, total: &mut u64) {
+    let Ok(mut zip) = zip::ZipArchive::new(Cursor::new(bytes)) else {
+        c.add(Severity::Block, "notAJar", "/");
+        return;
+    };
+    if zip.len() > MAX_ENTRIES {
+        c.add(Severity::Block, "tooManyFiles", "/");
+        return;
+    }
+    for i in 0..zip.len() {
+        let Ok(mut f) = zip.by_index(i) else {
+            c.add(Severity::Block, "notAJar", "/");
+            return;
+        };
+        if f.is_dir() {
+            continue;
+        }
+        let name = f.name().to_owned();
+        let size = f.size();
+        if size > MAX_ENTRY_BYTES || (size > 1024 * 1024 && size / f.compressed_size().max(1) > 200)
+        {
+            c.add(Severity::Block, "zipBomb", &name);
+            return;
+        }
+        *total += size;
+        if *total > MAX_TOTAL_BYTES {
+            c.add(Severity::Block, "zipBomb", &name);
+            return;
+        }
+        if !safe_rel_path(&name) {
+            c.add(Severity::Block, "unsafePath", &name);
+            continue;
+        }
+        let lower = name.to_ascii_lowercase();
+        let override_jar = kind == LibraryKind::Modpack
+            && lower.ends_with(".jar")
+            && ["overrides/", "client-overrides/", "server-overrides/"]
+                .iter()
+                .any(|p| lower.starts_with(p));
+        if is_executable_name(&name) {
+            c.add(Severity::Block, "executable", &name);
+        } else if is_native_name(&name) {
+            c.add(Severity::Block, "nativeBinary", &name);
+        } else if is_code_name(&lower) && !override_jar {
+            c.add(Severity::Block, "codeInPack", &name);
+        }
+        let limit = if override_jar {
+            size.min(MAX_ENTRY_BYTES)
+        } else {
+            128
+        };
+        let mut data = Vec::new();
+        if (&mut f).take(limit).read_to_end(&mut data).is_err() {
+            c.add(Severity::Block, "notAJar", &name);
+            return;
+        }
+        if !override_jar
+            && (data.starts_with(b"MZ") && data.len() > 64 || data.starts_with(b"\x7fELF"))
+        {
+            c.add(Severity::Block, "executable", &name);
+        }
+        if override_jar {
+            // Bundled mods: the full mod rules, nested jars included.
+            scan_zip(c, &data, &format!("{name}!/"), 1, total);
+            if descriptor(&data).is_none() {
+                c.add(Severity::Warn, "noDescriptor", &name);
+            }
+        }
+    }
+}
+
+/// `pack.mcmeta` → name from the description, version from `pack_format`.
+fn resource_pack_descriptor(zip: &mut zip::ZipArchive<Cursor<&[u8]>>) -> Option<ModDescriptor> {
+    let v = lenient_json(&read_text(zip, "pack.mcmeta")?)?;
+    let pack = v.get("pack")?;
+    let description = match &pack["description"] {
+        Value::String(s) => s.clone(),
+        // Text components: the plain text of each part.
+        Value::Array(a) => a
+            .iter()
+            .filter_map(|p| p.as_str().or_else(|| p["text"].as_str()))
+            .collect(),
+        Value::Object(o) => o
+            .get("text")
+            .and_then(Value::as_str)
+            .unwrap_or("")
+            .to_owned(),
+        _ => String::new(),
+    };
+    // Without formatting codes (§ and the character after it).
+    let mut first = String::new();
+    let mut chars = description.lines().next().unwrap_or("").chars();
+    while let Some(ch) = chars.next() {
+        if ch == '§' {
+            chars.next();
+        } else {
+            first.push(ch);
+        }
+    }
+    Some(ModDescriptor {
+        mod_id: String::new(),
+        name: clean(&first).unwrap_or_default().chars().take(64).collect(),
+        version: pack["pack_format"]
+            .as_u64()
+            .map(|n| format!("pack_format {n}"))
+            .unwrap_or_default(),
+        loaders: Vec::new(),
+        game_versions: String::new(),
+    })
+}
+
+/// A shader pack has its programs under `shaders/` at the root.
+fn shader_descriptor(zip: &mut zip::ZipArchive<Cursor<&[u8]>>) -> Option<ModDescriptor> {
+    (0..zip.len())
+        .any(|i| {
+            zip.by_index(i)
+                .is_ok_and(|f| f.name().starts_with("shaders/") && f.name().len() > 8)
+        })
+        .then(|| ModDescriptor {
+            mod_id: String::new(),
+            name: String::new(),
+            version: String::new(),
+            loaders: Vec::new(),
+            game_versions: String::new(),
+        })
+}
+
+/// `modrinth.index.json`: name, version, loaders, Minecraft version; every
+/// download must be hashed and come from an allowed host.
+fn mrpack_descriptor(
+    c: &mut Collector,
+    zip: &mut zip::ZipArchive<Cursor<&[u8]>>,
+) -> Option<ModDescriptor> {
+    let v: Value = serde_json::from_str(&read_text(zip, MRPACK_INDEX)?).ok()?;
+    if v["formatVersion"].as_u64() != Some(1) || v["game"] != "minecraft" {
+        return None;
+    }
+    let deps = &v["dependencies"];
+    let mut loaders = Vec::new();
+    for (key, l) in [
+        ("fabric-loader", ModLoader::Fabric),
+        ("quilt-loader", ModLoader::Quilt),
+        ("forge", ModLoader::Forge),
+        ("neoforge", ModLoader::NeoForge),
+    ] {
+        if deps.get(key).is_some() {
+            loaders.push(l);
+        }
+    }
+    for f in v["files"].as_array().map(Vec::as_slice).unwrap_or(&[]) {
+        let path = f["path"].as_str().unwrap_or("");
+        if !safe_rel_path(path) {
+            c.add(Severity::Block, "unsafePath", path);
+            continue;
+        }
+        if is_executable_name(path) || is_native_name(path) {
+            c.add(Severity::Block, "executable", path);
+        }
+        let hashed = ["sha1", "sha512"]
+            .iter()
+            .any(|h| f["hashes"][h].as_str().is_some_and(|s| !s.is_empty()));
+        let hosts: Vec<Option<String>> = f["downloads"]
+            .as_array()
+            .map(Vec::as_slice)
+            .unwrap_or(&[])
+            .iter()
+            .map(|u| {
+                let url = reqwest::Url::parse(u.as_str()?).ok()?;
+                (url.scheme() == "https").then(|| url.host_str().unwrap_or("").to_ascii_lowercase())
+            })
+            .collect();
+        let allowed: Vec<&String> = hosts
+            .iter()
+            .flatten()
+            .filter(|h| MRPACK_HOSTS.contains(&h.as_str()))
+            .collect();
+        if !hashed || allowed.is_empty() {
+            c.add(Severity::Block, "badDownload", path);
+        } else if !allowed.iter().any(|h| *h == "cdn.modrinth.com") {
+            // Not checked by Modrinth: the admin should look at it.
+            c.add(Severity::Warn, "externalDownload", path);
+        }
+    }
+    let text = |s: &Value| s.as_str().and_then(clean).unwrap_or_default();
+    Some(ModDescriptor {
+        mod_id: String::new(),
+        name: text(&v["name"]).chars().take(64).collect(),
+        version: text(&v["versionId"]).chars().take(64).collect(),
+        loaders,
+        game_versions: text(&deps["minecraft"]).chars().take(100).collect(),
+    })
+}
+
+/// Checks a library upload of any kind. Never panics on hostile input.
+pub fn scan_as(bytes: &[u8], kind: LibraryKind) -> ScanReport {
+    if kind == LibraryKind::Mod {
+        return scan(bytes);
+    }
+    let mut c = Collector::default();
+    let mut descriptor = None;
+    if bytes.len() > kind.max_bytes() {
+        c.add(Severity::Block, "tooLarge", "/");
+    } else {
+        let mut total = 0;
+        scan_pack_zip(&mut c, bytes, kind, &mut total);
+        if let Ok(mut zip) = zip::ZipArchive::new(Cursor::new(bytes)) {
+            descriptor = match kind {
+                LibraryKind::ResourcePack => resource_pack_descriptor(&mut zip),
+                LibraryKind::Shader => shader_descriptor(&mut zip),
+                LibraryKind::Modpack => mrpack_descriptor(&mut c, &mut zip),
+                LibraryKind::Mod => None,
+            };
+        }
+    }
+    if descriptor.is_none() && !c.has("notAJar") && !c.has("tooLarge") {
+        c.add(Severity::Block, "noDescriptor", "/");
+    }
+    finish(c, descriptor, bytes, kind)
+}
+
+/// Reads a file for the library, at most `max` bytes (one more to notice
+/// a file over the limit).
+pub fn read_limited(path: &std::path::Path, max: usize) -> crate::error::Result<Vec<u8>> {
     use crate::error::CoreError;
     let f = std::fs::File::open(path).map_err(|e| CoreError::io(path, e))?;
     let mut bytes = Vec::new();
-    f.take(MAX_JAR_BYTES as u64 + 1)
+    f.take(max as u64 + 1)
         .read_to_end(&mut bytes)
         .map_err(|e| CoreError::io(path, e))?;
     Ok(bytes)
 }
 
-/// Scans a file on disk; a file over the limit reports `tooLarge` with its
-/// real size.
-pub fn scan_file(path: &std::path::Path) -> crate::error::Result<ScanReport> {
-    let bytes = read_jar(path)?;
-    let mut r = scan(&bytes);
-    if bytes.len() > MAX_JAR_BYTES {
+/// Reads a jar for the library, at most [`MAX_JAR_BYTES`].
+pub fn read_jar(path: &std::path::Path) -> crate::error::Result<Vec<u8>> {
+    read_limited(path, MAX_JAR_BYTES)
+}
+
+/// Scans a file on disk as `kind`; a file over the limit reports
+/// `tooLarge` with its real size.
+pub fn scan_file_as(path: &std::path::Path, kind: LibraryKind) -> crate::error::Result<ScanReport> {
+    let bytes = read_limited(path, kind.max_bytes())?;
+    let mut r = scan_as(&bytes, kind);
+    if bytes.len() > kind.max_bytes() {
         r.size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(r.size);
     }
     Ok(r)
+}
+
+/// Scans a mod jar on disk.
+pub fn scan_file(path: &std::path::Path) -> crate::error::Result<ScanReport> {
+    scan_file_as(path, LibraryKind::Mod)
 }
 
 #[cfg(test)]
@@ -843,6 +1161,208 @@ pub(crate) mod tests {
     }
 
     /// Scans real jars (read-only) and prints the verdicts:
+    fn mcmeta() -> Vec<u8> {
+        let description = "\u{a7}6Faithful \u{a7}r32x\nsecond line";
+        serde_json::to_vec(
+            &serde_json::json!({ "pack": { "pack_format": 46, "description": description } }),
+        )
+        .unwrap()
+    }
+
+    fn mr_index(files: serde_json::Value) -> Vec<u8> {
+        serde_json::to_vec(&serde_json::json!({
+            "formatVersion": 1, "game": "minecraft", "versionId": "1.4.0", "name": "Mehbur Pack",
+            "dependencies": { "minecraft": "1.21.4", "fabric-loader": "0.16.9" },
+            "files": files,
+        }))
+        .unwrap()
+    }
+
+    fn mr_file(path: &str, url: &str) -> serde_json::Value {
+        serde_json::json!({ "path": path, "hashes": { "sha1": "ab", "sha512": "cd" },
+                            "downloads": [url], "fileSize": 10 })
+    }
+
+    #[test]
+    fn resource_pack_passes_and_reads_pack_mcmeta() {
+        let r = scan_as(
+            &jar(&[
+                ("pack.mcmeta", mcmeta()),
+                ("pack.png", b"\x89PNG....".to_vec()),
+                (
+                    "assets/minecraft/textures/block/stone.png",
+                    b"\x89PNG".to_vec(),
+                ),
+            ]),
+            LibraryKind::ResourcePack,
+        );
+        assert_eq!(r.verdict, Verdict::Pass, "{:?}", r.findings);
+        assert_eq!(r.kind, LibraryKind::ResourcePack);
+        let d = r.descriptor.unwrap();
+        assert_eq!(d.name, "Faithful 32x");
+        assert_eq!(d.version, "pack_format 46");
+        assert!(d.loaders.is_empty());
+    }
+
+    #[test]
+    fn packs_carry_no_code() {
+        let r = scan_as(
+            &jar(&[
+                ("pack.mcmeta", mcmeta()),
+                ("assets/x/Evil.class", class(&[], &[])),
+                ("assets/x/lib.jar", jar(&[("a.txt", b"a".to_vec())])),
+                ("assets/x/run.bat", b"@echo off".to_vec()),
+                (
+                    "assets/x/innocent.png",
+                    [b"MZ".to_vec(), vec![0; 100]].concat(),
+                ),
+                ("assets/x/native.dll", b"MZ".to_vec()),
+            ]),
+            LibraryKind::ResourcePack,
+        );
+        assert_eq!(r.verdict, Verdict::Block);
+        let codes = codes(&r);
+        for c in ["codeInPack", "executable", "nativeBinary"] {
+            assert!(codes.contains(&c), "{c} missing in {codes:?}");
+        }
+        assert_eq!(r.classes, 0, "pack classes are not parsed");
+    }
+
+    #[test]
+    fn packs_need_their_marker_file() {
+        // pack.mcmeta in a sub folder does not load in Minecraft either.
+        let nested = scan_as(
+            &jar(&[("Faithful/pack.mcmeta", mcmeta())]),
+            LibraryKind::ResourcePack,
+        );
+        assert_eq!(codes(&nested), vec!["noDescriptor"]);
+        let shader = scan_as(
+            &jar(&[("shaders/final.fsh", b"void main(){}".to_vec())]),
+            LibraryKind::Shader,
+        );
+        assert_eq!(shader.verdict, Verdict::Pass, "{:?}", shader.findings);
+        let not_shader = scan_as(&jar(&[("readme.txt", b"hi".to_vec())]), LibraryKind::Shader);
+        assert_eq!(codes(&not_shader), vec!["noDescriptor"]);
+        assert_eq!(
+            codes(&scan_as(b"not a zip", LibraryKind::Shader)),
+            vec!["notAJar"]
+        );
+    }
+
+    #[test]
+    fn modpack_index_is_read_and_downloads_checked() {
+        let ok = scan_as(
+            &jar(&[(
+                MRPACK_INDEX,
+                mr_index(serde_json::json!([mr_file(
+                    "mods/sodium.jar",
+                    "https://cdn.modrinth.com/data/AANobbMI/versions/x/sodium.jar"
+                )])),
+            )]),
+            LibraryKind::Modpack,
+        );
+        assert_eq!(ok.verdict, Verdict::Pass, "{:?}", ok.findings);
+        let d = ok.descriptor.unwrap();
+        assert_eq!(
+            (d.name.as_str(), d.version.as_str()),
+            ("Mehbur Pack", "1.4.0")
+        );
+        assert_eq!(d.loaders, vec![ModLoader::Fabric]);
+        assert_eq!(d.game_versions, "1.21.4");
+
+        let mut no_hash = mr_file("mods/b.jar", "https://cdn.modrinth.com/b.jar");
+        no_hash["hashes"] = serde_json::json!({});
+        let bad = scan_as(
+            &jar(&[(
+                MRPACK_INDEX,
+                mr_index(serde_json::json!([
+                    mr_file(
+                        "mods/a.jar",
+                        "https://github.com/x/y/releases/download/1/a.jar"
+                    ),
+                    no_hash,
+                    mr_file("mods/c.jar", "https://evil.example/c.jar"),
+                    mr_file("mods/d.jar", "http://cdn.modrinth.com/d.jar"),
+                    mr_file("../../evil.jar", "https://cdn.modrinth.com/e.jar"),
+                    mr_file("config/run.exe", "https://cdn.modrinth.com/run.exe"),
+                ])),
+            )]),
+            LibraryKind::Modpack,
+        );
+        assert_eq!(bad.verdict, Verdict::Block);
+        let f = |code: &str| bad.findings.iter().find(|f| f.code == code).cloned();
+        assert_eq!(f("externalDownload").unwrap().examples, vec!["mods/a.jar"]);
+        assert_eq!(
+            f("badDownload").unwrap().examples,
+            vec!["mods/b.jar", "mods/c.jar", "mods/d.jar"]
+        );
+        assert_eq!(f("unsafePath").unwrap().examples, vec!["../../evil.jar"]);
+        assert!(f("executable").is_some());
+    }
+
+    #[test]
+    fn modpack_override_mods_get_the_mod_rules() {
+        let stealer = jar(&[
+            ("fabric.mod.json", fabric_json()),
+            (
+                "a/Grab.class",
+                class(&[], &["https://discord.com/api/webhooks/1/abc"]),
+            ),
+        ]);
+        let clean = jar(&[("fabric.mod.json", fabric_json())]);
+        let pack = |extra: Vec<(&str, Vec<u8>)>| {
+            let mut files = vec![(MRPACK_INDEX, mr_index(serde_json::json!([])))];
+            files.extend(extra);
+            scan_as(&jar(&files), LibraryKind::Modpack)
+        };
+        let ok = pack(vec![
+            ("overrides/mods/own.jar", clean),
+            ("overrides/config/own.json", b"{}".to_vec()),
+        ]);
+        assert_eq!(ok.verdict, Verdict::Pass, "{:?}", ok.findings);
+        let bad = pack(vec![("overrides/mods/grab.jar", stealer)]);
+        assert_eq!(bad.verdict, Verdict::Block);
+        assert!(codes(&bad).contains(&"webhook"));
+        // Code anywhere else in the pack is refused.
+        let loose = pack(vec![("Loose.class", class(&[], &[]))]);
+        assert!(codes(&loose).contains(&"codeInPack"));
+        assert_eq!(codes(&pack(vec![])), Vec::<&str>::new());
+        let no_index = scan_as(&jar(&[("x.txt", b"x".to_vec())]), LibraryKind::Modpack);
+        assert_eq!(codes(&no_index), vec!["noDescriptor"]);
+    }
+
+    #[test]
+    fn packs_have_their_own_size_limit() {
+        assert_eq!(LibraryKind::Mod.max_bytes(), MAX_JAR_BYTES);
+        let big = vec![0_u8; MAX_PACK_BYTES + 1];
+        assert_eq!(codes(&scan_as(&big, LibraryKind::Shader)), vec!["tooLarge"]);
+        assert_eq!(
+            [
+                LibraryKind::Mod,
+                LibraryKind::Modpack,
+                LibraryKind::ResourcePack
+            ]
+            .map(LibraryKind::ext),
+            ["jar", "mrpack", "zip"]
+        );
+    }
+
+    #[test]
+    fn reports_before_kinds_are_mods() {
+        let old = serde_json::json!({ "verdict": "pass", "descriptor": null, "findings": [],
+                                      "sha1": "x", "size": 1, "classes": 0, "scanner": 1 });
+        let r: ScanReport = serde_json::from_value(old).unwrap();
+        assert_eq!(r.kind, LibraryKind::Mod);
+        assert_eq!(
+            serde_json::to_value(LibraryKind::ResourcePack).unwrap(),
+            "resourcepack"
+        );
+        assert_eq!(
+            scan(&jar(&[("fabric.mod.json", fabric_json())])).kind,
+            LibraryKind::Mod
+        );
+    }
+
     /// `MEHBUR_JARS=<dir> cargo test -p launcher-core --lib real_jars -- --ignored --nocapture`
     #[test]
     #[ignore]

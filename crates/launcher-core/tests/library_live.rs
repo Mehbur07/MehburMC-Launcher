@@ -10,7 +10,9 @@ use std::sync::Arc;
 
 use launcher_core::events::NullSink;
 use launcher_core::friends::FriendsClient;
-use launcher_core::friends::library::{LibraryInstall, LibraryReportReason, LibraryStatus};
+use launcher_core::friends::library::{
+    LibraryInstall, LibraryKind, LibraryReportReason, LibraryStatus,
+};
 use launcher_core::instance::LoaderKind;
 use launcher_core::{Ctx, Paths};
 
@@ -82,21 +84,42 @@ async fn scenario(a: &FriendsClient, b: &FriendsClient, root: &Path) {
     // The author must be one of the uploader's reserved names.
     assert_eq!(
         code(
-            &a.submit_library_mod(&jar, "live.jar", "Live", "", "NotMine_123")
-                .await
-                .unwrap_err()
+            &a.submit_library_mod(
+                &jar,
+                LibraryKind::Mod,
+                "live.jar",
+                "Live",
+                "",
+                "NotMine_123"
+            )
+            .await
+            .unwrap_err()
         ),
         "textures.authorInvalid"
     );
 
     let (id, report) = a
-        .submit_library_mod(&jar, "live test.jar", "Live mod", "first", &author)
+        .submit_library_mod(
+            &jar,
+            LibraryKind::Mod,
+            "live test.jar",
+            "Live mod",
+            "first",
+            &author,
+        )
         .await
         .unwrap();
     assert_eq!(report.descriptor.unwrap().mod_id, "livetest");
     // Same file again updates the row instead of adding one.
     let (again, _) = a
-        .submit_library_mod(&jar, "live test.jar", "Live mod 2", "second", &author)
+        .submit_library_mod(
+            &jar,
+            LibraryKind::Mod,
+            "live test.jar",
+            "Live mod 2",
+            "second",
+            &author,
+        )
         .await
         .unwrap();
     assert_eq!(again, id);
@@ -114,10 +137,10 @@ async fn scenario(a: &FriendsClient, b: &FriendsClient, root: &Path) {
 
     // Pending uploads are invisible to everyone else.
     assert!(!b.library_mods().await.unwrap().iter().any(|m| m.id == id));
-    let b_mods = root.join("b-inst/mods");
+    let b_inst = root.join("b-inst");
     assert_eq!(
         code(
-            &b.install_library_mod(id, &b_mods, LoaderKind::Fabric, true)
+            &b.install_library_mod(id, &b_inst, LoaderKind::Fabric, true)
                 .await
                 .unwrap_err()
         ),
@@ -134,9 +157,10 @@ async fn scenario(a: &FriendsClient, b: &FriendsClient, root: &Path) {
 
     // The owner can install their own pending upload: download from
     // storage, SHA-1 check and a fresh scan.
-    let a_mods = root.join("a-inst/mods");
+    let a_inst = root.join("a-inst");
+    let a_mods = a_inst.join("mods");
     match a
-        .install_library_mod(id, &a_mods, LoaderKind::Fabric, false)
+        .install_library_mod(id, &a_inst, LoaderKind::Fabric, false)
         .await
         .unwrap()
     {

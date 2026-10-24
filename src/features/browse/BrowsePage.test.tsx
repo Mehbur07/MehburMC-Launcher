@@ -141,7 +141,7 @@ describe("BrowsePage installed content", () => {
     await row("Sodium");
     ipcMock.searchModrinth.mockClear();
     fireEvent.click(screen.getByRole("tab", { name: "MehburMC Library" }));
-    expect(await screen.findByText("No approved mods yet")).toBeInTheDocument();
+    expect(await screen.findByText("Nothing approved yet")).toBeInTheDocument();
     expect(screen.queryByText("Sodium")).toBeNull();
     expect(ipcMock.searchModrinth).not.toHaveBeenCalled();
   });

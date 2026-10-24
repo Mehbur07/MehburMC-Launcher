@@ -117,16 +117,22 @@ Profil ayrıntılarındaki **Modlar** sekmesinde modları açıp kapatabilir, si
 tıkla kurulur (profil → Genel → **Tek tıkla kur**).
 
 **MehburMC Kütüphanesi** (Mod Tarayıcı'nın son sekmesi): MehburMC kullanıcılarının yüklediği
-modlar.
-- **Mod yükle** → jar'ını seç. Launcher dosyayı hemen kontrol eder ve sonucu gösterir:
-  yeşil = şüpheli bir şey yok, sarı = dikkat edilecek davranışlar var (ör. internete bağlanma;
-  meşru modlarda da olur), kırmızı = yüklenemez (ör. Discord webhook'u, hesap dosyalarına
-  erişim, gömülü .exe, mod tanımı yok, 25 MB'den büyük). Ad ve açıklama yazıp **Onaya gönder**.
-- Yüklediğin modlar bir admin onaylayana kadar yalnızca sana, **Yüklediklerim** bölümünde
-  "Onay bekliyor" olarak görünür. **Geri çek** modu sunucudan siler.
-- Onaylı modu **Kur** ile hedef profile kurarsın. İndirilen dosya doğrulanır ve senin
-  launcher'ında yeniden kontrol edilir; uyarı varsa önce sorulur. Hiçbir otomatik kontrol
-  %100 güvenlik sağlamaz — şüpheli bir şey görürsen bayrak simgesiyle **Bildir**.
+modlar, modpackler, resource packler ve shaderlar. Üstteki **Tümü / Modlar / Modpackler /
+Resource packler / Shaderlar** düğmeleriyle türe göre süz.
+- **Yükle** → türü seç → dosyayı seç: mod = `.jar` (en fazla 25 MB), modpack = Modrinth
+  `.mrpack`, resource pack ve shader = `.zip` (paketler en fazla 50 MB). Launcher dosyayı hemen
+  kontrol eder ve sonucu gösterir: yeşil = şüpheli bir şey yok, sarı = dikkat edilecek şeyler var
+  (ör. internete bağlanma — meşru modlarda da olur; modpack'te Modrinth dışından indirilen dosya),
+  kırmızı = yüklenemez (ör. Discord webhook'u, hesap dosyalarına erişim, gömülü .exe, mod tanımı
+  yok, resource pack'te `pack.mcmeta` yok, pakette kod dosyası, boyut sınırı aşıldı). Ad ve
+  açıklama yazıp **Onaya gönder**. Kütüphanedeki yüklemelerinin toplamı en fazla 200 MB olabilir.
+- Yüklediklerin bir admin onaylayana kadar yalnızca sana, **Yüklediklerim** bölümünde
+  "Onay bekliyor" olarak görünür. **Geri çek** dosyayı sunucudan siler.
+- Onaylı modu, resource pack'i veya shader'ı **Kur** ile hedef profile kurarsın (shader için
+  profilde Iris veya OptiFine gerekir). Modpack'i **Profil olarak kur** yeni bir profil yapar;
+  Profiller sayfasından başlatırsın. İndirilen dosya doğrulanır ve senin launcher'ında yeniden
+  kontrol edilir; uyarı varsa önce sorulur. Hiçbir otomatik kontrol %100 güvenlik sağlamaz —
+  şüpheli bir şey görürsen bayrak simgesiyle **Bildir**.
 
 ### Aynı profili iki hesapla açmak
 
@@ -294,8 +300,8 @@ Launcher açılınca MehburMC hesabınla giriş yapman istenir.
 - Kurallara uymayan hesaplar yöneticiler tarafından süreli ya da kalıcı **yasaklanabilir**;
   yasaklıyken launcher kullanılamaz, ekranda bitiş tarihi ve sebep yazar.
 
-**Yöneticiler** kenar çubuğunda **Admin** sayfasını görür: Kütüphane'ye yüklenen modların onayı
-(mod önce yöneticinin launcher'ında yeniden taranır), bildirilen içerik, banlar ve yönetici atama. Kurucu **Topluluk** sekmesinden paylaşılan skin/pelerinleri kaldırır
+**Yöneticiler** kenar çubuğunda **Admin** sayfasını görür: Kütüphane'ye yüklenen mod ve paketlerin onayı
+(dosya önce yöneticinin launcher'ında yeniden taranır), bildirilen içerik, banlar ve yönetici atama. Kurucu **Topluluk** sekmesinden paylaşılan skin/pelerinleri kaldırır
 (ve geri getirir), ayrıca **Özel dokular** sekmesinden özel
 MehburMC skin/pelerinlerini yükler ve seçtiği kişilere gönderir.
 

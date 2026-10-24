@@ -3,6 +3,20 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.23.0] — 2026-10-24
+
+### Eklendi
+- **MehburMC Kütüphanesi** artık modların yanında **modpack** (Modrinth `.mrpack`), **resource
+  pack** ve **shader** (`.zip`) da kabul eder. **Yükle**'ye basınca önce türü seçersin; her dosya
+  yine otomatik kontrolden geçer ve admin onayından sonra yayınlanır. Paketler 50 MB'ye kadar.
+- Kütüphanede **Tümü / Modlar / Modpackler / Resource packler / Shaderlar** süzgeci ve her
+  kartta tür rozeti.
+- Modpack'i **Profil olarak kur** ile yeni bir profil olarak kurarsın; resource pack ve shader
+  seçili profile kurulur (shader için profilde Iris veya OptiFine gerekir).
+
+### Değişti
+- Kütüphanedeki yüklemelerin toplamı kişi başı 200 MB ile sınırlı.
+
 ## [0.22.1] — 2026-10-22
 
 ### Değişti

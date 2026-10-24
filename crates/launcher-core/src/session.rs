@@ -721,18 +721,18 @@ impl Launcher {
         Ok(changed)
     }
 
-    /// Submits a mod jar to the MehburMC Library under the selected
-    /// account's name. `expected_sha1` is the file the user saw the scan
-    /// report for; a file changed since then is refused.
+    /// Submits the picked file as `kind` to the MehburMC Library; the file
+    /// must still be the one that was scanned.
     pub async fn submit_library_mod(
         &self,
         path: &std::path::Path,
         expected_sha1: &str,
+        kind: crate::friends::library::LibraryKind,
         name: &str,
         description: &str,
     ) -> Result<(i64, crate::content::scan::ScanReport)> {
         let author = self.accounts.launch_account()?.name;
-        let bytes = crate::content::scan::read_jar(path)?;
+        let bytes = crate::content::scan::read_limited(path, kind.max_bytes())?;
         if crate::friends::avatar::sha1_hex(&bytes) != expected_sha1 {
             return Err(CoreError::Friends("library.changed"));
         }
@@ -741,28 +741,46 @@ impl Launcher {
             .map(|n| n.to_string_lossy().into_owned())
             .unwrap_or_default();
         self.friends
-            .submit_library_mod(&bytes, &file_name, name, description, &author)
+            .submit_library_mod(&bytes, kind, &file_name, name, description, &author)
             .await
     }
 
-    /// Installs a MehburMC Library mod into an instance's `mods/` folder;
-    /// the instance is reserved meanwhile so it cannot start.
+    /// Installs a MehburMC Library item (K88): a mod, resource pack or
+    /// shader into `instance_id` (reserved meanwhile so it cannot start), or
+    /// a modpack (`instance_id` = `None`) as a new instance.
     pub async fn install_library_mod(
         &self,
         library_id: i64,
-        instance_id: &str,
+        instance_id: Option<&str>,
         accept_warnings: bool,
     ) -> Result<crate::friends::library::LibraryInstall> {
+        use crate::friends::library::LibraryInstall;
+        let Some(instance_id) = instance_id else {
+            let (m, path) = match self
+                .friends
+                .download_library_modpack(library_id, accept_warnings)
+                .await?
+            {
+                Ok(ready) => ready,
+                Err(findings) => return Ok(LibraryInstall::NeedsConfirm { findings }),
+            };
+            let result = self.import_modpack(&path, None).await;
+            let _ = std::fs::remove_file(&path);
+            let imported = result?;
+            return Ok(LibraryInstall::Imported {
+                instance_id: imported.instance.id,
+                name: if imported.instance.name.is_empty() {
+                    m.name
+                } else {
+                    imported.instance.name
+                },
+            });
+        };
         let inst = self.instances.get(instance_id)?;
         let _claim = self.running.try_claim(&inst)?;
         let dir = self.instances.dir(&inst.id)?;
         self.friends
-            .install_library_mod(
-                library_id,
-                &dir.join(Folder::Mods.dir_name()),
-                inst.loader.kind,
-                accept_warnings,
-            )
+            .install_library_mod(library_id, &dir, inst.loader.kind, accept_warnings)
             .await
     }
 

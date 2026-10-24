@@ -1,7 +1,8 @@
-//! MehburMC Library (K72): scan, submit, list, withdraw, report, install.
+//! MehburMC Library (K72, K88): scan, submit, list, withdraw, report, install
+//! — mods, modpacks, resource packs and shaders.
 
 use launcher_core::CoreError;
-use launcher_core::content::scan::{self, ScanReport, Verdict};
+use launcher_core::content::scan::{self, LibraryKind, ScanReport, Verdict};
 use launcher_core::friends::library::{LibraryInstall, LibraryMod, LibraryReportReason};
 use serde::Serialize;
 use tauri::State;
@@ -19,14 +20,27 @@ pub struct LibraryScan {
     pub report: ScanReport,
 }
 
-/// Scans the jar picked with `pick_path("libraryMod")`. A jar that is not
-/// blocked is kept for `library_submit`.
+/// The file dialog each kind opens with `pick_path`.
+fn purpose(kind: LibraryKind) -> PickPurpose {
+    match kind {
+        LibraryKind::Mod => PickPurpose::LibraryMod,
+        LibraryKind::Modpack => PickPurpose::LibraryModpack,
+        LibraryKind::ResourcePack => PickPurpose::LibraryResourcePack,
+        LibraryKind::Shader => PickPurpose::LibraryShader,
+    }
+}
+
+/// Scans the file picked for `kind`. A file that is not blocked is kept
+/// for `library_submit`.
 #[tauri::command]
-pub async fn library_scan_pick(state: State<'_, AppState>) -> CmdResult<LibraryScan> {
-    let path = take_pick(&state, PickPurpose::LibraryMod)?;
+pub async fn library_scan_pick(
+    state: State<'_, AppState>,
+    kind: LibraryKind,
+) -> CmdResult<LibraryScan> {
+    let path = take_pick(&state, purpose(kind))?;
     state.launcher()?;
     let p = path.clone();
-    let report = tauri::async_runtime::spawn_blocking(move || scan::scan_file(&p))
+    let report = tauri::async_runtime::spawn_blocking(move || scan::scan_file_as(&p, kind))
         .await
         .map_err(|e| CoreError::io(&path, std::io::Error::other(e.to_string())).to_payload())??;
     let file_name = path
@@ -34,11 +48,11 @@ pub async fn library_scan_pick(state: State<'_, AppState>) -> CmdResult<LibraryS
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_default();
     *state.library_upload.lock().expect("library upload lock") =
-        (report.verdict != Verdict::Block).then(|| (path, report.sha1.clone()));
+        (report.verdict != Verdict::Block).then(|| (path, report.sha1.clone(), kind));
     Ok(LibraryScan { file_name, report })
 }
 
-/// Uploads the scanned jar for admin review; returns its library id.
+/// Uploads the scanned file for admin review; returns its library id.
 #[tauri::command]
 pub async fn library_submit(
     state: State<'_, AppState>,
@@ -46,18 +60,20 @@ pub async fn library_submit(
     description: String,
 ) -> CmdResult<i64> {
     let l = state.launcher()?.clone();
-    let (path, sha1) = state
+    let (path, sha1, kind) = state
         .library_upload
         .lock()
         .expect("library upload lock")
         .take()
         .ok_or_else(|| CoreError::InvalidSetting("no file selected".into()).to_payload())?;
-    Ok(l.submit_library_mod(&path, &sha1, &name, &description)
-        .await?
-        .0)
+    Ok(
+        l.submit_library_mod(&path, &sha1, kind, &name, &description)
+            .await?
+            .0,
+    )
 }
 
-/// Approved mods and the caller's own uploads.
+/// Approved items of every kind and the caller's own uploads.
 #[tauri::command]
 pub async fn library_mods(state: State<'_, AppState>) -> CmdResult<Vec<LibraryMod>> {
     let l = state.launcher()?.clone();
@@ -83,16 +99,18 @@ pub async fn library_report(
         .await?)
 }
 
+/// Into `instance_id` for mods, resource packs and shaders; a modpack
+/// (`instance_id` = null) becomes a new instance.
 #[tauri::command]
 pub async fn library_install(
     state: State<'_, AppState>,
     library_id: i64,
-    instance_id: String,
+    instance_id: Option<String>,
     accept_warnings: bool,
 ) -> CmdResult<LibraryInstall> {
     let l = state.launcher()?.clone();
     Ok(
-        l.install_library_mod(library_id, &instance_id, accept_warnings)
+        l.install_library_mod(library_id, instance_id.as_deref(), accept_warnings)
             .await?,
     )
 }

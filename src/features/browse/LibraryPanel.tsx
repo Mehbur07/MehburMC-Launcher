@@ -1,18 +1,22 @@
 import {
+  Boxes,
   Check,
   Download,
   Flag,
   Library,
   Loader2,
+  Palette,
   RefreshCw,
   Search,
   ShieldAlert,
   ShieldCheck,
   ShieldX,
+  Sparkles,
   Undo2,
   Upload,
+  type LucideIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -29,15 +33,46 @@ import { formatBytes } from "../../lib/format";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
 import type { Finding } from "../../lib/ipc/bindings/Finding";
 import type { Instance } from "../../lib/ipc/bindings/Instance";
+import type { LibraryKind } from "../../lib/ipc/bindings/LibraryKind";
 import type { LibraryMod } from "../../lib/ipc/bindings/LibraryMod";
 import type { LibraryReportReason } from "../../lib/ipc/bindings/LibraryReportReason";
 import type { LibraryScan } from "../../lib/ipc/bindings/LibraryScan";
 import type { LibraryStatus } from "../../lib/ipc/bindings/LibraryStatus";
 import type { LoaderKind } from "../../lib/ipc/bindings/LoaderKind";
 import type { ModLoader } from "../../lib/ipc/bindings/ModLoader";
+import type { PickPurpose } from "../../lib/ipc/bindings/PickPurpose";
 import { selectedAccount, useAccounts } from "../../stores/accounts";
+import { useInstances } from "../../stores/instances";
 
 type InstallState = "busy" | "done" | ErrorPayload;
+
+/** What the library holds (K88), in display order. */
+export const LIBRARY_KINDS: LibraryKind[] = ["mod", "modpack", "resourcepack", "shader"];
+
+const PICK: Record<LibraryKind, PickPurpose> = {
+  mod: "libraryMod",
+  modpack: "libraryModpack",
+  resourcepack: "libraryResourcePack",
+  shader: "libraryShader",
+};
+
+const KIND_ICON: Record<LibraryKind, LucideIcon> = {
+  mod: Library,
+  modpack: Boxes,
+  resourcepack: Palette,
+  shader: Sparkles,
+};
+
+export function KindBadge({ kind }: { kind: LibraryKind }) {
+  const { t } = useTranslation();
+  const Icon = KIND_ICON[kind];
+  return (
+    <Badge tone="accent">
+      <Icon size={10} />
+      {t(`library.kinds.${kind}`)}
+    </Badge>
+  );
+}
 
 /** Same rule as `friends::library::fits` in Rust. */
 export function fitsLoader(loaders: ModLoader[], kind: LoaderKind): boolean {
@@ -62,7 +97,14 @@ function ErrorLine({ error }: { error: ErrorPayload | null }) {
   );
 }
 
-export function FindingList({ findings }: { findings: Finding[] }) {
+/** `kind` picks pack wording for the codes that differ (noDescriptor…). */
+export function FindingList({
+  findings,
+  kind = "mod",
+}: {
+  findings: Finding[];
+  kind?: LibraryKind;
+}) {
   const { t } = useTranslation();
   if (findings.length === 0) return null;
   return (
@@ -76,7 +118,9 @@ export function FindingList({ findings }: { findings: Finding[] }) {
               : "border-warn/40 bg-warn/10 text-warn"
           }`}
         >
-          <p className="font-medium">{t(`library.findings.${f.code}`)}</p>
+          <p className="font-medium">
+            {t([`library.kindFindings.${kind}.${f.code}`, `library.findings.${f.code}`])}
+          </p>
           {f.examples.length > 0 && (
             <p
               className="mt-0.5 truncate font-mono text-[10px] opacity-80"
@@ -133,7 +177,8 @@ function UploadDialog({
 
   useEffect(() => {
     if (!scan) return;
-    setName(scan.report.descriptor?.name ?? "");
+    // Packs without a name of their own: the file name without extension.
+    setName(scan.report.descriptor?.name || scan.fileName.replace(/\.[^.]+$/, ""));
     setDescription("");
     setError(null);
   }, [scan]);
@@ -141,6 +186,7 @@ function UploadDialog({
   const report = scan?.report;
   const blocked = report?.verdict === "block";
   const d = report?.descriptor ?? null;
+  const kind = report?.kind ?? "mod";
 
   const submit = async () => {
     setBusy(true);
@@ -190,28 +236,31 @@ function UploadDialog({
         <div className="flex flex-col gap-4">
           <div className={`flex items-start gap-2 rounded-md border px-3 py-2 text-sm ${tone}`}>
             <Icon size={18} className="mt-0.5 shrink-0" />
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="font-semibold">{t(`library.verdict.${report.verdict}`)}</p>
               <p className="text-xs opacity-90">
-                {t("library.upload.stats", {
-                  classes: report.classes,
-                  size: formatBytes(report.size),
-                })}
+                {kind === "mod"
+                  ? t("library.upload.stats", {
+                      classes: report.classes,
+                      size: formatBytes(report.size),
+                    })
+                  : formatBytes(report.size)}
               </p>
             </div>
+            <KindBadge kind={kind} />
           </div>
-          {d && (
+          {d && (d.name || d.version || d.loaders.length > 0) && (
             <div className="text-sm">
               <p>
                 <span className="font-semibold">{d.name}</span>{" "}
                 <span className="text-muted">
-                  {d.modId} · {d.version || "?"}
+                  {kind === "mod" ? `${d.modId} · ${d.version || "?"}` : d.version}
                 </span>
               </p>
               <LoaderBadges loaders={d.loaders} gameVersions={d.gameVersions} />
             </div>
           )}
-          <FindingList findings={report.findings} />
+          <FindingList findings={report.findings} kind={kind} />
           {!blocked && (
             <>
               <Field label={t("library.upload.name")}>
@@ -329,7 +378,43 @@ function ReportDialog({
   );
 }
 
-/** "MehburMC Library" tab of the Mod Browser (K72). */
+/** First upload step: what is being uploaded (decides the file dialog). */
+function KindPickDialog({
+  open,
+  onClose,
+  onPick,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onPick: (kind: LibraryKind) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <Modal open={open} onClose={onClose} title={t("library.upload.kindTitle")}>
+      <div className="grid grid-cols-2 gap-2">
+        {LIBRARY_KINDS.map((k) => {
+          const Icon = KIND_ICON[k];
+          return (
+            <button
+              key={k}
+              type="button"
+              onClick={() => onPick(k)}
+              className="flex flex-col items-start gap-1 rounded-lg border border-line bg-surface-2 px-3 py-2.5 text-left hover:border-accent focus:border-accent focus:outline-none"
+            >
+              <span className="flex items-center gap-2 font-semibold">
+                <Icon size={16} className="text-accent" />
+                {t(`library.kinds.${k}`)}
+              </span>
+              <span className="text-xs text-muted">{t(`library.upload.kindHint.${k}`)}</span>
+            </button>
+          );
+        })}
+      </div>
+    </Modal>
+  );
+}
+
+/** "MehburMC Library" tab of the Mod Browser (K72, K88). */
 export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBusy: boolean }) {
   const { t } = useTranslation();
   const [mods, setMods] = useState<LibraryMod[]>([]);
@@ -337,9 +422,13 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
   const [error, setError] = useState<ErrorPayload | null>(null);
   const [reload, setReload] = useState(0);
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<LibraryKind | "all">("all");
+  const [choosingKind, setChoosingKind] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scan, setScan] = useState<LibraryScan | null>(null);
   const [notice, setNotice] = useState<ErrorPayload | null>(null);
+  /** Name of the instance a modpack install just created. */
+  const [created, setCreated] = useState<string | null>(null);
   const [installs, setInstalls] = useState<Record<number, InstallState>>({});
   const [confirm, setConfirm] = useState<{ mod: LibraryMod; findings: Finding[] } | null>(null);
   const [withdrawing, setWithdrawing] = useState<LibraryMod | null>(null);
@@ -364,11 +453,12 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
   const q = query.trim().toLowerCase();
   const matches = useCallback(
     (m: LibraryMod) =>
-      q === "" ||
-      m.name.toLowerCase().includes(q) ||
-      m.modId.includes(q) ||
-      m.author.toLowerCase().includes(q),
-    [q],
+      (filter === "all" || m.kind === filter) &&
+      (q === "" ||
+        m.name.toLowerCase().includes(q) ||
+        m.modId.includes(q) ||
+        m.author.toLowerCase().includes(q)),
+    [q, filter],
   );
   const mine = useMemo(() => mods.filter((m) => m.mine && matches(m)), [mods, matches]);
   const approved = useMemo(
@@ -376,13 +466,14 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
     [mods, matches],
   );
 
-  const pick = async () => {
+  const pick = async (kind: LibraryKind) => {
+    setChoosingKind(false);
     setNotice(null);
-    const path = await ipc.pickPath("libraryMod", undefined, t("library.upload.pick"));
+    const path = await ipc.pickPath(PICK[kind], undefined, t(`library.upload.pick.${kind}`));
     if (!path) return;
     setScanning(true);
     try {
-      setScan(await ipc.libraryScanPick());
+      setScan(await ipc.libraryScanPick(kind));
     } catch (e) {
       setNotice(toErrorPayload(e));
     } finally {
@@ -391,10 +482,12 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
   };
 
   const install = async (m: LibraryMod, accept: boolean) => {
-    if (!inst) return;
+    // A modpack becomes a new instance; everything else goes into `inst`.
+    const target = m.kind === "modpack" ? null : inst?.id;
+    if (target === undefined) return;
     setInstalls((s) => ({ ...s, [m.id]: "busy" }));
     try {
-      const r = await ipc.libraryInstall(m.id, inst.id, accept);
+      const r = await ipc.libraryInstall(m.id, target, accept);
       if (r.kind === "needsConfirm") {
         setInstalls((s) => {
           const next = { ...s };
@@ -404,6 +497,10 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
         setConfirm({ mod: m, findings: r.findings });
       } else {
         setInstalls((s) => ({ ...s, [m.id]: "done" }));
+        if (r.kind === "imported") {
+          setCreated(r.name);
+          await useInstances.getState().load();
+        }
       }
     } catch (e) {
       setInstalls((s) => ({ ...s, [m.id]: toErrorPayload(e) }));
@@ -422,14 +519,24 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
 
   const installButton = (m: LibraryMod) => {
     const st = installs[m.id];
-    const fits = inst !== null && fitsLoader(m.loaders, inst.loader.kind);
+    const pack = m.kind === "modpack";
+    // Why the button is off, if it is.
+    const blocker = pack
+      ? null
+      : !inst
+        ? t("library.noInstance")
+        : m.kind === "mod" && !fitsLoader(m.loaders, inst.loader.kind)
+          ? t("library.wrongLoader")
+          : gameBusy
+            ? t("library.locked")
+            : null;
     return (
       <div className="flex shrink-0 flex-col items-end gap-1">
         <Button
           size="sm"
           variant={st === "done" ? "ghost" : "primary"}
-          disabled={!fits || gameBusy || st === "busy" || st === "done"}
-          title={!fits ? t("library.wrongLoader") : gameBusy ? t("library.locked") : undefined}
+          disabled={blocker !== null || st === "busy" || st === "done"}
+          title={blocker ?? undefined}
           onClick={() => void install(m, false)}
         >
           {st === "busy" ? (
@@ -439,7 +546,13 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
           ) : (
             <Download size={13} />
           )}
-          {st === "done" ? t("browse.installed") : t("browse.install")}
+          {pack
+            ? st === "done"
+              ? t("library.packCreated")
+              : t("library.installAsInstance")
+            : st === "done"
+              ? t("browse.installed")
+              : t("browse.install")}
         </Button>
         {typeof st === "object" && (
           <span className="max-w-56 truncate text-[11px] text-danger" title={st.detail}>
@@ -450,41 +563,48 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
     );
   };
 
-  const card = (m: LibraryMod, actions: React.ReactNode) => (
-    <li
-      key={m.id}
-      className="flex items-center gap-3 rounded-lg border border-line bg-surface-1/85 px-3 py-2.5"
-    >
-      <div className="grid size-10 shrink-0 place-items-center rounded-md bg-surface-2 text-accent">
-        <Library size={18} />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate font-semibold">{m.name}</span>
-          <span className="truncate text-xs text-muted">
-            {m.author} · {m.version}
-          </span>
-          {m.mine && <StatusBadge status={m.status} />}
-          {m.findings.length > 0 && (
-            <Badge tone="warn">
-              <ShieldAlert size={10} />
-              {t("library.warnings", { count: m.findings.length })}
-            </Badge>
+  const card = (m: LibraryMod, actions: ReactNode) => {
+    const Icon = KIND_ICON[m.kind];
+    return (
+      <li
+        key={m.id}
+        className="flex items-center gap-3 rounded-lg border border-line bg-surface-1/85 px-3 py-2.5"
+      >
+        <div className="grid size-10 shrink-0 place-items-center rounded-md bg-surface-2 text-accent">
+          <Icon size={18} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="truncate font-semibold">{m.name}</span>
+            <span className="truncate text-xs text-muted">
+              {m.author} · {m.version}
+            </span>
+            <KindBadge kind={m.kind} />
+            {m.mine && <StatusBadge status={m.status} />}
+            {m.findings.length > 0 && (
+              <Badge tone="warn">
+                <ShieldAlert size={10} />
+                {t("library.warnings", { count: m.findings.length })}
+              </Badge>
+            )}
+          </div>
+          {m.description && (
+            <p className="truncate text-xs text-muted" title={m.description}>
+              {m.description}
+            </p>
+          )}
+          {m.mine && m.status === "rejected" && m.reviewNote && (
+            <p className="text-xs text-danger">{t("library.reviewNote", { note: m.reviewNote })}</p>
+          )}
+          <LoaderBadges loaders={m.loaders} gameVersions={m.gameVersions} />
+          {m.kind === "shader" && (
+            <p className="mt-1 text-[11px] text-muted">{t("library.shaderHint")}</p>
           )}
         </div>
-        {m.description && (
-          <p className="truncate text-xs text-muted" title={m.description}>
-            {m.description}
-          </p>
-        )}
-        {m.mine && m.status === "rejected" && m.reviewNote && (
-          <p className="text-xs text-danger">{t("library.reviewNote", { note: m.reviewNote })}</p>
-        )}
-        <LoaderBadges loaders={m.loaders} gameVersions={m.gameVersions} />
-      </div>
-      {actions}
-    </li>
-  );
+        {actions}
+      </li>
+    );
+  };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
@@ -502,13 +622,35 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
             className="pl-9"
           />
         </div>
-        <Button variant="primary" disabled={scanning} onClick={() => void pick()}>
+        <div
+          className="flex overflow-hidden rounded-md border border-line"
+          role="group"
+          aria-label={t("library.filterLabel")}
+        >
+          {(["all", ...LIBRARY_KINDS] as const).map((f) => (
+            <button
+              key={f}
+              type="button"
+              aria-pressed={filter === f}
+              onClick={() => setFilter(f)}
+              className={`px-2.5 py-1.5 text-xs ${filter === f ? "bg-accent/15 text-accent" : "text-muted hover:text-fg"}`}
+            >
+              {t(f === "all" ? "library.filterAll" : `library.kindsPlural.${f}`)}
+            </button>
+          ))}
+        </div>
+        <Button variant="primary" disabled={scanning} onClick={() => setChoosingKind(true)}>
           {scanning ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
           {scanning ? t("library.scanning") : t("library.upload.button")}
         </Button>
       </div>
       <p className="text-xs text-muted">{t("library.intro")}</p>
       <ErrorLine error={notice} />
+      {created && (
+        <p role="status" className="text-sm text-success">
+          {t("library.packCreatedNotice", { name: created })}
+        </p>
+      )}
 
       <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-4">
         {loading && (
@@ -586,6 +728,11 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
         )}
       </div>
 
+      <KindPickDialog
+        open={choosingKind}
+        onClose={() => setChoosingKind(false)}
+        onPick={(k) => void pick(k)}
+      />
       <UploadDialog scan={scan} onClose={() => setScan(null)} onSubmitted={refresh} />
       <ReportDialog item={reporting} onClose={() => setReporting(null)} onReported={refresh} />
       <ConfirmDialog
@@ -595,7 +742,7 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
           confirm && (
             <div className="flex flex-col gap-2">
               <p>{t("library.confirmMessage")}</p>
-              <FindingList findings={confirm.findings} />
+              <FindingList findings={confirm.findings} kind={confirm.mod.kind} />
             </div>
           )
         }

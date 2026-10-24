@@ -44,6 +44,7 @@ const pending = (): AdminMod => ({
   reports: 0,
   mod: {
     id: 7,
+    kind: "mod",
     author: "Alex",
     name: "Cool Mod",
     description: "",

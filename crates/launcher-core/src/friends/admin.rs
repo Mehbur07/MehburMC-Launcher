@@ -237,7 +237,8 @@ impl FriendsClient {
             .collect())
     }
 
-    /// Downloads mod `id` (SHA-1 checked) and scans it in this launcher.
+    /// Downloads item `id` (SHA-1 checked) and scans it in this launcher
+    /// with the rules of its kind.
     pub async fn admin_scan_mod(&self, id: i64, status: AdminModStatus) -> Result<ScanReport> {
         let m = self
             .admin_library(status)
@@ -245,8 +246,9 @@ impl FriendsClient {
             .into_iter()
             .find(|m| m.item.id == id)
             .ok_or(CoreError::Friends("library.notFound"))?;
-        let bytes = self.library_jar(&m.owner, &m.item.sha1).await?;
-        tokio::task::spawn_blocking(move || scan::scan(&bytes))
+        let kind = m.item.kind;
+        let bytes = self.library_file(&m.owner, &m.item.sha1, kind).await?;
+        tokio::task::spawn_blocking(move || scan::scan_as(&bytes, kind))
             .await
             .map_err(|e| CoreError::FriendsServer {
                 status: 0,

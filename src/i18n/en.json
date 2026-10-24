@@ -264,13 +264,16 @@
       "ownReport": "You cannot report your own share."
     },
     "library": {
-      "blocked": "This mod failed the automatic check and cannot be uploaded or installed.",
+      "blocked": "This file failed the automatic check and cannot be uploaded or installed.",
       "fileMissing": "The file could not be uploaded; try again.",
-      "quota": "At most 10 of your mods can await review at once.",
-      "notFound": "This mod is no longer in the library.",
+      "quota": "At most 10 of your uploads can await review at once.",
+      "notFound": "This item is no longer in the library.",
       "changed": "The file changed after it was checked; choose it again.",
       "conflict": "The instance already has a different file with the same name.",
-      "wrongLoader": "This mod does not match the selected instance's mod loader."
+      "wrongLoader": "This mod does not match the selected instance's mod loader.",
+      "badKind": "The library does not accept this file type.",
+      "storageFull": "Your library uploads reached the 200 MB limit; withdraw an older one to make room.",
+      "wrongKind": "This item cannot be installed that way."
     },
     "admin": {
       "forbidden": "You are not allowed to do this.",
@@ -1193,21 +1196,21 @@
   "library": {
     "tab": "MehburMC Library",
     "search": "Search the library…",
-    "intro": "Mods uploaded by the community. Every upload goes through an automatic safety check and is published only after an admin approves it. No scan is 100% safe; install only mods you trust.",
+    "intro": "Mods, modpacks, resource packs and shaders shared by the community. Every upload passes an automatic safety check and is published only after an admin approves it. No scan is 100% safe; only install what you trust.",
     "scanning": "Checking…",
     "mine": "My uploads",
-    "approved": "Approved mods",
-    "empty": "No approved mods yet",
-    "emptyHint": "Uploaded mods appear here after an admin approves them.",
+    "approved": "Approved content",
+    "empty": "Nothing approved yet",
+    "emptyHint": "Uploads appear here once an admin approves them.",
     "withdraw": "Withdraw",
-    "withdrawTitle": "Withdraw this mod?",
+    "withdrawTitle": "Withdraw this upload?",
     "withdrawMessage": "\"{{name}}\" will be removed from the library and the server.",
     "warnings": "Warnings: {{count}}",
     "wrongLoader": "This mod does not match the selected instance's mod loader.",
     "locked": "Cannot install while the game is running.",
     "reviewNote": "Admin note: {{note}}",
     "confirmTitle": "Install \"{{name}}\"?",
-    "confirmMessage": "The launcher's own check found behaviour worth a look in this mod. Legitimate mods do this too (e.g. update checks), but only install it if you trust it.",
+    "confirmMessage": "The launcher's own check found things worth a look in this file. Legitimate content can do these too (e.g. update checks), but only install it if you trust it.",
     "confirmInstall": "Install anyway",
     "status": {
       "pending": "Awaiting approval",
@@ -1226,27 +1229,39 @@
       "block": "This file cannot be uploaded."
     },
     "upload": {
-      "button": "Upload mod",
-      "pick": "Choose the mod jar to upload",
+      "button": "Upload",
       "title": "Upload to the library: {{file}}",
       "stats": "{{classes}} classes · {{size}}",
       "name": "Name",
       "description": "Description",
       "author": "Shown as uploaded by \"{{name}}\".",
       "noAccount": "Select an account to upload.",
-      "rules": "Only upload mods you are allowed to distribute. Accounts that upload malware are banned.",
-      "submit": "Submit for review"
+      "rules": "Only upload content you have the right to share. Accounts uploading malware are banned.",
+      "submit": "Submit for review",
+      "kindTitle": "What do you want to upload?",
+      "kindHint": {
+        "mod": ".jar · Fabric, Quilt, Forge, NeoForge · up to 25 MB",
+        "modpack": ".mrpack (Modrinth modpack) · up to 50 MB",
+        "resourcepack": ".zip (with pack.mcmeta) · up to 50 MB",
+        "shader": ".zip (with a shaders/ folder) · up to 50 MB"
+      },
+      "pick": {
+        "mod": "Choose the mod jar to upload",
+        "modpack": "Choose the .mrpack file to upload",
+        "resourcepack": "Choose the resource pack .zip to upload",
+        "shader": "Choose the shader .zip to upload"
+      }
     },
     "report": {
       "button": "Report",
       "title": "Report \"{{name}}\"",
-      "hint": "Reports go to the admins. A mod you report is no longer shown to you.",
+      "hint": "Reports go to the admins. Content you report is no longer shown to you.",
       "submit": "Report",
       "note": "Note (optional)",
       "reasons": {
         "malware": "Malware / suspicious behaviour",
         "broken": "Broken / crashes the game",
-        "stolen": "Someone else's mod, without permission",
+        "stolen": "Someone else's work, without permission",
         "other": "Other"
       }
     },
@@ -1257,7 +1272,7 @@
       "executable": "Embedded executable (.exe, .bat, …)",
       "zipBomb": "Oversized or over-compressed content",
       "tooManyFiles": "Too many files",
-      "tooLarge": "File is larger than the 25 MB limit",
+      "tooLarge": "File is over the size limit (mods 25 MB, packs 50 MB)",
       "noDescriptor": "No mod descriptor (fabric.mod.json / mods.toml / quilt.mod.json)",
       "notAJar": "Not a valid jar file",
       "network": "Connects to the internet",
@@ -1270,7 +1285,44 @@
       "encodedBlob": "Long encoded data blob",
       "obfuscated": "Code looks obfuscated",
       "badClass": "Unreadable class file",
-      "deepNesting": "Jar nested too deeply"
+      "deepNesting": "Jar nested too deeply",
+      "codeInPack": "Code files inside the pack (.class / .jar)",
+      "badDownload": "Modpack download that cannot be verified (no hash or a host that is not allowed)",
+      "unsafePath": "File path that tries to write outside its folder",
+      "externalDownload": "File downloaded from outside Modrinth (GitHub, CurseForge…)"
+    },
+    "filterAll": "All",
+    "filterLabel": "Show by type",
+    "noInstance": "Select an instance first.",
+    "installAsInstance": "Install as instance",
+    "packCreated": "Instance created",
+    "packCreatedNotice": "Created the instance \"{{name}}\"; start it from the Instances page.",
+    "shaderHint": "Shaders need Iris or OptiFine in the instance.",
+    "kinds": {
+      "mod": "Mod",
+      "modpack": "Modpack",
+      "resourcepack": "Resource pack",
+      "shader": "Shader"
+    },
+    "kindsPlural": {
+      "mod": "Mods",
+      "modpack": "Modpacks",
+      "resourcepack": "Resource packs",
+      "shader": "Shaders"
+    },
+    "kindFindings": {
+      "modpack": {
+        "noDescriptor": "Not a valid Modrinth modpack (modrinth.index.json missing or broken)",
+        "notAJar": "Not a valid .mrpack file"
+      },
+      "resourcepack": {
+        "noDescriptor": "No pack.mcmeta; this is not a resource pack",
+        "notAJar": "Not a valid zip file"
+      },
+      "shader": {
+        "noDescriptor": "No shaders/ folder; this is not a shader pack",
+        "notAJar": "Not a valid zip file"
+      }
     }
   },
   "auth": {

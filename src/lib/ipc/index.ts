@@ -54,6 +54,7 @@ import type { InstancesView } from "./bindings/InstancesView";
 import type { JavaInstall } from "./bindings/JavaInstall";
 import type { LibraryView } from "./bindings/LibraryView";
 import type { LibraryInstall } from "./bindings/LibraryInstall";
+import type { LibraryKind } from "./bindings/LibraryKind";
 import type { LibraryMod } from "./bindings/LibraryMod";
 import type { LibraryReportReason } from "./bindings/LibraryReportReason";
 import type { LibraryScan } from "./bindings/LibraryScan";
@@ -232,17 +233,18 @@ export const ipc = {
   /** Applies this account's private texture grants; true if the library changed. */
   syncPrivateTextures: () => invoke<boolean>("sync_private_textures"),
 
-  /** Scans the jar chosen with `pickPath("libraryMod")`. */
-  libraryScanPick: () => invoke<LibraryScan>("library_scan_pick"),
-  /** Uploads the scanned jar for review; returns its library id. */
+  /** Scans the file chosen with the kind's `pickPath` purpose (K88). */
+  libraryScanPick: (kind: LibraryKind) => invoke<LibraryScan>("library_scan_pick", { kind }),
+  /** Uploads the scanned file for review; returns its library id. */
   librarySubmit: (name: string, description: string) =>
     invoke<number>("library_submit", { name, description }),
-  /** Approved mods and own uploads (own first). */
+  /** Approved items of every kind and own uploads (own first). */
   libraryMods: () => invoke<LibraryMod[]>("library_mods"),
   libraryWithdraw: (libraryId: number) => invoke<void>("library_withdraw", { libraryId }),
   libraryReport: (libraryId: number, reason: LibraryReportReason, note: string) =>
     invoke<void>("library_report", { libraryId, reason, note }),
-  libraryInstall: (libraryId: number, instanceId: string, acceptWarnings: boolean) =>
+  /** Into `instanceId`; a modpack (`instanceId` = null) becomes a new instance. */
+  libraryInstall: (libraryId: number, instanceId: string | null, acceptWarnings: boolean) =>
     invoke<LibraryInstall>("library_install", { libraryId, instanceId, acceptWarnings }),
 
   friendsStatus: () => invoke<FriendsStatus>("friends_status"),

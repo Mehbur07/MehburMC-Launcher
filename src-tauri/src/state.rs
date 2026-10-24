@@ -32,8 +32,8 @@ pub struct AppState {
     /// them (see `commands::dialogs`).
     pub picks: Mutex<HashMap<PickPurpose, PathBuf>>,
     /// Library upload whose scan report the user is looking at:
-    /// `(path, sha1)`, consumed by `library_submit`.
-    pub library_upload: Mutex<Option<(PathBuf, String)>>,
+    /// `(path, sha1, kind)`, consumed by `library_submit`.
+    pub library_upload: Mutex<Option<(PathBuf, String, launcher_core::content::scan::LibraryKind)>>,
     _log_guard: Option<WorkerGuard>,
 }
 

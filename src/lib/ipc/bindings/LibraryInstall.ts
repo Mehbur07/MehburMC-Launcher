@@ -4,4 +4,4 @@ import type { Finding } from "./Finding";
 /**
  * Result of an install attempt.
  */
-export type LibraryInstall = { "kind": "installed", fileName: string, } | { "kind": "alreadyPresent", fileName: string, } | { "kind": "needsConfirm", findings: Array<Finding>, };
+export type LibraryInstall = { "kind": "installed", fileName: string, } | { "kind": "alreadyPresent", fileName: string, } | { "kind": "needsConfirm", findings: Array<Finding>, } | { "kind": "imported", instanceId: string, name: string, };

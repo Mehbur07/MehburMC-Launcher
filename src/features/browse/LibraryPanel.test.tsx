@@ -20,11 +20,13 @@ import { applyLanguage } from "../../i18n";
 import type { LibraryMod } from "../../lib/ipc/bindings/LibraryMod";
 import type { LibraryScan } from "../../lib/ipc/bindings/LibraryScan";
 import { useAccounts } from "../../stores/accounts";
+import { useInstances } from "../../stores/instances";
 import { instance } from "../../test/fixtures";
 import { LibraryPanel, fitsLoader } from "./LibraryPanel";
 
 const mod = (over: Partial<LibraryMod> = {}): LibraryMod => ({
   id: 1,
+  kind: "mod",
   author: "Alex",
   name: "Cool Mod",
   description: "Does cool things",
@@ -64,9 +66,18 @@ const scan = (verdict: "pass" | "warn" | "block"): LibraryScan => ({
     sha1: "b".repeat(40),
     size: 2048,
     classes: 12,
-    scanner: 1,
+    scanner: 2,
+    kind: "mod",
   },
 });
+
+/** Upload → pick the kind in the first dialog. */
+async function upload(kind: string) {
+  fireEvent.click(screen.getByRole("button", { name: /^Upload$/ }));
+  const dialog = await screen.findByRole("dialog", { name: "What do you want to upload?" });
+  const button = within(dialog).getByText(kind, { exact: true }).closest("button")!;
+  await act(async () => fireEvent.click(button));
+}
 
 describe("LibraryPanel", () => {
   beforeEach(() => {
@@ -95,11 +106,11 @@ describe("LibraryPanel", () => {
     const mine = (await screen.findByText("My Mod")).closest("li")!;
     expect(mine).toHaveTextContent("Awaiting approval");
     expect(await screen.findByText("Admin note: Stolen")).toBeInTheDocument();
-    expect(screen.getByText("No approved mods yet")).toBeInTheDocument();
+    expect(screen.getByText("Nothing approved yet")).toBeInTheDocument();
 
     ipcMock.libraryWithdraw.mockResolvedValue(undefined);
     fireEvent.click(within(mine).getByRole("button", { name: /Withdraw/ }));
-    const dialog = await screen.findByRole("dialog", { name: "Withdraw this mod?" });
+    const dialog = await screen.findByRole("dialog", { name: "Withdraw this upload?" });
     await act(async () =>
       fireEvent.click(within(dialog).getByRole("button", { name: "Withdraw" })),
     );
@@ -112,8 +123,9 @@ describe("LibraryPanel", () => {
     ipcMock.libraryScanPick.mockResolvedValue(scan("pass"));
     ipcMock.librarySubmit.mockResolvedValue(9);
     render(<LibraryPanel inst={instance()} gameBusy={false} />);
-    await act(async () => fireEvent.click(screen.getByRole("button", { name: /Upload mod/ })));
+    await upload("Mod");
     expect(ipcMock.pickPath).toHaveBeenCalledWith("libraryMod", undefined, expect.any(String));
+    expect(ipcMock.libraryScanPick).toHaveBeenCalledWith("mod");
     const dialog = await screen.findByRole("dialog", { name: /Upload to the library/ });
     expect(dialog).toHaveTextContent("Check clean");
     expect(dialog).toHaveTextContent('Shown as uploaded by "Mehbur".');
@@ -131,7 +143,7 @@ describe("LibraryPanel", () => {
     ipcMock.libraryMods.mockResolvedValue([]);
     ipcMock.libraryScanPick.mockResolvedValue(scan("block"));
     render(<LibraryPanel inst={instance()} gameBusy={false} />);
-    await act(async () => fireEvent.click(screen.getByRole("button", { name: /Upload mod/ })));
+    await upload("Mod");
     const dialog = await screen.findByRole("dialog");
     expect(dialog).toHaveTextContent("This file cannot be uploaded.");
     expect(dialog).toHaveTextContent("Discord webhook");
@@ -186,5 +198,74 @@ describe("LibraryPanel", () => {
     fireEvent.click(within(dialog).getByRole("radio", { name: /Broken/ }));
     await act(async () => fireEvent.click(within(dialog).getByRole("button", { name: "Report" })));
     expect(ipcMock.libraryReport).toHaveBeenCalledWith(1, "broken", "");
+  });
+
+  it("uploads a shader pack with the shader dialog and pack wording", async () => {
+    ipcMock.libraryMods.mockResolvedValue([]);
+    ipcMock.pickPath.mockResolvedValue("C:/shaders/bsl.zip");
+    ipcMock.libraryScanPick.mockResolvedValue({
+      fileName: "bsl.zip",
+      report: {
+        verdict: "block",
+        descriptor: null,
+        findings: [{ severity: "block", code: "noDescriptor", examples: [] }],
+        sha1: "c".repeat(40),
+        size: 4096,
+        classes: 0,
+        scanner: 2,
+        kind: "shader",
+      },
+    } satisfies LibraryScan);
+    render(<LibraryPanel inst={instance()} gameBusy={false} />);
+    await upload("Shader");
+    expect(ipcMock.pickPath).toHaveBeenCalledWith("libraryShader", undefined, expect.any(String));
+    expect(ipcMock.libraryScanPick).toHaveBeenCalledWith("shader");
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveTextContent("No shaders/ folder; this is not a shader pack");
+    expect(dialog).not.toHaveTextContent("classes");
+  });
+
+  it("filters by kind and installs a resource pack into any instance", async () => {
+    ipcMock.libraryMods.mockResolvedValue([
+      mod(),
+      mod({ id: 2, kind: "resourcepack", name: "Faithful", loaders: [], modId: "faithful" }),
+    ]);
+    ipcMock.libraryInstall.mockResolvedValue({ kind: "installed", fileName: "Faithful.zip" });
+    render(
+      <LibraryPanel
+        inst={instance({ id: "v1", loader: { kind: "vanilla", version: "" } })}
+        gameBusy={false}
+      />,
+    );
+    await screen.findByText("Cool Mod");
+    fireEvent.click(screen.getByRole("button", { name: "Resource packs" }));
+    expect(screen.queryByText("Cool Mod")).toBeNull();
+    const row = screen.getByText("Faithful").closest("li")!;
+    expect(row).toHaveTextContent("Resource pack");
+    await act(async () => fireEvent.click(within(row).getByRole("button", { name: /Install/ })));
+    expect(ipcMock.libraryInstall).toHaveBeenCalledWith(2, "v1", false);
+  });
+
+  it("installs a modpack as a new instance", async () => {
+    const load = vi.fn().mockResolvedValue(undefined);
+    useInstances.setState({ load });
+    ipcMock.libraryMods.mockResolvedValue([
+      mod({ id: 3, kind: "modpack", name: "Big Pack", modId: "big-pack" }),
+    ]);
+    ipcMock.libraryInstall.mockResolvedValue({
+      kind: "imported",
+      instanceId: "new1",
+      name: "Big Pack",
+    });
+    // No selected instance and a running game do not matter for a modpack.
+    render(<LibraryPanel inst={null} gameBusy />);
+    const row = (await screen.findByText("Big Pack")).closest("li")!;
+    await act(async () =>
+      fireEvent.click(within(row).getByRole("button", { name: /Install as instance/ })),
+    );
+    expect(ipcMock.libraryInstall).toHaveBeenCalledWith(3, null, false);
+    expect(load).toHaveBeenCalled();
+    expect(await screen.findByRole("status")).toHaveTextContent('Created the instance "Big Pack"');
+    expect(within(row).getByRole("button", { name: /Instance created/ })).toBeDisabled();
   });
 });

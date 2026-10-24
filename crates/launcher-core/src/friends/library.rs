@@ -15,10 +15,11 @@ use ts_rs::TS;
 
 use super::FriendsClient;
 use super::avatar::sha1_hex;
+pub use crate::content::scan::LibraryKind;
 use crate::content::scan::{self, Finding, ModLoader, ScanReport, Severity, Verdict};
 use crate::error::{CoreError, Result};
 use crate::instance::LoaderKind;
-use crate::instance::files::checked_name;
+use crate::instance::files::{Folder, checked_name};
 
 const BUCKET: &str = "library";
 const MAX_NAME_CHARS: usize = 64;
@@ -36,6 +37,9 @@ pub const LIBRARY_ERRORS: &[&str] = &[
     "library.changed",
     "library.conflict",
     "library.wrongLoader",
+    "library.badKind",
+    "library.storageFull",
+    "library.wrongKind",
 ];
 
 /// Finding codes the scanner produces; anything else in a report that came
@@ -61,6 +65,10 @@ const FINDING_CODES: &[&str] = &[
     "obfuscated",
     "badClass",
     "deepNesting",
+    "codeInPack",
+    "badDownload",
+    "unsafePath",
+    "externalDownload",
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -89,6 +97,8 @@ pub enum LibraryReportReason {
 pub struct LibraryMod {
     #[ts(type = "number")]
     pub id: i64,
+    /// Mod, modpack, resource pack or shader (K88).
+    pub kind: LibraryKind,
     /// Account name of the uploader.
     pub author: String,
     pub name: String,
@@ -135,6 +145,61 @@ pub(crate) struct Row {
     created_at: String,
     #[serde(default)]
     mine: bool,
+    /// Missing before K88 (mods only); an unknown kind drops the row.
+    #[serde(default)]
+    kind: Option<String>,
+}
+
+fn parse_kind(s: Option<&str>) -> Option<LibraryKind> {
+    match s {
+        None => Some(LibraryKind::Mod),
+        Some(s) => LibraryKind::ALL.into_iter().find(|k| k.as_str() == s),
+    }
+}
+
+/// Content type of an upload in the `library` bucket.
+fn mime(kind: LibraryKind) -> &'static str {
+    match kind {
+        LibraryKind::Mod => "application/java-archive",
+        LibraryKind::Modpack => "application/x-modrinth-modpack+zip",
+        LibraryKind::ResourcePack | LibraryKind::Shader => "application/zip",
+    }
+}
+
+/// Instance folder an item of this kind goes into (`None`: a modpack
+/// becomes an instance of its own).
+pub fn install_folder(kind: LibraryKind) -> Option<Folder> {
+    match kind {
+        LibraryKind::Mod => Some(Folder::Mods),
+        LibraryKind::ResourcePack => Some(Folder::ResourcePacks),
+        LibraryKind::Shader => Some(Folder::ShaderPacks),
+        LibraryKind::Modpack => None,
+    }
+}
+
+/// An id the server accepts (`[a-z0-9_.-]{1,64}`) for packs, from their name.
+fn slug(name: &str, kind: LibraryKind) -> String {
+    let mut s = String::new();
+    for c in name.trim().chars().flat_map(char::to_lowercase) {
+        if c.is_ascii_alphanumeric() || matches!(c, '_' | '.' | '-') {
+            s.push(c);
+        } else if !s.ends_with('-') {
+            s.push('-');
+        }
+    }
+    let s: String = s.trim_matches(['-', '.']).chars().take(64).collect();
+    if s.is_empty() {
+        kind.as_str().to_owned()
+    } else {
+        s
+    }
+}
+
+/// The library file after its SHA-1 check, or the warnings this
+/// launcher's own scan found (when they were not accepted yet).
+enum Checked {
+    Ready(Vec<u8>),
+    Ask(Vec<Finding>),
 }
 
 /// Result of an install attempt.
@@ -157,6 +222,11 @@ pub enum LibraryInstall {
     /// Call again with `accept_warnings` after the user agreed.
     NeedsConfirm {
         findings: Vec<Finding>,
+    },
+    /// A modpack became a new instance.
+    Imported {
+        instance_id: String,
+        name: String,
     },
 }
 
@@ -210,17 +280,19 @@ fn clean_text(s: &str, max: usize, multiline: bool) -> String {
         .to_owned()
 }
 
-/// A file name the server accepts (`[A-Za-z0-9._+-]`, ends with `.jar`).
-pub fn library_file_name(name: &str) -> String {
+/// A file name the server accepts (`[A-Za-z0-9._+-]`, ends with the
+/// kind's extension).
+pub fn library_file_name(name: &str, kind: LibraryKind) -> String {
+    let ext = kind.ext();
     let stem = name
         .rsplit(['/', '\\'])
         .next()
         .unwrap_or("")
         .trim_end_matches(".disabled");
-    let stem = stem
-        .strip_suffix(".jar")
-        .or_else(|| stem.strip_suffix(".JAR"))
-        .unwrap_or(stem);
+    let stem = match stem.rsplit_once('.') {
+        Some((s, e)) if e.eq_ignore_ascii_case(ext) => s,
+        _ => stem,
+    };
     let mut s: String = stem
         .chars()
         .map(|c| {
@@ -230,13 +302,13 @@ pub fn library_file_name(name: &str) -> String {
                 '_'
             }
         })
-        .take(MAX_FILE_NAME_CHARS - 4)
+        .take(MAX_FILE_NAME_CHARS - 1 - ext.len())
         .collect();
     s = s.trim_matches('.').to_owned();
     if s.is_empty() {
-        s = "mod".into();
+        s = kind.as_str().into();
     }
-    format!("{s}.jar")
+    format!("{s}.{ext}")
 }
 
 /// Findings from a server row, limited to known codes and short examples.
@@ -280,6 +352,7 @@ impl Row {
         if !is_uuid(&self.owner) || !is_sha1(&self.sha1) {
             return None;
         }
+        let kind = parse_kind(self.kind.as_deref())?;
         let loaders: Vec<ModLoader> = self
             .loaders
             .iter()
@@ -287,6 +360,7 @@ impl Row {
             .collect();
         Some(LibraryMod {
             id: self.id,
+            kind,
             author: clean_text(&self.author, 16, false),
             name: clean_text(&self.name, MAX_NAME_CHARS, false),
             description: clean_text(&self.description, MAX_DESCRIPTION_CHARS, true),
@@ -296,7 +370,7 @@ impl Row {
             game_versions: clean_text(&self.game_versions, 100, false),
             sha1: self.sha1.to_ascii_lowercase(),
             size: self.size,
-            file_name: library_file_name(&self.file_name),
+            file_name: library_file_name(&self.file_name, kind),
             status: self.status,
             findings: findings_from(&self.scan),
             review_note: self
@@ -309,19 +383,20 @@ impl Row {
 }
 
 impl FriendsClient {
-    /// Checks `jar` and submits it for review; returns the library id.
-    /// Blocked jars never leave the computer.
+    /// Checks `bytes` as `kind` and submits it for review; returns the
+    /// library id. Blocked files never leave the computer.
     pub async fn submit_library_mod(
         &self,
-        jar: &[u8],
+        bytes: &[u8],
+        kind: LibraryKind,
         file_name: &str,
         name: &str,
         description: &str,
         author: &str,
     ) -> Result<(i64, ScanReport)> {
         let report = {
-            let jar = jar.to_vec();
-            tokio::task::spawn_blocking(move || scan::scan(&jar))
+            let bytes = bytes.to_vec();
+            tokio::task::spawn_blocking(move || scan::scan_as(&bytes, kind))
                 .await
                 .map_err(|e| CoreError::FriendsServer {
                     status: 0,
@@ -335,21 +410,34 @@ impl FriendsClient {
         else {
             return Err(CoreError::Friends("library.blocked"));
         };
-        let name = match clean_text(name, MAX_NAME_CHARS, false) {
-            n if n.is_empty() => d.name.chars().take(MAX_NAME_CHARS).collect(),
-            n => n,
+        let file_name = library_file_name(file_name, kind);
+        // Packs: the given name, else the pack's own, else the file name.
+        let stem = file_name.rsplit_once('.').map_or("", |(s, _)| s);
+        let name = [clean_text(name, MAX_NAME_CHARS, false), d.name.clone()]
+            .into_iter()
+            .map(|n| n.chars().take(MAX_NAME_CHARS).collect::<String>())
+            .find(|n| !n.trim().is_empty())
+            .unwrap_or_else(|| stem.chars().take(MAX_NAME_CHARS).collect());
+        let mod_id = match kind {
+            LibraryKind::Mod => d.mod_id.clone(),
+            _ => slug(&name, kind),
         };
         let version = match d.version.chars().take(64).collect::<String>() {
-            v if v.is_empty() => "unknown".to_owned(),
-            v => v,
+            v if !v.trim().is_empty() => v,
+            _ if kind == LibraryKind::Mod => "unknown".to_owned(),
+            _ => "1".to_owned(),
         };
         self.ensure_identity().await?;
         let me = self.user_id().await?;
         self.send_raw(
             Method::POST,
-            &format!("/storage/v1/object/{BUCKET}/{me}/{}.jar", report.sha1),
-            jar.to_vec(),
-            "application/java-archive",
+            &format!(
+                "/storage/v1/object/{BUCKET}/{me}/{}.{}",
+                report.sha1,
+                kind.ext()
+            ),
+            bytes.to_vec(),
+            mime(kind),
             &[("x-upsert", "true")],
         )
         .await?;
@@ -361,14 +449,15 @@ impl FriendsClient {
                     "p_name": name,
                     "p_description": clean_text(description, MAX_DESCRIPTION_CHARS, true),
                     "p_author": author.trim(),
-                    "p_mod_id": d.mod_id,
+                    "p_mod_id": mod_id,
                     "p_version": version,
                     "p_loaders": loaders,
                     "p_game_versions": d.game_versions,
                     "p_sha1": report.sha1,
                     "p_size": report.size,
-                    "p_file_name": library_file_name(file_name),
+                    "p_file_name": file_name,
                     "p_scan": report,
+                    "p_kind": kind.as_str(),
                 }),
             )
             .await?;
@@ -384,17 +473,23 @@ impl FriendsClient {
         if !is_sha1(&sha1) {
             return Ok(());
         }
+        // The kind is gone with the row: remove whichever file it was.
+        let sha1 = sha1.to_ascii_lowercase();
+        let prefixes: Vec<String> = ["jar", "mrpack", "zip"]
+            .iter()
+            .map(|ext| format!("{me}/{sha1}.{ext}"))
+            .collect();
         self.send(
             Method::DELETE,
             &format!("/storage/v1/object/{BUCKET}"),
-            Some(&json!({ "prefixes": [format!("{me}/{}.jar", sha1.to_ascii_lowercase())] })),
+            Some(&json!({ "prefixes": prefixes })),
             &[],
         )
         .await
         .map(drop)
     }
 
-    /// Approved mods and the caller's own uploads (own first).
+    /// Approved items of every kind and the caller's own uploads (own first).
     pub async fn library_mods(&self) -> Result<Vec<LibraryMod>> {
         Ok(self
             .library_rows()
@@ -408,7 +503,8 @@ impl FriendsClient {
         if !self.has_identity().await {
             self.ensure_identity().await?;
         }
-        self.rpc("library_list", json!({ "p_max": 300 })).await
+        self.rpc("library_list", json!({ "p_max": 300, "p_all": true }))
+            .await
     }
 
     pub async fn report_library_mod(
@@ -428,17 +524,8 @@ impl FriendsClient {
         .await
     }
 
-    /// Downloads library mod `id` into `mods_dir` after verifying its
-    /// SHA-1 and scanning it here. Refuses blocked files; asks back
-    /// ([`LibraryInstall::NeedsConfirm`]) when the scan has warnings and
-    /// `accept_warnings` is false.
-    pub async fn install_library_mod(
-        &self,
-        id: i64,
-        mods_dir: &Path,
-        loader: LoaderKind,
-        accept_warnings: bool,
-    ) -> Result<LibraryInstall> {
+    /// An approved item (or one of the caller's own) with its uploader.
+    async fn installable(&self, id: i64) -> Result<(String, LibraryMod)> {
         let row = self
             .library_rows()
             .await?
@@ -452,16 +539,53 @@ impl FriendsClient {
         if m.status != LibraryStatus::Approved && !m.mine {
             return Err(CoreError::Friends("library.notFound"));
         }
-        if !fits(&m.loaders, loader) {
+        Ok((owner, m))
+    }
+
+    /// Downloads the item (SHA-1 checked) and scans it here; blocked files
+    /// are refused, warnings come back unless `accept_warnings`.
+    async fn checked(&self, owner: &str, m: &LibraryMod, accept_warnings: bool) -> Result<Checked> {
+        let bytes = self.library_file(owner, &m.sha1, m.kind).await?;
+        let kind = m.kind;
+        let (report, bytes) =
+            tokio::task::spawn_blocking(move || (scan::scan_as(&bytes, kind), bytes))
+                .await
+                .map_err(|e| CoreError::FriendsServer {
+                    status: 0,
+                    reason: e.to_string(),
+                })?;
+        match report.verdict {
+            Verdict::Block => Err(CoreError::Friends("library.blocked")),
+            Verdict::Warn if !accept_warnings => Ok(Checked::Ask(report.findings)),
+            _ => Ok(Checked::Ready(bytes)),
+        }
+    }
+
+    /// Installs library item `id` (a mod, resource pack or shader) into the
+    /// matching folder of the instance at `instance_dir`, after verifying
+    /// its SHA-1 and scanning it here. Refuses blocked files; asks back
+    /// ([`LibraryInstall::NeedsConfirm`]) when the scan has warnings and
+    /// `accept_warnings` is false. Modpacks: [`Self::download_library_modpack`].
+    pub async fn install_library_mod(
+        &self,
+        id: i64,
+        instance_dir: &Path,
+        loader: LoaderKind,
+        accept_warnings: bool,
+    ) -> Result<LibraryInstall> {
+        let (owner, m) = self.installable(id).await?;
+        let folder = install_folder(m.kind).ok_or(CoreError::Friends("library.wrongKind"))?;
+        if m.kind == LibraryKind::Mod && !fits(&m.loaders, loader) {
             return Err(CoreError::Friends("library.wrongLoader"));
         }
+        let dir = instance_dir.join(folder.dir_name());
         let file_name = checked_name(&m.file_name)?.to_owned();
-        tokio::fs::create_dir_all(mods_dir)
+        tokio::fs::create_dir_all(&dir)
             .await
-            .map_err(|e| CoreError::io(mods_dir, e))?;
+            .map_err(|e| CoreError::io(&dir, e))?;
         let present = {
-            let (ctx, dir) = (self.ctx().clone(), mods_dir.to_path_buf());
-            tokio::task::spawn_blocking(move || crate::content::installed::hashes(&ctx, &dir))
+            let (ctx, d) = (self.ctx().clone(), dir.clone());
+            tokio::task::spawn_blocking(move || crate::content::installed::hashes(&ctx, &d))
                 .await
                 .map_err(|e| CoreError::FriendsServer {
                     status: 0,
@@ -479,40 +603,53 @@ impl FriendsClient {
         {
             return Err(CoreError::Friends("library.conflict"));
         }
-
-        let bytes = self.library_jar(&owner, &m.sha1).await?;
-        let report = tokio::task::spawn_blocking(move || {
-            let r = scan::scan(&bytes);
-            (r, bytes)
-        })
-        .await
-        .map_err(|e| CoreError::FriendsServer {
-            status: 0,
-            reason: e.to_string(),
-        })?;
-        let (report, bytes) = report;
-        match report.verdict {
-            Verdict::Block => return Err(CoreError::Friends("library.blocked")),
-            Verdict::Warn if !accept_warnings => {
-                return Ok(LibraryInstall::NeedsConfirm {
-                    findings: report.findings,
-                });
-            }
-            _ => {}
-        }
-        let dest = mods_dir.join(&file_name);
-        crate::fsutil::write_atomic(&dest, &bytes)?;
+        let bytes = match self.checked(&owner, &m, accept_warnings).await? {
+            Checked::Ready(b) => b,
+            Checked::Ask(findings) => return Ok(LibraryInstall::NeedsConfirm { findings }),
+        };
+        crate::fsutil::write_atomic(&dir.join(&file_name), &bytes)?;
         Ok(LibraryInstall::Installed { file_name })
     }
 
-    /// The jar from the cache or the server, verified against `sha1`.
-    pub(crate) async fn library_jar(&self, owner: &str, sha1: &str) -> Result<Vec<u8>> {
+    /// A library modpack, checked like any item, saved as a `.mrpack` for
+    /// the importer. `Err(findings)` when the scan warned and
+    /// `accept_warnings` is false.
+    pub async fn download_library_modpack(
+        &self,
+        id: i64,
+        accept_warnings: bool,
+    ) -> Result<std::result::Result<(LibraryMod, std::path::PathBuf), Vec<Finding>>> {
+        let (owner, m) = self.installable(id).await?;
+        if m.kind != LibraryKind::Modpack {
+            return Err(CoreError::Friends("library.wrongKind"));
+        }
+        let bytes = match self.checked(&owner, &m, accept_warnings).await? {
+            Checked::Ready(b) => b,
+            Checked::Ask(findings) => return Ok(Err(findings)),
+        };
+        let dir = self.ctx().paths.cache().join("library").join("import");
+        let path = dir.join(&m.file_name);
+        tokio::fs::create_dir_all(&dir)
+            .await
+            .map_err(|e| CoreError::io(&dir, e))?;
+        crate::fsutil::write_atomic(&path, &bytes)?;
+        Ok(Ok((m, path)))
+    }
+
+    /// The file from the cache or the server, verified against `sha1`.
+    pub(crate) async fn library_file(
+        &self,
+        owner: &str,
+        sha1: &str,
+        kind: LibraryKind,
+    ) -> Result<Vec<u8>> {
+        let ext = kind.ext();
         let cached = self
             .ctx()
             .paths
             .cache()
             .join("library")
-            .join(format!("{sha1}.jar"));
+            .join(format!("{sha1}.{ext}"));
         if let Ok(bytes) = std::fs::read(&cached)
             && sha1_hex(&bytes) == sha1
         {
@@ -521,7 +658,7 @@ impl FriendsClient {
         let bytes = self
             .send(
                 Method::GET,
-                &format!("/storage/v1/object/authenticated/{BUCKET}/{owner}/{sha1}.jar"),
+                &format!("/storage/v1/object/authenticated/{BUCKET}/{owner}/{sha1}.{ext}"),
                 None,
                 &[],
             )
@@ -534,7 +671,7 @@ impl FriendsClient {
             });
         }
         if let Err(e) = crate::fsutil::write_atomic(&cached, &bytes) {
-            tracing::debug!(error = %e.detail(), "could not cache a library mod");
+            tracing::debug!(error = %e.detail(), "could not cache a library file");
         }
         Ok(bytes)
     }
@@ -599,15 +736,31 @@ mod tests {
     #[test]
     fn file_names_fit_the_server_rule() {
         assert_eq!(
-            library_file_name("Cool Mod (1.2).jar"),
+            library_file_name("Cool Mod (1.2).jar", LibraryKind::Mod),
             "Cool_Mod__1.2_.jar"
         );
         assert_eq!(
-            library_file_name("C:\\x\\sodium+mc.jar.disabled"),
+            library_file_name("C:\\x\\sodium+mc.jar.disabled", LibraryKind::Mod),
             "sodium+mc.jar"
         );
-        assert_eq!(library_file_name("..jar"), "mod.jar");
-        assert!(library_file_name(&"a".repeat(300)).len() <= MAX_FILE_NAME_CHARS);
+        assert_eq!(library_file_name("..jar", LibraryKind::Mod), "mod.jar");
+        assert_eq!(
+            library_file_name("Faithful 32x.zip", LibraryKind::ResourcePack),
+            "Faithful_32x.zip"
+        );
+        assert_eq!(
+            library_file_name("pack.mrpack", LibraryKind::Modpack),
+            "pack.mrpack"
+        );
+        // A wrong extension stays part of the name.
+        assert_eq!(
+            library_file_name("bsl.jar", LibraryKind::Shader),
+            "bsl.jar.zip"
+        );
+        assert_eq!(library_file_name(".zip", LibraryKind::Shader), "shader.zip");
+        assert!(
+            library_file_name(&"a".repeat(300), LibraryKind::Modpack).len() <= MAX_FILE_NAME_CHARS
+        );
     }
 
     #[test]
@@ -635,7 +788,7 @@ mod tests {
                 "p_name": "Cool Mod", "p_author": "Steve", "p_mod_id": "coolmod",
                 "p_version": "1.2.0", "p_loaders": ["fabric", "quilt"],
                 "p_game_versions": ">=1.21", "p_sha1": sha, "p_file_name": "cool_mod.jar",
-                "p_scan": { "verdict": "pass" }
+                "p_scan": { "verdict": "pass", "kind": "mod" }, "p_kind": "mod"
             })))
             .respond_with(ResponseTemplate::new(200).set_body_json(json!(4)))
             .expect(1)
@@ -644,7 +797,14 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         let c = signed_in(&tmp, &server).await;
         let (id, report) = c
-            .submit_library_mod(&bytes, "cool mod.jar", "  ", "desc", "Steve")
+            .submit_library_mod(
+                &bytes,
+                LibraryKind::Mod,
+                "cool mod.jar",
+                "  ",
+                "desc",
+                "Steve",
+            )
             .await
             .unwrap();
         assert_eq!((id, report.verdict), (4, Verdict::Pass));
@@ -658,7 +818,7 @@ mod tests {
             ),
         ]);
         let e = c
-            .submit_library_mod(&evil, "e.jar", "Evil", "", "Steve")
+            .submit_library_mod(&evil, LibraryKind::Mod, "e.jar", "Evil", "", "Steve")
             .await
             .unwrap_err();
         assert_eq!(e.code(), "library.blocked");
@@ -723,10 +883,11 @@ mod tests {
         }
         let tmp = tempfile::tempdir().unwrap();
         let c = signed_in(&tmp, &server).await;
-        let mods = tmp.path().join("inst/mods");
+        let inst = tmp.path().join("inst");
+        let mods = inst.join("mods");
 
         let r = c
-            .install_library_mod(1, &mods, LoaderKind::Fabric, false)
+            .install_library_mod(1, &inst, LoaderKind::Fabric, false)
             .await
             .unwrap();
         assert!(
@@ -735,14 +896,14 @@ mod tests {
         assert_eq!(std::fs::read(mods.join("cool_mod.jar")).unwrap(), good);
         // Same bytes again → already there.
         assert!(matches!(
-            c.install_library_mod(1, &mods, LoaderKind::Fabric, false)
+            c.install_library_mod(1, &inst, LoaderKind::Fabric, false)
                 .await
                 .unwrap(),
             LibraryInstall::AlreadyPresent { .. }
         ));
         // Same name as an installed file → conflict (checked before downloading).
         assert_eq!(
-            c.install_library_mod(2, &mods, LoaderKind::Fabric, true)
+            c.install_library_mod(2, &inst, LoaderKind::Fabric, true)
                 .await
                 .unwrap_err()
                 .code(),
@@ -751,14 +912,14 @@ mod tests {
         std::fs::remove_file(mods.join("cool_mod.jar")).unwrap();
         // Warnings found here → ask first, install only after consent.
         assert!(matches!(
-            c.install_library_mod(2, &mods, LoaderKind::Fabric, false)
+            c.install_library_mod(2, &inst, LoaderKind::Fabric, false)
                 .await
                 .unwrap(),
             LibraryInstall::NeedsConfirm { .. }
         ));
         assert!(!mods.join("cool_mod.jar").exists());
         assert!(matches!(
-            c.install_library_mod(2, &mods, LoaderKind::Fabric, true)
+            c.install_library_mod(2, &inst, LoaderKind::Fabric, true)
                 .await
                 .unwrap(),
             LibraryInstall::Installed { .. }
@@ -767,7 +928,7 @@ mod tests {
         std::fs::remove_file(mods.join("cool_mod.jar")).unwrap();
         // Bytes that do not match the listed SHA-1 are never installed.
         assert_eq!(
-            c.install_library_mod(3, &mods, LoaderKind::Fabric, true)
+            c.install_library_mod(3, &inst, LoaderKind::Fabric, true)
                 .await
                 .unwrap_err()
                 .code(),
@@ -779,7 +940,7 @@ mod tests {
             (1, LoaderKind::Forge, "library.wrongLoader"),
         ] {
             assert_eq!(
-                c.install_library_mod(id, &mods, loader, true)
+                c.install_library_mod(id, &inst, loader, true)
                     .await
                     .unwrap_err()
                     .code(),
@@ -787,6 +948,158 @@ mod tests {
             );
         }
         assert!(!mods.join("cool_mod.jar").exists());
+    }
+
+    fn pack(kind: LibraryKind) -> Vec<u8> {
+        match kind {
+            LibraryKind::ResourcePack => jar(&[(
+                "pack.mcmeta",
+                br#"{"pack":{"pack_format":46,"description":"Crisp 16x"}}"#.to_vec(),
+            )]),
+            LibraryKind::Shader => jar(&[("shaders/final.fsh", b"void main(){}".to_vec())]),
+            LibraryKind::Modpack => jar(&[(
+                "modrinth.index.json",
+                br#"{"formatVersion":1,"game":"minecraft","versionId":"2.0","name":"Big Pack",
+                     "dependencies":{"minecraft":"1.21.4","fabric-loader":"0.16"},"files":[]}"#
+                    .to_vec(),
+            )]),
+            LibraryKind::Mod => good_jar(),
+        }
+    }
+
+    fn pack_row(id: i64, kind: LibraryKind, bytes: &[u8]) -> Value {
+        let mut r = row(id, bytes, "approved", false);
+        r["kind"] = json!(kind.as_str());
+        r["loaders"] = json!([]);
+        r["file_name"] = json!(format!("item{id}.{}", kind.ext()));
+        r
+    }
+
+    #[tokio::test]
+    async fn submits_packs_as_their_own_file_type() {
+        let server = MockServer::builder().start().await;
+        let bytes = pack(LibraryKind::ResourcePack);
+        let sha = sha1_hex(&bytes);
+        Mock::given(method("POST"))
+            .and(path(format!("/storage/v1/object/library/{ME}/{sha}.zip")))
+            .and(wiremock::matchers::header(
+                "content-type",
+                "application/zip",
+            ))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({})))
+            .expect(1)
+            .mount(&server)
+            .await;
+        Mock::given(method("POST"))
+            .and(path("/rest/v1/rpc/submit_library_mod"))
+            .and(body_partial_json(json!({
+                "p_kind": "resourcepack", "p_name": "Crisp 16x", "p_mod_id": "crisp-16x",
+                "p_version": "pack_format 46", "p_loaders": [], "p_file_name": "Crisp_16x.zip",
+                "p_scan": { "kind": "resourcepack", "verdict": "pass" }
+            })))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!(9)))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let tmp = tempfile::tempdir().unwrap();
+        let c = signed_in(&tmp, &server).await;
+        let (id, _) = c
+            .submit_library_mod(
+                &bytes,
+                LibraryKind::ResourcePack,
+                "Crisp 16x.zip",
+                "",
+                "",
+                "Steve",
+            )
+            .await
+            .unwrap();
+        assert_eq!(id, 9);
+        // A jar sent as a resource pack is refused here, before any upload.
+        let e = c
+            .submit_library_mod(
+                &good_jar(),
+                LibraryKind::ResourcePack,
+                "x.zip",
+                "",
+                "",
+                "Steve",
+            )
+            .await
+            .unwrap_err();
+        assert_eq!(e.code(), "library.blocked");
+    }
+
+    #[tokio::test]
+    async fn packs_install_into_their_folders_and_modpacks_download() {
+        let server = MockServer::builder().start().await;
+        let rp = pack(LibraryKind::ResourcePack);
+        let sh = pack(LibraryKind::Shader);
+        let mp = pack(LibraryKind::Modpack);
+        let mut unknown = pack_row(4, LibraryKind::Shader, &sh);
+        unknown["kind"] = json!("datapack");
+        Mock::given(method("POST"))
+            .and(path("/rest/v1/rpc/library_list"))
+            .and(body_partial_json(json!({ "p_all": true })))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!([
+                pack_row(1, LibraryKind::ResourcePack, &rp),
+                pack_row(2, LibraryKind::Shader, &sh),
+                pack_row(3, LibraryKind::Modpack, &mp),
+                unknown,
+            ])))
+            .mount(&server)
+            .await;
+        for (bytes, ext) in [(&rp, "zip"), (&sh, "zip"), (&mp, "mrpack")] {
+            Mock::given(method("GET"))
+                .and(path(format!(
+                    "/storage/v1/object/authenticated/library/{FRIEND}/{}.{ext}",
+                    sha1_hex(bytes)
+                )))
+                .respond_with(ResponseTemplate::new(200).set_body_bytes(bytes.clone()))
+                .mount(&server)
+                .await;
+        }
+        let tmp = tempfile::tempdir().unwrap();
+        let c = signed_in(&tmp, &server).await;
+        let list = c.library_mods().await.unwrap();
+        assert_eq!(
+            list.iter().map(|m| m.kind).collect::<Vec<_>>(),
+            [
+                LibraryKind::ResourcePack,
+                LibraryKind::Shader,
+                LibraryKind::Modpack
+            ]
+        );
+        let inst = tmp.path().join("inst");
+        // Packs ignore the loader (a vanilla instance takes a resource pack).
+        c.install_library_mod(1, &inst, LoaderKind::Vanilla, false)
+            .await
+            .unwrap();
+        assert_eq!(
+            std::fs::read(inst.join("resourcepacks/item1.zip")).unwrap(),
+            rp
+        );
+        c.install_library_mod(2, &inst, LoaderKind::Fabric, false)
+            .await
+            .unwrap();
+        assert!(inst.join("shaderpacks/item2.zip").is_file());
+        assert_eq!(
+            c.install_library_mod(3, &inst, LoaderKind::Fabric, true)
+                .await
+                .unwrap_err()
+                .code(),
+            "library.wrongKind"
+        );
+        let (m, file) = c.download_library_modpack(3, false).await.unwrap().unwrap();
+        assert_eq!(m.name, "Mod 3");
+        assert_eq!(std::fs::read(&file).unwrap(), mp);
+        assert_eq!(
+            c.download_library_modpack(1, true)
+                .await
+                .unwrap_err()
+                .code(),
+            "library.wrongKind"
+        );
     }
 
     #[tokio::test]
@@ -803,7 +1116,7 @@ mod tests {
         Mock::given(method("DELETE"))
             .and(path("/storage/v1/object/library"))
             .and(body_partial_json(
-                json!({ "prefixes": [format!("{ME}/{sha}.jar")] }),
+                json!({ "prefixes": [format!("{ME}/{sha}.jar"), format!("{ME}/{sha}.mrpack"), format!("{ME}/{sha}.zip")] }),
             ))
             .respond_with(ResponseTemplate::new(200).set_body_json(json!([])))
             .expect(1)

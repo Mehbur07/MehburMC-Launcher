@@ -47,7 +47,7 @@ import type { TextureKind } from "../../lib/ipc/bindings/TextureKind";
 import type { ScanReport } from "../../lib/ipc/bindings/ScanReport";
 import { formatBytes, formatIso } from "../../lib/format";
 import { useAuth } from "../../stores/auth";
-import { FindingList, LoaderBadges } from "../browse/LibraryPanel";
+import { FindingList, KindBadge, LoaderBadges } from "../browse/LibraryPanel";
 
 type Tab =
   "queue" | "published" | "reports" | "community" | "players" | "bans" | "admins" | "private";
@@ -332,6 +332,7 @@ function ModInfo({ m }: { m: AdminMod }) {
     <div className="min-w-0 flex-1">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-semibold">{m.mod.name}</span>
+        <KindBadge kind={m.mod.kind} />
         <span className="text-xs text-muted">
           {m.mod.author} · {m.mod.modId} {m.mod.version} · {formatBytes(m.mod.size)}
         </span>
@@ -350,7 +351,7 @@ function ModInfo({ m }: { m: AdminMod }) {
             {t("admin.queue.uploaderScan", { count: m.mod.findings.length })}
           </summary>
           <div className="mt-1">
-            <FindingList findings={m.mod.findings} />
+            <FindingList findings={m.mod.findings} kind={m.mod.kind} />
           </div>
         </details>
       )}
@@ -449,7 +450,7 @@ function QueueTab({ status }: { status: AdminModStatus }) {
                     >
                       {t("admin.queue.myScan")}: {t(`library.verdict.${report.verdict}`)}
                     </p>
-                    <FindingList findings={report.findings} />
+                    <FindingList findings={report.findings} kind={m.mod.kind} />
                   </div>
                 )}
                 {s && s !== "busy" && !("verdict" in s) && (
