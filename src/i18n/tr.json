@@ -275,7 +275,8 @@
       "storageFull": "Kütüphanedeki yüklemelerin 200 MB sınırına ulaştı; yer açmak için eskilerden birini geri çek.",
       "wrongKind": "Bu içerik bu şekilde kurulamaz.",
       "packLoader": "Bu profilin mod loader'ı (Legacy Fabric, OptiFine) ya da sürümü modpack olarak paylaşılamaz.",
-      "packTooLarge": "Modrinth'te bulunmayan dosyalar ve ayarlar 50 MB'yi aşıyor; büyük modları çıkar ya da Modrinth sürümlerini kullan."
+      "packTooLarge": "Modrinth'te bulunmayan dosyalar ve ayarlar 50 MB'yi aşıyor; büyük modları çıkar ya da Modrinth sürümlerini kullan.",
+      "serverNotReady": "Sunucu bu türü henüz kabul etmiyor: yöneticinin supabase/library_packs.sql dosyasını Supabase'de çalıştırması gerekiyor. Modlar yüklenebilir."
     },
     "admin": {
       "forbidden": "Bu işlem için yetkin yok.",

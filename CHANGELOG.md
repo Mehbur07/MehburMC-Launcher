@@ -3,6 +3,12 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.25.1] — 2026-10-25
+
+### Düzeltildi
+- Sunucu modpack, resource pack ve shader yüklemelerine henüz hazır değilken Kütüphane ham bir
+  sunucu hatası ("mime type … is not supported") yerine ne yapılması gerektiğini söyler.
+
 ## [0.25.0] — 2026-10-25
 
 ### Değişti

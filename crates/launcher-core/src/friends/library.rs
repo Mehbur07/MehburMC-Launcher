@@ -38,6 +38,7 @@ pub const LIBRARY_ERRORS: &[&str] = &[
     "library.conflict",
     "library.wrongLoader",
     "library.badKind",
+    "library.serverNotReady",
     "library.storageFull",
     "library.wrongKind",
 ];
@@ -155,6 +156,13 @@ pub(crate) struct Row {
 fn missing_function(e: &CoreError) -> bool {
     matches!(e, CoreError::FriendsServer { status: 404, reason }
         if reason.contains("Could not find the function"))
+}
+
+/// Storage refused the file type or size: a bucket still set up for mods
+/// only (library_packs.sql not run).
+fn bucket_refused(e: &CoreError) -> bool {
+    matches!(e, CoreError::FriendsServer { status, reason }
+        if *status == 413 || reason.contains("mime type") || reason.contains("exceeded the maximum"))
 }
 
 fn parse_kind(s: Option<&str>) -> Option<LibraryKind> {
@@ -436,18 +444,26 @@ impl FriendsClient {
         };
         self.ensure_identity().await?;
         let me = self.user_id().await?;
-        self.send_raw(
-            Method::POST,
-            &format!(
-                "/storage/v1/object/{BUCKET}/{me}/{}.{}",
-                report.sha1,
-                kind.ext()
-            ),
-            bytes.to_vec(),
-            mime(kind),
-            &[("x-upsert", "true")],
-        )
-        .await?;
+        let upload = self
+            .send_raw(
+                Method::POST,
+                &format!(
+                    "/storage/v1/object/{BUCKET}/{me}/{}.{}",
+                    report.sha1,
+                    kind.ext()
+                ),
+                bytes.to_vec(),
+                mime(kind),
+                &[("x-upsert", "true")],
+            )
+            .await;
+        match upload {
+            // The bucket still has the mods-only settings (type, 25 MiB).
+            Err(e) if kind != LibraryKind::Mod && bucket_refused(&e) => {
+                return Err(CoreError::Friends("library.serverNotReady"));
+            }
+            r => r?,
+        };
         let loaders: Vec<&str> = d.loaders.iter().map(|l| loader_str(*l)).collect();
         let mut args = json!({
             "p_name": name,
@@ -469,7 +485,9 @@ impl FriendsClient {
                 args.as_object_mut().map(|o| o.remove("p_kind"));
                 self.rpc("submit_library_mod", args).await?
             }
-            Err(e) if missing_function(&e) => return Err(CoreError::Friends("library.badKind")),
+            Err(e) if missing_function(&e) => {
+                return Err(CoreError::Friends("library.serverNotReady"));
+            }
             r => r?,
         };
         Ok((id, report))
@@ -1076,6 +1094,30 @@ mod tests {
             .await
             .unwrap_err();
         assert_eq!(e.code(), "library.blocked");
+    }
+
+    #[tokio::test]
+    async fn a_bucket_set_up_for_mods_only_says_the_server_is_not_ready() {
+        let server = MockServer::builder().start().await;
+        let bytes = pack(LibraryKind::Modpack);
+        let sha = sha1_hex(&bytes);
+        Mock::given(method("POST"))
+            .and(path(format!(
+                "/storage/v1/object/library/{ME}/{sha}.mrpack"
+            )))
+            .respond_with(ResponseTemplate::new(400).set_body_json(json!({
+                "statusCode": "415", "error": "invalid_mime_type",
+                "message": "mime type application/x-modrinth-modpack+zip is not supported"
+            })))
+            .mount(&server)
+            .await;
+        let tmp = tempfile::tempdir().unwrap();
+        let c = signed_in(&tmp, &server).await;
+        let e = c
+            .submit_library_mod(&bytes, LibraryKind::Modpack, "p.mrpack", "P", "", "Steve")
+            .await
+            .unwrap_err();
+        assert_eq!(e.code(), "library.serverNotReady");
     }
 
     #[tokio::test]

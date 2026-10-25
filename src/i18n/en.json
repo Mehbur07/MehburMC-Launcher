@@ -275,7 +275,8 @@
       "storageFull": "Your library uploads reached the 200 MB limit; withdraw an older one to make room.",
       "wrongKind": "This item cannot be installed that way.",
       "packLoader": "This profile's loader (Legacy Fabric, OptiFine) or version cannot be shared as a modpack.",
-      "packTooLarge": "Files not on Modrinth plus configs are over 50 MB; remove big mods or use their Modrinth versions."
+      "packTooLarge": "Files not on Modrinth plus configs are over 50 MB; remove big mods or use their Modrinth versions.",
+      "serverNotReady": "The server does not accept this type yet: the admin needs to run supabase/library_packs.sql in Supabase. Mods can be uploaded."
     },
     "admin": {
       "forbidden": "You are not allowed to do this.",
