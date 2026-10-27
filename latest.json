@@ -1,15 +1,15 @@
 {
-  "version": "0.25.1",
-  "notes": "### Düzeltildi\n- Sunucu modpack, resource pack ve shader yüklemelerine henüz hazır değilken Kütüphane ham bir\n  sunucu hatası (\"mime type … is not supported\") yerine ne yapılması gerektiğini söyler.",
-  "pub_date": "2026-10-25T08:16:03Z",
+  "version": "0.26.0",
+  "notes": "### Eklendi\n- **Mod grupları** (Mod Toggle): birlikte açılıp kapanan modları adlandırılmış gruplara topla ve\n  bir grubu tek tıkla aç/kapat; gruba girmeyen modlara dokunulmaz. Grupların adı değiştirilebilir,\n  modları düzenlenebilir, silinebilir. Her profilin grupları ayrıdır.",
+  "pub_date": "2026-10-27T12:13:31Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYU05bytpZmdDRnB4c21GODBCUUlmK25VNE1HVW5hK0l5R2FPcUdaMGZia2EzY3lYcG9wNzA2Nkh0UXRwdmoxQkpENnl0UWwzcEd3UlNvY0hjMGNnU2c4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyOTE2MTM3CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yNS4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjI1LjEKYW56UDNjSDdBY0t3Z2p2MHU5QTFxdUhFbVpWYjVjMEh2bFFJZ3EvTHlPcW1FUzNXdVU2cnFONUZyL3RjRFI2eGJ5Yk9KQWFJR0o0RHhWWEZCV2ZLRGc9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.25.1/MehburMC-Launcher_0.25.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYU53SGtkaTgrWmRuWkI2RjkxUmhtN1J1d0tNcGR1T3d3VHRqSzk2TU84c3hHaDVBMEY1Qit0c0F3UHNSQ3ZEbmhtdUkzY0tPRnE5S1NkN2E0c2J5T1FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMTAzMTg2CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yNi4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjI2LjAKYmZqajRjSDBYL0VEbzNJcWpNUGVJeGRwNlB3SjVjYlVPeE8vS3pMQ2ZPWUt4N1lDSnlzMFZjcEpDOGlQVHo0QlltMElZc0gwRmlEeUZGeDZSOGRTQmc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.26.0/MehburMC-Launcher_0.26.0_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYU05bytpZmdDRnB4c21GODBCUUlmK25VNE1HVW5hK0l5R2FPcUdaMGZia2EzY3lYcG9wNzA2Nkh0UXRwdmoxQkpENnl0UWwzcEd3UlNvY0hjMGNnU2c4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyOTE2MTM3CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yNS4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjI1LjEKYW56UDNjSDdBY0t3Z2p2MHU5QTFxdUhFbVpWYjVjMEh2bFFJZ3EvTHlPcW1FUzNXdVU2cnFONUZyL3RjRFI2eGJ5Yk9KQWFJR0o0RHhWWEZCV2ZLRGc9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.25.1/MehburMC-Launcher_0.25.1_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYU53SGtkaTgrWmRuWkI2RjkxUmhtN1J1d0tNcGR1T3d3VHRqSzk2TU84c3hHaDVBMEY1Qit0c0F3UHNSQ3ZEbmhtdUkzY0tPRnE5S1NkN2E0c2J5T1FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMTAzMTg2CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yNi4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjI2LjAKYmZqajRjSDBYL0VEbzNJcWpNUGVJeGRwNlB3SjVjYlVPeE8vS3pMQ2ZPWUt4N1lDSnlzMFZjcEpDOGlQVHo0QlltMElZc0gwRmlEeUZGeDZSOGRTQmc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.26.0/MehburMC-Launcher_0.26.0_x64-setup.exe"
     }
   }
 }
