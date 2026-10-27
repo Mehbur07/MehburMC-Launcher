@@ -46,6 +46,8 @@ pub struct InstalledItem {
     pub title: Option<String>,
     pub version_number: Option<String>,
     pub icon_url: Option<String>,
+    /// The mod's own id from its jar (mods only), for mod groups (K91).
+    pub mod_id: Option<String>,
     /// A newer compatible version (only when updates were checked).
     pub update: Option<UpdateInfo>,
 }
@@ -182,25 +184,35 @@ pub async fn scan(
     let mut items = scan_remote(ctx, inst, game_dir, folder, check_updates).await?;
     if folder == Folder::Mods {
         let dir = game_dir.join(folder.dir_name());
-        let unknown: Vec<(usize, PathBuf)> = items
+        // Every jar for its id; title, version and icon only where Modrinth
+        // did not know the file.
+        let jars: Vec<(usize, PathBuf, bool)> = items
             .iter()
             .enumerate()
-            .filter(|(_, i)| i.project_id.is_none())
-            .map(|(n, i)| (n, dir.join(&i.file_name)))
+            .map(|(n, i)| (n, dir.join(&i.file_name), i.project_id.is_none()))
             .collect();
         let metas = tokio::task::spawn_blocking(move || {
-            unknown
-                .into_iter()
-                .filter_map(|(n, p)| metadata::read(&p).map(|m| (n, m)))
+            jars.into_iter()
+                .filter_map(|(n, p, unknown)| {
+                    let m = if unknown {
+                        metadata::read(&p)
+                    } else {
+                        metadata::read_light(&p)
+                    };
+                    m.map(|m| (n, m, unknown))
+                })
                 .collect::<Vec<_>>()
         })
         .await
         .unwrap_or_default();
-        for (n, m) in metas {
+        for (n, m, unknown) in metas {
             let item = &mut items[n];
-            item.title = m.name;
-            item.version_number = m.version;
-            item.icon_url = m.icon;
+            item.mod_id = m.id;
+            if unknown {
+                item.title = m.name;
+                item.version_number = m.version;
+                item.icon_url = m.icon;
+            }
         }
     }
     Ok(items)
@@ -227,6 +239,7 @@ async fn scan_remote(
             title: None,
             version_number: None,
             icon_url: None,
+            mod_id: None,
             update: None,
         })
         .collect();

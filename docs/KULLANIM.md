@@ -108,6 +108,14 @@ Eski crash raporları için: profil ayrıntıları → **Loglar** → rapor → 
 Profil ayrıntılarındaki **Modlar** sekmesinde modları açıp kapatabilir, silebilir ve
 **güncellemeleri** denetleyip tek tıkla güncelleyebilirsin.
 
+**Mod grupları** (kenar çubuğunda **Mod Toggle**): birlikte açılıp kapanan modları bir grupta
+topla (ör. "PvP", "Teknik", "Performans"). **Yeni grup** → ad ver, gruptaki modları işaretle →
+**Kaydet**. Grubun düğmesiyle gruptaki bütün modlar tek tıkla açılır ya da kapanır; gruba girmeyen
+modlara dokunulmaz. Bir mod iki grupta olabilir: bir grubu kapatırken, açık olan başka bir grupta
+da bulunan modlar açık kalır. Modları elle değiştirirsen grup **Karışık** görünür. Kalem simgesi
+grubun adını değiştirir, liste simgesi modlarını seçtirir, çöp kutusu grubu siler (modlara
+dokunmaz). Gruplar her profilde ayrıdır; bir mod güncellenip dosya adı değişse de grupta kalır.
+
 **Modpack'ler**:
 - Mod Tarayıcı'da tür olarak **Modpack** seçip kur, ya da
 - **Profiller → Modpack içe aktar** ile `.mrpack` veya CurseForge `.zip` dosyası seç.

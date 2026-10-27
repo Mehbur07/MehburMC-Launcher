@@ -46,6 +46,7 @@ const file = (fileName: string, projectId: string | null, enabled = true): Insta
   title: null,
   versionNumber: null,
   iconUrl: null,
+  modId: null,
   update: null,
 });
 

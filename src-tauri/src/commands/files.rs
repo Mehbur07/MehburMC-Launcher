@@ -1,4 +1,5 @@
 use launcher_core::instance::files::{self, FileEntry, Folder};
+use launcher_core::instance::mod_groups::ModGroup;
 use tauri::{AppHandle, Manager, State};
 
 use super::{CmdResult, blocking};
@@ -56,6 +57,23 @@ pub async fn set_content_enabled(
 ) -> CmdResult<u32> {
     let l = state.launcher()?.clone();
     blocking(move || l.set_content_enabled(&id, folder, &names, enabled)).await
+}
+
+/// Mod groups of an instance (K91).
+#[tauri::command]
+pub async fn mod_groups(state: State<'_, AppState>, id: String) -> CmdResult<Vec<ModGroup>> {
+    let l = state.launcher()?.clone();
+    blocking(move || l.mod_groups(&id)).await
+}
+
+#[tauri::command]
+pub async fn save_mod_groups(
+    state: State<'_, AppState>,
+    id: String,
+    groups: Vec<ModGroup>,
+) -> CmdResult<Vec<ModGroup>> {
+    let l = state.launcher()?.clone();
+    blocking(move || l.save_mod_groups(&id, groups)).await
 }
 
 #[tauri::command]

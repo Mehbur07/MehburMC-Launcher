@@ -47,6 +47,7 @@ import type { ImportResult } from "./bindings/ImportResult";
 import type { InstallRequest } from "./bindings/InstallRequest";
 import type { InstallResult } from "./bindings/InstallResult";
 import type { InstalledItem } from "./bindings/InstalledItem";
+import type { ModGroup } from "./bindings/ModGroup";
 import type { Folder } from "./bindings/Folder";
 import type { Instance } from "./bindings/Instance";
 import type { InstancePatch } from "./bindings/InstancePatch";
@@ -128,6 +129,10 @@ export const ipc = {
   /** Turns several content files on/off; returns how many were switched. */
   setContentEnabled: (id: string, folder: Folder, names: string[], enabled: boolean) =>
     invoke<number>("set_content_enabled", { id, folder, names, enabled }),
+  /** Mod groups of an instance (K91). */
+  modGroups: (id: string) => invoke<ModGroup[]>("mod_groups", { id }),
+  saveModGroups: (id: string, groups: ModGroup[]) =>
+    invoke<ModGroup[]>("save_mod_groups", { id, groups }),
   toggleInstanceFile: (id: string, folder: Folder, name: string) =>
     invoke<FileEntry>("toggle_instance_file", { id, folder, name }),
   deleteInstanceFile: (id: string, folder: Folder, name: string) =>

@@ -3,6 +3,13 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.26.0] — 2026-10-27
+
+### Eklendi
+- **Mod grupları** (Mod Toggle): birlikte açılıp kapanan modları adlandırılmış gruplara topla ve
+  bir grubu tek tıkla aç/kapat; gruba girmeyen modlara dokunulmaz. Grupların adı değiştirilebilir,
+  modları düzenlenebilir, silinebilir. Her profilin grupları ayrıdır.
+
 ## [0.25.1] — 2026-10-25
 
 ### Düzeltildi

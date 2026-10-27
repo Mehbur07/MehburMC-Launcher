@@ -56,6 +56,7 @@ describe("content helpers", () => {
       title: null,
       versionNumber: null,
       iconUrl: null,
+      modId: null,
       update: null,
     });
     const g = installedByProject([f("a.jar", "p"), f("b.jar", "p"), f("c.jar", null)]);

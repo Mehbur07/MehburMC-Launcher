@@ -1579,5 +1579,25 @@
       "minimize": "Küçült",
       "close": "Gizle"
     }
+  },
+  "modGroups": {
+    "title": "Mod grupları",
+    "hint": "Birlikte açılıp kapanan modlar; tek tıkla aç/kapat.",
+    "new": "Yeni grup",
+    "newTitle": "Yeni mod grubu",
+    "editTitle": "Grubun modları",
+    "renameTitle": "Grubun adını değiştir",
+    "name": "Ad",
+    "namePlaceholder": "Ör. PvP, Teknik, Performans",
+    "mods": "Gruptaki modlar ({{count}})",
+    "missing": "Şu an kurulu olmayan ve grupta kalan modlar: {{names}}",
+    "count": "{{count}} mod",
+    "mixed": "Karışık",
+    "rename": "{{name}} grubunun adını değiştir",
+    "edit": "{{name}} grubunun modlarını seç",
+    "delete": "{{name}} grubunu sil",
+    "switch": "{{name}} grubunu aç/kapat",
+    "deleteTitle": "\"{{name}}\" grubu silinsin mi?",
+    "deleteMessage": "Yalnızca grup silinir; modlar ve açık/kapalı durumları değişmez."
   }
 }

@@ -19,6 +19,8 @@ const MAX_FIELD_CHARS: usize = 80;
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct LocalMeta {
+    /// The mod's own id (`sodium`), the same in every version (K91).
+    pub id: Option<String>,
     pub name: Option<String>,
     pub version: Option<String>,
     /// `data:image/png;base64,…`
@@ -150,24 +152,26 @@ fn icon_path(v: &Value) -> Option<String> {
     }
 }
 
-fn from_fabric(zip: &mut Zip) -> Option<LocalMeta> {
+fn from_fabric(zip: &mut Zip, icons: bool) -> Option<LocalMeta> {
     let v: Value = lenient_json(&read_text(zip, "fabric.mod.json")?)?;
     let icon_path = v.get("icon").and_then(icon_path);
     Some(LocalMeta {
+        id: v["id"].as_str().and_then(clean),
         name: v["name"].as_str().and_then(clean),
         version: v["version"].as_str().and_then(clean),
-        icon: icon_path.and_then(|p| icon(zip, &p)),
+        icon: icon_path.filter(|_| icons).and_then(|p| icon(zip, &p)),
     })
 }
 
-fn from_quilt(zip: &mut Zip) -> Option<LocalMeta> {
+fn from_quilt(zip: &mut Zip, icons: bool) -> Option<LocalMeta> {
     let v: Value = lenient_json(&read_text(zip, "quilt.mod.json")?)?;
     let ql = &v["quilt_loader"];
     let icon_path = ql["metadata"].get("icon").and_then(icon_path);
     Some(LocalMeta {
+        id: ql["id"].as_str().and_then(clean),
         name: ql["metadata"]["name"].as_str().and_then(clean),
         version: ql["version"].as_str().and_then(clean),
-        icon: icon_path.and_then(|p| icon(zip, &p)),
+        icon: icon_path.filter(|_| icons).and_then(|p| icon(zip, &p)),
     })
 }
 
@@ -188,10 +192,11 @@ pub(crate) fn toml_value(line: &str, key: &str) -> Option<String> {
 
 /// First `[[mods]]` table of a (Neo)Forge `mods.toml`, without a TOML
 /// library: only the three plain string keys are needed.
-fn from_mods_toml(zip: &mut Zip) -> Option<LocalMeta> {
+fn from_mods_toml(zip: &mut Zip, icons: bool) -> Option<LocalMeta> {
     let text = read_text(zip, "META-INF/neoforge.mods.toml")
         .or_else(|| read_text(zip, "META-INF/mods.toml"))?;
-    let (mut name, mut version, mut logo, mut global_logo) = (None, None, None, None);
+    let (mut id, mut name, mut version) = (None, None, None);
+    let (mut logo, mut global_logo) = (None, None);
     let mut in_mods = false;
     let mut seen_mods = false;
     for raw in text.lines() {
@@ -205,6 +210,7 @@ fn from_mods_toml(zip: &mut Zip) -> Option<LocalMeta> {
             continue;
         }
         if in_mods {
+            id = id.or_else(|| toml_value(line, "modId"));
             name = name.or_else(|| toml_value(line, "displayName"));
             version = version.or_else(|| toml_value(line, "version"));
             logo = logo.or_else(|| toml_value(line, "logoFile"));
@@ -226,14 +232,15 @@ fn from_mods_toml(zip: &mut Zip) -> Option<LocalMeta> {
     };
     let icon_path = logo.or(global_logo);
     Some(LocalMeta {
+        id: id.as_deref().and_then(clean),
         name: name.as_deref().and_then(clean),
         version: version.as_deref().and_then(clean),
-        icon: icon_path.and_then(|p| icon(zip, &p)),
+        icon: icon_path.filter(|_| icons).and_then(|p| icon(zip, &p)),
     })
 }
 
 /// Legacy Forge: a JSON array (or `{"modList": [...]}`).
-fn from_mcmod_info(zip: &mut Zip) -> Option<LocalMeta> {
+fn from_mcmod_info(zip: &mut Zip, icons: bool) -> Option<LocalMeta> {
     let v: Value = lenient_json(&read_text(zip, "mcmod.info")?)?;
     let first = match &v {
         Value::Array(a) => a.first()?,
@@ -242,20 +249,30 @@ fn from_mcmod_info(zip: &mut Zip) -> Option<LocalMeta> {
     };
     let logo = first["logoFile"].as_str().map(str::to_owned);
     Some(LocalMeta {
+        id: first["modid"].as_str().and_then(clean),
         name: first["name"].as_str().and_then(clean),
         version: first["version"].as_str().and_then(clean),
-        icon: logo.and_then(|p| icon(zip, &p)),
+        icon: logo.filter(|_| icons).and_then(|p| icon(zip, &p)),
     })
 }
 
 /// Metadata of a mod jar; `None` if it has no known descriptor.
 pub fn read(path: &Path) -> Option<LocalMeta> {
+    read_with(path, true)
+}
+
+/// Like [`read`] without decoding the icon (for the mod id only).
+pub fn read_light(path: &Path) -> Option<LocalMeta> {
+    read_with(path, false)
+}
+
+fn read_with(path: &Path, icons: bool) -> Option<LocalMeta> {
     let file = std::fs::File::open(path).ok()?;
     let mut zip = zip::ZipArchive::new(file).ok()?;
-    let meta = from_fabric(&mut zip)
-        .or_else(|| from_quilt(&mut zip))
-        .or_else(|| from_mods_toml(&mut zip))
-        .or_else(|| from_mcmod_info(&mut zip))?;
+    let meta = from_fabric(&mut zip, icons)
+        .or_else(|| from_quilt(&mut zip, icons))
+        .or_else(|| from_mods_toml(&mut zip, icons))
+        .or_else(|| from_mcmod_info(&mut zip, icons))?;
     (meta != LocalMeta::default()).then_some(meta)
 }
 

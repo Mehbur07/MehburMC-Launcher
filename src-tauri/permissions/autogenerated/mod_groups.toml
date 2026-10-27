@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-mod-groups"
+description = "Enables the mod_groups command without any pre-configured scope."
+commands.allow = ["mod_groups"]
+
+[[permission]]
+identifier = "deny-mod-groups"
+description = "Denies the mod_groups command without any pre-configured scope."
+commands.deny = ["mod_groups"]

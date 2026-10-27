@@ -18,15 +18,16 @@ import { openFolder } from "../../lib/actions";
 import { baseName, stableKeys, toggledName } from "../../lib/content";
 import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { InstalledItem } from "../../lib/ipc/bindings/InstalledItem";
+import { modLabel } from "../../lib/modGroups";
 import { useApp } from "../../stores/app";
 import { selectedInstance, useInstances } from "../../stores/instances";
 import { activeTaskFor, useTasks } from "../../stores/tasks";
+import { ModGroups } from "./ModGroups";
 
 type Filter = "all" | "on" | "off";
 const FILTERS: Filter[] = ["all", "on", "off"];
 
 const notify = (e: unknown) => useApp.setState({ notice: toErrorPayload(e) });
-const modLabel = (i: InstalledItem) => i.title ?? baseName(i.fileName).replace(/\.jar$/i, "");
 
 /** Every mod of a profile with an on/off switch. */
 export function ModTogglePage() {
@@ -213,6 +214,15 @@ export function ModTogglePage() {
               <FolderOpen size={15} />
             </IconButton>
           </div>
+
+          {items && items.length > 0 && (
+            <ModGroups
+              instId={inst.id}
+              items={items}
+              disabled={locked || bulk || busy.size > 0}
+              onSwitched={load}
+            />
+          )}
 
           <div className="flex flex-wrap items-center gap-2 text-sm">
             {items && (

@@ -7,6 +7,10 @@ export type InstalledItem = { fileName: string, enabled: boolean, size: number,
  */
 projectId: string | null, slug: string | null, title: string | null, versionNumber: string | null, iconUrl: string | null, 
 /**
+ * The mod's own id from its jar (mods only), for mod groups (K91).
+ */
+modId: string | null, 
+/**
  * A newer compatible version (only when updates were checked).
  */
 update: UpdateInfo | null, };

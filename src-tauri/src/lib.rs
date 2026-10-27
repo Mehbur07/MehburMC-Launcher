@@ -116,6 +116,8 @@ pub fn run() {
             files::instance_folder_path,
             files::toggle_instance_file,
             files::set_content_enabled,
+            files::mod_groups,
+            files::save_mod_groups,
             files::delete_instance_file,
             files::read_instance_log,
             loaders::list_loader_versions,

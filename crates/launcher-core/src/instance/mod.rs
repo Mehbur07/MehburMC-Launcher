@@ -2,6 +2,7 @@
 //! `instance.json` describing version, loader and per-instance settings.
 
 pub mod files;
+pub mod mod_groups;
 pub mod transfer;
 
 use std::collections::HashMap;

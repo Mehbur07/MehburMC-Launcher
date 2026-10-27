@@ -1579,5 +1579,25 @@
       "minimize": "Minimize",
       "close": "Hide"
     }
+  },
+  "modGroups": {
+    "title": "Mod groups",
+    "hint": "Mods switched on and off together, in one click.",
+    "new": "New group",
+    "newTitle": "New mod group",
+    "editTitle": "Mods of the group",
+    "renameTitle": "Rename group",
+    "name": "Name",
+    "namePlaceholder": "e.g. PvP, Tech, Performance",
+    "mods": "Mods in the group ({{count}})",
+    "missing": "Mods not installed right now that stay in the group: {{names}}",
+    "count": "{{count}} mods",
+    "mixed": "Mixed",
+    "rename": "Rename group {{name}}",
+    "edit": "Choose the mods of {{name}}",
+    "delete": "Delete group {{name}}",
+    "switch": "Switch group {{name}}",
+    "deleteTitle": "Delete the group \"{{name}}\"?",
+    "deleteMessage": "Only the group is deleted; the mods and whether they are on stay as they are."
   }
 }

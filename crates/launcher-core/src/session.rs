@@ -836,6 +836,24 @@ impl Launcher {
         crate::instance::files::toggle(&self.instances, &inst.id, folder, name)
     }
 
+    /// Mod groups of an instance (K91).
+    pub fn mod_groups(&self, id: &str) -> Result<Vec<crate::instance::mod_groups::ModGroup>> {
+        let inst = self.instances.get(id)?;
+        Ok(crate::instance::mod_groups::load(
+            &self.instances.dir(&inst.id)?,
+        ))
+    }
+
+    /// Replaces the mod groups of an instance; returns them as saved.
+    pub fn save_mod_groups(
+        &self,
+        id: &str,
+        groups: Vec<crate::instance::mod_groups::ModGroup>,
+    ) -> Result<Vec<crate::instance::mod_groups::ModGroup>> {
+        let inst = self.instances.get(id)?;
+        crate::instance::mod_groups::save(&self.instances.dir(&inst.id)?, groups)
+    }
+
     /// Turns the given files of a content folder on or off; files already
     /// in that state are left alone. Returns how many were switched.
     pub fn set_content_enabled(
