@@ -3,6 +3,14 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.26.1] — 2026-10-29
+
+### Değişti
+- **Mod grupları** artık modları tek tek seçtirmiyor: **Yeni grup** modların o anki açık/kapalı
+  halini kaydeder, **Uygula** tek tıkla o hale getirir. Kartta grup modlarla aynıysa **Etkin**
+  yazar; disket simgesi grubu şu anki halle günceller. 0.26.0'da oluşturulan gruplar, içindeki
+  modları açan gruplar olarak çalışmaya devam eder.
+
 ## [0.26.0] — 2026-10-27
 
 ### Eklendi

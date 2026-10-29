@@ -1,7 +1,8 @@
-//! Mod groups of an instance (K91): named sets of mods switched on or off
-//! together, like the Switch mod. Only the groups are stored here, in the
-//! instance folder; switching uses `set_content_enabled`, and a group's state
-//! is read from the mods themselves.
+//! Mod groups of an instance (K91, K92): a named record of which mods are on
+//! and which are off, taken when the group is made. Applying a group puts its
+//! mods back into that state (mods added later are left alone). Only the
+//! groups are stored here, in the instance folder; applying uses
+//! `set_content_enabled`.
 //!
 //! A member is remembered by its Modrinth project id, its own mod id and its
 //! file name, so it stays in the group when an update renames the file or
@@ -36,6 +37,14 @@ pub struct GroupMod {
     /// Shown when the mod is gone from the folder.
     #[serde(default)]
     pub title: Option<String>,
+    /// The state the group puts the mod in; groups from K91 only listed
+    /// mods to switch on.
+    #[serde(default = "on")]
+    pub enabled: bool,
+}
+
+fn on() -> bool {
+    true
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -119,6 +128,7 @@ pub fn save(dir: &Path, groups: Vec<ModGroup>) -> Result<Vec<ModGroup>> {
                     project_id: clean_field(m.project_id),
                     mod_id: clean_field(m.mod_id),
                     title: clean_field(m.title),
+                    enabled: m.enabled,
                 });
             }
         }
@@ -144,6 +154,7 @@ mod tests {
                     project_id: Some("AANobbMI".into()),
                     mod_id: Some(" sodium ".into()),
                     title: None,
+                    enabled: false,
                 })
                 .collect(),
         }
@@ -165,6 +176,7 @@ mod tests {
         assert_eq!(saved[0].name, "PvP modları");
         assert_eq!(saved[0].mods.len(), 2);
         assert_eq!(saved[0].mods[0].mod_id.as_deref(), Some("sodium"));
+        assert!(!saved[0].mods[0].enabled);
         assert_eq!(load(tmp.path()), saved);
     }
 
@@ -189,5 +201,12 @@ mod tests {
         );
         std::fs::write(tmp.path().join(FILE), b"{not json").unwrap();
         assert!(load(tmp.path()).is_empty());
+        // A K91 group (no state per mod) means "switch these on".
+        std::fs::write(
+            tmp.path().join(FILE),
+            br#"[{"id":"g","name":"A","mods":[{"file":"a.jar"}]}]"#,
+        )
+        .unwrap();
+        assert!(load(tmp.path())[0].mods[0].enabled);
     }
 }

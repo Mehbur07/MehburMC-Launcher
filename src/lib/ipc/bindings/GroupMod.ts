@@ -8,4 +8,9 @@ file: string, projectId: string | null, modId: string | null,
 /**
  * Shown when the mod is gone from the folder.
  */
-title: string | null, };
+title: string | null, 
+/**
+ * The state the group puts the mod in; groups from K91 only listed
+ * mods to switch on.
+ */
+enabled: boolean, };

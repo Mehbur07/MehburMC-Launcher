@@ -160,60 +160,70 @@ describe("ModTogglePage", () => {
     expect(within(document.body).queryByRole("switch")).toBeNull();
   });
 
+  const member = (file: string, title: string, enabled: boolean) => ({
+    file,
+    projectId: null,
+    modId: null,
+    title,
+    enabled,
+  });
+  // Recorded with Sodium off and Iris on: the opposite of the scan.
   const pvp = {
     id: "g-1",
     name: "PvP",
-    mods: [
-      { file: "sodium-0.6.jar", projectId: null, modId: null, title: "Sodium" },
-      { file: "iris.jar", projectId: null, modId: null, title: "Iris" },
-    ],
+    mods: [member("sodium-0.6.jar", "Sodium", false), member("iris.jar", "Iris", true)],
   };
 
-  it("creates a mod group from picked mods", async () => {
+  it("records the current on/off state as a new group, with only a name", async () => {
     ipcMock.saveModGroups.mockImplementation(async (_id: string, g: unknown) => g);
     render(<ModTogglePage />);
     await screen.findByText("Sodium");
     fireEvent.click(screen.getByRole("button", { name: /New group/ }));
     const dialog = await screen.findByRole("dialog", { name: "New mod group" });
+    expect(dialog).toHaveTextContent("2 on, 1 off");
+    expect(within(dialog).queryByRole("checkbox")).toBeNull();
     const save = within(dialog).getByRole("button", { name: "Save" });
     expect(save).toBeDisabled();
     fireEvent.change(within(dialog).getByRole("textbox", { name: "Name" }), {
-      target: { value: "  PvP " },
+      target: { value: "  Survival " },
     });
-    fireEvent.click(within(dialog).getByRole("checkbox", { name: /Sodium/ }));
-    fireEvent.click(within(dialog).getByRole("checkbox", { name: /Iris/ }));
     await act(async () => fireEvent.click(save));
     expect(ipcMock.saveModGroups).toHaveBeenCalledWith("i1", [
       {
         id: expect.stringMatching(/^g-/),
-        name: "PvP",
+        name: "Survival",
         mods: [
-          { file: "sodium-0.6.jar", projectId: null, modId: null, title: "Sodium" },
-          { file: "iris.jar", projectId: null, modId: null, title: "Iris" },
+          member("sodium-0.6.jar", "Sodium", true),
+          member("iris.jar", "Iris", false),
+          member("mystery-1.0.jar", "mystery-1.0", true),
         ],
       },
     ]);
-    expect(await screen.findByRole("switch", { name: "Switch group PvP" })).toBeInTheDocument();
+    // It matches the mods right now: active, nothing to apply.
+    expect(await screen.findByText("Active")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Apply group Survival" })).toBeDisabled();
   });
 
-  it("switches a whole group with one click", async () => {
+  it("applies a group: recorded mods go back to their recorded state", async () => {
     ipcMock.modGroups.mockResolvedValue([pvp]);
     render(<ModTogglePage />);
-    const sw = await screen.findByRole("switch", { name: "Switch group PvP" });
-    // Sodium is on, Iris off: mixed, so the switch turns the group on.
-    expect(screen.getByText("Mixed")).toBeInTheDocument();
-    expect(sw).toHaveAttribute("aria-checked", "false");
-    await act(async () => fireEvent.click(sw));
+    const apply = await screen.findByRole("button", { name: "Apply group PvP" });
+    expect(screen.getByText("1 on · 1 off")).toBeInTheDocument();
+    expect(screen.queryByText("Active")).toBeNull();
+    await act(async () => fireEvent.click(apply));
     expect(ipcMock.setContentEnabled).toHaveBeenCalledWith(
       "i1",
       "mods",
       ["iris.jar.disabled"],
       true,
     );
+    expect(ipcMock.setContentEnabled).toHaveBeenCalledWith("i1", "mods", ["sodium-0.6.jar"], false);
+    // mystery-1.0.jar is not in the group: untouched.
+    expect(ipcMock.setContentEnabled).toHaveBeenCalledTimes(2);
     await waitFor(() => expect(ipcMock.scanContent).toHaveBeenCalledTimes(2));
   });
 
-  it("renames and deletes a group", async () => {
+  it("renames, re-records and deletes a group", async () => {
     ipcMock.modGroups.mockResolvedValue([pvp]);
     ipcMock.saveModGroups.mockImplementation(async (_id: string, g: unknown) => g);
     render(<ModTogglePage />);
@@ -224,10 +234,28 @@ describe("ModTogglePage", () => {
     });
     await act(async () => fireEvent.click(within(dialog).getByRole("button", { name: "Save" })));
     expect(ipcMock.saveModGroups).toHaveBeenLastCalledWith("i1", [{ ...pvp, name: "Savaş" }]);
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Save the current state into Savaş" }),
+    );
+    const confirm = await screen.findByRole("dialog", { name: /Update "Savaş"/ });
+    await act(async () => fireEvent.click(within(confirm).getByRole("button", { name: "Save" })));
+    expect(ipcMock.saveModGroups).toHaveBeenLastCalledWith("i1", [
+      {
+        ...pvp,
+        name: "Savaş",
+        mods: [
+          member("sodium-0.6.jar", "Sodium", true),
+          member("iris.jar", "Iris", false),
+          member("mystery-1.0.jar", "mystery-1.0", true),
+        ],
+      },
+    ]);
+
     fireEvent.click(await screen.findByRole("button", { name: "Delete group Savaş" }));
-    const confirm = await screen.findByRole("dialog", { name: 'Delete the group "Savaş"?' });
-    await act(async () => fireEvent.click(within(confirm).getByRole("button", { name: "Delete" })));
+    const del = await screen.findByRole("dialog", { name: 'Delete the group "Savaş"?' });
+    await act(async () => fireEvent.click(within(del).getByRole("button", { name: "Delete" })));
     expect(ipcMock.saveModGroups).toHaveBeenLastCalledWith("i1", []);
-    await waitFor(() => expect(screen.queryByRole("switch", { name: /Switch group/ })).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("button", { name: /Apply group/ })).toBeNull());
   });
 });

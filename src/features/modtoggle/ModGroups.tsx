@@ -1,5 +1,5 @@
-import { Layers, ListChecks, Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Check, Layers, Loader2, Pencil, Play, Plus, Save, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -10,191 +10,64 @@ import {
   IconButton,
   Modal,
   TextInput,
-  Toggle,
 } from "../../components/ui";
 import { ipc, toErrorPayload } from "../../lib/ipc";
 import type { InstalledItem } from "../../lib/ipc/bindings/InstalledItem";
 import type { ModGroup } from "../../lib/ipc/bindings/ModGroup";
 import {
-  filesToSwitch,
-  groupItems,
+  applyPlan,
+  groupCounts,
   groupState,
-  isMember,
-  memberFromItem,
-  modLabel,
   newGroupId,
   refreshMembers,
+  snapshot,
 } from "../../lib/modGroups";
 import { useApp } from "../../stores/app";
 
 const MAX_NAME = 40;
 const notify = (e: unknown) => useApp.setState({ notice: toErrorPayload(e) });
 
-/** Name and mods of a new or existing group. */
-function GroupEditor({
-  group,
-  items,
+/** Name of a new group (which records the current state) or a renamed one. */
+function NameDialog({
+  open,
+  title,
+  initial,
+  hint,
   onClose,
   onSave,
 }: {
-  /** `null` = closed; a group without mods and name = new. */
-  group: ModGroup | null;
-  items: InstalledItem[];
+  open: boolean;
+  title: string;
+  initial: string;
+  hint?: string;
   onClose: () => void;
-  onSave: (g: ModGroup) => Promise<void>;
+  onSave: (name: string) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const [name, setName] = useState("");
-  const [picked, setPicked] = useState<Set<string>>(new Set());
-  const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
-
-  // Filled when a group opens; a rescan meanwhile keeps the user's picks.
-  const [openedId, setOpenedId] = useState<string | null>(null);
-  if (group && group.id !== openedId) {
-    setOpenedId(group.id);
-    setName(group.name);
-    setPicked(new Set(groupItems(group, items).map((i) => i.fileName)));
-    setQuery("");
-  } else if (!group && openedId !== null) {
-    setOpenedId(null);
-  }
-
-  const sorted = useMemo(() => {
-    const q = query.trim().toLocaleLowerCase();
-    return items
-      .filter((i) => !q || modLabel(i).toLocaleLowerCase().includes(q))
-      .sort((a, b) => modLabel(a).localeCompare(modLabel(b)));
-  }, [items, query]);
-  // Members whose mod is not installed now stay in the group.
-  const missing = group ? group.mods.filter((m) => !items.some((i) => isMember(m, i))) : [];
-
+  useEffect(() => {
+    if (open) setName(initial);
+  }, [open, initial]);
   const trimmed = name.trim();
+  const ok = trimmed !== "" && trimmed.length <= MAX_NAME && !busy;
   const save = async () => {
-    if (!group) return;
+    if (!ok) return;
     setBusy(true);
     try {
-      await onSave({
-        ...group,
-        name: trimmed,
-        mods: [...items.filter((i) => picked.has(i.fileName)).map(memberFromItem), ...missing],
-      });
+      await onSave(trimmed);
       onClose();
+    } catch {
+      // Already reported; the dialog stays open.
     } finally {
       setBusy(false);
     }
   };
-
-  const flip = (file: string) =>
-    setPicked((s) => {
-      const next = new Set(s);
-      if (next.has(file)) next.delete(file);
-      else next.add(file);
-      return next;
-    });
-
   return (
     <Modal
-      open={group !== null}
+      open={open}
       onClose={onClose}
-      wide
-      title={group?.name ? t("modGroups.editTitle") : t("modGroups.newTitle")}
-      footer={
-        <>
-          <Button variant="ghost" onClick={onClose}>
-            {t("common.cancel")}
-          </Button>
-          <Button
-            variant="primary"
-            disabled={busy || trimmed === "" || trimmed.length > MAX_NAME}
-            onClick={() => void save()}
-          >
-            {t("common.save")}
-          </Button>
-        </>
-      }
-    >
-      <div className="flex flex-col gap-3">
-        <Field label={t("modGroups.name")}>
-          <TextInput
-            value={name}
-            maxLength={MAX_NAME}
-            placeholder={t("modGroups.namePlaceholder")}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </Field>
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs font-semibold tracking-wide text-muted uppercase">
-            {t("modGroups.mods", { count: picked.size })}
-          </p>
-          <div className="relative w-56">
-            <Search
-              size={14}
-              className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-muted"
-            />
-            <TextInput
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("modToggle.search")}
-              aria-label={t("modToggle.search")}
-              className="h-8 pl-8 text-xs"
-            />
-          </div>
-        </div>
-        <ul className="flex max-h-80 flex-col gap-0.5 overflow-y-auto rounded-md border border-line p-1">
-          {sorted.map((i) => (
-            <li key={i.fileName}>
-              <label className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-surface-2">
-                <input
-                  type="checkbox"
-                  checked={picked.has(i.fileName)}
-                  onChange={() => flip(i.fileName)}
-                  className="accent-[rgb(var(--mc-accent-rgb))]"
-                />
-                <span className="min-w-0 flex-1 truncate">{modLabel(i)}</span>
-                {!i.enabled && <span className="text-[11px] text-muted">{t("modToggle.off")}</span>}
-              </label>
-            </li>
-          ))}
-        </ul>
-        {missing.length > 0 && (
-          <p className="text-xs text-muted">
-            {t("modGroups.missing", {
-              names: missing.map((m) => m.title ?? m.file).join(", "),
-            })}
-          </p>
-        )}
-      </div>
-    </Modal>
-  );
-}
-
-function RenameDialog({
-  group,
-  onClose,
-  onSave,
-}: {
-  group: ModGroup | null;
-  onClose: () => void;
-  onSave: (g: ModGroup) => Promise<void>;
-}) {
-  const { t } = useTranslation();
-  const [name, setName] = useState("");
-  useEffect(() => {
-    if (group) setName(group.name);
-  }, [group]);
-  const trimmed = name.trim();
-  const ok = trimmed !== "" && trimmed.length <= MAX_NAME;
-  const save = async () => {
-    if (!group || !ok) return;
-    await onSave({ ...group, name: trimmed });
-    onClose();
-  };
-  return (
-    <Modal
-      open={group !== null}
-      onClose={onClose}
-      title={t("modGroups.renameTitle")}
+      title={title}
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
@@ -206,24 +79,28 @@ function RenameDialog({
         </>
       }
     >
-      <Field label={t("modGroups.name")}>
-        <TextInput
-          value={name}
-          maxLength={MAX_NAME}
-          autoFocus
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") void save();
-          }}
-        />
-      </Field>
+      <div className="flex flex-col gap-3">
+        <Field label={t("modGroups.name")}>
+          <TextInput
+            value={name}
+            maxLength={MAX_NAME}
+            autoFocus
+            placeholder={t("modGroups.namePlaceholder")}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void save();
+            }}
+          />
+        </Field>
+        {hint && <p className="text-xs text-muted">{hint}</p>}
+      </div>
     </Modal>
   );
 }
 
 /**
- * "Mod groups" of the Mod Toggle page (K91): named sets of mods switched on
- * or off with one click, like the Switch mod.
+ * "Mod groups" of the Mod Toggle page (K91, K92): a new group records which
+ * mods are on and off right now; applying it brings that state back.
  */
 export function ModGroups({
   instId,
@@ -240,10 +117,11 @@ export function ModGroups({
 }) {
   const { t } = useTranslation();
   const [groups, setGroups] = useState<ModGroup[]>([]);
-  const [editing, setEditing] = useState<ModGroup | null>(null);
+  const [creating, setCreating] = useState(false);
   const [renaming, setRenaming] = useState<ModGroup | null>(null);
+  const [overwriting, setOverwriting] = useState<ModGroup | null>(null);
   const [deleting, setDeleting] = useState<ModGroup | null>(null);
-  const [switching, setSwitching] = useState<string | null>(null);
+  const [applying, setApplying] = useState<string | null>(null);
 
   useEffect(() => {
     let gone = false;
@@ -265,26 +143,25 @@ export function ModGroups({
       throw e;
     }
   };
-  const upsert = (g: ModGroup) =>
-    persist(
-      groups.some((x) => x.id === g.id)
-        ? groups.map((x) => (x.id === g.id ? g : x))
-        : [...groups, g],
-    );
+  const replace = (g: ModGroup) => persist(groups.map((x) => (x.id === g.id ? g : x)));
 
-  const flip = async (g: ModGroup, enable: boolean) => {
-    const files = filesToSwitch(g, groups, items, enable);
-    setSwitching(g.id);
+  const on = items.filter((i) => i.enabled).length;
+  const createHint = t("modGroups.createHint", { on, off: items.length - on });
+
+  const apply = async (g: ModGroup) => {
+    const plan = applyPlan(g, items);
+    setApplying(g.id);
     try {
-      if (files.length > 0) await ipc.setContentEnabled(instId, "mods", files, enable);
+      if (plan.enable.length > 0) await ipc.setContentEnabled(instId, "mods", plan.enable, true);
+      if (plan.disable.length > 0) await ipc.setContentEnabled(instId, "mods", plan.disable, false);
       // Remember renamed files (updates) so the group keeps matching them.
       const fresh = refreshMembers(g, items);
-      if (JSON.stringify(fresh) !== JSON.stringify(g)) await upsert(fresh).catch(() => undefined);
+      if (JSON.stringify(fresh) !== JSON.stringify(g)) await replace(fresh).catch(() => undefined);
     } catch (e) {
       notify(e);
     } finally {
       await onSwitched();
-      setSwitching(null);
+      setApplying(null);
     }
   };
 
@@ -298,7 +175,7 @@ export function ModGroups({
           size="sm"
           className="ml-auto"
           disabled={groups.length >= 50}
-          onClick={() => setEditing({ id: newGroupId(), name: "", mods: [] })}
+          onClick={() => setCreating(true)}
         >
           <Plus size={14} />
           {t("modGroups.new")}
@@ -308,22 +185,29 @@ export function ModGroups({
         <ul className="flex flex-wrap gap-2">
           {groups.map((g) => {
             const state = groupState(g, items);
-            const count = groupItems(g, items).length;
+            const counts = groupCounts(g);
+            const active = state === "active";
             return (
               <li
                 key={g.id}
-                className={`flex min-w-56 items-center gap-2 rounded-lg border bg-surface-1/85 px-3 py-2 ${
-                  state === "on" ? "border-accent/50" : "border-line"
+                className={`flex min-w-64 items-center gap-2 rounded-lg border bg-surface-1/85 px-3 py-2 ${
+                  active ? "border-accent/60 neon-ring" : "border-line"
                 }`}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold" title={g.name}>
-                    {g.name}
+                  <p
+                    className="flex items-center gap-1.5 truncate text-sm font-semibold"
+                    title={g.name}
+                  >
+                    <span className="truncate">{g.name}</span>
+                    {active && (
+                      <Badge tone="success">
+                        <Check size={10} />
+                        {t("modGroups.active")}
+                      </Badge>
+                    )}
                   </p>
-                  <p className="flex items-center gap-1.5 text-[11px] text-muted">
-                    {t("modGroups.count", { count })}
-                    {state === "mixed" && <Badge tone="warn">{t("modGroups.mixed")}</Badge>}
-                  </p>
+                  <p className="text-[11px] text-muted">{t("modGroups.counts", counts)}</p>
                 </div>
                 <IconButton
                   label={t("modGroups.rename", { name: g.name })}
@@ -333,11 +217,11 @@ export function ModGroups({
                   <Pencil size={13} />
                 </IconButton>
                 <IconButton
-                  label={t("modGroups.edit", { name: g.name })}
-                  onClick={() => setEditing(g)}
+                  label={t("modGroups.overwrite", { name: g.name })}
+                  onClick={() => setOverwriting(g)}
                   className="h-7 w-7"
                 >
-                  <ListChecks size={13} />
+                  <Save size={13} />
                 </IconButton>
                 <IconButton
                   label={t("modGroups.delete", { name: g.name })}
@@ -346,20 +230,52 @@ export function ModGroups({
                 >
                   <Trash2 size={13} />
                 </IconButton>
-                <Toggle
-                  checked={state === "on"}
-                  disabled={disabled || switching !== null || state === "empty"}
-                  onChange={() => void flip(g, state !== "on")}
-                  label={t("modGroups.switch", { name: g.name })}
-                />
+                <Button
+                  size="sm"
+                  variant={active ? "ghost" : "primary"}
+                  disabled={disabled || applying !== null || active || state === "empty"}
+                  onClick={() => void apply(g)}
+                  aria-label={t("modGroups.applyNamed", { name: g.name })}
+                >
+                  {applying === g.id ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <Play size={13} />
+                  )}
+                  {t("modGroups.apply")}
+                </Button>
               </li>
             );
           })}
         </ul>
       )}
 
-      <GroupEditor group={editing} items={items} onClose={() => setEditing(null)} onSave={upsert} />
-      <RenameDialog group={renaming} onClose={() => setRenaming(null)} onSave={upsert} />
+      <NameDialog
+        open={creating}
+        title={t("modGroups.newTitle")}
+        initial=""
+        hint={createHint}
+        onClose={() => setCreating(false)}
+        onSave={(name) => persist([...groups, { id: newGroupId(), name, mods: snapshot(items) }])}
+      />
+      <NameDialog
+        open={renaming !== null}
+        title={t("modGroups.renameTitle")}
+        initial={renaming?.name ?? ""}
+        onClose={() => setRenaming(null)}
+        onSave={(name) => (renaming ? replace({ ...renaming, name }) : Promise.resolve())}
+      />
+      <ConfirmDialog
+        open={overwriting !== null}
+        title={t("modGroups.overwriteTitle", { name: overwriting?.name ?? "" })}
+        message={createHint}
+        confirmLabel={t("modGroups.overwriteConfirm")}
+        onClose={() => setOverwriting(null)}
+        onConfirm={() =>
+          overwriting &&
+          void replace({ ...overwriting, mods: snapshot(items) }).catch(() => undefined)
+        }
+      />
       <ConfirmDialog
         open={deleting !== null}
         danger

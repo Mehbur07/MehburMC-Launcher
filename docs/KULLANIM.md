@@ -108,12 +108,12 @@ Eski crash raporları için: profil ayrıntıları → **Loglar** → rapor → 
 Profil ayrıntılarındaki **Modlar** sekmesinde modları açıp kapatabilir, silebilir ve
 **güncellemeleri** denetleyip tek tıkla güncelleyebilirsin.
 
-**Mod grupları** (kenar çubuğunda **Mod Toggle**): birlikte açılıp kapanan modları bir grupta
-topla (ör. "PvP", "Teknik", "Performans"). **Yeni grup** → ad ver, gruptaki modları işaretle →
-**Kaydet**. Grubun düğmesiyle gruptaki bütün modlar tek tıkla açılır ya da kapanır; gruba girmeyen
-modlara dokunulmaz. Bir mod iki grupta olabilir: bir grubu kapatırken, açık olan başka bir grupta
-da bulunan modlar açık kalır. Modları elle değiştirirsen grup **Karışık** görünür. Kalem simgesi
-grubun adını değiştirir, liste simgesi modlarını seçtirir, çöp kutusu grubu siler (modlara
+**Mod grupları** (kenar çubuğunda **Mod Toggle**): modları istediğin gibi açıp kapat, sonra
+**Yeni grup** → ad ver (ör. "PvP", "Teknik", "Performans") → **Kaydet**. Grup modların o anki
+halini kaydeder: açık olanlar açık, kapalı olanlar kapalı. Sonra bir grubun **Uygula** düğmesine
+basınca modlar tek tıkla o kayıttaki hale gelir; kayıttan sonra eklediğin modlara dokunulmaz.
+Modlar grubun kaydıyla aynıysa kartta **Etkin** yazar. Kalem simgesi grubun adını değiştirir,
+disket simgesi gruba modların şu anki halini yeniden kaydeder, çöp kutusu grubu siler (modlara
 dokunmaz). Gruplar her profilde ayrıdır; bir mod güncellenip dosya adı değişse de grupta kalır.
 
 **Modpack'ler**:

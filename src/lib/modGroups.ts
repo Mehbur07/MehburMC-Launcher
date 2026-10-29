@@ -1,14 +1,15 @@
 /**
- * Mod groups (K91): named sets of mods switched on or off together. A
- * group's state is read from the mods, so switching single mods by hand
- * keeps it truthful.
+ * Mod groups (K91, K92): a named record of which mods are on and which are
+ * off, taken when the group is made. Applying it puts those mods back into
+ * that state; mods added later are left alone.
  */
 import { baseName } from "./content";
 import type { GroupMod } from "./ipc/bindings/GroupMod";
 import type { InstalledItem } from "./ipc/bindings/InstalledItem";
 import type { ModGroup } from "./ipc/bindings/ModGroup";
 
-export type GroupState = "on" | "off" | "mixed" | "empty";
+/** `active` = every recorded mod that is installed is as recorded. */
+export type GroupState = "active" | "inactive" | "empty";
 
 export const modLabel = (i: InstalledItem) =>
   i.title ?? baseName(i.fileName).replace(/\.jar$/i, "");
@@ -22,49 +23,54 @@ export function isMember(m: GroupMod, item: InstalledItem): boolean {
   );
 }
 
+/** A mod as recorded now (its current on/off state). */
 export const memberFromItem = (i: InstalledItem): GroupMod => ({
   file: baseName(i.fileName),
   projectId: i.projectId,
   modId: i.modId,
   title: modLabel(i),
+  enabled: i.enabled,
 });
 
-/** Installed mods of the group (members no longer installed are left out). */
-export const groupItems = (g: ModGroup, items: InstalledItem[]) =>
-  items.filter((i) => g.mods.some((m) => isMember(m, i)));
+/** Every installed mod with its current state. */
+export const snapshot = (items: InstalledItem[]): GroupMod[] => items.map(memberFromItem);
+
+/** Installed mods paired with their recorded state. */
+function recorded(g: ModGroup, items: InstalledItem[]) {
+  return items.flatMap((i) => {
+    const m = g.mods.find((x) => isMember(x, i));
+    return m ? [{ item: i, want: m.enabled }] : [];
+  });
+}
 
 export function groupState(g: ModGroup, items: InstalledItem[]): GroupState {
-  const mine = groupItems(g, items);
-  if (mine.length === 0) return "empty";
-  const on = mine.filter((i) => i.enabled).length;
-  return on === mine.length ? "on" : on === 0 ? "off" : "mixed";
+  const r = recorded(g, items);
+  if (r.length === 0) return "empty";
+  return r.every((x) => x.item.enabled === x.want) ? "active" : "inactive";
 }
 
-/**
- * Files to switch for turning `g` on or off. Turning off leaves alone the
- * mods that another group which is on also holds.
- */
-export function filesToSwitch(
-  g: ModGroup,
-  groups: ModGroup[],
-  items: InstalledItem[],
-  enable: boolean,
-): string[] {
-  const mine = groupItems(g, items).filter((i) => i.enabled !== enable);
-  if (enable) return mine.map((i) => i.fileName);
-  const keep = groups.filter((o) => o.id !== g.id && groupState(o, items) === "on");
-  return mine
-    .filter((i) => !keep.some((o) => o.mods.some((m) => isMember(m, i))))
-    .map((i) => i.fileName);
+/** How many recorded mods the group switches on and off. */
+export function groupCounts(g: ModGroup) {
+  const on = g.mods.filter((m) => m.enabled).length;
+  return { on, off: g.mods.length - on };
 }
 
-/** Members with the current file names, ids and titles of installed mods. */
+/** Files to switch on and off to apply the group. */
+export function applyPlan(g: ModGroup, items: InstalledItem[]) {
+  const r = recorded(g, items).filter((x) => x.item.enabled !== x.want);
+  return {
+    enable: r.filter((x) => x.want).map((x) => x.item.fileName),
+    disable: r.filter((x) => !x.want).map((x) => x.item.fileName),
+  };
+}
+
+/** Members with the current file names, ids and titles; states stay as recorded. */
 export function refreshMembers(g: ModGroup, items: InstalledItem[]): ModGroup {
   return {
     ...g,
     mods: g.mods.map((m) => {
       const i = items.find((x) => isMember(m, x));
-      return i ? memberFromItem(i) : m;
+      return i ? { ...memberFromItem(i), enabled: m.enabled } : m;
     }),
   };
 }
