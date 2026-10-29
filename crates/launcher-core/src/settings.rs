@@ -47,6 +47,9 @@ pub enum LaunchBehavior {
     Minimize,
     Close,
     KeepOpen,
+    /// Close the window once the game is in the main menu and open it again
+    /// when the game exits; the launcher keeps running without a window (K93).
+    CloseReopen,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]

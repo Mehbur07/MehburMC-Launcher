@@ -105,6 +105,10 @@ describe("SettingsPage", () => {
     fireEvent.change(screen.getByDisplayValue("Minimize"), { target: { value: "close" } });
     await vi.waitFor(() => expect(saved()?.launchBehavior).toBe("close"));
 
+    expect(screen.getByRole("option", { name: "Close, reopen after the game" })).toBeTruthy();
+    fireEvent.change(screen.getByDisplayValue("Close"), { target: { value: "closeReopen" } });
+    await vi.waitFor(() => expect(saved()?.launchBehavior).toBe("closeReopen"));
+
     fireEvent.change(screen.getByLabelText("Default RAM"), { target: { value: "6144" } });
     await vi.waitFor(() => expect(saved()?.defaultMemoryMb).toBe(6144));
 

@@ -70,10 +70,11 @@
     "telemetry": "Telemetri yok: MehburMC Launcher hiçbir kullanım verisi göndermez.",
     "game": "Oyun",
     "launchBehavior": "Oyun açılınca",
-    "launchBehaviorHint": "\"Kapat\" seçiliyse launcher, oyun ana menüye gelince kapanır; oyun çalışmaya devam eder (oynama süresi o oturum için kaydedilmez).",
+    "launchBehaviorHint": "\"Kapat\" seçiliyse launcher, oyun ana menüye gelince kapanır; oyun çalışmaya devam eder (oynama süresi o oturum için kaydedilmez). \"Kapat, oyun kapanınca aç\" seçiliyse pencere kapanır, launcher arka planda bekler ve oyun kapanınca kendiliğinden açılır (oynama süresi kaydedilir). Sesli aramadaysan launcher kapanmaz, küçülür.",
     "launch": {
       "minimize": "Küçült",
       "close": "Kapat",
+      "closeReopen": "Kapat, oyun kapanınca aç",
       "keepOpen": "Açık bırak"
     },
     "defaultMemory": "Varsayılan RAM",

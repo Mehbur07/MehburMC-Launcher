@@ -70,10 +70,11 @@
     "telemetry": "No telemetry: MehburMC Launcher sends no usage data.",
     "game": "Game",
     "launchBehavior": "When the game starts",
-    "launchBehaviorHint": "With \"Close\", the launcher quits once the game reaches the main menu; the game keeps running (play time is not recorded for that session).",
+    "launchBehaviorHint": "With \"Close\", the launcher quits once the game reaches the main menu; the game keeps running (play time is not recorded for that session). With \"Close, reopen after the game\", the window closes, the launcher waits in the background and opens again by itself when the game exits (play time is recorded). In a voice call the launcher only minimizes.",
     "launch": {
       "minimize": "Minimize",
       "close": "Close",
+      "closeReopen": "Close, reopen after the game",
       "keepOpen": "Keep open"
     },
     "defaultMemory": "Default RAM",

@@ -93,7 +93,7 @@ export function SettingsPage() {
             onChange={(e) => void update({ launchBehavior: e.target.value as LaunchBehavior })}
             className="rounded-md border border-line bg-surface-2 px-3 py-2 text-sm focus:border-accent"
           >
-            {(["minimize", "close", "keepOpen"] as const).map((b) => (
+            {(["minimize", "close", "closeReopen", "keepOpen"] as const).map((b) => (
               <option key={b} value={b}>
                 {t(`settings.launch.${b}`)}
               </option>

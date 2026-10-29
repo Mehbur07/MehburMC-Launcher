@@ -196,10 +196,13 @@ bilgisayara taşımak için **Profiller → İçe aktar**.
 ## 8. Ayarlar
 
 - **Görünüm**: dil (sistem / Türkçe / English), vurgu rengi, arka plan efektleri.
-- **Oyun**: oyun açılınca launcher'ın ne yapacağı (küçült / kapat / açık bırak), varsayılan
-  RAM, eşzamanlı indirme sayısı.
+- **Oyun**: oyun açılınca launcher'ın ne yapacağı (küçült / kapat / kapat, oyun kapanınca aç /
+  açık bırak), varsayılan RAM, eşzamanlı indirme sayısı.
   - "Kapat" seçiliyse launcher oyun ana menüye gelince kapanır, oyun çalışmaya devam eder
     (o oturumun oynama süresi kaydedilmez). Sesli aramadaysan launcher kapanmaz, küçülür.
+  - "Kapat, oyun kapanınca aç" seçiliyse pencere oyun ana menüye gelince kapanır, launcher arka
+    planda bekler ve oyun kapanınca kendiliğinden açılır; oynama süresi kaydedilir. Pencere
+    kapalıyken launcher'ı yeniden çalıştırırsan pencere hemen geri gelir.
 - **Sesli sohbet**: mikrofon seçimi, mikrofon testi (konuşunca çubuk hareket eder) ve
   **IP adresimi gizle** (bkz. Arkadaşlar → Sesli sohbet).
 - **Veri klasörü**: konum, klasörü aç, taşı (aşağıda).

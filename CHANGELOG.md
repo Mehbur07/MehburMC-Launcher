@@ -3,6 +3,14 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.27.0] — 2026-10-29
+
+### Eklendi
+- **Ayarlar → Oyun açılınca → Kapat, oyun kapanınca aç**: oyun ana menüye gelince launcher
+  penceresi kapanır (belleği boşaltır), launcher arka planda oyunu bekler ve oyun kapanınca
+  kendiliğinden yeniden açılır. "Kapat"tan farklı olarak oynama süresi kaydedilir. Sesli
+  aramadaysan launcher kapanmaz, küçülür.
+
 ## [0.26.1] — 2026-10-29
 
 ### Değişti

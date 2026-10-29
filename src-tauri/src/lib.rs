@@ -2,9 +2,11 @@ mod bridge;
 mod commands;
 mod state;
 
+use std::path::PathBuf;
 use tauri::webview::{PermissionKind, PermissionResponse};
 use tauri::window::Color;
-use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+
+use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 
 use crate::commands::{
     accounts, admin, auth, calls, content, data, dialogs, files, friends, home, instances, library,
@@ -24,11 +26,8 @@ pub fn run() {
     tauri::Builder::default()
         // Must be registered first: a second launch focuses the existing window.
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
-            if let Some(w) = app.get_webview_window("main") {
-                let _ = w.unminimize();
-                let _ = w.show();
-                let _ = w.set_focus();
-            }
+            // Brings the window back, also when it was closed for a game (K93).
+            play::reopen_window(app);
         }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
@@ -40,25 +39,17 @@ pub fn run() {
             _ => PermissionResponse::Default,
         })
         .setup(move |app| {
-            let mut builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
-                .title(launcher_core::LAUNCHER_NAME)
-                .inner_size(1180.0, 720.0)
-                .min_inner_size(960.0, 600.0)
-                .decorations(false)
-                .shadow(true)
-                .resizable(true)
-                .center()
-                .background_color(BACKGROUND);
             // WebView2 data lives inside the data folder, never in %LOCALAPPDATA% (K79).
-            if let Some(paths) = &app_state.paths {
-                if paths.mode() == launcher_core::DataMode::Standard
-                    && let Ok(legacy) = app.path().app_local_data_dir()
-                {
-                    launcher_core::paths::adopt_legacy_webview(&legacy, &paths.webview_data());
-                }
-                builder = builder.data_directory(paths.webview_data());
+            if let Some(paths) = &app_state.paths
+                && paths.mode() == launcher_core::DataMode::Standard
+                && let Ok(legacy) = app.path().app_local_data_dir()
+            {
+                launcher_core::paths::adopt_legacy_webview(&legacy, &paths.webview_data());
             }
-            builder.build()?;
+            main_window(
+                app.handle(),
+                app_state.paths.as_ref().map(|p| p.webview_data()),
+            )?;
 
             if let Some(rx) = app_state.events_rx.lock().expect("events lock").take() {
                 tauri::async_runtime::spawn(bridge::forward(app.handle().clone(), rx));
@@ -229,9 +220,36 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while building MehburMC Launcher")
-        .run(|app, event| {
-            if let tauri::RunEvent::Exit = event {
-                friends::go_offline_on_exit(app);
+        .run(|app, event| match event {
+            // The window was closed for a running game: keep running without
+            // one until the game exits (K93). `app.exit` always has a code.
+            tauri::RunEvent::ExitRequested {
+                code: None, api, ..
+            } if play::window_away() => {
+                api.prevent_exit();
             }
+            tauri::RunEvent::Exit => friends::go_offline_on_exit(app),
+            _ => {}
         });
+}
+
+/// Creates the main window: at startup, and again after a game when the
+/// launcher closed it for the game (K93).
+pub(crate) fn main_window(
+    app: &AppHandle,
+    data_dir: Option<PathBuf>,
+) -> tauri::Result<WebviewWindow> {
+    let mut builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+        .title(launcher_core::LAUNCHER_NAME)
+        .inner_size(1180.0, 720.0)
+        .min_inner_size(960.0, 600.0)
+        .decorations(false)
+        .shadow(true)
+        .resizable(true)
+        .center()
+        .background_color(BACKGROUND);
+    if let Some(dir) = data_dir {
+        builder = builder.data_directory(dir);
+    }
+    builder.build()
 }

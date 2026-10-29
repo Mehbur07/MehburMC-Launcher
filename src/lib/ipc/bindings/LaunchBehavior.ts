@@ -3,4 +3,4 @@
 /**
  * What the launcher window does once the game has started.
  */
-export type LaunchBehavior = "minimize" | "close" | "keepOpen";
+export type LaunchBehavior = "minimize" | "close" | "keepOpen" | "closeReopen";
