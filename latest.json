@@ -1,15 +1,15 @@
 {
-  "version": "0.27.0",
-  "notes": "### Eklendi\n- **Ayarlar → Oyun açılınca → Kapat, oyun kapanınca aç**: oyun ana menüye gelince launcher\n  penceresi kapanır (belleği boşaltır), launcher arka planda oyunu bekler ve oyun kapanınca\n  kendiliğinden yeniden açılır. \"Kapat\"tan farklı olarak oynama süresi kaydedilir. Sesli\n  aramadaysan launcher kapanmaz, küçülür.",
-  "pub_date": "2026-10-29T07:26:57Z",
+  "version": "0.28.0",
+  "notes": "### Eklendi\n- **Ayarlar → Vurgu rengi → Özel renk**: tema artık dört renkle sınırlı değil. Renk alanı, ton\n  çubuğu ya da renk koduyla (`#FF8800`) istediğin rengi seç; launcher sen sürüklerken anında\n  o renge döner. Çok koyu renkler yazılar okunabilsin diye biraz daha açık gösterilir. Hazır\n  renklerden birine tıklamak özel rengi kaldırır.\n\n### Düzeltildi\n- Vurgu rengi değişince arka plan efekti artık yeni rengi hemen alıyor.",
+  "pub_date": "2026-10-30T12:29:10Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUxhS3FibmRqeVlqcEJ6eGYrRkdrcjFCK2tWUTNYQW02Szl1RU5JSjFhK29oeTAxRjdlN3U4ekFvcVU5aVVwZjVvTUg4WHpObDRTU2ZvZk9kUVBLdmdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMjU4NzkwCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yNy4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjI3LjAKNnVINjZPS0M3c0Y4cmNteWJYTUFkQXp0YUFJc0tCTEJMN3cvMzFWVWF5VWRWdlMxMVJGNjdOV3N2dUc0OWtKa2dJYUZkYnNTcVQzSUJPUlZHYmJ2QVE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.27.0/MehburMC-Launcher_0.27.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUpGby9teGtUS1JEVFpmRDE3MzVYMHBPRk5uOXRsbEVzSHZCSzdpMGIvMTVtY0t3TTVWWFc3OWx0MlZWbGtENy8yd0xzSUZ4QXRoajZLa3FSMWlYdHdzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzYzMzMwCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yOC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjI4LjAKTStDSjEwZTNzLzBCejY0dnBlSWM2Mnc1RHJOTFp1YVUyWlFrbGtHVU1pUG9uNytaRWswWHNkNVFITUVTQlRZR3dWNzF4UlljV2ttTGxSRXdQYnRCQWc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.28.0/MehburMC-Launcher_0.28.0_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUxhS3FibmRqeVlqcEJ6eGYrRkdrcjFCK2tWUTNYQW02Szl1RU5JSjFhK29oeTAxRjdlN3U4ekFvcVU5aVVwZjVvTUg4WHpObDRTU2ZvZk9kUVBLdmdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMjU4NzkwCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yNy4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjI3LjAKNnVINjZPS0M3c0Y4cmNteWJYTUFkQXp0YUFJc0tCTEJMN3cvMzFWVWF5VWRWdlMxMVJGNjdOV3N2dUc0OWtKa2dJYUZkYnNTcVQzSUJPUlZHYmJ2QVE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.27.0/MehburMC-Launcher_0.27.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUpGby9teGtUS1JEVFpmRDE3MzVYMHBPRk5uOXRsbEVzSHZCSzdpMGIvMTVtY0t3TTVWWFc3OWx0MlZWbGtENy8yd0xzSUZ4QXRoajZLa3FSMWlYdHdzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzYzMzMwCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yOC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjI4LjAKTStDSjEwZTNzLzBCejY0dnBlSWM2Mnc1RHJOTFp1YVUyWlFrbGtHVU1pUG9uNytaRWswWHNkNVFITUVTQlRZR3dWNzF4UlljV2ttTGxSRXdQYnRCQWc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.28.0/MehburMC-Launcher_0.28.0_x64-setup.exe"
     }
   }
 }
