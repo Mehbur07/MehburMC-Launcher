@@ -5,6 +5,10 @@ import type { LaunchBehavior } from "./LaunchBehavior";
 
 export type Settings = { schemaVersion: number, language: Language, accent: Accent, 
 /**
+ * A color of the user's own (`#rrggbb`) used instead of `accent` (K94).
+ */
+accentColor?: string, 
+/**
  * Animated grid/particle background.
  */
 backgroundEffects: boolean, 

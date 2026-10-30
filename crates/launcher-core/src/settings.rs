@@ -59,6 +59,10 @@ pub struct Settings {
     pub schema_version: u32,
     pub language: Language,
     pub accent: Accent,
+    /// A color of the user's own (`#rrggbb`) used instead of `accent` (K94).
+    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub accent_color: Option<String>,
     /// Animated grid/particle background.
     pub background_effects: bool,
     /// Verbose (debug-level) launcher logging.
@@ -86,6 +90,7 @@ impl Default for Settings {
             schema_version: SCHEMA_VERSION,
             language: Language::System,
             accent: Accent::Cyan,
+            accent_color: None,
             background_effects: true,
             debug_logging: false,
             download_concurrency: 8,
@@ -145,6 +150,13 @@ impl Settings {
             return Err(CoreError::InvalidSetting("defaultMemoryMb".into()));
         }
         if self
+            .accent_color
+            .as_deref()
+            .is_some_and(|c| !is_hex_color(c))
+        {
+            return Err(CoreError::InvalidSetting("accentColor".into()));
+        }
+        if self
             .voice_input_device
             .as_deref()
             .is_some_and(|d| d.len() > 256 || d.chars().any(char::is_control))
@@ -167,7 +179,13 @@ impl Settings {
         self.default_memory_mb = self
             .default_memory_mb
             .clamp(*MEMORY_MB_RANGE.start(), *MEMORY_MB_RANGE.end());
+        // A bad hand-edited color must not block saving other settings.
+        self.accent_color = self.accent_color.take().filter(|c| is_hex_color(c));
     }
+}
+
+fn is_hex_color(s: &str) -> bool {
+    s.len() == 7 && s.starts_with('#') && s[1..].bytes().all(|b| b.is_ascii_hexdigit())
 }
 
 /// Records the running launcher version in `launcher/last-version` and
@@ -252,6 +270,27 @@ mod tests {
         // Settings from before K86 hide the IP in calls by default.
         assert!(s.voice_hide_ip);
         assert_eq!(s.voice_input_device, None);
+    }
+
+    #[test]
+    fn keeps_a_custom_color_and_drops_a_bad_one() {
+        let (_t, paths) = temp_paths();
+        let s = Settings {
+            accent_color: Some("#ff8800".into()),
+            ..Settings::default()
+        };
+        s.save(&paths).unwrap();
+        assert_eq!(Settings::load(&paths).unwrap(), s);
+
+        for bad in ["red", "#ff880", "#ff88000", "#ff88zz", "#ff88é"] {
+            let s = Settings {
+                accent_color: Some(bad.into()),
+                ..Settings::default()
+            };
+            assert!(s.validate().is_err(), "{bad}");
+        }
+        fs::write(paths.settings_file(), br#"{"accentColor":"url(x)"}"#).unwrap();
+        assert_eq!(Settings::load(&paths).unwrap().accent_color, None);
     }
 
     #[test]

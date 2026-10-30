@@ -50,7 +50,14 @@
       "cyan": "Neon cyan",
       "magenta": "Magenta",
       "green": "Green",
-      "purple": "Purple"
+      "purple": "Purple",
+      "custom": "Custom color"
+    },
+    "accentPicker": {
+      "pad": "Saturation and brightness",
+      "hue": "Hue",
+      "hex": "Color code",
+      "lightened": "This color is very dark: the launcher shows it a little lighter so text stays readable."
     },
     "backgroundEffects": "Background effects",
     "backgroundEffectsHint": "Subtle animated grid and particles.",

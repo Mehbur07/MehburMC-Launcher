@@ -3,6 +3,17 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.28.0] — 2026-10-30
+
+### Eklendi
+- **Ayarlar → Vurgu rengi → Özel renk**: tema artık dört renkle sınırlı değil. Renk alanı, ton
+  çubuğu ya da renk koduyla (`#FF8800`) istediğin rengi seç; launcher sen sürüklerken anında
+  o renge döner. Çok koyu renkler yazılar okunabilsin diye biraz daha açık gösterilir. Hazır
+  renklerden birine tıklamak özel rengi kaldırır.
+
+### Düzeltildi
+- Vurgu rengi değişince arka plan efekti artık yeni rengi hemen alıyor.
+
 ## [0.27.0] — 2026-10-29
 
 ### Eklendi

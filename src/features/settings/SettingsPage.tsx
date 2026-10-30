@@ -1,24 +1,16 @@
-import { Check, LogOut, RefreshCw, ShieldCheck } from "lucide-react";
+import { LogOut, RefreshCw, ShieldCheck } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Badge, Button, ConfirmDialog, Toggle } from "../../components/ui";
-import type { Accent } from "../../lib/ipc/bindings/Accent";
 import type { Language } from "../../lib/ipc/bindings/Language";
 import type { LaunchBehavior } from "../../lib/ipc/bindings/LaunchBehavior";
 import { useApp } from "../../stores/app";
 import { useAuth } from "../../stores/auth";
 import { useUpdate } from "../../stores/update";
+import { AccentSetting } from "./AccentSetting";
 import { DataFolderSection } from "./DataFolderSection";
 import { VoiceSection } from "./VoiceSection";
-
-/** Swatch colors mirror tokens.css presets. */
-const ACCENTS: { id: Accent; color: string }[] = [
-  { id: "cyan", color: "#00f0ff" },
-  { id: "magenta", color: "#ff3df0" },
-  { id: "green", color: "#39ff88" },
-  { id: "purple", color: "#b77cff" },
-];
 
 export function SettingsPage() {
   const { t } = useTranslation();
@@ -49,33 +41,7 @@ export function SettingsPage() {
           </select>
         </Row>
 
-        <Row label={t("settings.accent")}>
-          <div className="flex gap-2" role="radiogroup" aria-label={t("settings.accent")}>
-            {ACCENTS.map(({ id, color }) => {
-              const active = settings.accent === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  title={t(`settings.accents.${id}`)}
-                  aria-label={t(`settings.accents.${id}`)}
-                  onClick={() => void update({ accent: id })}
-                  className="grid h-8 w-8 place-items-center rounded-full transition-transform hover:scale-110"
-                  style={{
-                    background: color,
-                    boxShadow: active
-                      ? `0 0 0 2px var(--mc-bg), 0 0 0 4px ${color}, 0 0 16px ${color}`
-                      : undefined,
-                  }}
-                >
-                  {active && <Check size={16} className="text-black" />}
-                </button>
-              );
-            })}
-          </div>
-        </Row>
+        <AccentSetting />
 
         <Row label={t("settings.backgroundEffects")} hint={t("settings.backgroundEffectsHint")}>
           <Toggle

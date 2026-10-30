@@ -196,6 +196,9 @@ bilgisayara taşımak için **Profiller → İçe aktar**.
 ## 8. Ayarlar
 
 - **Görünüm**: dil (sistem / Türkçe / English), vurgu rengi, arka plan efektleri.
+  - **Vurgu rengi**: dört hazır renk ya da **Özel renk** (gökkuşağı daire). Özel renkte renk alanı,
+    ton çubuğu ve renk kodu var; launcher seçtiğin renge anında döner. Çok koyu renkler yazılar
+    okunabilsin diye biraz daha açık gösterilir.
 - **Oyun**: oyun açılınca launcher'ın ne yapacağı (küçült / kapat / kapat, oyun kapanınca aç /
   açık bırak), varsayılan RAM, eşzamanlı indirme sayısı.
   - "Kapat" seçiliyse launcher oyun ana menüye gelince kapanır, oyun çalışmaya devam eder

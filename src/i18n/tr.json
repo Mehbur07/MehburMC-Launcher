@@ -50,7 +50,14 @@
       "cyan": "Neon cyan",
       "magenta": "Magenta",
       "green": "Yeşil",
-      "purple": "Mor"
+      "purple": "Mor",
+      "custom": "Özel renk"
+    },
+    "accentPicker": {
+      "pad": "Doygunluk ve parlaklık",
+      "hue": "Renk tonu",
+      "hex": "Renk kodu",
+      "lightened": "Bu renk çok koyu: yazılar okunabilsin diye launcher'da biraz daha açık görünür."
     },
     "backgroundEffects": "Arka plan efektleri",
     "backgroundEffectsHint": "Hafif animasyonlu ızgara ve parçacıklar.",

@@ -100,6 +100,32 @@ describe("SettingsPage", () => {
     expect(screen.queryByText(/CurseForge/)).toBeNull();
   });
 
+  it("saves a custom accent color and a preset clears it", async () => {
+    render(<SettingsPage />);
+    fireEvent.click(screen.getByRole("radio", { name: "Custom color" }));
+    const code = screen.getByLabelText("Color code");
+    fireEvent.change(code, { target: { value: "#ff88" } });
+    expect(saved()?.accentColor).toBeUndefined();
+    fireEvent.change(code, { target: { value: "#FF8800" } });
+    await vi.waitFor(() => expect(saved()?.accentColor).toBe("#ff8800"));
+    expect(document.documentElement.style.getPropertyValue("--mc-accent")).toBe("#ff8800");
+    expect(screen.getByRole("radio", { name: "Custom color" }).getAttribute("aria-checked")).toBe(
+      "true",
+    );
+    expect(screen.queryByText(/very dark/)).toBeNull();
+
+    fireEvent.change(code, { target: { value: "#000000" } });
+    expect(await screen.findByText(/very dark/)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("radio", { name: "Magenta" }));
+    await vi.waitFor(() => expect(saved()?.accent).toBe("magenta"));
+    expect(saved()?.accentColor).toBeUndefined();
+    expect(screen.getByRole("radio", { name: "Magenta" }).getAttribute("aria-checked")).toBe(
+      "true",
+    );
+    expect(screen.queryByLabelText("Color code")).toBeNull();
+  });
+
   it("saves game settings", async () => {
     render(<SettingsPage />);
     fireEvent.change(screen.getByDisplayValue("Minimize"), { target: { value: "close" } });

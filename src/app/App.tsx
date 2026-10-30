@@ -1,5 +1,5 @@
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
-import { lazy, Suspense, useEffect, type ComponentType } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Lock } from "lucide-react";
@@ -12,6 +12,7 @@ import { Button } from "../components/ui";
 import { TitleBar } from "../components/TitleBar";
 import { HomePage } from "../features/home/HomePage";
 import { applyLanguage } from "../i18n";
+import { applyAccent } from "../lib/accentColor";
 import { ipc } from "../lib/ipc";
 import { useAccounts } from "../stores/accounts";
 import { canUse, isMember, LOCAL_LOCKED, useAuth } from "../stores/auth";
@@ -159,10 +160,12 @@ export function App() {
     return () => window.clearInterval(id);
   }, [status, member, friendsStatus, refreshFriends]);
 
-  // Apply theme + language whenever settings change.
-  useEffect(() => {
+  // Apply theme + language whenever settings change. A layout effect, so the
+  // background (a child's effect) reads the new color.
+  useLayoutEffect(() => {
     if (!settings) return;
     document.documentElement.dataset.accent = settings.accent;
+    applyAccent(settings.accentColor);
     applyLanguage(settings.language);
   }, [settings]);
 
@@ -187,7 +190,9 @@ export function App() {
 
         {status === "ready" && settings && !usable && (
           <div className="relative flex min-h-0 flex-1">
-            {settings.backgroundEffects && <NeonBackground accent={settings.accent} />}
+            {settings.backgroundEffects && (
+              <NeonBackground accent={settings.accentColor ?? settings.accent} />
+            )}
             {auth === null ? (
               <div className="grid flex-1 place-items-center">
                 <Logo className="h-20 w-20 animate-pulse rounded-xl" />
@@ -202,7 +207,9 @@ export function App() {
 
         {status === "ready" && settings && usable && (
           <div className="relative flex min-h-0 flex-1">
-            {settings.backgroundEffects && <NeonBackground accent={settings.accent} />}
+            {settings.backgroundEffects && (
+              <NeonBackground accent={settings.accentColor ?? settings.accent} />
+            )}
             <Sidebar />
             <main className="relative z-0 flex min-w-0 flex-1 flex-col overflow-y-auto p-6">
               {notice && (
