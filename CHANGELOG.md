@@ -3,6 +3,18 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.29.0] — 2026-10-31
+
+### Eklendi
+- **Profil fotoğrafı artık her türden olabilir:** JPG, PNG, WebP, GIF, BMP, TIFF, ICO, TGA, QOI,
+  PNM, HDR, EXR, DDS; bilgisayarda bileşeni varsa HEIC (iPhone), AVIF, JPEG XL, JPEG XR ve kamera
+  RAW dosyaları da. Windows uzantısı eksikse launcher hangisini kuracağını söyler.
+- Telefon fotoğrafları yan görünmez: fotoğrafın yön bilgisi uygulanır.
+
+### Değişti
+- Fotoğraf dosyası sınırı 10 MB'tan 200 MB'a, 4096 pikselden 30000 piksele çıktı; 48 MP'lik
+  telefon fotoğrafları da açılır.
+
 ## [0.28.0] — 2026-10-30
 
 ### Eklendi

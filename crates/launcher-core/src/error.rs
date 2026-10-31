@@ -142,6 +142,9 @@ pub enum CoreError {
     #[error("invalid profile photo: {0}")]
     AvatarInvalid(String),
 
+    #[error("no installed decoder can open this image")]
+    AvatarFormat,
+
     #[error("no {loader} version is available for Minecraft {mc}")]
     LoaderUnavailable { loader: String, mc: String },
 
@@ -250,6 +253,7 @@ impl CoreError {
             Self::AccountNotFound(_) => "account.notFound",
             Self::AccountNameTaken(_) => "account.nameTaken",
             Self::AvatarInvalid(_) => "account.avatarInvalid",
+            Self::AvatarFormat => "account.avatarFormat",
             Self::LoaderUnavailable { .. } => "loader.unavailable",
             Self::LoaderInstall { .. } => "loader.installFailed",
             Self::OptifineInvalid { .. } => "loader.optifineInvalid",
@@ -370,6 +374,7 @@ impl CoreError {
             | Self::Cancelled
             | Self::NoAccount
             | Self::CurseForgeKey
+            | Self::AvatarFormat
             | Self::Friends(_)
             | Self::SkinMc(_) => {}
         }

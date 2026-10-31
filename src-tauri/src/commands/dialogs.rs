@@ -35,7 +35,7 @@ pub enum PickPurpose {
     LibraryShader,
     Skin,
     Cape,
-    /// Account profile photo (`.png`).
+    /// Account profile photo (any image type, K95).
     Avatar,
     /// Private MehburMC skin/cape uploaded by the founder (K74).
     PrivateTexture,
@@ -49,8 +49,17 @@ pub enum PickPurpose {
     SkinExport,
 }
 
+/// Offered first in the photo picker; the "All files" filter covers the rest.
+const PHOTO_TYPES: &[&str] = &[
+    "png", "jpg", "jpeg", "jpe", "jfif", "pjpeg", "pjp", "webp", "gif", "bmp", "dib", "tif",
+    "tiff", "ico", "heic", "heif", "hif", "avif", "jxl", "jxr", "wdp", "tga", "qoi", "pnm", "pbm",
+    "pgm", "ppm", "pam", "hdr", "exr", "dds", "ff", "dng", "cr2", "cr3", "crw", "nef", "nrw",
+    "arw", "sr2", "srf", "orf", "rw2", "raf", "pef", "srw", "x3f", "raw",
+];
+
 enum Kind {
     Open(&'static str, &'static [&'static str]),
+    Photo,
     Save(&'static str, &'static [&'static str]),
     Folder,
 }
@@ -65,7 +74,8 @@ fn kind(p: PickPurpose) -> Kind {
         LibraryModpack => Kind::Open("Modrinth modpack", &["mrpack"]),
         LibraryResourcePack => Kind::Open("Resource pack", &["zip"]),
         LibraryShader => Kind::Open("Shader", &["zip"]),
-        Skin | Cape | Avatar | PrivateTexture => Kind::Open("PNG", &["png"]),
+        Avatar => Kind::Photo,
+        Skin | Cape | PrivateTexture => Kind::Open("PNG", &["png"]),
         Java if cfg!(windows) => Kind::Open("Java", &["exe"]),
         Java => Kind::Open("Java", &["*"]),
         DataFolder => Kind::Folder,
@@ -110,6 +120,10 @@ pub async fn pick_path(
         }
         let picked = match kind(purpose) {
             Kind::Open(name, exts) => d.add_filter(name, exts).blocking_pick_file(),
+            Kind::Photo => d
+                .add_filter("Images", PHOTO_TYPES)
+                .add_filter("All files", &["*"])
+                .blocking_pick_file(),
             Kind::Save(name, exts) => {
                 let file = clean_file_name(default_name.as_deref().unwrap_or("file"));
                 d.add_filter(name, exts)

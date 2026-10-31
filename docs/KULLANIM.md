@@ -54,7 +54,7 @@ aldıysa kartında **"Bu ad başka bir kullanıcıda — yeniden adlandır"** uy
 Yeni ad bir sonraki OYNA'da oyunda görünür. Oyuncu kimliği (UUID) yeni ada göre değişir; bu
 yüzden tek oyunculu dünyalarda karakter yeni oyuncu gibi başlar. Skin ve pelerin ataması korunur.
 
-**Profil fotoğrafı:** her hesabın bir fotoğrafı vardır. Başta bu, hesabın skininin kafasıdır
+**Profil fotoğrafı:** her hesabın bir fotoğrafı vardır (dosya türü fark etmez: JPG, PNG, WebP, GIF, HEIC, ...; HEIC, AVIF, JPEG XL ve RAW için Windows'ta ilgili Microsoft Store uzantısı gerekir). Başta bu, hesabın skininin kafasıdır
 (skin atamadıysan oyunun o hesaba verdiği varsayılan skin: Steve, Alex, …). Fotoğrafın sol
 altındaki **+** ile bilgisayarından bir `.png` seçebilirsin; ortadan kare kırpılıp küçültülür.
 **Skin kafasına dön** simgesi fotoğrafı kaldırır. Arkadaşlar açıksa seçili hesabının fotoğrafını

@@ -1,0 +1,18 @@
+[package]
+name = "wic-decode"
+description = "Decodes images with Windows Imaging Component"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+# The one crate allowed to use `unsafe` (K95): COM calls cannot be made without
+# it, so it stays small and does not inherit the workspace's `unsafe_code = "forbid"`.
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62", features = [
+    "Win32_Graphics_Imaging",
+    "Win32_System_Com",
+    "Win32_System_Com_StructuredStorage",
+    "Win32_System_Variant",
+] }
