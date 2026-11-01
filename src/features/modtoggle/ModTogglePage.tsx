@@ -1,4 +1,5 @@
 import {
+  ArrowRightLeft,
   FolderOpen,
   Loader2,
   Lock,
@@ -23,6 +24,7 @@ import { useApp } from "../../stores/app";
 import { selectedInstance, useInstances } from "../../stores/instances";
 import { activeTaskFor, useTasks } from "../../stores/tasks";
 import { ModGroups } from "./ModGroups";
+import { TransferMods } from "./TransferMods";
 
 type Filter = "all" | "on" | "off";
 const FILTERS: Filter[] = ["all", "on", "off"];
@@ -42,6 +44,7 @@ export function ModTogglePage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [busy, setBusy] = useState<Set<string>>(new Set());
   const [bulk, setBulk] = useState(false);
+  const [transferring, setTransferring] = useState(false);
 
   const instId = inst?.id ?? null;
   // Only the newest scan may land: a slow one for a profile switched away
@@ -204,6 +207,15 @@ export function ModTogglePage() {
               <ToggleLeft size={14} />
               {filtered ? t("modToggle.disableShown") : t("modToggle.disableAll")}
             </Button>
+            <Button
+              size="sm"
+              disabled={!items || items.length === 0 || instances.length < 2}
+              title={instances.length < 2 ? t("modTransfer.needProfile") : undefined}
+              onClick={() => setTransferring(true)}
+            >
+              <ArrowRightLeft size={14} />
+              {t("modTransfer.button")}
+            </Button>
             <IconButton label={t("common.refresh")} onClick={() => void load()}>
               <RefreshCw size={15} />
             </IconButton>
@@ -293,6 +305,14 @@ export function ModTogglePage() {
               </ul>
             )}
           </div>
+
+          <TransferMods
+            open={transferring}
+            source={inst}
+            instances={instances}
+            count={items?.length ?? 0}
+            onClose={() => setTransferring(false)}
+          />
         </>
       )}
     </div>

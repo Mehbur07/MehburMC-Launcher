@@ -9,6 +9,8 @@ const ipcMock = vi.hoisted(() => ({
   contentIcon: vi.fn(),
   modGroups: vi.fn(),
   saveModGroups: vi.fn(),
+  transferMods: vi.fn(),
+  stopInstance: vi.fn(),
 }));
 vi.mock("../../lib/ipc", async (orig) => ({
   ...(await orig<typeof import("../../lib/ipc")>()),
@@ -257,5 +259,98 @@ describe("ModTogglePage", () => {
     await act(async () => fireEvent.click(within(del).getByRole("button", { name: "Delete" })));
     expect(ipcMock.saveModGroups).toHaveBeenLastCalledWith("i1", []);
     await waitFor(() => expect(screen.queryByRole("button", { name: /Apply group/ })).toBeNull());
+  });
+
+  describe("sending mods to another profile", () => {
+    const survival = instance({ id: "i1", name: "Survival" });
+    const twin = instance({ id: "same", name: "Twin" });
+    const newer = instance({
+      id: "new",
+      name: "Newer",
+      mcVersion: "26.3",
+      loader: { kind: "neoForge" },
+    });
+    const plain = instance({ id: "van", name: "Plain", loader: { kind: "vanilla" } });
+    const empty = {
+      transferred: [],
+      dependencies: [],
+      alreadyPresent: [],
+      notFound: [],
+      missingDependencies: [],
+    };
+
+    const openDialog = async () => {
+      useInstances.setState({ instances: [survival, twin, newer, plain], selected: "i1" });
+      render(<ModTogglePage />);
+      await screen.findByText("Sodium");
+      fireEvent.click(screen.getByRole("button", { name: /Send to another profile/ }));
+      return screen.findByRole("dialog", { name: 'Send the mods of "Survival"' });
+    };
+
+    it("needs a second profile", async () => {
+      render(<ModTogglePage />);
+      await screen.findByText("Sodium");
+      expect(screen.getByRole("button", { name: /Send to another profile/ })).toBeDisabled();
+    });
+
+    it("offers other profiles, not those without a loader, and says what will happen", async () => {
+      const dialog = await openDialog();
+      const select = within(dialog).getByRole("combobox");
+      const options = within(select).getAllByRole<HTMLOptionElement>("option");
+      expect(options.map((o) => o.value)).toEqual(["same", "new", "van"]);
+      expect(options.map((o) => o.disabled)).toEqual([false, false, true]);
+      expect(dialog).toHaveTextContent("3 mods will be sent");
+      expect(dialog).toHaveTextContent("copied as they are");
+
+      fireEvent.change(select, { target: { value: "new" } });
+      expect(dialog).toHaveTextContent("The target is different (26.3 NeoForge)");
+      expect(dialog).not.toHaveTextContent("copied as they are");
+    });
+
+    it("sends the mods and reports each outcome", async () => {
+      ipcMock.transferMods.mockResolvedValue({
+        ...empty,
+        transferred: ["Sodium"],
+        dependencies: ["Fabric API"],
+        alreadyPresent: ["Iris"],
+        notFound: ["Mystery"],
+        missingDependencies: ["Some Lib"],
+      });
+      const dialog = await openDialog();
+      fireEvent.change(within(dialog).getByRole("combobox"), { target: { value: "new" } });
+      await act(async () => fireEvent.click(within(dialog).getByRole("button", { name: "Send" })));
+      expect(ipcMock.transferMods).toHaveBeenCalledWith("i1", "new");
+      expect(dialog).toHaveTextContent('Finished sending to "Newer"');
+      expect(dialog).toHaveTextContent("Sent (1)");
+      expect(dialog).toHaveTextContent("Added as required dependencies (1)");
+      expect(dialog).toHaveTextContent("Already there, left as they are (1)");
+      expect(dialog).toHaveTextContent("Not found for this version, not sent (1)");
+      expect(dialog).toHaveTextContent("Mystery");
+      expect(dialog).toHaveTextContent("Required but not found, some mods may not load (1)");
+      expect(within(dialog).queryByRole("button", { name: "Send" })).toBeNull();
+    });
+
+    it("can be cancelled, stays open while working and shows the error", async () => {
+      let fail!: (e: unknown) => void;
+      ipcMock.transferMods.mockReturnValue(new Promise((_, reject) => (fail = reject)));
+      const dialog = await openDialog();
+      await act(async () => fireEvent.click(within(dialog).getByRole("button", { name: "Send" })));
+      expect(dialog).toHaveTextContent("Sending mods");
+
+      fireEvent.keyDown(window, { key: "Escape" });
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+      fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+      expect(ipcMock.stopInstance).toHaveBeenCalledWith("same");
+      await act(async () => fail({ code: "task.cancelled", detail: "cancelled", params: {} }));
+      expect(within(dialog).getByRole("alert")).toHaveTextContent("cancelled");
+    });
+
+    it("waits while the target is in use", async () => {
+      useTasks.setState({ tasks: { t: task({ id: "t", instanceId: "same", status: "playing" }) } });
+      const dialog = await openDialog();
+      expect(dialog).toHaveTextContent("The target profile is in use");
+      expect(within(dialog).getByRole("button", { name: "Send" })).toBeDisabled();
+    });
   });
 });

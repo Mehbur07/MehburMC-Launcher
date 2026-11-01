@@ -10,6 +10,7 @@ use crate::auth::store::AccountStore;
 use crate::content::install::{self, InstallRequest, InstallResult};
 use crate::content::installed::{self, InstalledItem};
 use crate::content::modpack::{self, ImportResult, PackKind};
+use crate::content::transfer::{self, TransferResult};
 use crate::content::{modrinth, shaders};
 use crate::crash;
 use crate::ctx::Ctx;
@@ -340,6 +341,38 @@ impl Launcher {
             &CancellationToken::new(),
         )
         .await
+    }
+
+    /// Transfers all mods of `source_id` into `target_id` (K99). Runs as a
+    /// task on the target: progress in Downloads, cancellable, no game start.
+    pub async fn transfer_mods(&self, source_id: &str, target_id: &str) -> Result<TransferResult> {
+        if source_id == target_id {
+            return Err(CoreError::InvalidInstance(
+                "a profile cannot transfer mods to itself".into(),
+            ));
+        }
+        let source = self.instances.get(source_id)?;
+        let target = self.instances.get(target_id)?;
+        let _claim = self.running.try_claim(&target)?;
+        let source_dir = self.instances.dir(&source.id)?;
+        let target_dir = self.instances.dir(&target.id)?;
+        let title = format!("{} → {}", source.name, target.name);
+        let (task, cancel) = self
+            .tasks
+            .create(TaskKind::Install, &title, Some(&target.id));
+        let progress = Progress::new(self.ctx.events.clone(), &task, Stage::Content);
+        let result = transfer::transfer(
+            &self.ctx,
+            &source,
+            &source_dir,
+            &target,
+            &target_dir,
+            &progress,
+            &cancel,
+        )
+        .await;
+        self.tasks.finish_ref(&task, result.as_ref().map(|_| ()));
+        result
     }
 
     /// Creates an account after reserving its name for all MehburMC users.
@@ -1092,6 +1125,32 @@ mod tests {
         l.delete_instance_file(&inst.id, Folder::Mods, "a.jar")
             .unwrap();
         assert!(!dir.join("mods/a.jar").exists());
+    }
+
+    #[tokio::test]
+    async fn mods_are_not_transferred_to_itself_or_a_running_profile() {
+        let (_tmp, l) = launcher();
+        let a = l.instances.create(new("A")).unwrap();
+        let b = l.instances.create(new("B")).unwrap();
+        let from = l.instances.dir(&a.id).unwrap().join("mods/a.jar");
+        std::fs::write(&from, b"mod").unwrap();
+        let to = l.instances.dir(&b.id).unwrap().join("mods/a.jar");
+
+        assert!(l.transfer_mods(&a.id, &a.id).await.is_err());
+        let claim = l.running.try_claim(&b).unwrap();
+        assert_eq!(
+            l.transfer_mods(&a.id, &b.id).await.unwrap_err().code(),
+            "instance.busy"
+        );
+        assert!(!to.exists());
+        drop(claim);
+
+        // The source may run: its files are only read.
+        let running = l.running.try_claim(&a).unwrap();
+        let r = l.transfer_mods(&a.id, &b.id).await;
+        drop(running);
+        // `new` makes vanilla profiles, which cannot hold mods.
+        assert_eq!(r.unwrap_err().code(), "loader.addonUnavailable");
     }
 
     #[test]

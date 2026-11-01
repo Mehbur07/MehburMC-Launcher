@@ -57,6 +57,7 @@ const COMMANDS: &[&str] = &[
     "install_content",
     "scan_content",
     "update_content",
+    "transfer_mods",
     "import_modpack",
     "install_modrinth_modpack",
     "content_icon",

@@ -70,6 +70,7 @@
     "allow-install-content",
     "allow-scan-content",
     "allow-update-content",
+    "allow-transfer-mods",
     "allow-import-modpack",
     "allow-install-modrinth-modpack",
     "allow-content-icon",

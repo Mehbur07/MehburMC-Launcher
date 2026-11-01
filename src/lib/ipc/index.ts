@@ -78,6 +78,7 @@ import type { VersionSummary } from "./bindings/VersionSummary";
 import type { Settings } from "./bindings/Settings";
 import type { TaskInfo } from "./bindings/TaskInfo";
 import type { TextureKind } from "./bindings/TextureKind";
+import type { TransferResult } from "./bindings/TransferResult";
 
 /** Typed wrappers around the Rust commands (see src-tauri/src/commands). */
 export const ipc = {
@@ -154,6 +155,8 @@ export const ipc = {
     invoke<InstalledItem[]>("scan_content", { id, folder, checkUpdates }),
   updateContent: (id: string, folder: Folder, files: string[]) =>
     invoke<string[]>("update_content", { id, folder, files }),
+  transferMods: (source: string, target: string) =>
+    invoke<TransferResult>("transfer_mods", { source, target }),
   importModpack: () => invoke<ImportResult>("import_modpack"),
   installModrinthModpack: (versionId: string) =>
     invoke<ImportResult>("install_modrinth_modpack", { versionId }),

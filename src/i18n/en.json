@@ -1207,6 +1207,30 @@
     "off": "Off",
     "switch": "Toggle {{name}}"
   },
+  "modTransfer": {
+    "button": "Send to another profile",
+    "needProfile": "You need at least two profiles to send mods.",
+    "title": "Send the mods of \"{{name}}\"",
+    "target": "Target profile",
+    "noLoader": "no mod loader",
+    "noTarget": "No other profile can take mods. Create a profile with a mod loader first.",
+    "count": "{{count}} mods will be sent. Disabled ones stay disabled.",
+    "copyHint": "The target is on the same version: the files are copied as they are.",
+    "searchHint": "The target is different ({{target}}): each mod's version for it is looked up on Modrinth and downloaded with its required dependencies. Mods that are not found are not sent; their names are listed at the end.",
+    "keepHint": "Mods the target already has stay as they are and nothing is deleted. Mod settings are not sent.",
+    "locked": "The target profile is in use. You can send mods once the game closes or the work finishes.",
+    "start": "Send",
+    "working": "Sending mods. A profile with many mods can take a few minutes.",
+    "done": "Finished sending to \"{{name}}\"",
+    "nothing": "There were no mods to send.",
+    "sections": {
+      "transferred": "Sent ({{count}})",
+      "dependencies": "Added as required dependencies ({{count}})",
+      "alreadyPresent": "Already there, left as they are ({{count}})",
+      "notFound": "Not found for this version, not sent ({{count}})",
+      "missingDependencies": "Required but not found, some mods may not load ({{count}})"
+    }
+  },
   "library": {
     "tab": "MehburMC Library",
     "search": "Search the library…",

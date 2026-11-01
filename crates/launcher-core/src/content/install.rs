@@ -96,7 +96,7 @@ pub fn pick(versions: Vec<Version>) -> Option<Version> {
 }
 
 /// `true` if `dir` already holds a jar/zip whose name starts with `slug`.
-fn present_by_name(dir: &Path, slug: &str) -> bool {
+pub(super) fn present_by_name(dir: &Path, slug: &str) -> bool {
     let Ok(rd) = std::fs::read_dir(dir) else {
         return false;
     };

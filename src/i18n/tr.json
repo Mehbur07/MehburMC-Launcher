@@ -1207,6 +1207,30 @@
     "off": "Kapalı",
     "switch": "{{name}} aç/kapat"
   },
+  "modTransfer": {
+    "button": "Başka profile aktar",
+    "needProfile": "Aktarmak için en az iki profil gerekir.",
+    "title": "\"{{name}}\" modlarını aktar",
+    "target": "Hedef profil",
+    "noLoader": "mod yükleyici yok",
+    "noTarget": "Modları alabilecek başka profil yok. Önce mod yükleyicili bir profil oluştur.",
+    "count": "{{count}} mod aktarılacak. Kapalı olanlar kapalı kalır.",
+    "copyHint": "Hedef aynı sürümde: dosyalar olduğu gibi kopyalanır.",
+    "searchHint": "Hedef farklı ({{target}}): her modun bu sürümü Modrinth'te aranır, gerekli bağımlılıklarıyla birlikte indirilir. Bulunamayan modlar aktarılmaz, adları sonunda listelenir.",
+    "keepHint": "Hedefte zaten olan modlara dokunulmaz ve hiçbir şey silinmez. Mod ayarları aktarılmaz.",
+    "locked": "Hedef profil şu anda kullanımda. Oyun kapanınca ya da işlem bitince aktarabilirsin.",
+    "start": "Aktar",
+    "working": "Modlar aktarılıyor. Çok modlu bir profilde birkaç dakika sürebilir.",
+    "done": "\"{{name}}\" için aktarım bitti",
+    "nothing": "Aktarılacak mod yoktu.",
+    "sections": {
+      "transferred": "Aktarıldı ({{count}})",
+      "dependencies": "Gerekli bağımlılık olarak eklendi ({{count}})",
+      "alreadyPresent": "Zaten vardı, dokunulmadı ({{count}})",
+      "notFound": "Bu sürüm için bulunamadı, aktarılmadı ({{count}})",
+      "missingDependencies": "Gerekli ama bulunamadı, bazı modlar açılmayabilir ({{count}})"
+    }
+  },
   "library": {
     "tab": "MehburMC Kütüphanesi",
     "search": "Kütüphanede ara…",

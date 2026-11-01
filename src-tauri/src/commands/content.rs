@@ -6,6 +6,7 @@ use launcher_core::content::modpack::ImportResult;
 use launcher_core::content::modrinth::{
     self, ProjectType, SearchPage, SearchQuery, VersionSummary,
 };
+use launcher_core::content::transfer::TransferResult;
 use launcher_core::instance::files::Folder;
 use tauri::State;
 
@@ -76,6 +77,18 @@ pub async fn update_content(
 ) -> CmdResult<Vec<String>> {
     let l = state.launcher()?.clone();
     Ok(l.update_content(&id, folder, &files).await?)
+}
+
+/// All mods of `source` into `target`; another game version or loader gets
+/// that version of each mod from Modrinth.
+#[tauri::command]
+pub async fn transfer_mods(
+    state: State<'_, AppState>,
+    source: String,
+    target: String,
+) -> CmdResult<TransferResult> {
+    let l = state.launcher()?.clone();
+    Ok(l.transfer_mods(&source, &target).await?)
 }
 
 /// Imports a `.mrpack` or CurseForge `.zip` the user picked.

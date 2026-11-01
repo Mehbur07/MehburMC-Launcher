@@ -116,6 +116,15 @@ Modlar grubun kaydıyla aynıysa kartta **Etkin** yazar. Kalem simgesi grubun ad
 disket simgesi gruba modların şu anki halini yeniden kaydeder, çöp kutusu grubu siler (modlara
 dokunmaz). Gruplar her profilde ayrıdır; bir mod güncellenip dosya adı değişse de grupta kalır.
 
+**Modları başka profile aktarma** (kenar çubuğunda **Mod Toggle** → **Başka profile aktar**): hedef
+profili seç, **Aktar**'a bas; profilin bütün modları oraya gider. Kapalı modlar kapalı kalır.
+- Hedef aynı Minecraft sürümü ve mod yükleyicideyse dosyalar olduğu gibi kopyalanır.
+- Sürüm ya da yükleyici farklıysa her modun hedefe uygun sürümü Modrinth'te aranır, gerekli
+  bağımlılıklarıyla birlikte indirilir.
+- Bulunamayan modlar aktarılmaz, adları sonunda listelenir. CurseForge'a özel modlar bu gruba girebilir.
+- Hedefte zaten olan modlara dokunulmaz, eski sürümdeyse güncellenmez, hiçbir şey silinmez. Mod
+  ayarları aktarılmaz.
+
 **Modpack'ler**:
 - Mod Tarayıcı'da tür olarak **Modpack** seçip kur, ya da
 - **Profiller → Modpack içe aktar** ile `.mrpack` veya CurseForge `.zip` dosyası seç.

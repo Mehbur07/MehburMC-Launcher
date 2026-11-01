@@ -119,6 +119,7 @@ pub fn run() {
             content::install_content,
             content::scan_content,
             content::update_content,
+            content::transfer_mods,
             content::import_modpack,
             content::install_modrinth_modpack,
             content::content_icon,

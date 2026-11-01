@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-transfer-mods"
+description = "Enables the transfer_mods command without any pre-configured scope."
+commands.allow = ["transfer_mods"]
+
+[[permission]]
+identifier = "deny-transfer-mods"
+description = "Denies the transfer_mods command without any pre-configured scope."
+commands.deny = ["transfer_mods"]

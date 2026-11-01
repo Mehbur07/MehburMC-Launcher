@@ -3,6 +3,15 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.31.0] — 2026-11-01
+
+### Eklendi
+- **Modları başka profile aktarma:** Mod Toggle sayfasındaki **Başka profile aktar** düğmesi bir
+  profilin bütün modlarını seçtiğin profile gönderir. Hedef aynı sürümdeyse dosyalar kopyalanır;
+  sürüm ya da mod yükleyici farklıysa her modun o sürümü Modrinth'te aranır, gerekli bağımlılıklarıyla
+  birlikte indirilir. Kapalı modlar kapalı kalır, hedefteki modlara dokunulmaz. Bulunamayan modlar
+  aktarılmaz, adları sonunda listelenir.
+
 ## [0.30.0] — 2026-11-01
 
 ### Eklendi
