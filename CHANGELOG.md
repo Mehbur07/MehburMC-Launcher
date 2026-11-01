@@ -3,6 +3,16 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.30.0] — 2026-11-01
+
+### Eklendi
+- **Linux sürümü:** Ubuntu 26.04 ve MehburOS için `.deb` paketi. Launcher, Java kurulumu ve oyun
+  Linux'ta çalışır, launcher kendini imzalı paketle günceller. Sesli arama ve ekran paylaşımı
+  Linux sürümünde henüz yoktur.
+- **Profil fotoğrafına hareketli GIF:** GIF artık ilk karesiyle sınırlı değil, launcher'da hareket
+  eder. Arkadaşların da hareketli görür; sunucu sınırına sığması için onlara giden kopya gerekirse
+  küçültülür ya da kare atlar.
+
 ## [0.29.1] — 2026-11-01
 
 ### Düzeltildi

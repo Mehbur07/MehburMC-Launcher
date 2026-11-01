@@ -92,6 +92,102 @@ pub fn extract_zip_with(
     Ok(written)
 }
 
+/// Extracts a `.tar.gz` into `dest`, keeping permission bits so programs stay
+/// executable. Same contract as [`extract_zip`]. No link ever reaches the disk:
+/// a symbolic link to a file inside the archive becomes a copy of that file.
+pub fn extract_tar_gz(
+    archive: &Path,
+    dest: &Path,
+    mut map: impl FnMut(&str) -> Option<String>,
+) -> Result<usize> {
+    let io_err = |e: io::Error| CoreError::io(archive, e);
+    let unsafe_entry = |entry: &str| CoreError::UnsafeArchiveEntry {
+        path: archive.to_owned(),
+        entry: entry.to_owned(),
+    };
+    let file = File::open(archive).map_err(io_err)?;
+    let mut tar = tar::Archive::new(flate2::read::GzDecoder::new(file));
+    let mut links = Vec::new();
+    let mut written = 0;
+    for entry in tar.entries().map_err(io_err)? {
+        let mut entry = entry.map_err(io_err)?;
+        let name = entry
+            .path()
+            .map_err(io_err)?
+            .to_string_lossy()
+            .replace('\\', "/");
+        let kind = entry.header().entry_type();
+        if kind.is_dir() {
+            continue;
+        }
+        let Some(rel) = map(&name) else { continue };
+        let Some(target) = safe_join(dest, &rel) else {
+            return Err(unsafe_entry(&name));
+        };
+        if kind.is_symlink() {
+            let link = entry
+                .link_name()
+                .map_err(io_err)?
+                .ok_or_else(|| unsafe_entry(&name))?;
+            // Relative to the link's own folder, and it may not leave `dest`.
+            let folder = Path::new(&rel).parent().unwrap_or(Path::new(""));
+            let source = lexical_join(folder, &link.to_string_lossy())
+                .and_then(|p| safe_join(dest, &p))
+                .ok_or_else(|| unsafe_entry(&name))?;
+            links.push((source, target));
+            continue;
+        }
+        if !kind.is_file() {
+            return Err(unsafe_entry(&name));
+        }
+        if let Some(parent) = target.parent() {
+            fs::create_dir_all(parent).map_err(|e| CoreError::io(parent, e))?;
+        }
+        let mut out = File::create(&target).map_err(|e| CoreError::io(&target, e))?;
+        io::copy(&mut entry, &mut out).map_err(|e| CoreError::io(&target, e))?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mode = entry.header().mode().map_err(io_err)? & 0o755;
+            fs::set_permissions(&target, fs::Permissions::from_mode(mode))
+                .map_err(|e| CoreError::io(&target, e))?;
+        }
+        written += 1;
+    }
+    for (source, target) in links {
+        // Folder links and links to missing files are of no use to a runtime.
+        if source.is_file() {
+            if let Some(parent) = target.parent() {
+                fs::create_dir_all(parent).map_err(|e| CoreError::io(parent, e))?;
+            }
+            fs::copy(&source, &target).map_err(|e| CoreError::io(&target, e))?;
+            written += 1;
+        }
+    }
+    Ok(written)
+}
+
+/// `a/b` + `../c` → `a/c`; `None` for an absolute link or one above the root.
+fn lexical_join(folder: &Path, link: &str) -> Option<String> {
+    if link.starts_with('/') || link.contains('\\') {
+        return None;
+    }
+    let mut parts: Vec<String> = folder
+        .components()
+        .map(|c| c.as_os_str().to_string_lossy().into_owned())
+        .collect();
+    for part in link.split('/') {
+        match part {
+            "" | "." => {}
+            ".." => {
+                parts.pop()?;
+            }
+            other => parts.push(other.to_owned()),
+        }
+    }
+    Some(parts.join("/"))
+}
+
 fn open(archive: &Path) -> Result<zip::ZipArchive<File>> {
     let file = File::open(archive).map_err(|e| CoreError::io(archive, e))?;
     zip::ZipArchive::new(file).map_err(|source| CoreError::Archive {
@@ -234,5 +330,90 @@ mod tests {
         let err = extract_zip(&evil, &out, |n| Some(n.to_owned())).unwrap_err();
         assert_eq!(err.code(), "archive.unsafe");
         assert!(!dir.path().join("escaped.txt").exists());
+    }
+
+    /// `(name, mode, data)`, or a symbolic link when `data` starts with `->`.
+    fn make_tar_gz(path: &Path, entries: &[(&str, u32, &[u8])]) {
+        let gz =
+            flate2::write::GzEncoder::new(File::create(path).unwrap(), flate2::Compression::fast());
+        let mut w = tar::Builder::new(gz);
+        for (name, mode, data) in entries {
+            let mut h = tar::Header::new_gnu();
+            h.set_mode(*mode);
+            // Written by hand: the builder's helpers refuse the evil names.
+            h.as_old_mut().name[..name.len()].copy_from_slice(name.as_bytes());
+            match data.strip_prefix(b"->") {
+                Some(link) => {
+                    h.set_entry_type(tar::EntryType::Symlink);
+                    h.as_old_mut().linkname[..link.len()].copy_from_slice(link);
+                    h.set_size(0);
+                    h.set_cksum();
+                    w.append(&h, io::empty()).unwrap();
+                }
+                None => {
+                    h.set_size(data.len() as u64);
+                    h.set_cksum();
+                    w.append(&h, *data).unwrap();
+                }
+            }
+        }
+        w.into_inner().unwrap().finish().unwrap();
+    }
+
+    #[test]
+    fn extracts_tar_gz_like_a_java_runtime() {
+        let dir = tempfile::tempdir().unwrap();
+        let good = dir.path().join("jre.tar.gz");
+        make_tar_gz(
+            &good,
+            &[
+                ("jdk-25/bin/java", 0o755, b"elf"),
+                ("jdk-25/lib/libjsig.so", 0o644, b"so"),
+                ("jdk-25/lib/server/libjsig.so", 0o777, b"->../libjsig.so"),
+                ("jdk-25/legal/LICENSE", 0o777, b"->gone"),
+            ],
+        );
+        let out = dir.path().join("out");
+        let strip = |n: &str| {
+            n.split_once('/')
+                .map(|(_, rest)| rest.to_owned())
+                .filter(|r| !r.is_empty())
+        };
+        assert_eq!(extract_tar_gz(&good, &out, strip).unwrap(), 3);
+        assert_eq!(fs::read(out.join("bin/java")).unwrap(), b"elf");
+        let copy = out.join("lib/server/libjsig.so");
+        assert_eq!(fs::read(&copy).unwrap(), b"so");
+        assert!(!fs::symlink_metadata(&copy).unwrap().is_symlink());
+        assert!(!out.join("legal/LICENSE").exists());
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mode = |p: &str| fs::metadata(out.join(p)).unwrap().permissions().mode() & 0o777;
+            assert_eq!(mode("bin/java"), 0o755);
+            assert_eq!(mode("lib/libjsig.so"), 0o644);
+        }
+    }
+
+    #[test]
+    fn tar_gz_cannot_leave_the_folder() {
+        let dir = tempfile::tempdir().unwrap();
+        let out = dir.path().join("out");
+        let secret = dir.path().join("secret");
+        fs::write(&secret, b"s").unwrap();
+        let cases: [(&str, u32, &[u8]); 5] = [
+            ("../escaped", 0o644, b"x"),
+            ("/abs", 0o644, b"x"),
+            ("link", 0o777, b"->../secret"),
+            ("link", 0o777, b"->/etc/passwd"),
+            ("a/link", 0o777, b"->../../secret"),
+        ];
+        for (i, entry) in cases.into_iter().enumerate() {
+            let evil = dir.path().join(format!("evil{i}.tar.gz"));
+            make_tar_gz(&evil, &[entry]);
+            let err = extract_tar_gz(&evil, &out, |n| Some(n.to_owned())).unwrap_err();
+            assert_eq!(err.code(), "archive.unsafe", "{entry:?}");
+        }
+        assert!(!dir.path().join("escaped").exists());
+        assert!(!out.join("link").exists());
     }
 }

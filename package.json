@@ -1,7 +1,7 @@
 {
   "name": "mehbur-launcher",
   "private": true,
-  "version": "0.29.1",
+  "version": "0.30.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,6 +14,7 @@
     "format:check": "prettier --check .",
     "package": "tauri build && node scripts/package-portable.mjs",
     "package:portable": "node scripts/package-portable.mjs",
+    "package:linux": "node scripts/package-linux.mjs package",
     "coverage": "vitest run --coverage --coverage.include=src/** --coverage.exclude=src/lib/ipc/bindings/** --coverage.exclude=src/test/**"
   },
   "dependencies": {

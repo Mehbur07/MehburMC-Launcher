@@ -67,6 +67,12 @@ ile başlatıp Chrome DevTools Protocol üzerinden ekran görüntüsü alın; ba
 getirmeyin. Tek-örnek kilidi nedeniyle **çalışan başka bir launcher varken test kopyası
 başlatmayın** (o pencere öne gelir).
 
+## Linux paketi
+
+`npm run package:linux` Docker içinde Ubuntu 26.04'te imzalı `.deb` üretir (`target/linux`).
+`node scripts/package-linux.mjs test` aynı ortamda Rust denetimlerini çalıştırır. İmza değişkenleri
+`npm run package` ile aynıdır. `publish-release.mjs` paketi görürse `vX.Y.Z-linux` ön sürümüne koyar.
+
 ## Sürüm yayınlama
 
 1. `src-tauri/tauri.conf.json`, `Cargo.toml` (workspace) ve `package.json` sürümünü artır,

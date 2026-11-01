@@ -64,6 +64,7 @@ class FakeStream {
   }
 }
 vi.stubGlobal("MediaStream", FakeStream);
+vi.stubGlobal("RTCPeerConnection", class {});
 vi.stubGlobal(
   "Audio",
   class {
@@ -164,6 +165,17 @@ describe("calls store", () => {
     expect(s.joining).toBe(false);
     expect(meshes[0]!.opts.relayOnly).toBe(true);
     expect(meshes[0]!.setTrack).toHaveBeenCalledWith(track);
+  });
+
+  it("says so instead of failing where the webview has no WebRTC", async () => {
+    vi.stubGlobal("RTCPeerConnection", undefined);
+    await useCalls.getState().start({ friend: "f1" });
+    vi.stubGlobal("RTCPeerConnection", class {});
+    const s = useCalls.getState();
+    expect(s.error?.code).toBe("calls.unsupported");
+    expect(s.joining).toBe(false);
+    expect(ipcMock.callStart).not.toHaveBeenCalled();
+    expect(meshes).toHaveLength(0);
   });
 
   it("goes direct when hiding is off or no relay exists", async () => {

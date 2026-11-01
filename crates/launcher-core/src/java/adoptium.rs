@@ -7,7 +7,7 @@ use serde::Deserialize;
 use tokio_util::sync::CancellationToken;
 
 use super::{JavaInstall, managed_home, read_release};
-use crate::archive::extract_zip;
+use crate::archive::{extract_tar_gz, extract_zip};
 use crate::ctx::Ctx;
 use crate::error::{CoreError, Result};
 use crate::events::{Progress, Stage};
@@ -79,8 +79,8 @@ async fn find_package(ctx: &Ctx, major: u32) -> Result<Package> {
 
 pub async fn install(ctx: &Ctx, major: u32, cancel: &CancellationToken) -> Result<JavaInstall> {
     let pkg = find_package(ctx, major).await?;
-    if !pkg.name.ends_with(".zip") {
-        // tar.gz runtimes (Linux/macOS) are not handled yet.
+    let is_zip = pkg.name.ends_with(".zip");
+    if !is_zip && !pkg.name.ends_with(".tar.gz") {
         return Err(CoreError::JavaUnavailable {
             major,
             os: ctx.os.name.into(),
@@ -112,11 +112,16 @@ pub async fn install(ctx: &Ctx, major: u32, cancel: &CancellationToken) -> Resul
     let (archive2, staging2) = (archive.clone(), staging.clone());
     // Strip the archive's top-level folder (`jdk-25.0.4.1+1-jre/…`).
     tokio::task::spawn_blocking(move || {
-        extract_zip(&archive2, &staging2, |name| {
+        let strip = |name: &str| {
             name.split_once('/')
                 .map(|(_, rest)| rest.to_owned())
                 .filter(|r| !r.is_empty())
-        })
+        };
+        if is_zip {
+            extract_zip(&archive2, &staging2, strip)
+        } else {
+            extract_tar_gz(&archive2, &staging2, strip)
+        }
     })
     .await
     .expect("extract task panicked")?;

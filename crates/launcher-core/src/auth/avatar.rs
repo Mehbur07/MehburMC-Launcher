@@ -5,15 +5,23 @@
 //! (HEIC, AVIF, JPEG XL, RAW, ... when installed; they shrink big photos while
 //! reading), then the `image` crate. Only this user-picked file takes this
 //! path: what friends send stays PNG-only (`friends/avatar.rs`).
+//!
+//! An animated GIF is kept moving (K97) by storing it as an animated PNG: the
+//! same file name, the same `<img>`, and friends can receive it from the
+//! PNG-only bucket. `<id>.public.png` is its smaller copy for friends.
 
 use std::collections::HashMap;
-use std::io::Cursor;
+use std::io::{Cursor, Write};
 use std::path::{Path, PathBuf};
 
 use base64::Engine;
-use image::{DynamicImage, ImageDecoder, ImageError, ImageFormat, ImageReader, Limits};
+use image::codecs::gif::GifDecoder;
+use image::{
+    AnimationDecoder, DynamicImage, ImageDecoder, ImageError, ImageFormat, ImageReader, Limits,
+};
 
 use crate::error::{CoreError, Result};
+use crate::friends::avatar::{MAX_BYTES as PUBLIC_MAX_BYTES, PUBLIC_SIZE};
 use crate::paths::Paths;
 use crate::skin::image::{Rgba, encode};
 
@@ -28,6 +36,22 @@ const MAX_ALLOC: u64 = 700 * 1024 * 1024;
 const READ_SHORT_SIDE: u32 = SIZE * 2;
 /// Stored size (square).
 pub const SIZE: u32 = 256;
+/// A longer GIF is cut here; bounds memory at about 60 MB of 256×256 frames.
+const MAX_FRAMES: usize = 240;
+/// Largest stored animation; it travels to the UI as a `data:` URI.
+const MAX_ANIMATED_BYTES: usize = 16 * 1024 * 1024;
+/// Browsers play shorter GIF delays at this speed, so the GIF looks the same.
+const DEFAULT_DELAY_MS: u32 = 100;
+/// `(side, keep every n-th frame)`, tried in order until the result fits.
+const STORED_ATTEMPTS: &[(u32, usize)] = &[(SIZE, 1), (SIZE, 2), (SIZE, 4), (SIZE, 8)];
+const PUBLIC_ATTEMPTS: &[(u32, usize)] = &[
+    (PUBLIC_SIZE, 1),
+    (96, 1),
+    (64, 1),
+    (64, 2),
+    (64, 4),
+    (64, 8),
+];
 
 fn invalid(reason: impl Into<String>) -> CoreError {
     CoreError::AvatarInvalid(reason.into())
@@ -104,23 +128,133 @@ fn upright(img: &Rgba, orientation: u8) -> Rgba {
     }
 }
 
+fn decode_limits() -> Limits {
+    let mut limits = Limits::default();
+    limits.max_image_width = Some(MAX_SIDE);
+    limits.max_image_height = Some(MAX_SIDE);
+    limits.max_alloc = Some(MAX_ALLOC);
+    limits
+}
+
+/// One animation frame, already cropped and resized to `SIZE`.
+struct Frame {
+    img: Rgba,
+    delay_ms: u32,
+}
+
+/// The frames of an animated GIF. Anything else gives fewer than two frames,
+/// and so does a GIF too damaged to animate; those are read as a still image.
+fn gif_frames(bytes: &[u8]) -> Vec<Frame> {
+    if !bytes.starts_with(b"GIF8") {
+        return Vec::new();
+    }
+    let Ok(mut decoder) = GifDecoder::new(Cursor::new(bytes)) else {
+        return Vec::new();
+    };
+    if decoder.set_limits(decode_limits()).is_err() {
+        return Vec::new();
+    }
+    let frames = decoder.into_frames().take(MAX_FRAMES);
+    // A broken frame ends the animation; what came before it still plays.
+    frames
+        .map_while(std::result::Result::ok)
+        .map(|frame| {
+            let (numer, denom) = frame.delay().numer_denom_ms();
+            let delay_ms = numer / denom.max(1);
+            let buffer = frame.into_buffer();
+            let (width, height) = buffer.dimensions();
+            let full = Rgba {
+                width,
+                height,
+                pixels: buffer.into_raw(),
+            };
+            Frame {
+                img: square_downscale(&full, SIZE),
+                delay_ms: if delay_ms < 20 {
+                    DEFAULT_DELAY_MS
+                } else {
+                    delay_ms
+                },
+            }
+        })
+        .collect()
+}
+
+/// A `Write` that fails past `left` bytes, so a try that cannot fit stops early.
+struct Capped {
+    out: Vec<u8>,
+    left: usize,
+}
+
+impl Write for Capped {
+    fn write(&mut self, data: &[u8]) -> std::io::Result<usize> {
+        self.left = self
+            .left
+            .checked_sub(data.len())
+            .ok_or_else(|| std::io::Error::other("over budget"))?;
+        self.out.extend_from_slice(data);
+        Ok(data.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
+}
+
+/// Encodes an endlessly looping animated PNG of every `step`-th frame, each
+/// lasting as long as the frames it replaces. `None` when over `budget`.
+fn encode_animation(frames: &[Frame], size: u32, step: usize, budget: usize) -> Option<Vec<u8>> {
+    let groups = frames.chunks(step);
+    let count = groups.len();
+    if count < 2 {
+        return None;
+    }
+    let mut out = Capped {
+        out: Vec::new(),
+        left: budget,
+    };
+    let mut encoder = png::Encoder::new(&mut out, size, size);
+    encoder.set_color(png::ColorType::Rgba);
+    encoder.set_depth(png::BitDepth::Eight);
+    encoder.set_compression(png::Compression::High);
+    encoder.set_animated(count as u32, 0).ok()?;
+    let mut writer = encoder.write_header().ok()?;
+    for group in groups {
+        let ms: u32 = group.iter().map(|f| f.delay_ms).sum();
+        writer
+            .set_frame_delay(ms.min(u32::from(u16::MAX)) as u16, 1000)
+            .ok()?;
+        if size == SIZE {
+            writer.write_image_data(&group[0].img.pixels).ok()?;
+        } else {
+            let small = square_downscale(&group[0].img, size);
+            writer.write_image_data(&small.pixels).ok()?;
+        }
+    }
+    writer.finish().ok()?;
+    Some(out.out)
+}
+
+/// The best version of an animation within `budget`.
+fn fit_animation(frames: &[Frame], attempts: &[(u32, usize)], budget: usize) -> Option<Vec<u8>> {
+    attempts
+        .iter()
+        .find_map(|&(size, step)| encode_animation(frames, size, step, budget))
+}
+
 /// Decodes with the `image` crate; pixels and EXIF orientation. `extension`
 /// names the types that carry no signature (TGA).
 fn decode_with_crate(
     bytes: &[u8],
     extension: Option<&str>,
 ) -> std::result::Result<(Rgba, u8), ImageError> {
-    let mut limits = Limits::default();
-    limits.max_image_width = Some(MAX_SIDE);
-    limits.max_image_height = Some(MAX_SIDE);
-    limits.max_alloc = Some(MAX_ALLOC);
     let mut reader = ImageReader::new(Cursor::new(bytes)).with_guessed_format()?;
     if reader.format().is_none()
         && let Some(format) = extension.and_then(ImageFormat::from_extension)
     {
         reader.set_format(format);
     }
-    reader.limits(limits);
+    reader.limits(decode_limits());
     let mut decoder = reader.into_decoder()?;
     let orientation = decoder.orientation().map_or(1, |o| o.to_exif());
     let img = DynamicImage::from_decoder(decoder)?.into_rgba8();
@@ -196,6 +330,14 @@ pub fn data_uri(png: &[u8]) -> String {
     )
 }
 
+fn remove_if_present(path: &Path) -> Result<()> {
+    match std::fs::remove_file(path) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(CoreError::io(path, e)),
+    }
+}
+
 pub struct AvatarStore {
     paths: Paths,
 }
@@ -218,6 +360,11 @@ impl AvatarStore {
         Ok(self.paths.avatars().join(format!("{account_id}.png")))
     }
 
+    /// The copy for friends; `.` cannot occur in an account id.
+    fn public_path(&self, account_id: &str) -> Result<PathBuf> {
+        Ok(self.path(account_id)?.with_extension("public.png"))
+    }
+
     /// Decodes, turns upright, crops and resizes `bytes`, stores the result and
     /// returns it as a `data:` URI.
     pub fn set(&self, account_id: &str, bytes: &[u8]) -> Result<String> {
@@ -226,8 +373,23 @@ impl AvatarStore {
 
     fn store(&self, account_id: &str, bytes: &[u8], extension: Option<&str>) -> Result<String> {
         let path = self.path(account_id)?;
+        let public_path = self.public_path(account_id)?;
+        if bytes.len() > MAX_FILE_BYTES {
+            return Err(invalid("file is too large"));
+        }
+        let frames = gif_frames(bytes);
+        if let Some(png) = fit_animation(&frames, STORED_ATTEMPTS, MAX_ANIMATED_BYTES) {
+            // Without a copy that fits, friends get the first frame.
+            match fit_animation(&frames, PUBLIC_ATTEMPTS, PUBLIC_MAX_BYTES) {
+                Some(public) => crate::fsutil::write_atomic(&public_path, &public)?,
+                None => remove_if_present(&public_path)?,
+            }
+            crate::fsutil::write_atomic(&path, &png)?;
+            return Ok(data_uri(&png));
+        }
         let (img, orientation) = decode_photo(bytes, extension)?;
         let png = encode(&upright(&square_downscale(&img, SIZE), orientation))?;
+        remove_if_present(&public_path)?;
         crate::fsutil::write_atomic(&path, &png)?;
         Ok(data_uri(&png))
     }
@@ -244,17 +406,18 @@ impl AvatarStore {
 
     /// Back to the skin head. Missing photo is fine.
     pub fn clear(&self, account_id: &str) -> Result<()> {
-        let path = self.path(account_id)?;
-        match std::fs::remove_file(&path) {
-            Ok(()) => Ok(()),
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
-            Err(e) => Err(CoreError::io(path, e)),
-        }
+        remove_if_present(&self.public_path(account_id)?)?;
+        remove_if_present(&self.path(account_id)?)
     }
 
     /// Stored PNG of an account, if it has a photo.
     pub fn bytes(&self, account_id: &str) -> Option<Vec<u8>> {
         std::fs::read(self.path(account_id).ok()?).ok()
+    }
+
+    /// The animation to send to friends, if the photo moves and a copy fits.
+    pub fn public_animation(&self, account_id: &str) -> Option<Vec<u8>> {
+        std::fs::read(self.public_path(account_id).ok()?).ok()
     }
 
     /// `data:` URIs of the accounts that have a photo.
@@ -311,6 +474,126 @@ mod tests {
             pixels: [[200, 100, 50, 255], [0, 0, 0, 0]].concat().repeat(2),
         };
         assert_eq!(square_downscale(&wide, 1).pixels, vec![200, 100, 50, 127]);
+    }
+
+    /// A GIF of solid frames, `(colour, delay in ms)`.
+    fn gif(frames: &[([u8; 3], u32)]) -> Vec<u8> {
+        use image::codecs::gif::{GifEncoder, Repeat};
+        use image::{Delay, Frame as ImageFrame, RgbaImage};
+        let mut out = Vec::new();
+        let mut enc = GifEncoder::new(&mut out);
+        enc.set_repeat(Repeat::Infinite).unwrap();
+        for &([r, g, b], ms) in frames {
+            let img = RgbaImage::from_pixel(32, 24, image::Rgba([r, g, b, 255]));
+            let delay = Delay::from_numer_denom_ms(ms, 1);
+            enc.encode_frame(ImageFrame::from_parts(img, 0, 0, delay))
+                .unwrap();
+        }
+        drop(enc);
+        out
+    }
+
+    /// `(first pixel, delay in ms)` of each frame of an animated PNG.
+    fn apng_frames(bytes: &[u8]) -> Vec<([u8; 3], u32)> {
+        let decoder = image::codecs::png::PngDecoder::new(Cursor::new(bytes)).unwrap();
+        assert!(decoder.is_apng().unwrap());
+        decoder
+            .apng()
+            .unwrap()
+            .into_frames()
+            .map(|f| {
+                let f = f.unwrap();
+                let (numer, denom) = f.delay().numer_denom_ms();
+                let [r, g, b, _] = f.buffer().get_pixel(0, 0).0;
+                ([r, g, b], numer / denom)
+            })
+            .collect()
+    }
+
+    fn store_at(tmp: &tempfile::TempDir) -> AvatarStore {
+        let paths = Paths::at(tmp.path().join("MehburMC"));
+        paths.ensure_layout().unwrap();
+        AvatarStore::new(paths)
+    }
+
+    #[test]
+    fn animated_gif_stays_animated() {
+        let tmp = tempfile::tempdir().unwrap();
+        let store = store_at(&tmp);
+        let red = [255, 0, 0];
+        let blue = [0, 0, 255];
+        let file = gif(&[(red, 300), (blue, 500), (red, 0)]);
+
+        let uri = store.set("offline-abc", &file).unwrap();
+        assert!(uri.starts_with("data:image/png;base64,"));
+        let saved = store.bytes("offline-abc").unwrap();
+        assert_eq!(
+            apng_frames(&saved),
+            [(red, 300), (blue, 500), (red, DEFAULT_DELAY_MS)]
+        );
+
+        // What only reads PNGs (older launchers, skin code) gets the first frame.
+        let first = decode(&saved).unwrap();
+        assert_eq!((first.width, first.height), (SIZE, SIZE));
+        assert_eq!(first.pixels[..3], red);
+
+        // Friends receive a moving copy from the PNG-only path.
+        let public = store.public_animation("offline-abc").unwrap();
+        assert!(public.len() <= PUBLIC_MAX_BYTES);
+        assert_eq!(apng_frames(&public).len(), 3);
+        let small = crate::skin::image::decode_limited(&public, PUBLIC_MAX_BYTES, 1024).unwrap();
+        assert_eq!(small.width, PUBLIC_SIZE);
+
+        // A still photo replaces it completely, and so does clearing.
+        store.set("offline-abc", &png(8, 8, |_, _| false)).unwrap();
+        assert!(store.public_animation("offline-abc").is_none());
+        store.set("offline-abc", &file).unwrap();
+        store.clear("offline-abc").unwrap();
+        assert!(store.bytes("offline-abc").is_none());
+        assert!(store.public_animation("offline-abc").is_none());
+    }
+
+    #[test]
+    fn single_frame_gif_is_a_still_photo() {
+        let tmp = tempfile::tempdir().unwrap();
+        let store = store_at(&tmp);
+        store.set("offline-abc", &gif(&[([9, 9, 9], 100)])).unwrap();
+        let saved = store.bytes("offline-abc").unwrap();
+        let decoder = image::codecs::png::PngDecoder::new(Cursor::new(&saved)).unwrap();
+        assert!(!decoder.is_apng().unwrap());
+        assert!(store.public_animation("offline-abc").is_none());
+    }
+
+    #[test]
+    fn animation_shrinks_until_it_fits() {
+        // Random noise barely compresses: the worst case for the budget.
+        let mut seed = 1u32;
+        let frames: Vec<Frame> = (0..64)
+            .map(|_| Frame {
+                img: Rgba {
+                    width: SIZE,
+                    height: SIZE,
+                    pixels: (0..SIZE * SIZE)
+                        .flat_map(|_| {
+                            seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+                            let [a, b, c, _] = seed.to_be_bytes();
+                            [a, b, c, 255]
+                        })
+                        .collect(),
+                },
+                delay_ms: 50,
+            })
+            .collect();
+
+        let public = fit_animation(&frames, PUBLIC_ATTEMPTS, PUBLIC_MAX_BYTES).unwrap();
+        assert!(public.len() <= PUBLIC_MAX_BYTES);
+        let kept = apng_frames(&public);
+        assert!(kept.len() < frames.len());
+        // Dropped frames lengthen the ones that stay: same total duration.
+        assert_eq!(kept.iter().map(|f| f.1).sum::<u32>(), 64 * 50);
+
+        // Too small for anything, so the caller falls back to one frame.
+        assert!(fit_animation(&frames, PUBLIC_ATTEMPTS, 1024).is_none());
     }
 
     #[test]

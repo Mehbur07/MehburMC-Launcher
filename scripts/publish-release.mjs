@@ -1,6 +1,7 @@
 // Publishes a finished, signed `npm run package` build (ARCHITECTURE K62, K63):
 //   1. GitHub release vX.Y.Z with only the setup .exe (notes from CHANGELOG.md),
-//   2. latest.json (version, notes, signature, url) on the code-free `updater`
+//   2. pre-release vX.Y.Z-linux with the .deb, if `npm run package:linux` built one,
+//   3. latest.json (version, notes, signature, url) on the code-free `updater`
 //      branch, which installed launchers poll.
 // Needs `gh` logged in with push access. Usage: node scripts/publish-release.mjs
 import { spawnSync } from "node:child_process";
@@ -65,11 +66,37 @@ try {
     signature: readFileSync(`${built}.sig`, "utf8").trim(),
     url: `https://github.com/${REPO}/releases/download/${tag}/${asset}`,
   };
+  const platforms = { "windows-x86_64": platform, "windows-x86_64-nsis": platform };
+
+  // The Linux package gets its own pre-release, so that the normal release
+  // keeps only the Windows installer (K63) and MehburOS has a fixed URL.
+  const deb = join("target", "linux", `${conf.productName}_${version}_amd64.deb`);
+  if (existsSync(deb) && existsSync(`${deb}.sig`)) {
+    const linuxTag = `${tag}-linux`;
+    const linuxAsset = `MehburMC-Launcher_${version}_amd64.deb`;
+    copyFileSync(deb, join(work, linuxAsset));
+    const linuxExists =
+      spawnSync("gh", ["release", "view", linuxTag, "--repo", REPO], { stdio: "ignore" }).status ===
+      0;
+    if (!linuxExists)
+      run("gh", ["release", "create", linuxTag, "--repo", REPO, "--target", "main", "--prerelease",
+      "--latest=false", "--title", `MehburMC Launcher ${tag} (Linux)`,
+      "--notes", `Linux paketi (Ubuntu 26.04 / MehburOS). Kurulum: \`sudo apt install ./${linuxAsset}\``,
+      join(work, linuxAsset)]); // prettier-ignore
+    platforms["linux-x86_64-deb"] = {
+      signature: readFileSync(`${deb}.sig`, "utf8").trim(),
+      url: `https://github.com/${REPO}/releases/download/${linuxTag}/${linuxAsset}`,
+    };
+    console.log(`published ${linuxTag}: ${platforms["linux-x86_64-deb"].url}`);
+  } else {
+    console.warn("no Linux package for this version: Linux launchers will not see this update");
+  }
+
   const latest = {
     version,
     notes,
     pub_date: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
-    platforms: { "windows-x86_64": platform, "windows-x86_64-nsis": platform },
+    platforms,
   };
 
   // The updater branch holds nothing but latest.json.

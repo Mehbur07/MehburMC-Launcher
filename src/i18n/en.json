@@ -218,7 +218,7 @@
       "notFound": "Account not found: {{id}}",
       "nameTaken": "This username is taken. Please choose another one.",
       "avatarInvalid": "Invalid profile photo: {{reason}}",
-      "avatarFormat": "This file could not be opened: it is not an image, or this PC has no component for its type. For HEIC, AVIF, JPEG XL and RAW, install the matching Microsoft Store extension (HEIF + HEVC, AV1, JPEG XL, Raw) or convert the file to JPG/PNG.",
+      "avatarFormat": "This file could not be opened: it is not an image, or this PC has no component for its type. HEIC, AVIF, JPEG XL and RAW need the matching Microsoft Store extension on Windows (HEIF + HEVC, AV1, JPEG XL, Raw). Otherwise, and on Linux, convert the file to JPG/PNG.",
       "nameLimit": "At most 10 usernames can be reserved from this computer. Delete an account you no longer use.",
       "nameInvalid": "Invalid username.",
       "nameCheckOffline": "An internet connection is needed to check the username.",
@@ -305,7 +305,8 @@
       "turnUnavailable": "The voice relay server could not be reached.",
       "micDenied": "No microphone permission. Allow desktop apps in Windows Settings → Privacy & security → Microphone.",
       "micMissing": "No microphone found.",
-      "screenFailed": "Screen sharing could not start."
+      "screenFailed": "Screen sharing could not start.",
+      "unsupported": "Voice calls and screen sharing are not in the Linux version yet."
     }
   },
   "instances": {

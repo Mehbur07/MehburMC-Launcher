@@ -293,6 +293,11 @@ export const useCalls = create<CallsStore>((set, get) => {
   const begin = async (join: () => Promise<number>) => {
     const self = me();
     if (!self) return;
+    // The Linux webview (WebKitGTK) comes with WebRTC turned off.
+    if (typeof RTCPeerConnection === "undefined") {
+      set({ error: { code: "calls.unsupported", detail: "no WebRTC", params: {} } });
+      return;
+    }
     if (get().activeId !== null) await get().leave();
     set({ joining: true, error: null });
     const [{ stream, error: micError }, ice] = await Promise.all([

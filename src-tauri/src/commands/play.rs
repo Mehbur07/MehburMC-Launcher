@@ -49,10 +49,18 @@ pub fn reopen_window(app: &AppHandle) {
                 }
             }
         };
-        let _ = window.unminimize();
-        let _ = window.show();
-        let _ = window.set_focus();
+        bring_back(&window);
     });
+}
+
+fn bring_back(window: &tauri::WebviewWindow) {
+    // Wayland lets no program undo a minimise, but a window shown anew is not
+    // minimised. Without this it would only flash in the task bar.
+    #[cfg(target_os = "linux")]
+    let _ = window.hide();
+    let _ = window.unminimize();
+    let _ = window.show();
+    let _ = window.set_focus();
 }
 
 /// Minimises the launcher while the game runs and brings it back afterwards.
@@ -66,6 +74,9 @@ struct WindowHooks {
     app: AppHandle,
     behavior: LaunchBehavior,
     exited: Arc<AtomicBool>,
+    /// Both the main-menu line and the fallback timer call `quit`. Only the
+    /// first may act: the player can have reopened the window by the second.
+    quit_done: Arc<AtomicBool>,
 }
 
 impl WindowHooks {
@@ -80,6 +91,9 @@ impl WindowHooks {
         // Closing would end the voice call (K86); stay minimised instead.
         if super::calls::in_call(&self.app) {
             tracing::info!("in a voice call; keeping the launcher open (minimised)");
+            return;
+        }
+        if self.quit_done.swap(true, Ordering::SeqCst) {
             return;
         }
         if self.behavior == LaunchBehavior::CloseReopen {
@@ -135,8 +149,7 @@ impl LaunchHooks for WindowHooks {
         } else if self.behavior != LaunchBehavior::KeepOpen
             && let Some(w) = self.app.get_webview_window("main")
         {
-            let _ = w.unminimize();
-            let _ = w.set_focus();
+            bring_back(&w);
         }
     }
 }
@@ -153,6 +166,7 @@ fn start(
         app,
         behavior: settings.launch_behavior,
         exited: Arc::new(AtomicBool::new(false)),
+        quit_done: Arc::new(AtomicBool::new(false)),
     });
     Ok(state
         .launcher()?

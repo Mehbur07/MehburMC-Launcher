@@ -218,7 +218,7 @@
       "notFound": "Hesap bulunamadı: {{id}}",
       "nameTaken": "Bu kullanıcı adı alındı. Lütfen başka bir ad seçiniz.",
       "avatarInvalid": "Geçersiz profil fotoğrafı: {{reason}}",
-      "avatarFormat": "Bu dosya açılamadı: resim değil ya da bu bilgisayarda türü için bileşen yok. HEIC, AVIF, JPEG XL ve RAW için Microsoft Store'dan ilgili uzantıyı kur (HEIF + HEVC, AV1, JPEG XL, Raw) ya da dosyayı JPG/PNG yap.",
+      "avatarFormat": "Bu dosya açılamadı: resim değil ya da bu bilgisayarda türü için bileşen yok. HEIC, AVIF, JPEG XL ve RAW için Windows'ta Microsoft Store'dan ilgili uzantıyı kur (HEIF + HEVC, AV1, JPEG XL, Raw). Yoksa ve Linux'ta dosyayı JPG/PNG yap.",
       "nameLimit": "Bu bilgisayardan en fazla 10 kullanıcı adı alınabilir. Kullanmadığın bir hesabı sil.",
       "nameInvalid": "Geçersiz kullanıcı adı.",
       "nameCheckOffline": "Kullanıcı adını kontrol etmek için internet bağlantısı gerekli.",
@@ -305,7 +305,8 @@
       "turnUnavailable": "Ses aktarım sunucusuna ulaşılamadı.",
       "micDenied": "Mikrofon izni yok. Windows Ayarları → Gizlilik ve güvenlik → Mikrofon'dan masaüstü uygulamalarına izin ver.",
       "micMissing": "Mikrofon bulunamadı.",
-      "screenFailed": "Ekran paylaşımı başlatılamadı."
+      "screenFailed": "Ekran paylaşımı başlatılamadı.",
+      "unsupported": "Sesli arama ve ekran paylaşımı Linux sürümünde henüz yok."
     }
   },
   "instances": {

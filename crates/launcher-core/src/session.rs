@@ -511,6 +511,9 @@ impl Launcher {
         else {
             return ("Player".into(), None);
         };
+        if let Some(animation) = self.avatars.public_animation(&acc.id) {
+            return (acc.name, Some(animation));
+        }
         let size = crate::friends::avatar::PUBLIC_SIZE;
         let image = match self.avatars.bytes(&acc.id) {
             Some(png) => skin::image::decode_limited(&png, avatar::MAX_FILE_BYTES, 4096)

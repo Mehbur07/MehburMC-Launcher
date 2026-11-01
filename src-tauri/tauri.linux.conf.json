@@ -1,0 +1,12 @@
+{
+  "mainBinaryName": "mehburmc-launcher",
+  "bundle": {
+    "targets": ["deb"],
+    "linux": {
+      "deb": {
+        "section": "games",
+        "depends": ["pkexec"]
+      }
+    }
+  }
+}
