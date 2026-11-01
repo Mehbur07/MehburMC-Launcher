@@ -3,6 +3,14 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.29.1] — 2026-11-01
+
+### Düzeltildi
+- **İki hesap aynı anda "Aktif" görünmüyor:** bir hesabı yeniden adlandırıp eski adıyla yeni hesap
+  açınca ikisi aynı kimliği paylaşıyordu. Yeni hesap artık kendi kimliğini alıyor; bu durumdaki
+  mevcut hesaplar launcher açılınca kendiliğinden ayrılıyor. Paylaşılan fotoğraf ve skin eski
+  hesapta kalıyor.
+
 ## [0.29.0] — 2026-10-31
 
 ### Eklendi

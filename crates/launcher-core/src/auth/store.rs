@@ -40,6 +40,28 @@ pub struct AccountsView {
     pub selected: Option<String>,
 }
 
+/// `base`, or `base-2`, `base-3`, ... when an account already has it.
+fn free_id(accounts: &[Account], base: &str) -> String {
+    let free = |id: &str| !accounts.iter().any(|a| a.id == id);
+    if free(base) {
+        return base.to_owned();
+    }
+    (2u32..)
+        .map(|n| format!("{base}-{n}"))
+        .find(|id| free(id))
+        .expect("there are fewer accounts than numbers")
+}
+
+/// Older builds could give two accounts one id. The first keeps it, along with
+/// the selection, photo and skin; launching always found that one anyway.
+fn split_shared_ids(accounts: &mut [Account]) {
+    for i in 1..accounts.len() {
+        if accounts[..i].iter().any(|a| a.id == accounts[i].id) {
+            accounts[i].id = free_id(accounts, &accounts[i].id);
+        }
+    }
+}
+
 pub struct AccountStore {
     paths: Paths,
     lock: Mutex<()>,
@@ -62,7 +84,7 @@ impl AccountStore {
         else {
             return AccountsView::default();
         };
-        let accounts: Vec<Account> = raw["accounts"]
+        let mut accounts: Vec<Account> = raw["accounts"]
             .as_array()
             .map(|a| {
                 a.iter()
@@ -70,6 +92,7 @@ impl AccountStore {
                     .collect()
             })
             .unwrap_or_default();
+        split_shared_ids(&mut accounts);
         let selected = raw["selected"]
             .as_str()
             .filter(|s| accounts.iter().any(|a| a.id == *s))
@@ -96,8 +119,10 @@ impl AccountStore {
             Some(a) => a,
             None => {
                 let uuid = offline_uuid(name);
+                // A renamed account keeps the id of its first name, so this
+                // name may already be in use as an id.
                 let a = Account {
-                    id: format!("offline-{}", uuid.replace('-', "")),
+                    id: free_id(&v.accounts, &format!("offline-{}", uuid.replace('-', ""))),
                     kind: AccountKind::Offline,
                     name: name.to_owned(),
                     uuid,
@@ -238,6 +263,66 @@ mod tests {
             s.rename("nope", "Valid").unwrap_err().code(),
             "account.notFound"
         );
+    }
+
+    #[test]
+    fn old_name_of_a_renamed_account_gets_its_own_id() {
+        let tmp = tempfile::tempdir().unwrap();
+        let paths = Paths::at(tmp.path().join("MehburMC"));
+        paths.ensure_layout().unwrap();
+        let s = AccountStore::new(paths);
+
+        let renamed = s.add_offline("Steve").unwrap();
+        s.rename(&renamed.id, "Notch").unwrap();
+        let new = s.add_offline("Steve").unwrap();
+        assert_ne!(new.id, renamed.id);
+        assert_eq!(new.uuid, offline_uuid("Steve"));
+
+        assert_eq!(s.launch_account().unwrap().name, "Steve");
+        s.select(&renamed.id).unwrap();
+        assert_eq!(s.launch_account().unwrap().name, "Notch");
+
+        let v = s.remove(&new.id).unwrap();
+        assert_eq!(v.accounts.len(), 1);
+        assert_eq!(v.accounts[0].name, "Notch");
+    }
+
+    #[test]
+    fn accounts_sharing_an_id_are_split() {
+        let tmp = tempfile::tempdir().unwrap();
+        let paths = Paths::at(tmp.path().join("MehburMC"));
+        paths.ensure_layout().unwrap();
+        std::fs::write(
+            paths.accounts_file(),
+            r#"{"accounts":[
+                {"id":"offline-a","kind":"offline","name":"Renamed","uuid":"u1","addedAt":1},
+                {"id":"offline-b","kind":"offline","name":"Other","uuid":"u2","addedAt":2},
+                {"id":"offline-a","kind":"offline","name":"FirstName","uuid":"u3","addedAt":3},
+                {"id":"offline-a-2","kind":"offline","name":"Taken","uuid":"u4","addedAt":4}],
+               "selected":"offline-a"}"#,
+        )
+        .unwrap();
+        let s = AccountStore::new(paths);
+
+        let v = s.view();
+        let ids: Vec<&str> = v.accounts.iter().map(|a| a.id.as_str()).collect();
+        assert_eq!(
+            ids,
+            ["offline-a", "offline-b", "offline-a-3", "offline-a-2"]
+        );
+        assert_eq!(v.selected.as_deref(), Some("offline-a"));
+        assert_eq!(s.view(), v, "the same ids on every read");
+        assert_eq!(s.launch_account().unwrap().name, "Renamed");
+
+        // Each can now be used on its own, and a write makes the ids stick.
+        s.select("offline-a-3").unwrap();
+        assert_eq!(s.launch_account().unwrap().name, "FirstName");
+        let raw = std::fs::read_to_string(s.paths.accounts_file()).unwrap();
+        assert_eq!(raw.matches("\"offline-a\"").count(), 1);
+
+        let v = s.remove("offline-a").unwrap();
+        assert_eq!(v.accounts.len(), 3);
+        assert_eq!(v.selected.as_deref(), Some("offline-a-3"));
     }
 
     #[test]
