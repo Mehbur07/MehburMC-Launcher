@@ -1,15 +1,15 @@
 {
-  "version": "0.29.0",
-  "notes": "### Eklendi\n- **Profil fotoğrafı artık her türden olabilir:** JPG, PNG, WebP, GIF, BMP, TIFF, ICO, TGA, QOI,\n  PNM, HDR, EXR, DDS; bilgisayarda bileşeni varsa HEIC (iPhone), AVIF, JPEG XL, JPEG XR ve kamera\n  RAW dosyaları da. Windows uzantısı eksikse launcher hangisini kuracağını söyler.\n- Telefon fotoğrafları yan görünmez: fotoğrafın yön bilgisi uygulanır.\n\n### Değişti\n- Fotoğraf dosyası sınırı 10 MB'tan 200 MB'a, 4096 pikselden 30000 piksele çıktı; 48 MP'lik\n  telefon fotoğrafları da açılır.",
-  "pub_date": "2026-10-31T19:01:08Z",
+  "version": "0.29.1",
+  "notes": "### Düzeltildi\n- **İki hesap aynı anda \"Aktif\" görünmüyor:** bir hesabı yeniden adlandırıp eski adıyla yeni hesap\n  açınca ikisi aynı kimliği paylaşıyordu. Yeni hesap artık kendi kimliğini alıyor; bu durumdaki\n  mevcut hesaplar launcher açılınca kendiliğinden ayrılıyor. Paylaşılan fotoğraf ve skin eski\n  hesapta kalıyor.",
+  "pub_date": "2026-11-01T10:57:22Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUdsVFNxMjh3RkF5eGRXUGVIcHh6aG5mc1Q2ZldjTUVqK0NvODZ5REtVbldWNG96TFY2MEYraDN3eStpS0QyY0I4Q1VEOUx2ciswSW5jRUcxeU1vWGdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDczMjQ2CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yOS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjI5LjAKMEpXRDQzc1pnQlBSQ1RpZDNKdnNoSFM4aU1jYmx3R2ZNYWw3dnBYV3VnYlJNRlNNc0lKMHZhRU85OHVzVEc2YjVPVHkzN3FrT1RaQjV3R3JHMGtZQVE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.29.0/MehburMC-Launcher_0.29.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUYwdkRpWkZUeTcrM24yMTM4TnllTTFQUTQwaUt1WlU5RUZObFJZUUNoc0lFOGMwTWFPSm5TaWdtK0ZGRitFb2kxSXFIWXRSZWtEOHdSaGswUzhlbkFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNTMwNjE5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yOS4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjI5LjEKNlkwcnlIYjQ3SVlCUHNYelliMnlhS09kcmdVQ0M2dHEwK29iU1BmS29NaWJJUHkrVEJsUjZOdkFUK2dHSzVzdUwrREtuMlZMZGVnR2c3ZUd4QnRqQnc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.29.1/MehburMC-Launcher_0.29.1_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUdsVFNxMjh3RkF5eGRXUGVIcHh6aG5mc1Q2ZldjTUVqK0NvODZ5REtVbldWNG96TFY2MEYraDN3eStpS0QyY0I4Q1VEOUx2ciswSW5jRUcxeU1vWGdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDczMjQ2CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yOS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjI5LjAKMEpXRDQzc1pnQlBSQ1RpZDNKdnNoSFM4aU1jYmx3R2ZNYWw3dnBYV3VnYlJNRlNNc0lKMHZhRU85OHVzVEc2YjVPVHkzN3FrT1RaQjV3R3JHMGtZQVE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.29.0/MehburMC-Launcher_0.29.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUYwdkRpWkZUeTcrM24yMTM4TnllTTFQUTQwaUt1WlU5RUZObFJZUUNoc0lFOGMwTWFPSm5TaWdtK0ZGRitFb2kxSXFIWXRSZWtEOHdSaGswUzhlbkFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNTMwNjE5CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4yOS4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjI5LjEKNlkwcnlIYjQ3SVlCUHNYelliMnlhS09kcmdVQ0M2dHEwK29iU1BmS29NaWJJUHkrVEJsUjZOdkFUK2dHSzVzdUwrREtuMlZMZGVnR2c3ZUd4QnRqQnc9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.29.1/MehburMC-Launcher_0.29.1_x64-setup.exe"
     }
   }
 }
