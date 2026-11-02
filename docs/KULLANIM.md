@@ -253,7 +253,7 @@ Kenar çubuğundaki **Arkadaşlar** ile arkadaşlarınla mesajlaşabilir ve birb
 listelerini görüp tek tıkla kurabilirsiniz. Özellik **varsayılan olarak kapalıdır**; ilk
 açışta neyin saklandığını anlatan bir onay ekranı çıkar.
 
-- **Arkadaş kodu:** açtığında sana `MEHBUR-XXXX` biçiminde bir kod verilir. Kodunu arkadaşına
+- **Arkadaş kodu:** açtığında sana `MEHBUR-XXXXXXXX` biçiminde bir kod verilir. Kodunu arkadaşına
   gönder; o da **Kodla arkadaş ekle** kutusuna yazar. İstek sende **Arkadaşlık istekleri** bölümünde
   görünür; **Kabul et** dersen arkadaş olursunuz.
 - **Sohbet:** listeden arkadaşını seç. Enter gönderir, Shift+Enter yeni satır; mesajlar en

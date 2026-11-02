@@ -2579,7 +2579,7 @@ dependencies = [
 
 [[package]]
 name = "launcher-cli"
-version = "0.31.0"
+version = "0.31.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -2591,7 +2591,7 @@ dependencies = [
 
 [[package]]
 name = "launcher-core"
-version = "0.31.0"
+version = "0.31.1"
 dependencies = [
  "base64 0.23.1",
  "directories",
@@ -2765,7 +2765,7 @@ dependencies = [
 
 [[package]]
 name = "mehbur-launcher"
-version = "0.31.0"
+version = "0.31.1"
 dependencies = [
  "launcher-core",
  "serde",
@@ -5839,7 +5839,7 @@ checksum = "a28ac98ddc8b9274cb41bb4d9d4d5c425b6020c50c46f25559911905610b4a88"
 
 [[package]]
 name = "wic-decode"
-version = "0.31.0"
+version = "0.31.1"
 dependencies = [
  "windows",
 ]

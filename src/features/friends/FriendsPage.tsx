@@ -115,7 +115,7 @@ function MyCode() {
             value={code}
             maxLength={32}
             spellCheck={false}
-            placeholder="MEHBUR-XXXX"
+            placeholder="MEHBUR-XXXXXXXX"
             aria-label={t("friends.addByCode")}
             onChange={(e) => {
               setCode(e.target.value.toUpperCase());

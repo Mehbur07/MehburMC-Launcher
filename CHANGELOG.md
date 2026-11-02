@@ -3,6 +3,13 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.31.1] — 2026-11-02
+
+### Değişti
+- **Arkadaş kodu 8 karakter oldu:** kodlar artık `MEHBUR-XXXXXXXX` biçiminde. Mevcut kodlar ilk 4
+  karakterini korur, sonuna 4 karakter eklenir; eski kısa kod artık çalışmaz. Arkadaşlıklar ve
+  mesajlar etkilenmez.
+
 ## [0.31.0] — 2026-11-01
 
 ### Eklendi
