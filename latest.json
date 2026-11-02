@@ -1,19 +1,19 @@
 {
-  "version": "0.31.0",
-  "notes": "### Eklendi\n- **Modları başka profile aktarma:** Mod Toggle sayfasındaki **Başka profile aktar** düğmesi bir\n  profilin bütün modlarını seçtiğin profile gönderir. Hedef aynı sürümdeyse dosyalar kopyalanır;\n  sürüm ya da mod yükleyici farklıysa her modun o sürümü Modrinth'te aranır, gerekli bağımlılıklarıyla\n  birlikte indirilir. Kapalı modlar kapalı kalır, hedefteki modlara dokunulmaz. Bulunamayan modlar\n  aktarılmaz, adları sonunda listelenir.",
-  "pub_date": "2026-11-01T15:30:27Z",
+  "version": "0.31.1",
+  "notes": "### Değişti\n- **Arkadaş kodu 8 karakter oldu:** kodlar artık `MEHBUR-XXXXXXXX` biçiminde. Mevcut kodlar ilk 4\n  karakterini korur, sonuna 4 karakter eklenir; eski kısa kod artık çalışmaz. Arkadaşlıklar ve\n  mesajlar etkilenmez.",
+  "pub_date": "2026-11-02T16:51:14Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUt1OWFwSzVrUUI3bER6TFRLbEMzMElHaFNCLzdXdzRqWHNXMVVpUXF3VkxMaGVsT3FqVkJBOU5sNGNWWTZsNVlyeVU1clpvZUVJZnNuYzFFbm5Kc1FRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNTQ2NjU3CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4zMS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjMxLjAKRjhkRmdTK0ZmSkVJdElJemtGMTBSMFNwRGtNVFRLbjdyUG5ZOW1pZThsZE5vU3hGWlgxcXF0bFF4RW1JSzdSeEM4bG9URjgra0VDTWwrODNzajV2QlE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.31.0/MehburMC-Launcher_0.31.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUN1MENuWksyL2JIRko4dTByd2NxVEpqNDMyOGF6cjBianhjVFFPUnRmVi90YjdnQnVjK0tXWXFOaEN4RlVYMDFxT0xhSkMwTllCTlpwem9YUEhHV1E4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNjM4MDQ1CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4zMS4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjMxLjEKSkh3MkFSVmt1cUlWUUU4TmhWMURtRkc4KzBjMk5TNStlekY1QnMrNzhBUmo4YXNzNDNWRnJQNWdsZzRUSG1GNEhxeEQ4cVFiTDQzcG9jeko1ZUt6RFE9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.31.1/MehburMC-Launcher_0.31.1_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUt1OWFwSzVrUUI3bER6TFRLbEMzMElHaFNCLzdXdzRqWHNXMVVpUXF3VkxMaGVsT3FqVkJBOU5sNGNWWTZsNVlyeVU1clpvZUVJZnNuYzFFbm5Kc1FRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNTQ2NjU3CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4zMS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjMxLjAKRjhkRmdTK0ZmSkVJdElJemtGMTBSMFNwRGtNVFRLbjdyUG5ZOW1pZThsZE5vU3hGWlgxcXF0bFF4RW1JSzdSeEM4bG9URjgra0VDTWwrODNzajV2QlE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.31.0/MehburMC-Launcher_0.31.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUN1MENuWksyL2JIRko4dTByd2NxVEpqNDMyOGF6cjBianhjVFFPUnRmVi90YjdnQnVjK0tXWXFOaEN4RlVYMDFxT0xhSkMwTllCTlpwem9YUEhHV1E4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNjM4MDQ1CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4zMS4xX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjMxLjEKSkh3MkFSVmt1cUlWUUU4TmhWMURtRkc4KzBjMk5TNStlekY1QnMrNzhBUmo4YXNzNDNWRnJQNWdsZzRUSG1GNEhxeEQ4cVFiTDQzcG9jeko1ZUt6RFE9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.31.1/MehburMC-Launcher_0.31.1_x64-setup.exe"
     },
     "linux-x86_64-deb": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUxuand1LytDMGtyNWoxNVlTa1M1QlpsNVhlNzUrN25DbmpHbkFoRnpnTGxIRGMzUG81WWl3QldaQW9TL0R2Y3BDV3lPb3FJTVNCanR6TzREZldnbnc4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNTQ2OTY0CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4zMS4wX2FtZDY0LmRlYgl2ZXJzaW9uOjAuMzEuMAp3bmNxelJkK1IyVHhSQnFVQ20wbFp1VGt1SWNNVktJL3FJc2paY0pNelpZOXVRdm9zT2l1SVVZNnJvdW9OZTRzNk11SjhEYmNvN3h0ZktxNXlOMllCUT09Cg==",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.31.0-linux/MehburMC-Launcher_0.31.0_amd64.deb"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUFjbTBGRUFydUhuTHRmNFdtRVJnUE9sdGdDejk3ZTV2VHEyVlY5TEFOTStiSElYeFhrcFU4WDErTzU2OXZOeUt2aDNOU2UvUTVxV0lYYXlXNVhyUWdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNjM4MjE2CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4zMS4xX2FtZDY0LmRlYgl2ZXJzaW9uOjAuMzEuMQpMQWZSK3FrWmk4ck51Y2M4Q2thaThOS201UWs1Z1hoc21nVmFGU0JvRWpYTm1tTU5GSFlXYitYdE1UdllOa3RMYktFQ2hIR2FoZlNsUlU4Ti94NUpDZz09Cg==",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.31.1-linux/MehburMC-Launcher_0.31.1_amd64.deb"
     }
   }
 }
