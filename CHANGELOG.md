@@ -3,6 +3,17 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.31.2] — 2026-11-03
+
+### Güvenlik
+- Güvenli bağlantı (TLS) kütüphaneleri, zip okuyucu ve güncelleme eklentisi bilinen açıklardan
+  arındırılmış sürümlere güncellendi (rustls 0.23.46, rustls-webpki 0.103.16, webpki-root-certs
+  1.0.11, zip 9.3.0, tauri-plugin-updater 2.14.1).
+- Adı okunamayan bir dosya içeren arşivler kütüphane taramasında güvensiz sayılır.
+
+### Diğer
+- Proje GPL-3.0 lisansıyla yayımlanıyor; testler her gönderimde GitHub'da otomatik çalışıyor.
+
 ## [0.31.1] — 2026-11-02
 
 ### Değişti

@@ -61,7 +61,13 @@ pub fn extract_zip_with(
             path: archive.to_owned(),
             source,
         })?;
-        let name = entry.name().replace('\\', "/");
+        let name = entry
+            .name()
+            .map_err(|source| CoreError::Archive {
+                path: archive.to_owned(),
+                source,
+            })?
+            .replace('\\', "/");
         if entry.is_dir() {
             continue;
         }
@@ -199,11 +205,17 @@ fn open(archive: &Path) -> Result<zip::ZipArchive<File>> {
 /// Names of all file entries (`/` separators).
 pub fn entry_names(archive: &Path) -> Result<Vec<String>> {
     let zip = open(archive)?;
-    Ok(zip
-        .file_names()
-        .filter(|n| !n.ends_with('/'))
-        .map(|n| n.replace('\\', "/"))
-        .collect())
+    let mut names = Vec::new();
+    for name in zip.file_names() {
+        let name = name.map_err(|source| CoreError::Archive {
+            path: archive.to_owned(),
+            source,
+        })?;
+        if !name.ends_with('/') {
+            names.push(name.replace('\\', "/"));
+        }
+    }
+    Ok(names)
 }
 
 /// Reads one entry fully into memory; `None` if it does not exist.

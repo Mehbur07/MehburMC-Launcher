@@ -303,7 +303,7 @@ mod tests {
             .unwrap()
             .read_to_string(&mut index)
             .unwrap();
-        let mut names: Vec<String> = zip.file_names().map(str::to_owned).collect();
+        let mut names: Vec<String> = zip.file_names().map(|n| n.unwrap().into_owned()).collect();
         names.sort();
         (serde_json::from_str(&index).unwrap(), names)
     }

@@ -2,7 +2,7 @@
   "name": "mehbur-launcher",
   "private": true,
   "license": "GPL-3.0-only",
-  "version": "0.31.1",
+  "version": "0.31.2",
   "type": "module",
   "scripts": {
     "dev": "vite",

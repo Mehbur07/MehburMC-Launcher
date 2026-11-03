@@ -3,11 +3,11 @@ resolver = "3"
 members = ["crates/launcher-core", "crates/launcher-cli", "crates/wic-decode", "src-tauri"]
 
 [workspace.package]
-version = "0.31.1"
+version = "0.31.2"
 edition = "2024"
 license = "GPL-3.0-only"
 repository = "https://github.com/Mehbur07/MehburMC-Launcher"
-rust-version = "1.88"
+rust-version = "1.90"
 
 [workspace.dependencies]
 launcher-core = { path = "crates/launcher-core" }
@@ -47,7 +47,7 @@ tar = "0.4.46"
 tokio = { version = "1.53.2", features = ["rt-multi-thread", "macros", "fs", "io-util", "process", "signal", "sync", "time", "net"] }
 tokio-util = "0.7.19"
 wiremock = "0.6.5"
-zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
+zip = { version = "9.3.0", default-features = false, features = ["deflate"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
 tempfile = "3.27.0"

@@ -373,7 +373,12 @@ fn scan_zip(c: &mut Collector, bytes: &[u8], prefix: &str, depth: usize, total: 
         if f.is_dir() {
             continue;
         }
-        let name = format!("{prefix}{}", f.name());
+        // A name that cannot be decoded cannot be judged safe.
+        let Ok(entry_name) = f.name() else {
+            c.add(Severity::Block, "unsafePath", prefix);
+            return;
+        };
+        let name = format!("{prefix}{entry_name}");
         let size = f.size();
         // Zip bombs: huge entries or absurd compression ratios.
         if size > MAX_ENTRY_BYTES || (size > 1024 * 1024 && size / f.compressed_size().max(1) > 200)
@@ -678,7 +683,11 @@ fn scan_pack_zip(c: &mut Collector, bytes: &[u8], kind: LibraryKind, total: &mut
         if f.is_dir() {
             continue;
         }
-        let name = f.name().to_owned();
+        // A name that cannot be decoded cannot be judged safe.
+        let Ok(name) = f.name().map(|n| n.into_owned()) else {
+            c.add(Severity::Block, "unsafePath", "/");
+            return;
+        };
         let size = f.size();
         if size > MAX_ENTRY_BYTES || (size > 1024 * 1024 && size / f.compressed_size().max(1) > 200)
         {
@@ -776,8 +785,10 @@ fn resource_pack_descriptor(zip: &mut zip::ZipArchive<Cursor<&[u8]>>) -> Option<
 fn shader_descriptor(zip: &mut zip::ZipArchive<Cursor<&[u8]>>) -> Option<ModDescriptor> {
     (0..zip.len())
         .any(|i| {
-            zip.by_index(i)
-                .is_ok_and(|f| f.name().starts_with("shaders/") && f.name().len() > 8)
+            zip.by_index(i).is_ok_and(|f| {
+                f.name()
+                    .is_ok_and(|n| n.starts_with("shaders/") && n.len() > 8)
+            })
         })
         .then(|| ModDescriptor {
             mod_id: String::new(),
