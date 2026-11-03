@@ -5,7 +5,7 @@ members = ["crates/launcher-core", "crates/launcher-cli", "crates/wic-decode", "
 [workspace.package]
 version = "0.31.1"
 edition = "2024"
-license = "UNLICENSED"
+license = "GPL-3.0-only"
 repository = "https://github.com/Mehbur07/MehburMC-Launcher"
 rust-version = "1.88"
 

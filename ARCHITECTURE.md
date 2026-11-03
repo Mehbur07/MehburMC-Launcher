@@ -284,7 +284,7 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 | R12 | **Offline skin** vanilla istemcide görünmez. | Kullanıcı beklentisi karşılanmaz. | Launcher içi önizleme + isteğe bağlı CustomSkinLoader kurulumu (Modrinth'ten indirilir, launcher'a gömülmez). |
 | R13 | **Geliştirme ortamı eksik:** bu makinede Rust ve MSVC Build Tools kurulu değil. | Faz 1 derlenemez. | Faz 1 öncesi kullanıcı onayıyla `rustup` + VS Build Tools kurulur. |
 | R14 | **GitHub Actions (private):** Windows runner'ları dakika kotasını 2 kat harcar. | CI kotası tükenebilir. | CI yalnızca PR ve `main` push'larında çalışır; derleme önbelleği (`rust-cache`) kullanılır. |
-| R15 | **Lisans henüz seçilmedi.** | Public yapmadan önce gerekli. | Repo public yapılmadan önce karar verilecek (açık karar A1). |
+| R15 | ~~Lisans henüz seçilmedi.~~ | — | Kapandı (2026-11-03): GPL-3.0-only, `LICENSE` (A1). |
 | R16 | **Arkadaşlar sunucusu (Supabase ücretsiz katman):** kota (500 MB veritabanı, 1 GB depolama, aylık trafik) ve uzun hareketsizlikte projenin duraklatılması; anonim hesaplarla kötüye kullanım (spam, depolama doldurma). | Arkadaşlar özelliği geçici olarak çalışmaz; launcher'ın geri kalanı etkilenmez. | Özellik varsayılan kapalı; hata `friends.*`/`net.*` olarak gösterilir, sayfa çevrimdışı moda düşer. Dakikada 20 mesaj sınırı, mesaj ≤2000 karakter, mod dosyası ≤50 MB, RLS ile yalnızca arkadaşlar okur; gerekirse Supabase'te anonim kayıt kapatılarak yeni kimlik alımı durdurulur (`friends.unavailable`). |
 
 ---
@@ -315,7 +315,7 @@ UI: OYNA ──invoke(launch_instance)──▶ src-tauri ──▶ core::launch
 
 ## 13. Açık Kararlar
 
-- **A1:** Lisans (MIT / GPL-3.0 / …). Public yapmadan önce seçilecek.
+- **A1:** ~~Lisans~~ → GPL-3.0-only (2026-11-03). Bütün bağımlılıklar uyumlu (MIT, Apache-2.0, BSD, ISC, MPL-2.0, Zlib; fontlar OFL).
 
 ## 14. Karar Kaydı
 

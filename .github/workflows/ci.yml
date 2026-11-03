@@ -1,0 +1,72 @@
+# Lint + tests on every push to main and on pull requests.
+# Releases are built and signed on the developer machine (scripts/publish-release.mjs),
+# so no workflow holds the updater signing key.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # The Tauri app embeds dist/ at compile time.
+      - name: Frontend build
+        run: npm run build
+
+      - name: Rust format
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Rust tests
+        run: cargo test --workspace
+
+      - name: Generated TS bindings are committed
+        shell: bash
+        run: git diff --exit-code -- src/lib/ipc/bindings
+
+      - name: Frontend checks
+        run: |
+          npm run format:check
+          npm run lint
+          npm test
+
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm audit --omit=dev --audit-level=high
