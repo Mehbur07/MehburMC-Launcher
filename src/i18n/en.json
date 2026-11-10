@@ -22,6 +22,7 @@
     "console": "Console",
     "whatsNew": "What's new",
     "settings": "Settings",
+    "support": "Contact admins",
     "admin": "Admin"
   },
   "home": {
@@ -307,6 +308,14 @@
       "micMissing": "No microphone found.",
       "screenFailed": "Screen sharing could not start.",
       "unsupported": "Voice calls and screen sharing are not in the Linux version yet."
+    },
+    "support": {
+      "membersOnly": "Sign in with a MehburMC account to contact the admins.",
+      "subjectInvalid": "The subject must be 1 to 80 characters.",
+      "tooManyOpen": "You can have at most 5 open topics. Close an old one and try again.",
+      "closed": "This topic is closed; open a new one.",
+      "notFound": "Topic not found.",
+      "serverNotReady": "The server is not ready for this yet: an admin has to run supabase/support.sql in Supabase."
     }
   },
   "instances": {
@@ -1145,6 +1154,27 @@
       "chatLabel": "{{name}} group chat"
     }
   },
+  "support": {
+    "title": "Contact admins",
+    "intro": "Got a problem, an idea or a ban appeal? Open a topic and the MehburMC admins will answer. Replies show up here.",
+    "appealIntro": "If you think your ban is a mistake, write to the admins. Replies show up here.",
+    "appeal": "Contact admins (appeal)",
+    "back": "Back",
+    "newThread": "New topic",
+    "threads": "Your topics",
+    "empty": "You have not opened a topic yet.",
+    "subject": "Subject",
+    "subjectPlaceholder": "What is it about, in short?",
+    "body": "Message",
+    "bodyPlaceholder": "Tell us what happened…",
+    "send": "Send",
+    "limits": "You can open up to 3 topics a day and have up to 5 open at once.",
+    "open": "Open",
+    "closed": "Closed",
+    "close": "Close topic",
+    "closedNote": "This topic is closed. Open a new topic for a new problem.",
+    "team": "MehburMC admins"
+  },
   "servers": {
     "title": "Servers",
     "subtitle": "Your favourite servers and each profile's in-game list, with live status, player count and ping.",
@@ -1455,6 +1485,7 @@
       "queue": "Approval queue",
       "published": "Published mods",
       "reports": "Reports",
+      "messages": "Messages",
       "community": "Community",
       "players": "Players",
       "bans": "Bans",
@@ -1489,6 +1520,19 @@
       "hide": "Hide",
       "dismiss": "Dismiss reports",
       "banOwner": "Ban the sharer"
+    },
+    "messages": {
+      "hint": "Topics opened by players. The account names of the player who opened it are shown at the top; if they wrote something bad, use Ban. Players see your reply as \"MehburMC admins\"; writing to a closed topic reopens it.",
+      "openList": "Open",
+      "closedList": "Closed",
+      "empty": "No topics waiting.",
+      "emptyClosed": "No closed topics.",
+      "pick": "Pick a topic.",
+      "player": "Player",
+      "banned": "Banned",
+      "ban": "Ban",
+      "close": "Close",
+      "reopen": "Reopen"
     },
     "bans": {
       "title": "Ban {{name}}?",

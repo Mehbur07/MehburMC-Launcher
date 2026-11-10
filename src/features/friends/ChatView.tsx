@@ -33,11 +33,14 @@ export function ChatView({
   lines,
   onPoll,
   onSend,
+  closedNote,
 }: {
   label: string;
   lines: ChatLine[] | undefined;
   onPoll: () => Promise<void>;
   onSend: (body: string) => Promise<ErrorPayload | null>;
+  /** Verilirse yazma kutusu yerine bu not gösterilir (kapalı konu). */
+  closedNote?: string;
 }) {
   const { t, i18n } = useTranslation();
   const [text, setText] = useState("");
@@ -100,44 +103,48 @@ export function ChatView({
         )}
         <div ref={bottom} />
       </div>
-      <form
-        className="flex flex-col gap-1 border-t border-line p-3"
-        onSubmit={(e) => {
-          e.preventDefault();
-          void submit();
-        }}
-      >
-        <div className="flex items-end gap-2">
-          <textarea
-            value={text}
-            rows={2}
-            maxLength={MAX_CHARS}
-            placeholder={t("friends.messagePlaceholder")}
-            aria-label={t("friends.messagePlaceholder")}
-            onChange={(e) => {
-              setText(e.target.value);
-              setError(null);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                void submit();
-              }
-            }}
-            className="min-h-[2.5rem] flex-1 resize-none rounded-md border border-line bg-surface-2/80 px-3 py-2 text-sm outline-none focus:border-accent/60"
-          />
-          <Button type="submit" variant="primary" disabled={!text.trim() || sending}>
-            <Send size={14} />
-            {t("friends.sendMessage")}
-          </Button>
-        </div>
-        <div className="flex justify-between text-[11px] text-muted">
-          <ErrorText error={error} />
-          <span className="ml-auto">
-            {text.length}/{MAX_CHARS}
-          </span>
-        </div>
-      </form>
+      {closedNote ? (
+        <p className="border-t border-line p-3 text-center text-xs text-muted">{closedNote}</p>
+      ) : (
+        <form
+          className="flex flex-col gap-1 border-t border-line p-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void submit();
+          }}
+        >
+          <div className="flex items-end gap-2">
+            <textarea
+              value={text}
+              rows={2}
+              maxLength={MAX_CHARS}
+              placeholder={t("friends.messagePlaceholder")}
+              aria-label={t("friends.messagePlaceholder")}
+              onChange={(e) => {
+                setText(e.target.value);
+                setError(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  void submit();
+                }
+              }}
+              className="min-h-[2.5rem] flex-1 resize-none rounded-md border border-line bg-surface-2/80 px-3 py-2 text-sm outline-none focus:border-accent/60"
+            />
+            <Button type="submit" variant="primary" disabled={!text.trim() || sending}>
+              <Send size={14} />
+              {t("friends.sendMessage")}
+            </Button>
+          </div>
+          <div className="flex justify-between text-[11px] text-muted">
+            <ErrorText error={error} />
+            <span className="ml-auto">
+              {text.length}/{MAX_CHARS}
+            </span>
+          </div>
+        </form>
+      )}
     </div>
   );
 }

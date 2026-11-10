@@ -10,7 +10,7 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder}
 
 use crate::commands::{
     accounts, admin, auth, calls, content, data, dialogs, files, friends, home, instances, library,
-    loaders, play, servers, skins, textures, update,
+    loaders, play, servers, skins, support, textures, update,
 };
 use crate::state::AppState;
 
@@ -193,6 +193,14 @@ pub fn run() {
             admin::admin_all_users,
             admin::admin_ban,
             admin::admin_unban,
+            support::support_threads,
+            support::support_open,
+            support::support_send,
+            support::support_messages,
+            support::support_mark_read,
+            support::support_set_open,
+            support::support_unread,
+            support::admin_support_threads,
             admin::admin_bans,
             admin::admin_list,
             admin::admin_set_rank,

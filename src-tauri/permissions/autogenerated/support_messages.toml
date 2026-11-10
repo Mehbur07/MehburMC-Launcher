@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-support-messages"
+description = "Enables the support_messages command without any pre-configured scope."
+commands.allow = ["support_messages"]
+
+[[permission]]
+identifier = "deny-support-messages"
+description = "Denies the support_messages command without any pre-configured scope."
+commands.deny = ["support_messages"]

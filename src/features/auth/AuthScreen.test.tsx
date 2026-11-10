@@ -12,6 +12,7 @@ const ipcMock = vi.hoisted(() => ({
   authCreateLocal: vi.fn(),
   authGoogle: vi.fn(),
   authGoogleCancel: vi.fn(),
+  supportThreads: vi.fn(),
 }));
 vi.mock("../../lib/ipc", async (orig) => ({
   ...(await orig<typeof import("../../lib/ipc")>()),
@@ -199,5 +200,21 @@ describe("AuthScreen", () => {
     await act(async () => fireEvent.click(screen.getByRole("button", { name: /Sign out/ })));
     expect(ipcMock.authSignOut).toHaveBeenCalled();
     expect(useAuth.getState().status?.signedIn).toBe(false);
+  });
+
+  it("lets a banned player write to the admins", async () => {
+    ipcMock.supportThreads.mockResolvedValue([]);
+    render(
+      <BanScreen
+        status={status({ signedIn: true, email: "a@b.co", ban: { until: null, reason: "x" } })}
+      />,
+    );
+    await act(async () =>
+      fireEvent.click(screen.getByRole("button", { name: "Contact admins (appeal)" })),
+    );
+    expect(await screen.findByText("You have not opened a topic yet.")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("What is it about, in short?")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(screen.getByText("This ban is permanent.")).toBeInTheDocument();
   });
 });
