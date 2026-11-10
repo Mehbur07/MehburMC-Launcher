@@ -1,0 +1,8 @@
+# İncelenmiş, zararsız gitleaks bulguları (2026-11-10).
+# Hazır pelerinlerin resim SHA-1 parmak izleri (adlarında "key" geçiyor).
+2ff88403ea1f177ce26e0e33f2e1fe5d822c1504:src/features/skins/presets/__snapshots__/catalog.test.ts.snap:generic-api-key:69
+2ff88403ea1f177ce26e0e33f2e1fe5d822c1504:src/features/skins/presets/__snapshots__/catalog.test.ts.snap:generic-api-key:73
+# Supabase "anon" anahtarı: herkese açık olması gereken proje anahtarı, veriyi RLS korur.
+3946a2fe4a8f2ba9339d529a2bfbc7aac1f2ee07:crates/launcher-core/src/friends/mod.rs:jwt:22
+# Log'larda token gizlemeyi deneyen sahte test token'ı.
+1ba6c845155b46cbe7c5e9fba7192851afc9f811:crates/launcher-core/src/logging.rs:jwt:137
