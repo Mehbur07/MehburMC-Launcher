@@ -153,7 +153,7 @@ pub(crate) struct Row {
 
 /// PostgREST's PGRST202: no function with these parameter names, i.e. the
 /// server predates the SQL file that added them.
-fn missing_function(e: &CoreError) -> bool {
+pub(super) fn missing_function(e: &CoreError) -> bool {
     matches!(e, CoreError::FriendsServer { status: 404, reason }
         if reason.contains("Could not find the function"))
 }

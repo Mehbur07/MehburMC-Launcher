@@ -47,10 +47,20 @@ import type { TextureKind } from "../../lib/ipc/bindings/TextureKind";
 import type { ScanReport } from "../../lib/ipc/bindings/ScanReport";
 import { formatBytes, formatIso } from "../../lib/format";
 import { useAuth } from "../../stores/auth";
+import { useSupport } from "../../stores/support";
+import { AdminMessages } from "../support/AdminMessages";
 import { FindingList, KindBadge, LoaderBadges } from "../browse/LibraryPanel";
 
 type Tab =
-  "queue" | "published" | "reports" | "community" | "players" | "bans" | "admins" | "private";
+  | "queue"
+  | "published"
+  | "reports"
+  | "messages"
+  | "community"
+  | "players"
+  | "bans"
+  | "admins"
+  | "private";
 
 /** A user to act on: id plus a name to show. */
 interface Target {
@@ -1383,12 +1393,23 @@ export function AdminPage() {
   const rank = useAuth((s) => s.status?.rank ?? 0);
   const tabs: Tab[] =
     rank === 1
-      ? ["queue", "published", "reports", "community", "players", "bans", "admins", "private"]
-      : ["published", "reports", "players", "bans"];
+      ? [
+          "queue",
+          "published",
+          "reports",
+          "messages",
+          "community",
+          "players",
+          "bans",
+          "admins",
+          "private",
+        ]
+      : ["published", "reports", "messages", "players", "bans"];
   const [tab, setTab] = useState<Tab>(rank === 1 ? "queue" : "published");
   const [banTarget, setBanTarget] = useState<Target | null>(null);
   const [bansVersion, setBansVersion] = useState(0);
   const [key, setKey] = useState(0);
+  const waiting = useSupport((s) => s.unread.admin);
 
   if (rank === 0) return null;
 
@@ -1419,6 +1440,11 @@ export function AdminPage() {
             }`}
           >
             {t(`admin.tabs.${k}`)}
+            {k === "messages" && waiting > 0 && (
+              <span className="ml-1.5 rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-accent">
+                {waiting}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -1426,6 +1452,7 @@ export function AdminPage() {
         {tab === "queue" && <QueueTab status="pending" />}
         {tab === "published" && <QueueTab status="approved" />}
         {tab === "reports" && <ReportsTab rank={rank} onBan={setBanTarget} />}
+        {tab === "messages" && <AdminMessages onBan={setBanTarget} version={bansVersion} />}
         {tab === "community" && <CommunityTab onBan={setBanTarget} />}
         {tab === "players" && <PlayersTab rank={rank} onBan={setBanTarget} version={bansVersion} />}
         {tab === "bans" && <BansTab onBan={setBanTarget} version={bansVersion} />}

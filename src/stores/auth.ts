@@ -43,4 +43,4 @@ export function isMember(s: AuthStatus | null): boolean {
 }
 
 /** Views a local-only account cannot open (K82). */
-export const LOCAL_LOCKED = new Set(["browse", "servers", "friends", "admin"]);
+export const LOCAL_LOCKED = new Set(["browse", "servers", "friends", "support", "admin"]);

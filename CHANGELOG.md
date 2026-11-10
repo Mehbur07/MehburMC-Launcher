@@ -3,6 +3,15 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.32.0] — 2026-11-10
+
+### Eklendi
+- **Admine yaz:** kenar çubuğundaki yeni sayfadan MehburMC yöneticilerine konu açıp yazabilirsin;
+  cevaplar aynı yerde görünür, yeni cevap gelince rozet çıkar. Banlıysan ban ekranındaki
+  **Admine yaz (itiraz et)** düğmesiyle itiraz edebilirsin.
+- **Admin → Mesajlar:** bütün yöneticiler oyuncuların konularını görür, cevaplar, kapatır ya da yeniden
+  açar. Konuyu açan oyuncunun hesap adları görünür; kötü bir şey yazdıysa **Banla** ile oradan banlanır.
+
 ## [0.31.2] — 2026-11-03
 
 ### Güvenlik

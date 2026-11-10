@@ -13,6 +13,7 @@ pub mod oauth;
 pub mod presence;
 pub mod private_textures;
 pub mod share;
+pub mod support;
 pub mod textures;
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -221,6 +222,7 @@ fn server_error(status: u16, body: &[u8]) -> CoreError {
         .chain(account::AUTH_ERRORS)
         .chain(admin::ADMIN_ERRORS)
         .chain(calls::CALL_ERRORS)
+        .chain(support::SUPPORT_ERRORS)
         .find(|c| **c == message)
     {
         return CoreError::Friends(code);

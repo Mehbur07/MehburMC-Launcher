@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-support-mark-read"
+description = "Enables the support_mark_read command without any pre-configured scope."
+commands.allow = ["support_mark_read"]
+
+[[permission]]
+identifier = "deny-support-mark-read"
+description = "Denies the support_mark_read command without any pre-configured scope."
+commands.deny = ["support_mark_read"]

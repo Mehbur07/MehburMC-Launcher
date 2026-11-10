@@ -20,6 +20,7 @@ export type View =
   | "console"
   | "whatsNew"
   | "settings"
+  | "support"
   | "admin";
 
 type Status = "loading" | "ready" | "fatal";

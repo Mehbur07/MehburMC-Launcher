@@ -79,6 +79,10 @@ import type { Settings } from "./bindings/Settings";
 import type { TaskInfo } from "./bindings/TaskInfo";
 import type { TextureKind } from "./bindings/TextureKind";
 import type { TransferResult } from "./bindings/TransferResult";
+import type { AdminSupportThread } from "./bindings/AdminSupportThread";
+import type { SupportMessage } from "./bindings/SupportMessage";
+import type { SupportThread } from "./bindings/SupportThread";
+import type { SupportUnread } from "./bindings/SupportUnread";
 
 /** Typed wrappers around the Rust commands (see src-tauri/src/commands). */
 export const ipc = {
@@ -229,6 +233,18 @@ export const ipc = {
   adminList: () => invoke<AdminEntry[]>("admin_list"),
   adminSetRank: (userId: string, admin: boolean) =>
     invoke<void>("admin_set_rank", { userId, admin }),
+  /** Admine mesaj (K101): oyuncunun konuları ve adminlerin ekranı. */
+  supportThreads: () => invoke<SupportThread[]>("support_threads"),
+  supportOpen: (subject: string, body: string) => invoke<number>("support_open", { subject, body }),
+  supportSend: (thread: number, body: string) => invoke<number>("support_send", { thread, body }),
+  supportMessages: (thread: number, after?: number) =>
+    invoke<SupportMessage[]>("support_messages", { thread, after: after ?? null }),
+  supportMarkRead: (thread: number) => invoke<void>("support_mark_read", { thread }),
+  supportSetOpen: (thread: number, open: boolean) =>
+    invoke<void>("support_set_open", { thread, open }),
+  supportUnread: () => invoke<SupportUnread>("support_unread"),
+  adminSupportThreads: (open: boolean) =>
+    invoke<AdminSupportThread[]>("admin_support_threads", { open }),
   /** Founder: private MehburMC textures (K74). */
   adminPrivateTextures: () => invoke<PrivateTexture[]>("admin_private_textures"),
   /** Uploads the PNG chosen with `pickPath("privateTexture")`. */

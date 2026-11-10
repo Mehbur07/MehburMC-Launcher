@@ -2,6 +2,7 @@ import {
   Boxes,
   Compass,
   Download,
+  LifeBuoy,
   Play,
   Server,
   Settings,
@@ -20,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import { useApp, type View } from "../stores/app";
 import { LOCAL_LOCKED, useAuth } from "../stores/auth";
 import { totalUnread, useFriends } from "../stores/friends";
+import { useSupport } from "../stores/support";
 import { isActive, useTasks } from "../stores/tasks";
 
 const ITEMS: { view: View; icon: LucideIcon }[] = [
@@ -45,6 +47,7 @@ export function Sidebar() {
     (s) => Object.values(s.tasks).filter((t) => t.status === "preparing").length,
   );
   const isAdmin = useAuth((s) => (s.status?.rank ?? 0) > 0);
+  const support = useSupport((s) => s.unread);
   const local = useAuth((s) => s.status?.localAccount ?? false);
   const playing = useTasks((s) =>
     Object.values(s.tasks).some((t) => isActive(t) && t.status === "playing"),
@@ -88,6 +91,14 @@ export function Sidebar() {
               {unread}
             </span>
           )}
+          {((v === "support" && support.mine > 0) || (v === "admin" && support.admin > 0)) && (
+            <span
+              key={v === "support" ? support.mine : support.admin}
+              className="pop-in relative ml-auto rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-accent"
+            >
+              {v === "support" ? support.mine : support.admin}
+            </span>
+          )}
           {v === "whatsNew" && whatsNewUnseen && (
             <span className="relative ml-auto h-2 w-2 rounded-full bg-accent shadow-[0_0_8px_rgb(var(--mc-accent-rgb))]" />
           )}
@@ -108,6 +119,7 @@ export function Sidebar() {
       </ul>
       <ul className="mt-auto flex flex-col gap-1 border-t border-line pt-3">
         {isAdmin && item("admin", ShieldAlert)}
+        {!local && item("support", LifeBuoy)}
         {item("whatsNew", Sparkles)}
         {item("settings", Settings)}
       </ul>

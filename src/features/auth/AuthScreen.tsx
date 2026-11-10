@@ -1,5 +1,7 @@
 import {
+  ArrowLeft,
   KeyRound,
+  LifeBuoy,
   Loader2,
   LogIn,
   LogOut,
@@ -20,6 +22,7 @@ import type { CodePurpose } from "../../lib/ipc/bindings/CodePurpose";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
 import { formatIso } from "../../lib/format";
 import { useAuth } from "../../stores/auth";
+import { SupportPanel } from "../support/SupportPanel";
 
 type Mode =
   | { kind: "signIn" }
@@ -425,7 +428,24 @@ export function BanScreen({ status }: { status: AuthStatus }) {
   const load = useAuth((s) => s.load);
   const signOut = useAuth((s) => s.signOut);
   const [busy, setBusy] = useState(false);
+  // Banlı oyuncu admine yazarak itiraz edebilir (K101).
+  const [appeal, setAppeal] = useState(false);
   const ban = status.ban;
+  if (appeal) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-6">
+        <div className="flex items-center gap-3">
+          <Button size="sm" variant="ghost" onClick={() => setAppeal(false)}>
+            <ArrowLeft size={14} />
+            {t("support.back")}
+          </Button>
+          <h1 className="font-display text-2xl font-bold tracking-wide">{t("support.title")}</h1>
+        </div>
+        <p className="text-sm text-muted">{t("support.appealIntro")}</p>
+        <SupportPanel />
+      </div>
+    );
+  }
   return (
     <Card title={t("auth.ban.title")} icon={<ShieldBan size={22} className="text-danger" />}>
       <div className="flex flex-col gap-3 text-sm">
@@ -438,6 +458,10 @@ export function BanScreen({ status }: { status: AuthStatus }) {
           <p className="text-muted">{t("auth.ban.reason", { reason: ban.reason })}</p>
         )}
         <p className="text-xs text-muted">{status.email}</p>
+        <Button variant="primary" onClick={() => setAppeal(true)}>
+          <LifeBuoy size={14} />
+          {t("support.appeal")}
+        </Button>
         <div className="mt-2 flex justify-between gap-2">
           <Button
             variant="ghost"

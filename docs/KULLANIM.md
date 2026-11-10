@@ -334,12 +334,25 @@ Launcher açılınca MehburMC hesabınla giriş yapman istenir.
 - Ayarlar'ın en altındaki neon kırmızı **Çıkış yap** bu bilgisayardan çıkış yapar; profillerin, modların ve
   dünyaların silinmez.
 - Kurallara uymayan hesaplar yöneticiler tarafından süreli ya da kalıcı **yasaklanabilir**;
-  yasaklıyken launcher kullanılamaz, ekranda bitiş tarihi ve sebep yazar.
+  yasaklıyken launcher kullanılamaz, ekranda bitiş tarihi ve sebep yazar. Banın yanlış olduğunu
+  düşünüyorsan ban ekranındaki **Admine yaz (itiraz et)** ile yöneticilere yazabilirsin.
+
+**Admine yaz** (kenar çubuğunun altında): bir sorun, öneri ya da itiraz için **Yeni konu** aç, konu
+başlığını ve mesajını yaz. Yöneticilerin cevabı aynı konuda "MehburMC yönetimi" adıyla görünür; yeni
+cevap gelince kenar çubuğunda rozet çıkar. İşin bitince **Konuyu kapat**; kapalı konuya yazılamaz,
+yeni bir sorun için yeni konu açılır. Günde en fazla 3 konu açılabilir, aynı anda en fazla 5 konu açık
+kalabilir.
 
 **Yöneticiler** kenar çubuğunda **Admin** sayfasını görür: Kütüphane'ye yüklenen mod ve paketlerin onayı
 (dosya önce yöneticinin launcher'ında yeniden taranır), bildirilen içerik, banlar ve yönetici atama. Kurucu **Topluluk** sekmesinden paylaşılan skin/pelerinleri kaldırır
 (ve geri getirir), ayrıca **Özel dokular** sekmesinden özel
 MehburMC skin/pelerinlerini yükler ve seçtiği kişilere gönderir.
+
+**Mesajlar** sekmesi (her iki rütbe) oyuncuların **Admine yaz** ile açtığı konuları gösterir; cevap
+bekleyenler üstte ve rozetli. Konuyu açan oyuncunun hesap adları ve banlı olup olmadığı görünür; kötü bir
+şey yazdıysa **Banla** ile oradan banlayabilirsin. Cevabın oyuncuya "MehburMC yönetimi" adıyla görünür
+(hangi yöneticinin yazdığını yalnızca yöneticiler görür). **Kapat** / **Yeniden aç** ile konuyu yönetirsin;
+kapalı bir konuya yazmak onu yeniden açar.
 
 **Oyuncular** sekmesi (her iki rütbe) e-postayla kayıtlı bütün hesapları listeler: çevrimiçi olanlar
 üstte, oyun içi isimler, arkadaş kodu, katılma ve son görülme tarihi. İsim veya arkadaş koduyla

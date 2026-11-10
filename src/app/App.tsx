@@ -20,6 +20,7 @@ import { AuthScreen, BanScreen } from "../features/auth/AuthScreen";
 import { useApp, type View } from "../stores/app";
 import { useInstances } from "../stores/instances";
 import { useFriends } from "../stores/friends";
+import { useSupport } from "../stores/support";
 import { useSkins } from "../stores/skins";
 import { useUpdate } from "../stores/update";
 import { CallLayer } from "../features/calls/CallLayer";
@@ -47,6 +48,7 @@ const ModTogglePage = named(() => import("../features/modtoggle/ModTogglePage"),
 const ServersPage = named(() => import("../features/servers/ServersPage"), "ServersPage");
 const WhatsNewPage = named(() => import("../features/whatsnew/WhatsNewPage"), "WhatsNewPage");
 const AdminPage = named(() => import("../features/admin/AdminPage"), "AdminPage");
+const SupportPage = named(() => import("../features/support/SupportPanel"), "SupportPage");
 
 /** In place of pages a local-only account cannot use (K82). */
 function LocalLocked() {
@@ -94,6 +96,8 @@ function Page({ view }: { view: View }) {
       return <WhatsNewPage />;
     case "admin":
       return <AdminPage />;
+    case "support":
+      return <SupportPage />;
   }
 }
 
@@ -159,6 +163,15 @@ export function App() {
     const id = window.setInterval(() => void refreshFriends(), 20_000);
     return () => window.clearInterval(id);
   }, [status, member, friendsStatus, refreshFriends]);
+
+  // Admine mesaj rozetleri (K101): cevaplar ve bekleyen konular dakikada bir.
+  const refreshSupport = useSupport((s) => s.refreshUnread);
+  useEffect(() => {
+    if (status !== "ready" || !member) return;
+    void refreshSupport();
+    const id = window.setInterval(() => void refreshSupport(), 60_000);
+    return () => window.clearInterval(id);
+  }, [status, member, refreshSupport]);
 
   // Apply theme + language whenever settings change. A layout effect, so the
   // background (a child's effect) reads the new color.

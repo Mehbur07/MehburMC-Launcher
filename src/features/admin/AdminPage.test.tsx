@@ -110,7 +110,7 @@ describe("AdminPage", () => {
     asRank(2);
     render(<AdminPage />);
     const tabs = screen.getAllByRole("tab").map((t) => t.textContent);
-    expect(tabs).toEqual(["Published mods", "Reports", "Players", "Bans"]);
+    expect(tabs).toEqual(["Published mods", "Reports", "Messages", "Players", "Bans"]);
     expect(ipcMock.adminTextures).not.toHaveBeenCalled();
     expect(ipcMock.adminLibrary).toHaveBeenCalledWith("approved");
   });

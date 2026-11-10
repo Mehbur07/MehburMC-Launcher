@@ -22,6 +22,7 @@
     "console": "Konsol",
     "whatsNew": "Yenilikler",
     "settings": "Ayarlar",
+    "support": "Admine yaz",
     "admin": "Admin"
   },
   "home": {
@@ -307,6 +308,14 @@
       "micMissing": "Mikrofon bulunamadı.",
       "screenFailed": "Ekran paylaşımı başlatılamadı.",
       "unsupported": "Sesli arama ve ekran paylaşımı Linux sürümünde henüz yok."
+    },
+    "support": {
+      "membersOnly": "Admine yazmak için MehburMC hesabıyla giriş yapmalısın.",
+      "subjectInvalid": "Konu 1 ile 80 karakter arasında olmalı.",
+      "tooManyOpen": "En fazla 5 açık konun olabilir. Eski bir konuyu kapatıp tekrar dene.",
+      "closed": "Bu konu kapatıldı; yeni bir konu aç.",
+      "notFound": "Konu bulunamadı.",
+      "serverNotReady": "Sunucu bu özelliğe henüz hazır değil: yöneticinin supabase/support.sql dosyasını Supabase'de çalıştırması gerekiyor."
     }
   },
   "instances": {
@@ -1145,6 +1154,27 @@
       "chatLabel": "{{name}} grup sohbeti"
     }
   },
+  "support": {
+    "title": "Admine yaz",
+    "intro": "Bir sorunun, önerin ya da ban itirazın mı var? Konu aç, MehburMC yöneticileri cevaplasın. Cevaplar burada görünür.",
+    "appealIntro": "Banının yanlış olduğunu düşünüyorsan yöneticilere yaz. Cevaplar burada görünür.",
+    "appeal": "Admine yaz (itiraz et)",
+    "back": "Geri",
+    "newThread": "Yeni konu",
+    "threads": "Konuların",
+    "empty": "Henüz konu açmadın.",
+    "subject": "Konu",
+    "subjectPlaceholder": "Kısaca ne hakkında?",
+    "body": "Mesaj",
+    "bodyPlaceholder": "Derdini anlat…",
+    "send": "Gönder",
+    "limits": "Günde en fazla 3 konu açabilirsin; aynı anda en fazla 5 açık konun olabilir.",
+    "open": "Açık",
+    "closed": "Kapalı",
+    "close": "Konuyu kapat",
+    "closedNote": "Bu konu kapatıldı. Yeni bir sorun için yeni konu aç.",
+    "team": "MehburMC yönetimi"
+  },
   "servers": {
     "title": "Sunucular",
     "subtitle": "Favori sunucuların ve profillerinin oyun içi listesi; durum, oyuncu sayısı ve ping canlı gösterilir.",
@@ -1455,6 +1485,7 @@
       "queue": "Onay kuyruğu",
       "published": "Yayındaki modlar",
       "reports": "Bildirimler",
+      "messages": "Mesajlar",
       "community": "Topluluk",
       "players": "Oyuncular",
       "bans": "Banlar",
@@ -1489,6 +1520,19 @@
       "hide": "Gizle",
       "dismiss": "Bildirimleri kapat",
       "banOwner": "Paylaşanı banla"
+    },
+    "messages": {
+      "hint": "Oyuncuların açtığı konular. Konuyu açan oyuncunun hesap adları üstte görünür; kötü bir şey yazdıysa Banla ile banlayabilirsin. Senin cevabın oyuncuya \"MehburMC yönetimi\" adıyla görünür; kapalı bir konuya yazarsan konu yeniden açılır.",
+      "openList": "Açık",
+      "closedList": "Kapalı",
+      "empty": "Bekleyen konu yok.",
+      "emptyClosed": "Kapalı konu yok.",
+      "pick": "Bir konu seç.",
+      "player": "Oyuncu",
+      "banned": "Banlı",
+      "ban": "Banla",
+      "close": "Kapat",
+      "reopen": "Yeniden aç"
     },
     "bans": {
       "title": "{{name}} banlansın mı?",
