@@ -1,7 +1,9 @@
 //! Process-wide state built before the window opens.
 
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+#[cfg(desktop)]
+use std::path::Path;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use launcher_core::events::CoreEvent;
@@ -27,6 +29,7 @@ pub struct AppState {
     /// Taken once by `setup` to start the event forwarder.
     pub events_rx: Mutex<Option<mpsc::UnboundedReceiver<CoreEvent>>>,
     /// Result of the last successful update check, installed on request.
+    #[cfg(desktop)]
     pub pending_update: Mutex<Option<tauri_plugin_updater::Update>>,
     /// Paths chosen in native dialogs, waiting for the command that uses
     /// them (see `commands::dialogs`).
@@ -38,8 +41,23 @@ pub struct AppState {
 }
 
 impl AppState {
+    #[cfg(desktop)]
     pub fn init(exe_dir: Option<&Path>) -> Self {
-        let paths = match Paths::resolve(exe_dir) {
+        Self::init_with(Paths::resolve(exe_dir))
+    }
+
+    /// Android/iOS: veriler uygulamanın kendi klasöründe durur (`app_data_dir`),
+    /// çünkü telefonda ortak bir AppData klasörü yoktur.
+    #[cfg(mobile)]
+    pub fn init_mobile(app_data: Option<PathBuf>) -> Self {
+        Self::init_with(match app_data {
+            Some(dir) => Paths::resolve_under(&dir),
+            None => Err(CoreError::NoDataDir),
+        })
+    }
+
+    fn init_with(paths: launcher_core::Result<Paths>) -> Self {
+        let paths = match paths {
             Ok(p) => p,
             Err(e) => return Self::failed(None, e),
         };
@@ -85,6 +103,7 @@ impl AppState {
             updated_from,
             launcher: Some(launcher),
             events_rx: Mutex::new(Some(rx)),
+            #[cfg(desktop)]
             pending_update: Mutex::new(None),
             picks: Mutex::new(HashMap::new()),
             library_upload: Mutex::new(None),
@@ -101,6 +120,7 @@ impl AppState {
             updated_from: None,
             launcher: None,
             events_rx: Mutex::new(None),
+            #[cfg(desktop)]
             pending_update: Mutex::new(None),
             picks: Mutex::new(HashMap::new()),
             library_upload: Mutex::new(None),

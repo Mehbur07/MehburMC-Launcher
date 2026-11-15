@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "./tokens.css";
 
+/* `mobile:` = yalnız telefonda (K103; <html data-mobile>, lib/platform.ts). */
+@custom-variant mobile (&:where([data-mobile] *));
+
 @theme inline {
   --color-bg: var(--mc-bg);
   --color-surface-1: var(--mc-surface-1);
@@ -47,6 +50,51 @@
   textarea,
   [data-selectable] {
     user-select: text;
+  }
+  /* Telefon (K103): dokunma vurgusu yok, yazı boyutu sistem ayarıyla büyümesin,
+     çift dokunmada yakınlaştırma beklemesi olmasın. */
+  [data-mobile] {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  [data-mobile] body {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  /* Sayfa başlığı + düğmeler satırı: dar ekranda düğmeler alt satıra geçer. */
+  [data-mobile] main div.flex:not(.flex-col):has(> h1),
+  [data-mobile] main div.flex:not(.flex-col):has(> div > h1),
+  [data-mobile] main div.flex:not(.flex-col):has(> h1) > div.flex:not(.flex-col),
+  [data-mobile] main div.flex:not(.flex-col):has(> div > h1) > div.flex:not(.flex-col) {
+    flex-wrap: wrap;
+    row-gap: 0.75rem;
+  }
+  [data-mobile] main div.flex:not(.flex-col):has(> h1) > div.flex:not(.flex-col),
+  [data-mobile] main div.flex:not(.flex-col):has(> div > h1) > div.flex:not(.flex-col) {
+    min-width: 0;
+    max-width: 100%;
+  }
+  [data-mobile] main h1 {
+    font-size: min(1.875rem, 8vw);
+  }
+  /* Sekme çubukları sığmazsa yana kaydırılır. */
+  [data-mobile] main [role="tablist"] {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  [data-mobile] main [role="tablist"] > * {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  /* Uzun profil adlı açılır listeler ekrandan taşmasın. */
+  [data-mobile] main select {
+    min-width: 0;
+    max-width: 100%;
+  }
+  [data-mobile] main label:has(> select) {
+    min-width: 0;
+    max-width: 100%;
   }
   :focus-visible {
     outline: 2px solid var(--mc-accent);

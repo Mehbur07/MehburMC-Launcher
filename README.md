@@ -112,6 +112,35 @@ Yayınlamak için `node scripts/publish-release.mjs`: GitHub sürümüne yalnız
 koyar, `.deb` varsa ayrı bir `-linux` ön sürümüne yükler, güncelleme bilgisini (`latest.json`)
 `updater` dalına yazar.
 
+### Android (APK) — geliştirme aşamasında
+
+Telefon sürümü Tauri'nin Android desteğiyle aynı arayüzü ve `launcher-core`'u kullanır
+(ARCHITECTURE K102). Şimdilik yalnız arm64 telefonlar. Telefonda arayüz alt sekmeler + Menü ile
+çalışır, Android'in geri tuşu desteklenir (K103).
+
+Oyun telefonda **Amethyst-Android** motoruyla açılır (K104): Android'e uyarlanmış Java (ilk oyunda
+indirilir), Android LWJGL ve OpenGL → GLES çevirmenleri (MobileGlues, gl4es). Motor dosyaları
+derlemede `scripts/android-engine.mjs` ile Amethyst'in resmi APK'sından alınır (SHA-256 doğrulanır,
+git'e girmez). Bu parçalar kendi lisanslarıyla dağıtılır (LGPL-3.0, LGPL-2.1, MIT, BSD; metinleri
+APK'da `assets/engine/licenses`); kaynakları: [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android),
+[angelauramc-openjdk-build](https://github.com/AngelAuraMC/angelauramc-openjdk-build),
+[MobileGlues](https://github.com/MobileGL-Dev/MobileGlues). Şimdilik dokunmatik kontroller menüde
+gezinme ve etrafa bakmayla sınırlı; yürüme düğmeleri sonraki aşamada.
+
+Gereksinimler: Android SDK (platform-tools, `platforms;android-36`, `build-tools;36.1.0`),
+NDK (`ndk;29.0.14206865`), JDK 21+ ve Rust hedefi `aarch64-linux-android`. SDK varsayılan olarak
+`%LOCALAPPDATA%\Android\Sdk` altında aranır; başka yerdeyse `ANDROID_HOME` / `NDK_HOME` ver.
+
+```sh
+npm run package:android                      # release APK → target/android/MehburMC-<sürüm>-arm64*.apk
+node scripts/android-build.mjs --debug       # büyük debug APK
+```
+
+Betik, Windows'ta Geliştirici Modu gerektiren sembolik bağlantı adımını kopyalamayla değiştirir.
+İmza anahtarı `.env` içindeki `ANDROID_KEYSTORE`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`
+ile verilir (bkz. `.env.example`); yoksa APK yalnız test için debug anahtarıyla imzalanır ve adı
+`-test` ile biter.
+
 ### Çekirdek CLI (`mehbur-cli`)
 
 ```sh

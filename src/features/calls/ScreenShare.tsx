@@ -191,7 +191,7 @@ export function ScreenPanel({ members }: { members: CallMember[] }) {
       <button
         type="button"
         onClick={() => setMode("panel")}
-        className="pointer-events-auto fixed right-80 bottom-4 z-50 flex items-center gap-2 rounded-lg border border-accent/50 bg-surface-1/95 px-3 py-2 text-xs font-semibold text-accent neon-ring backdrop-blur"
+        className="pointer-events-auto fixed right-80 bottom-4 z-50 flex items-center gap-2 rounded-lg border border-accent/50 bg-surface-1/95 px-3 py-2 text-xs font-semibold text-accent neon-ring backdrop-blur mobile:top-14 mobile:right-3 mobile:bottom-auto"
       >
         <ScreenIcon size={14} />
         {count > 1 ? t("calls.screen.manySharing", { count }) : title}
@@ -249,7 +249,7 @@ export function ScreenPanel({ members }: { members: CallMember[] }) {
   return (
     <section
       aria-label={title}
-      className="pointer-events-auto fixed right-80 bottom-4 z-50 flex w-[min(640px,calc(100vw-22rem))] flex-col overflow-hidden rounded-lg border border-line bg-surface-1/95 neon-ring backdrop-blur"
+      className="pointer-events-auto fixed right-80 bottom-4 z-50 flex w-[min(640px,calc(100vw-22rem))] flex-col overflow-hidden rounded-lg border border-line bg-surface-1/95 neon-ring backdrop-blur mobile:top-14 mobile:right-3 mobile:bottom-auto mobile:left-3 mobile:w-auto"
     >
       <div className="flex items-center gap-2 px-3 py-2">
         <ScreenIcon size={14} className="shrink-0 text-accent" />

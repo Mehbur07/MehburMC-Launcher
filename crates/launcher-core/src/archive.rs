@@ -1,4 +1,4 @@
-//! Zip extraction with zip-slip protection.
+//! Zip and tar (`.gz`, `.xz`) extraction with zip-slip protection.
 //!
 //! Every entry name is normalised and rejected if it is absolute, contains a
 //! drive/ADS colon, a `..` component, or is a symlink; the final path must stay
@@ -104,6 +104,27 @@ pub fn extract_zip_with(
 pub fn extract_tar_gz(
     archive: &Path,
     dest: &Path,
+    map: impl FnMut(&str) -> Option<String>,
+) -> Result<usize> {
+    let file = File::open(archive).map_err(|e| CoreError::io(archive, e))?;
+    extract_tar(flate2::read::GzDecoder::new(file), archive, dest, map)
+}
+
+/// [`extract_tar_gz`] for `.tar.xz` (Android Java runtimes, K104).
+pub fn extract_tar_xz(
+    archive: &Path,
+    dest: &Path,
+    map: impl FnMut(&str) -> Option<String>,
+) -> Result<usize> {
+    let file = File::open(archive).map_err(|e| CoreError::io(archive, e))?;
+    let reader = lzma_rust2::XzReader::new(io::BufReader::new(file), true);
+    extract_tar(reader, archive, dest, map)
+}
+
+fn extract_tar(
+    stream: impl io::Read,
+    archive: &Path,
+    dest: &Path,
     mut map: impl FnMut(&str) -> Option<String>,
 ) -> Result<usize> {
     let io_err = |e: io::Error| CoreError::io(archive, e);
@@ -111,8 +132,7 @@ pub fn extract_tar_gz(
         path: archive.to_owned(),
         entry: entry.to_owned(),
     };
-    let file = File::open(archive).map_err(io_err)?;
-    let mut tar = tar::Archive::new(flate2::read::GzDecoder::new(file));
+    let mut tar = tar::Archive::new(stream);
     let mut links = Vec::new();
     let mut written = 0;
     for entry in tar.entries().map_err(io_err)? {
@@ -404,6 +424,42 @@ mod tests {
             assert_eq!(mode("bin/java"), 0o755);
             assert_eq!(mode("lib/libjsig.so"), 0o644);
         }
+    }
+
+    #[test]
+    fn extracts_tar_xz_with_dot_prefix() {
+        let dir = tempfile::tempdir().unwrap();
+        let tar_path = dir.path().join("jre.tar");
+        let mut w = tar::Builder::new(File::create(&tar_path).unwrap());
+        for (name, data) in [
+            ("./bin/java", &b"elf"[..]),
+            ("./release", b"JAVA_VERSION=\"21\""),
+        ] {
+            let mut h = tar::Header::new_gnu();
+            h.set_mode(0o755);
+            h.set_size(data.len() as u64);
+            w.append_data(&mut h, name, data).unwrap();
+        }
+        w.finish().unwrap();
+        drop(w);
+        let xz = dir.path().join("jre.tar.xz");
+        let mut enc = lzma_rust2::XzWriter::new(
+            File::create(&xz).unwrap(),
+            lzma_rust2::XzOptions::with_preset(1),
+        )
+        .unwrap();
+        io::copy(&mut File::open(&tar_path).unwrap(), &mut enc).unwrap();
+        enc.finish().unwrap();
+
+        let out = dir.path().join("out");
+        let n = extract_tar_xz(&xz, &out, |n| {
+            let n = n.strip_prefix("./").unwrap_or(n);
+            (!n.is_empty()).then(|| n.to_owned())
+        })
+        .unwrap();
+        assert_eq!(n, 2);
+        assert_eq!(fs::read(out.join("bin/java")).unwrap(), b"elf");
+        assert!(out.join("release").is_file());
     }
 
     #[test]

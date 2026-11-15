@@ -7,6 +7,7 @@ import { Badge, Button, IconButton, ProgressBar } from "../../components/ui";
 import { play, stopTask } from "../../lib/actions";
 import { formatBytes, formatDate, formatDuration } from "../../lib/format";
 import { ipc } from "../../lib/ipc";
+import { IS_MOBILE } from "../../lib/platform";
 import { selectedAccount, useAccounts } from "../../stores/accounts";
 import { useFriends } from "../../stores/friends";
 import { useApp } from "../../stores/app";
@@ -70,12 +71,12 @@ export function HomePage() {
     <div className="flex flex-col gap-5">
       <section
         key={inst.id}
-        className="rise-in relative overflow-hidden rounded-lg border border-line bg-surface-1/80 p-7 backdrop-blur"
+        className="rise-in relative overflow-hidden rounded-lg border border-line bg-surface-1/80 p-7 backdrop-blur mobile:p-4"
       >
         <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
-        <div className="relative flex items-end justify-between gap-8">
-          <div className="flex min-w-0 items-center gap-5">
-            <InstanceIcon icon={inst.icon} size={84} />
+        <div className="relative flex items-end justify-between gap-8 mobile:flex-col mobile:items-stretch mobile:gap-5">
+          <div className="flex min-w-0 items-center gap-5 mobile:gap-4">
+            <InstanceIcon icon={inst.icon} size={IS_MOBILE ? 64 : 84} />
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5">
                 <Badge tone="accent">{inst.mcVersion}</Badge>
@@ -83,7 +84,7 @@ export function HomePage() {
                 {anyPlaying && <Badge tone="success">{t("home.running")}</Badge>}
               </div>
               <h1
-                className="mt-2 truncate font-display text-4xl font-bold tracking-wide"
+                className="mt-2 truncate font-display text-4xl font-bold tracking-wide mobile:text-2xl"
                 title={inst.name}
               >
                 {inst.name}
@@ -107,7 +108,7 @@ export function HomePage() {
             </div>
           </div>
 
-          <div className="flex w-72 shrink-0 flex-col items-stretch gap-3">
+          <div className="flex w-72 shrink-0 flex-col items-stretch gap-3 mobile:w-full">
             <button
               type="button"
               onClick={() => setView("accounts")}

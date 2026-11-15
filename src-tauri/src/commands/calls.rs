@@ -8,7 +8,9 @@ use std::time::Duration;
 
 use launcher_core::friends::calls::{CallMemberState, CallPoll, IceConfig, OutgoingSignal};
 use launcher_core::session::Launcher;
-use tauri::{AppHandle, Emitter, Manager, State, UserAttentionType};
+#[cfg(desktop)]
+use tauri::UserAttentionType;
+use tauri::{AppHandle, Emitter, Manager, State};
 use tokio::sync::Notify;
 
 use super::CmdResult;
@@ -43,6 +45,8 @@ fn forget(app: &AppHandle) {
 }
 
 /// Polls the server and forwards changes (and every signal) to the webview.
+// Telefonda çağrı bildirimi (görev çubuğu) olmadığından `was_ringing` kullanılmaz.
+#[cfg_attr(mobile, allow(unused_variables, unused_assignments))]
 pub async fn poll_loop(app: AppHandle, launcher: Arc<Launcher>) {
     let mut after = 0_i64;
     let mut was_ringing = false;
@@ -58,6 +62,8 @@ pub async fn poll_loop(app: AppHandle, launcher: Arc<Launcher>) {
                         after = after.max(last);
                     }
                     let rings = ringing(&poll);
+                    // Görev çubuğunda yanıp sönme yalnız masaüstünde var.
+                    #[cfg(desktop)]
                     if rings != was_ringing
                         && let Some(w) = app.get_webview_window("main")
                     {

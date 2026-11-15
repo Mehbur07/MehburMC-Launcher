@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mcengine_preparing">Preparing the game…</string>
+    <string name="mcengine_failed">The game could not be started: %1$s</string>
+    <string name="mcengine_exit">Minecraft closed (exit code %1$d)</string>
+    <string name="mcengine_keyboard">Keyboard</string>
+</resources>

@@ -9,6 +9,8 @@ import {
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
+import { useBackLayer } from "../../app/mobileHistory";
+
 type Variant = "primary" | "secondary" | "ghost" | "danger" | "neonDanger";
 
 const VARIANTS: Record<Variant, string> = {
@@ -168,6 +170,8 @@ export function Modal({
   wide?: boolean;
 }) {
   const { t } = useTranslation();
+  // Telefonda geri tuşu pencereyi kapatır (K103).
+  useBackLayer(open, onClose);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -182,7 +186,7 @@ export function Modal({
         <motion.div
           onClick={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}
-          className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-6 backdrop-blur-sm"
+          className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-6 backdrop-blur-sm mobile:p-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -206,7 +210,7 @@ export function Modal({
             </header>
             <div className="min-h-0 flex-1 overflow-y-auto p-5">{children}</div>
             {footer && (
-              <footer className="flex justify-end gap-2 border-t border-line px-5 py-3">
+              <footer className="flex flex-wrap justify-end gap-2 border-t border-line px-5 py-3">
                 {footer}
               </footer>
             )}

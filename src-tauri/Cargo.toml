@@ -8,7 +8,8 @@ rust-version.workspace = true
 
 [lib]
 name = "mehbur_launcher_lib"
-crate-type = ["lib"]
+# staticlib/cdylib: Android (Tauri mobile) uygulaması bu kütüphaneyi .so olarak yükler.
+crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2.7.1", features = [] }
@@ -20,12 +21,16 @@ serde_json.workspace = true
 tauri = { version = "2.12.1", features = ["protocol-asset"] }
 tauri-plugin-dialog = "2.8.1"
 tauri-plugin-opener = "2.7.0"
-tauri-plugin-single-instance = "2.5.2"
-tauri-plugin-updater = "2"
 tokio.workspace = true
 tracing.workspace = true
 tracing-appender.workspace = true
 ts-rs.workspace = true
+
+# Yalnızca masaüstü: telefonda tek pencere ve kendi kendini güncelleme yok
+# (Android güncellemesi yeni APK ile gelir).
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-single-instance = "2.5.2"
+tauri-plugin-updater = "2"
 
 [lints]
 workspace = true

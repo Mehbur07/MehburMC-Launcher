@@ -1,0 +1,3 @@
+<resources>
+    <string name="game_exit_error">Minecraft hatayla kapandı (kod %1$d). Günlük, profilin Günlükler sekmesinde.</string>
+</resources>

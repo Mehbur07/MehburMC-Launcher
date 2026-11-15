@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mcengine_preparing">Oyun hazırlanıyor…</string>
+    <string name="mcengine_failed">Oyun başlatılamadı: %1$s</string>
+    <string name="mcengine_exit">Minecraft kapandı (çıkış kodu %1$d)</string>
+    <string name="mcengine_keyboard">Klavye</string>
+</resources>

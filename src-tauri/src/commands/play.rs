@@ -58,6 +58,7 @@ fn bring_back(window: &tauri::WebviewWindow) {
     // minimised. Without this it would only flash in the task bar.
     #[cfg(target_os = "linux")]
     let _ = window.hide();
+    #[cfg(desktop)]
     let _ = window.unminimize();
     let _ = window.show();
     let _ = window.set_focus();
@@ -115,6 +116,7 @@ impl WindowHooks {
 
 impl LaunchHooks for WindowHooks {
     fn game_started(&self, _instance: &Instance) {
+        #[cfg(desktop)]
         if self.behavior != LaunchBehavior::KeepOpen
             && let Some(w) = self.app.get_webview_window("main")
         {
@@ -135,6 +137,22 @@ impl LaunchHooks for WindowHooks {
         if self.closes() {
             self.quit();
         }
+    }
+
+    /// Telefon (K104): oyun, Android oyun motoruyla ayrı bir süreçte açılır.
+    fn start_engine(
+        &self,
+        _instance: &Instance,
+        plan: &launcher_core::launch::android::AndroidLaunch,
+    ) -> launcher_core::Result<()> {
+        let path = self
+            .app
+            .try_state::<AppState>()
+            .and_then(|s| s.paths.as_ref().map(|p| p.cache()))
+            .ok_or(launcher_core::CoreError::NoDataDir)?
+            .join("launch")
+            .join("android-plan.json");
+        crate::game_engine::start(&self.app, plan, &path)
     }
 
     fn game_exited(&self, _instance: &Instance, _exit: &GameExit) {

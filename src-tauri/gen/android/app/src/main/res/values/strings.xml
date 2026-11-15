@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">"MehburMC Launcher"</string>
+    <string name="main_activity_title">"MehburMC Launcher"</string>
+    <string name="game_exit_error">Minecraft closed with an error (code %1$d). The log is under the instance\'s Logs tab.</string>
+</resources>

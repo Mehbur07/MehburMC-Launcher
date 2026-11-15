@@ -23,7 +23,8 @@
     "whatsNew": "Yenilikler",
     "settings": "Ayarlar",
     "support": "Admine yaz",
-    "admin": "Admin"
+    "admin": "Admin",
+    "menu": "Menü"
   },
   "home": {
     "play": "OYNA",
@@ -139,6 +140,9 @@
     "saved": "Kaydedildi"
   },
   "errors": {
+    "platform": {
+      "engineFailed": "Oyun motoru bu telefonda başlatılamadı: {{reason}}"
+    },
     "unknown": "Beklenmeyen bir hata oluştu.",
     "paths": {
       "noDataDir": "Kullanıcı veri klasörü belirlenemedi.",
@@ -362,6 +366,7 @@
     "javaSystem": "sistem",
     "browse": "Gözat",
     "memory": "RAM",
+    "memoryPhoneHint": "Telefonda oyuna en fazla cihazın ayırabileceği kadar bellek verilir (0,3 ile 2 GB arası).",
     "memoryDefault": "Launcher varsayılanını kullan ({{gb}} GB)",
     "jvmArgs": "Ek JVM argümanları",
     "jvmArgsHint": "Boşlukla ayır; boşluk içeren değerleri tırnakla yaz.",
@@ -1078,6 +1083,7 @@
     "chatWith": "{{name}} ile sohbet",
     "noMessages": "Henüz mesaj yok. İlk mesajı sen gönder!",
     "messagePlaceholder": "Mesaj yaz… (Enter gönderir, Shift+Enter yeni satır)",
+    "messagePlaceholderMobile": "Mesaj yaz…",
     "sendMessage": "Gönder",
     "offline": "Sunucuya ulaşılamıyor",
     "disable": "Arkadaşları kapat ve verilerimi sil",

@@ -23,7 +23,8 @@
     "whatsNew": "What's new",
     "settings": "Settings",
     "support": "Contact admins",
-    "admin": "Admin"
+    "admin": "Admin",
+    "menu": "Menu"
   },
   "home": {
     "play": "PLAY",
@@ -139,6 +140,9 @@
     "saved": "Saved"
   },
   "errors": {
+    "platform": {
+      "engineFailed": "The game engine could not be started on this phone: {{reason}}"
+    },
     "unknown": "An unexpected error occurred.",
     "paths": {
       "noDataDir": "Could not determine the user data folder.",
@@ -362,6 +366,7 @@
     "javaSystem": "system",
     "browse": "Browse",
     "memory": "RAM",
+    "memoryPhoneHint": "On a phone the game gets at most what the device can spare (between 0.3 and 2 GB).",
     "memoryDefault": "Use launcher default ({{gb}} GB)",
     "jvmArgs": "Extra JVM arguments",
     "jvmArgsHint": "Separate with spaces; quote values that contain spaces.",
@@ -1078,6 +1083,7 @@
     "chatWith": "Chat with {{name}}",
     "noMessages": "No messages yet. Say hi!",
     "messagePlaceholder": "Write a message… (Enter sends, Shift+Enter new line)",
+    "messagePlaceholderMobile": "Write a message…",
     "sendMessage": "Send",
     "offline": "Server unreachable",
     "disable": "Turn off friends and delete my data",

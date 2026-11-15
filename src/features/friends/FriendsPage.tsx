@@ -1,4 +1,5 @@
 import {
+  ArrowLeft,
   Ban,
   Check,
   Copy,
@@ -24,7 +25,9 @@ import {
   IconButton,
   TextInput,
 } from "../../components/ui";
+import { useBackLayer } from "../../app/mobileHistory";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
+import { IS_MOBILE } from "../../lib/platform";
 import type { Friend } from "../../lib/ipc/bindings/Friend";
 import { friendName, useFriends } from "../../stores/friends";
 import { FriendCallButton } from "../calls/CallButtons";
@@ -207,6 +210,7 @@ export function FriendsPage() {
   const { enabled, friends, chatWith, offline, status, openChat, remove, block, disable } =
     useFriends();
   const groupWith = useFriends((s) => s.groupWith);
+  const openGroup = useFriends((s) => s.openGroup);
   const group = useFriends((s) => s.groups.find((g) => g.id === s.groupWith) ?? null);
   const [tab, setTab] = useState<"chat" | "mods">("chat");
   const [naming, setNaming] = useState(false);
@@ -223,14 +227,34 @@ export function FriendsPage() {
   const blocked = friends.filter((f) => f.status === "blocked");
   const current = accepted.find((f) => f.id === chatWith) ?? null;
 
+  // Telefonda (K103) liste ve sohbet ayrı ekranlar: sohbet açıkken yalnız o
+  // görünür, geri tuşu ya da ok düğmesi listeye döner.
+  const chatOpen = current !== null || group !== null;
+  const closeChat = () => void (group ? openGroup(null) : openChat(null));
+  useBackLayer(chatOpen, closeChat);
+  const mobileChat = IS_MOBILE && chatOpen;
+
   if (enabled === null) {
     return <p className="mt-24 text-center text-sm text-muted">{t("common.loading")}</p>;
   }
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-5 pb-6">
+    <div
+      className={
+        mobileChat
+          ? "flex h-full min-h-0 flex-col gap-2"
+          : "mx-auto flex max-w-6xl flex-col gap-5 pb-6"
+      }
+    >
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="font-display text-3xl font-bold tracking-wide">{t("nav.friends")}</h1>
+        {mobileChat ? (
+          <Button size="sm" variant="ghost" onClick={closeChat}>
+            <ArrowLeft size={15} />
+            {t("nav.friends")}
+          </Button>
+        ) : (
+          <h1 className="font-display text-3xl font-bold tracking-wide">{t("nav.friends")}</h1>
+        )}
         {offline && (
           <Badge tone="warn">
             <WifiOff size={12} />
@@ -243,11 +267,23 @@ export function FriendsPage() {
         <Consent />
       ) : (
         <>
-          <MyCode />
-          <Requests friends={friends} />
+          {!mobileChat && (
+            <>
+              <MyCode />
+              <Requests friends={friends} />
+            </>
+          )}
 
-          <div className="grid min-h-[480px] gap-5 lg:grid-cols-[260px_1fr]">
-            <section className="flex flex-col gap-1 rounded-lg border border-line bg-surface-1/85 p-2 backdrop-blur">
+          <div
+            className={
+              mobileChat
+                ? "flex min-h-0 flex-1 flex-col"
+                : `grid gap-5 lg:grid-cols-[260px_1fr] ${IS_MOBILE ? "" : "min-h-[480px]"}`
+            }
+          >
+            <section
+              className={`flex flex-col gap-1 rounded-lg border border-line bg-surface-1/85 p-2 backdrop-blur ${mobileChat ? "hidden" : ""}`}
+            >
               <h2 className="px-2 py-1 text-xs font-semibold text-muted">
                 {t("friends.list", { count: accepted.length })}
               </h2>
@@ -305,7 +341,11 @@ export function FriendsPage() {
               )}
             </section>
 
-            <section className="flex min-w-0 flex-col rounded-lg border border-line bg-surface-1/85 backdrop-blur">
+            <section
+              className={`flex min-w-0 flex-col rounded-lg border border-line bg-surface-1/85 backdrop-blur ${
+                mobileChat ? "min-h-0 flex-1" : IS_MOBILE ? "hidden" : ""
+              }`}
+            >
               {group ? (
                 <GroupPanel key={group.id} group={group} />
               ) : !current ? (
@@ -384,13 +424,17 @@ export function FriendsPage() {
             </section>
           </div>
 
-          <MyShares />
+          {!mobileChat && (
+            <>
+              <MyShares />
 
-          <div className="flex justify-end">
-            <Button size="sm" variant="danger" onClick={() => setConfirm("disable")}>
-              {t("friends.disable")}
-            </Button>
-          </div>
+              <div className="flex justify-end">
+                <Button size="sm" variant="danger" onClick={() => setConfirm("disable")}>
+                  {t("friends.disable")}
+                </Button>
+              </div>
+            </>
+          )}
         </>
       )}
 

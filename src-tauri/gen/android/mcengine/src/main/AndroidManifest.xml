@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Oyun ekranı (K104): ayrı süreçte çalışır; Java kapanınca yalnız bu süreç
+         biter, launcher açık kalır. Yön/boyut değişiminde yeniden kurulmaz
+         (yeniden kurulsa oyun baştan başlardı). Ayrı görevdir (son uygulamalarda
+         "Minecraft"): launcher simgesine dokunmak oyun ekranını kapatmaz. -->
+    <application>
+        <activity
+            android:name="com.mehbur.mcengine.GameActivity"
+            android:process=":game"
+            android:taskAffinity="com.mehbur.mclauncher.game"
+            android:label="Minecraft"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.McEngine"
+            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|smallestScreenSize|uiMode|density|touchscreen|fontScale|locale|layoutDirection"
+            android:windowSoftInputMode="adjustNothing|stateHidden" />
+    </application>
+</manifest>

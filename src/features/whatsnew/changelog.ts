@@ -21,7 +21,9 @@ export function parseChangelog(md: string): Release[] {
     const head = /^## \[([^\]]+)\]\s*(?:[—-]\s*)?(.*)$/.exec(line);
     if (head) {
       cur = { version: head[1] ?? "", label: head[2] ?? "", blocks: [] };
-      releases.push(cur);
+      // [Unreleased]: henüz yayınlanmamış değişiklikler; Yenilikler'de görünmez,
+      // altındaki satırlar da yutulur.
+      if (cur.version.toLowerCase() !== "unreleased") releases.push(cur);
       continue;
     }
     if (!cur || !line.trim()) continue;

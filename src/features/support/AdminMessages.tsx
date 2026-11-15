@@ -1,11 +1,13 @@
-import { Ban, RotateCcw, XCircle } from "lucide-react";
+import { ArrowLeft, Ban, RotateCcw, XCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useBackLayer } from "../../app/mobileHistory";
 import { Badge, Button } from "../../components/ui";
 import type { AdminSupportThread } from "../../lib/ipc/bindings/AdminSupportThread";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
 import { formatIso } from "../../lib/format";
+import { IS_MOBILE } from "../../lib/platform";
 import { useSupport } from "../../stores/support";
 import { ChatView, ErrorText } from "../friends/ChatView";
 
@@ -110,6 +112,9 @@ export function AdminMessages({
   }, [load, open, version]);
 
   const current = list?.find((x) => x.id === selected) ?? null;
+  // Telefonda (K103) seçili konu tam ekran açılır; geri tuşu listeye döner.
+  useBackLayer(current !== null, () => setSelected(null));
+  const mobileDetail = IS_MOBILE && current !== null;
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
@@ -130,8 +135,14 @@ export function AdminMessages({
         ))}
       </div>
       <ErrorText error={error} />
-      <div className="grid min-h-[420px] flex-1 grid-cols-[300px_1fr] overflow-hidden rounded-lg border border-line bg-surface-1/85">
-        <ul className="flex min-h-0 flex-col gap-1 overflow-y-auto border-r border-line p-2">
+      <div
+        className={`min-h-[420px] flex-1 overflow-hidden rounded-lg border border-line bg-surface-1/85 ${
+          IS_MOBILE ? "flex flex-col" : "grid grid-cols-[300px_1fr]"
+        }`}
+      >
+        <ul
+          className={`flex min-h-0 flex-col gap-1 overflow-y-auto p-2 ${IS_MOBILE ? "flex-1" : "border-r border-line"} ${mobileDetail ? "hidden" : ""}`}
+        >
           {list === null ? (
             <li className="p-2 text-xs text-muted">{t("common.loading")}</li>
           ) : list.length === 0 ? (
@@ -173,7 +184,17 @@ export function AdminMessages({
             ))
           )}
         </ul>
-        <section className="flex min-h-0 flex-col">
+        <section
+          className={`flex min-h-0 flex-col ${IS_MOBILE ? (mobileDetail ? "flex-1" : "hidden") : ""}`}
+        >
+          {mobileDetail && (
+            <div className="border-b border-line p-2">
+              <Button size="sm" variant="ghost" onClick={() => setSelected(null)}>
+                <ArrowLeft size={15} />
+                {open ? t("admin.messages.openList") : t("admin.messages.closedList")}
+              </Button>
+            </div>
+          )}
           {current ? (
             <AdminConversation key={current.id} thread={current} onBan={onBan} />
           ) : (

@@ -576,6 +576,7 @@ already present: {:?}",
                 verify: if verify { Verify::Full } else { Verify::Quick },
                 join_server,
                 demo: false,
+                target: launcher_core::launch::LaunchTarget::Desktop,
             };
             let started = std::time::Instant::now();
             let prepared = launch::prepare(ctx, &opts, &version_id, &cancel)
