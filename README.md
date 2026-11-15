@@ -7,6 +7,8 @@
 Windows ve Linux için hafif, reklamsız ve telemetrisiz bir Minecraft Java Edition launcher'ı.
 Modları, skinleri ve arkadaşlarını tek yerden yönet.
 
+🌐 **Web sitesi:** [mehburmc.github.io](https://mehburmc.github.io)
+
 _[English below](#english)_
 
 ![Mod Tarayıcı](docs/screenshots/mod-browser.png)
@@ -19,6 +21,8 @@ _[English below](#english)_
 
 ## ⬇️ İndir
 
+**[mehburmc.github.io](https://mehburmc.github.io)** üzerindeki **İndir** butonu sistemine uygun
+dosyayı (Windows `.exe` / Linux `.deb`) doğrudan sunar. Ya da GitHub'dan:
 **[En son sürümü indir (Releases)](https://github.com/Mehbur07/MehburMC-Launcher/releases/latest)**
 
 - **Windows:** sayfadaki **`MehburMC-Launcher_<sürüm>_x64-setup.exe`** dosyasını indirip çalıştır.
@@ -66,6 +70,9 @@ available in Turkish and English (Settings → Language).
 - **Friends:** friend codes, chat, group chats, voice calls for up to 16 people, screen sharing and
   shared mod lists.
 - **Servers, news, crash analysis, custom theme color, portable mode and self-updating.**
+
+**Website:** [mehburmc.github.io](https://mehburmc.github.io) (the **Download** button there picks the
+right file for your system).
 
 **Download:** get `MehburMC-Launcher_<version>_x64-setup.exe` from the
 [latest release](https://github.com/Mehbur07/MehburMC-Launcher/releases/latest), or the `.deb` from
