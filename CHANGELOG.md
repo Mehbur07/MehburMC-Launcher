@@ -3,6 +3,13 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [Unreleased]
+
+### Eklendi
+- **Android sürümüne ilk adım:** launcher artık telefona kurulabilen bir APK olarak da derlenebiliyor
+  (arm64, `npm run package:android`). Bu ilk test sürümünde arayüz açılıyor; oyunu telefonda
+  başlatma sonraki aşamalarda gelecek.
+
 ## [0.32.0] — 2026-11-10
 
 ### Eklendi

@@ -112,6 +112,25 @@ Yayınlamak için `node scripts/publish-release.mjs`: GitHub sürümüne yalnız
 koyar, `.deb` varsa ayrı bir `-linux` ön sürümüne yükler, güncelleme bilgisini (`latest.json`)
 `updater` dalına yazar.
 
+### Android (APK) — geliştirme aşamasında
+
+Telefon sürümü Tauri'nin Android desteğiyle aynı arayüzü ve `launcher-core`'u kullanır
+(ARCHITECTURE K102). Şimdilik yalnız arm64 telefonlar; oyunu telefonda başlatma henüz yok.
+
+Gereksinimler: Android SDK (platform-tools, `platforms;android-36`, `build-tools;36.1.0`),
+NDK (`ndk;29.0.14206865`), JDK 21+ ve Rust hedefi `aarch64-linux-android`. SDK varsayılan olarak
+`%LOCALAPPDATA%\Android\Sdk` altında aranır; başka yerdeyse `ANDROID_HOME` / `NDK_HOME` ver.
+
+```sh
+npm run package:android                      # release APK → target/android/MehburMC-<sürüm>-arm64*.apk
+node scripts/android-build.mjs --debug       # büyük debug APK
+```
+
+Betik, Windows'ta Geliştirici Modu gerektiren sembolik bağlantı adımını kopyalamayla değiştirir.
+İmza anahtarı `.env` içindeki `ANDROID_KEYSTORE`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`
+ile verilir (bkz. `.env.example`); yoksa APK yalnız test için debug anahtarıyla imzalanır ve adı
+`-test` ile biter.
+
 ### Çekirdek CLI (`mehbur-cli`)
 
 ```sh
