@@ -1,5 +1,6 @@
 mod bridge;
 mod commands;
+mod game_engine;
 mod state;
 
 use std::path::PathBuf;
@@ -43,6 +44,7 @@ pub fn run() {
     builder
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(game_engine::init())
         // Voice calls (K86): the microphone is granted without a WebView2
         // prompt (the call UI asks first); everything else keeps the default.
         .on_permission_request(|_, kind| match kind {

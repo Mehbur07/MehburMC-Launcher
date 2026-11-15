@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button, Field, TextInput, Toggle } from "../../components/ui";
 import { ipc } from "../../lib/ipc";
+import { IS_MOBILE } from "../../lib/platform";
 import type { JavaInstall } from "../../lib/ipc/bindings/JavaInstall";
 import type { Resolution } from "../../lib/ipc/bindings/Resolution";
 
@@ -33,7 +34,8 @@ export function InstanceOptionsFields({
   const { t } = useTranslation();
   const [javas, setJavas] = useState<JavaInstall[]>([]);
   useEffect(() => {
-    void loadJava().then(setJavas);
+    // Telefonda Java'yı oyun motoru seçer (K104).
+    if (!IS_MOBILE) void loadJava().then(setJavas);
   }, []);
   const set = (patch: Partial<InstanceOptions>) => onChange({ ...value, ...patch });
 
@@ -46,32 +48,37 @@ export function InstanceOptionsFields({
 
   return (
     <div className="flex flex-col gap-5">
-      <Field label={t("options.java")} hint={t("options.javaHint")}>
-        <div className="flex gap-2">
-          <select
-            value={value.javaPath ?? ""}
-            onChange={(e) => set({ javaPath: e.target.value || null })}
-            className="min-w-0 flex-1 rounded-md border border-line bg-surface-2 px-3 py-2 text-sm focus:border-accent"
-          >
-            <option value="">{t("options.javaAuto")}</option>
-            {javas.map((j) => (
-              <option key={j.executable} value={j.executable}>
-                Java {j.major} · {j.version} ·{" "}
-                {j.managed ? t("options.javaManaged") : (j.vendor ?? t("options.javaSystem"))}
-              </option>
-            ))}
-            {value.javaPath && !javas.some((j) => j.executable === value.javaPath) && (
-              <option value={value.javaPath}>{value.javaPath}</option>
-            )}
-          </select>
-          <Button onClick={() => void browse()}>
-            <FolderSearch size={15} />
-            {t("options.browse")}
-          </Button>
-        </div>
-      </Field>
+      {!IS_MOBILE && (
+        <Field label={t("options.java")} hint={t("options.javaHint")}>
+          <div className="flex gap-2">
+            <select
+              value={value.javaPath ?? ""}
+              onChange={(e) => set({ javaPath: e.target.value || null })}
+              className="min-w-0 flex-1 rounded-md border border-line bg-surface-2 px-3 py-2 text-sm focus:border-accent"
+            >
+              <option value="">{t("options.javaAuto")}</option>
+              {javas.map((j) => (
+                <option key={j.executable} value={j.executable}>
+                  Java {j.major} · {j.version} ·{" "}
+                  {j.managed ? t("options.javaManaged") : (j.vendor ?? t("options.javaSystem"))}
+                </option>
+              ))}
+              {value.javaPath && !javas.some((j) => j.executable === value.javaPath) && (
+                <option value={value.javaPath}>{value.javaPath}</option>
+              )}
+            </select>
+            <Button onClick={() => void browse()}>
+              <FolderSearch size={15} />
+              {t("options.browse")}
+            </Button>
+          </div>
+        </Field>
+      )}
 
-      <Field label={t("options.memory")}>
+      <Field
+        label={t("options.memory")}
+        hint={IS_MOBILE ? t("options.memoryPhoneHint") : undefined}
+      >
         <div className="flex items-center gap-3">
           <input
             type="range"
@@ -109,55 +116,58 @@ export function InstanceOptionsFields({
         />
       </Field>
 
-      <div className="grid grid-cols-[1fr_auto] items-end gap-4">
-        <Field label={t("options.resolution")}>
-          <div className="flex items-center gap-2">
+      {/* Telefonda pencereyi oyun motoru açar: çözünürlük/tam ekran yok. */}
+      {!IS_MOBILE && (
+        <div className="grid grid-cols-[1fr_auto] items-end gap-4">
+          <Field label={t("options.resolution")}>
+            <div className="flex items-center gap-2">
+              <Toggle
+                checked={value.resolution !== null}
+                onChange={(on) => set({ resolution: on ? { width: 1280, height: 720 } : null })}
+                label={t("options.resolution")}
+              />
+              {value.resolution && (
+                <>
+                  <TextInput
+                    type="number"
+                    min={320}
+                    max={7680}
+                    value={value.resolution.width}
+                    onChange={(e) =>
+                      set({
+                        resolution: { ...value.resolution!, width: Number(e.target.value) || 0 },
+                      })
+                    }
+                    className="w-24"
+                    aria-label={t("options.width")}
+                  />
+                  <span className="text-muted">×</span>
+                  <TextInput
+                    type="number"
+                    min={240}
+                    max={4320}
+                    value={value.resolution.height}
+                    onChange={(e) =>
+                      set({
+                        resolution: { ...value.resolution!, height: Number(e.target.value) || 0 },
+                      })
+                    }
+                    className="w-24"
+                    aria-label={t("options.height")}
+                  />
+                </>
+              )}
+            </div>
+          </Field>
+          <Field label={t("options.fullscreen")}>
             <Toggle
-              checked={value.resolution !== null}
-              onChange={(on) => set({ resolution: on ? { width: 1280, height: 720 } : null })}
-              label={t("options.resolution")}
+              checked={value.fullscreen}
+              onChange={(v) => set({ fullscreen: v })}
+              label={t("options.fullscreen")}
             />
-            {value.resolution && (
-              <>
-                <TextInput
-                  type="number"
-                  min={320}
-                  max={7680}
-                  value={value.resolution.width}
-                  onChange={(e) =>
-                    set({
-                      resolution: { ...value.resolution!, width: Number(e.target.value) || 0 },
-                    })
-                  }
-                  className="w-24"
-                  aria-label={t("options.width")}
-                />
-                <span className="text-muted">×</span>
-                <TextInput
-                  type="number"
-                  min={240}
-                  max={4320}
-                  value={value.resolution.height}
-                  onChange={(e) =>
-                    set({
-                      resolution: { ...value.resolution!, height: Number(e.target.value) || 0 },
-                    })
-                  }
-                  className="w-24"
-                  aria-label={t("options.height")}
-                />
-              </>
-            )}
-          </div>
-        </Field>
-        <Field label={t("options.fullscreen")}>
-          <Toggle
-            checked={value.fullscreen}
-            onChange={(v) => set({ fullscreen: v })}
-            label={t("options.fullscreen")}
-          />
-        </Field>
-      </div>
+          </Field>
+        </div>
+      )}
     </div>
   );
 }

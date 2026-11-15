@@ -8,6 +8,7 @@
 // "Geliştirici Modu" açıkken izin verir. Bu betik aynı adımları kopyalayarak
 // yapar: Tauri Rust kısmını derler (bağlantı adımı hata verirse yok sayılır),
 // .so dosyası jniLibs'e kopyalanır, Gradle Rust adımı atlanarak çalıştırılır.
+// Önce oyun motoru dosyaları hazırlanır (scripts/android-engine.mjs).
 //
 // Ortam: ANDROID_HOME / NDK_HOME tanımlı değilse %LOCALAPPDATA%\Android\Sdk
 // ve oradaki en yeni NDK kullanılır. İmza: ANDROID_KEYSTORE,
@@ -60,6 +61,11 @@ if (!ndk) {
 const env = { ...process.env, ANDROID_HOME: sdk, NDK_HOME: ndk };
 // RAM'i korumak için derleme iş parçacığı sınırı (kullanıcı ayarı yoksa 4).
 env.CARGO_BUILD_JOBS ||= "4";
+
+// 0) Oyun motoru dosyaları (K104): yoksa Amethyst APK'sından alınır.
+if (run("node", [JSON.stringify(join(root, "scripts", "android-engine.mjs"))]) !== 0) {
+  fail("Oyun motoru dosyaları hazırlanamadı.");
+}
 
 // 1) Arayüz + Rust kütüphanesi (Tauri). Yalnız sembolik bağlantı hatası kabul edilir.
 const so = join(root, "target", rustTarget, profile, "libmehbur_launcher_lib.so");

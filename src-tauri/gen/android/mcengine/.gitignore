@@ -1,0 +1,4 @@
+/build
+# scripts/android-engine.mjs üretir (Amethyst APK'sından; K104)
+/src/main/jniLibs/
+/src/main/assets/engine/

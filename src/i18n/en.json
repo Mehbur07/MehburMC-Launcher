@@ -141,7 +141,7 @@
   },
   "errors": {
     "platform": {
-      "gameNotYet": "Starting the game on a phone is not ready yet; it is coming in a later update."
+      "engineFailed": "The game engine could not be started on this phone: {{reason}}"
     },
     "unknown": "An unexpected error occurred.",
     "paths": {
@@ -366,6 +366,7 @@
     "javaSystem": "system",
     "browse": "Browse",
     "memory": "RAM",
+    "memoryPhoneHint": "On a phone the game gets at most what the device can spare (between 0.3 and 2 GB).",
     "memoryDefault": "Use launcher default ({{gb}} GB)",
     "jvmArgs": "Extra JVM arguments",
     "jvmArgsHint": "Separate with spaces; quote values that contain spaces.",

@@ -139,6 +139,22 @@ impl LaunchHooks for WindowHooks {
         }
     }
 
+    /// Telefon (K104): oyun, Android oyun motoruyla ayrı bir süreçte açılır.
+    fn start_engine(
+        &self,
+        _instance: &Instance,
+        plan: &launcher_core::launch::android::AndroidLaunch,
+    ) -> launcher_core::Result<()> {
+        let path = self
+            .app
+            .try_state::<AppState>()
+            .and_then(|s| s.paths.as_ref().map(|p| p.cache()))
+            .ok_or(launcher_core::CoreError::NoDataDir)?
+            .join("launch")
+            .join("android-plan.json");
+        crate::game_engine::start(&self.app, plan, &path)
+    }
+
     fn game_exited(&self, _instance: &Instance, _exit: &GameExit) {
         self.exited.store(true, Ordering::SeqCst);
         let away = {
@@ -163,12 +179,6 @@ fn start(
     mode: StartMode,
     join: Option<ServerAddress>,
 ) -> CmdResult<String> {
-    // Telefonda oyun motoru henüz yok (K103): indirmeye başlamadan durdur, yoksa
-    // telefon yüzlerce MB oyun dosyası indirip sonunda Java bulamazdı.
-    if cfg!(mobile) {
-        let _ = (app, id, mode, join);
-        return Err(launcher_core::CoreError::GameNotOnThisDevice.into());
-    }
     let settings = state.settings();
     let hooks = Arc::new(WindowHooks {
         app,
