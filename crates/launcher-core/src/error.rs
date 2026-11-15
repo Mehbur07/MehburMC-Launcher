@@ -206,9 +206,9 @@ pub enum CoreError {
         kind: crate::servers::ping::PingFailure,
     },
 
-    /// Telefon sürümü (K103): oyunu başlatma henüz yok (Faz A2'de gelecek).
-    #[error("the game cannot be started on this device yet")]
-    GameNotOnThisDevice,
+    /// Telefonda oyun motoru başlatılamadı (K104).
+    #[error("the game engine could not be started: {0}")]
+    EngineStart(String),
 }
 
 impl CoreError {
@@ -278,7 +278,7 @@ impl CoreError {
                 crate::servers::ping::PingFailure::Timeout => "server.timeout",
                 crate::servers::ping::PingFailure::BadResponse => "server.badResponse",
             },
-            Self::GameNotOnThisDevice => "platform.gameNotYet",
+            Self::EngineStart(_) => "platform.engineFailed",
         }
     }
 
@@ -381,8 +381,8 @@ impl CoreError {
             | Self::CurseForgeKey
             | Self::AvatarFormat
             | Self::Friends(_)
-            | Self::SkinMc(_)
-            | Self::GameNotOnThisDevice => {}
+            | Self::SkinMc(_) => {}
+            Self::EngineStart(reason) => put("reason", reason.clone()),
         }
         p
     }

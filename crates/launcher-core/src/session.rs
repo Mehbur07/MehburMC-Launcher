@@ -22,7 +22,7 @@ use crate::friends::share::{FriendInstallResult, SharedList};
 use crate::instance::files::Folder;
 use crate::instance::{Instance, InstancePatch, InstanceStore, LoaderSpec, Running, split_args};
 use crate::launch::process::GameExit;
-use crate::launch::{self, LaunchOptions, process};
+use crate::launch::{self, LaunchOptions, LaunchTarget, process};
 use crate::loader;
 use crate::net::download::Verify;
 use crate::paths::Paths;
@@ -37,6 +37,17 @@ pub trait LaunchHooks: Send + Sync {
     /// The client reached the main menu.
     fn game_ready(&self, _instance: &Instance) {}
     fn game_exited(&self, _instance: &Instance, _exit: &GameExit) {}
+    /// Phone (K104): hands the plan to the Android game engine, which runs
+    /// the game in its own process. The launcher does not track that process.
+    fn start_engine(
+        &self,
+        _instance: &Instance,
+        _plan: &crate::launch::android::AndroidLaunch,
+    ) -> Result<()> {
+        Err(CoreError::EngineStart(
+            "no game engine on this platform".into(),
+        ))
+    }
 }
 
 pub struct NoHooks;
@@ -175,6 +186,7 @@ impl Launcher {
             },
             join_server,
             demo,
+            target: LaunchTarget::current(),
         };
 
         let this = self.clone();
@@ -212,6 +224,11 @@ impl Launcher {
                 }
                 if let Some(id) = &account_id {
                     this.sync_skin(&opts.game_dir, id, &opts.account.name);
+                }
+                if let Some(plan) = &prepared.android {
+                    tracing::info!(command = %prepared.masked_command, "starting the Android game engine");
+                    hooks.start_engine(&inst, plan)?;
+                    return Ok(());
                 }
                 this.tasks.set_status(&tid, TaskStatus::Playing);
                 hooks.game_started(&inst);

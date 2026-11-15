@@ -16,6 +16,7 @@ getrandom.workspace = true
 hex.workspace = true
 hickory-resolver.workspace = true
 image.workspace = true
+lzma-rust2.workspace = true
 md-5.workspace = true
 png.workspace = true
 regex.workspace = true
@@ -38,6 +39,7 @@ zip.workspace = true
 wic-decode = { path = "../wic-decode" }
 
 [dev-dependencies]
+lzma-rust2 = { workspace = true, features = ["encoder"] }
 tempfile.workspace = true
 wiremock.workspace = true
 

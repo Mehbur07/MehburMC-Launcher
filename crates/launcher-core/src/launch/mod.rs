@@ -1,6 +1,8 @@
 //! Launch pipeline: resolve version → download/verify files → pick Java →
-//! build the command line. [`process::run`] then starts the game.
+//! build the command line. [`process::run`] then starts the game. On a phone
+//! the result is an [`android::AndroidLaunch`] plan for the game engine (K104).
 
+pub mod android;
 pub mod args;
 pub mod cmdline;
 pub mod log4j;
@@ -24,6 +26,24 @@ use crate::net::download::{DownloadItem, Verify};
 use crate::rules::RuleEnv;
 use crate::version;
 
+/// Where the game runs. A phone uses the Android engine (K104).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum LaunchTarget {
+    #[default]
+    Desktop,
+    Android,
+}
+
+impl LaunchTarget {
+    pub fn current() -> Self {
+        if cfg!(target_os = "android") {
+            Self::Android
+        } else {
+            Self::Desktop
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct LaunchOptions {
     pub version_id: String,
@@ -42,6 +62,7 @@ pub struct LaunchOptions {
     pub join_server: Option<crate::servers::ServerAddress>,
     /// Demo mode (`--demo`): no multiplayer menu. Local-only accounts (K82).
     pub demo: bool,
+    pub target: LaunchTarget,
 }
 
 #[derive(Debug, Clone)]
@@ -57,6 +78,8 @@ pub struct PreparedLaunch {
     pub secrets: Vec<String>,
     /// Files to delete once the game exits (argfiles).
     pub temp_files: Vec<PathBuf>,
+    /// Phone: the plan for the game engine; `program`/`args` are then unused.
+    pub android: Option<android::AndroidLaunch>,
 }
 
 pub async fn prepare(
@@ -85,7 +108,20 @@ pub async fn prepare(
     }
 
     // --- libraries, client jar, logging config ---
+    let on_phone = opts.target == LaunchTarget::Android;
     let libs = library::resolve(&v.libraries, &env, &ctx.paths.libraries());
+    // Phone: no desktop LWJGL/natives; the engine brings its own (K104).
+    let (libs, lwjgl) = if on_phone {
+        let (l, n) = android::adapt_libraries(libs, &ctx.paths.libraries()).ok_or_else(|| {
+            CoreError::InvalidVersion {
+                id: v.id.clone(),
+                reason: "no LWJGL library".into(),
+            }
+        })?;
+        (l, Some(n))
+    } else {
+        (libs, None)
+    };
     let jar_path = ctx
         .paths
         .versions()
@@ -149,6 +185,10 @@ pub async fn prepare(
     let natives_dir = ctx.paths.versions().join(&v.id).join("natives");
     let native_progress = Progress::new(ctx.events.clone(), task, Stage::Natives);
     native_progress.set_totals(libs.natives.len() as u64, 0);
+    if on_phone {
+        // Only a scratch folder there (`-Djna.tmpdir=${natives_directory}`).
+        std::fs::create_dir_all(&natives_dir).map_err(|e| CoreError::io(&natives_dir, e))?;
+    }
     let jars = libs.natives.clone();
     let nd = natives_dir.clone();
     tokio::task::spawn_blocking(move || natives::extract_all(&jars, &nd))
@@ -185,14 +225,18 @@ pub async fn prepare(
     // --- java ---
     let java_progress = Progress::new(ctx.events.clone(), task, Stage::Java);
     java_progress.set_totals(1, 0);
-    let java = java::resolve(
-        ctx,
-        v.java_major(),
-        opts.java_path.as_deref(),
-        opts.auto_download_java,
-        cancel,
-    )
-    .await?;
+    let java = if on_phone {
+        java::android::ensure(ctx, v.java_major(), task, cancel).await?
+    } else {
+        java::resolve(
+            ctx,
+            v.java_major(),
+            opts.java_path.as_deref(),
+            opts.auto_download_java,
+            cancel,
+        )
+        .await?
+    };
     java_progress.finish();
 
     // --- command line ---
@@ -241,6 +285,33 @@ pub async fn prepare(
 
     let (mut jvm, game) = args::build(v, &env, &vars);
     fix_ignore_list(&mut jvm, &resolved.jar_id);
+    let secrets = if a.offline {
+        vec![]
+    } else {
+        vec![a.access_token.clone()]
+    };
+    if let Some(lwjgl) = lwjgl {
+        let plan = android_plan(ctx, opts, v, &resolved.jar_id, cp, jvm, game, lwjgl, &java)?;
+        let program = java.executable_path();
+        let shown: Vec<String> = plan
+            .jvm_args
+            .iter()
+            .chain([&plan.main_class])
+            .chain(&plan.game_args)
+            .cloned()
+            .collect();
+        return Ok(PreparedLaunch {
+            version_id: v.id.clone(),
+            masked_command: mask_command(&program, &shown, &secrets),
+            java,
+            program,
+            args: vec![],
+            cwd: opts.game_dir.clone(),
+            secrets,
+            temp_files: vec![],
+            android: Some(plan),
+        });
+    }
     let mut full = Vec::new();
     let max = opts.max_memory_mb.max(512);
     let min = opts.min_memory_mb.unwrap_or(max.min(1024)).min(max);
@@ -296,11 +367,6 @@ pub async fn prepare(
         .into_iter()
         .collect();
 
-    let secrets = if a.offline {
-        vec![]
-    } else {
-        vec![a.access_token.clone()]
-    };
     let masked_command = mask_command(&program, &full, &secrets);
 
     Ok(PreparedLaunch {
@@ -312,6 +378,70 @@ pub async fn prepare(
         masked_command,
         secrets,
         temp_files,
+        android: None,
+    })
+}
+
+/// Builds the engine plan from the desktop pieces (K104).
+#[allow(clippy::too_many_arguments)]
+fn android_plan(
+    ctx: &Ctx,
+    opts: &LaunchOptions,
+    v: &version::profile::VersionJson,
+    jar_id: &str,
+    classpath: Vec<String>,
+    jvm: Vec<String>,
+    game: Vec<String>,
+    lwjgl: u32,
+    java: &JavaInstall,
+) -> Result<android::AndroidLaunch> {
+    let mut jvm_args = opts.extra_jvm_args.clone();
+    jvm_args.extend(jvm);
+    let mut game_args = game;
+    if opts.demo && !game_args.iter().any(|a| a == "--demo") {
+        game_args.push("--demo".into());
+    }
+    game_args.extend(opts.extra_game_args.iter().cloned());
+    if let Some(server) = &opts.join_server {
+        game_args.extend(args::join_server(v, server));
+    }
+    let left = args::unresolved(&jvm_args)
+        .into_iter()
+        .chain(args::unresolved(&game_args))
+        .collect::<Vec<_>>();
+    if !left.is_empty() {
+        tracing::warn!(?left, "unresolved placeholders in launch arguments");
+    }
+    let log_config = v.logging.as_ref().and_then(|l| l.client.clone()).map(|l| {
+        let path = ctx.paths.assets().join("log_configs").join(&l.file.id);
+        android::LogConfig {
+            id: l.file.id,
+            path: path.display().to_string(),
+        }
+    });
+    tracing::debug!(jar = jar_id, "android plan ready");
+    Ok(android::AndroidLaunch {
+        version_id: v.id.clone(),
+        java_home: java.home.clone(),
+        java_major: java.major,
+        game_dir: opts.game_dir.display().to_string(),
+        natives_dir: ctx
+            .paths
+            .versions()
+            .join(&v.id)
+            .join("natives")
+            .display()
+            .to_string(),
+        classpath,
+        jvm_args: android::filter_jvm_args(jvm_args),
+        main_class: v.main_class.clone().expect("checked in resolve"),
+        game_args: android::filter_game_args(game_args),
+        memory_mb: opts.max_memory_mb.max(512),
+        lwjgl: android::lwjgl_component(lwjgl).into(),
+        lwjglx: lwjgl < 300,
+        renderer: android::renderer_for(&v.assets_id()).into(),
+        modern_input: v.arguments.is_some(),
+        log_config,
     })
 }
 

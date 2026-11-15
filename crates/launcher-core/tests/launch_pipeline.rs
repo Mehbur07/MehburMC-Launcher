@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use launcher_core::auth::LaunchAccount;
 use launcher_core::events::NullSink;
-use launcher_core::launch::{self, LaunchOptions};
+use launcher_core::launch::{self, LaunchOptions, LaunchTarget};
 use launcher_core::net::download::Verify;
 use launcher_core::net::{Allowlist, Http};
 use launcher_core::{Ctx, Paths};
@@ -33,7 +33,27 @@ const SOUND: &[u8] = b"fake sound";
 
 /// Serves a tiny but complete modern version `t1` (each file at most `n` times).
 async fn serve(server: &MockServer, n: u64) {
+    serve_with(server, n, false).await;
+}
+
+/// `lwjgl`: also lists desktop LWJGL (never served: the phone must skip it).
+async fn serve_with(server: &MockServer, n: u64, lwjgl: bool) {
     let uri = server.uri();
+    let mut libraries = vec![
+        json!({"name": "com.example:lib:1.0", "downloads": {"artifact": {
+        "path": "com/example/lib/1.0/lib-1.0.jar", "url": format!("{uri}/lib.jar"),
+        "sha1": sha1(LIB), "size": LIB.len()}}}),
+    ];
+    if lwjgl {
+        libraries.push(
+            json!({"name": "org.lwjgl:lwjgl:3.3.3", "downloads": {"artifact": {
+            "path": "org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3.jar", "url": format!("{uri}/missing.jar"),
+            "sha1": sha1(b"x"), "size": 1}}}),
+        );
+        libraries.push(json!({"name": "org.lwjgl:lwjgl:3.3.3:natives-linux", "downloads": {"artifact": {
+            "path": "org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-linux.jar", "url": format!("{uri}/missing.jar"),
+            "sha1": sha1(b"x"), "size": 1}}}));
+    }
     let asset_index =
         json!({"objects": {"minecraft/sounds/a.ogg": {"hash": sha1(SOUND), "size": SOUND.len()}}})
             .to_string();
@@ -44,9 +64,7 @@ async fn serve(server: &MockServer, n: u64) {
         "assetIndex": {"id": "t1", "url": format!("{uri}/indexes/t1.json"), "sha1": sha1(asset_index.as_bytes()),
                        "size": asset_index.len(), "totalSize": SOUND.len()},
         "downloads": {"client": {"url": format!("{uri}/client.jar"), "sha1": sha1(CLIENT), "size": CLIENT.len()}},
-        "libraries": [{"name": "com.example:lib:1.0", "downloads": {"artifact": {
-            "path": "com/example/lib/1.0/lib-1.0.jar", "url": format!("{uri}/lib.jar"),
-            "sha1": sha1(LIB), "size": LIB.len()}}}],
+        "libraries": libraries,
         "arguments": {
             "game": ["--username", "${auth_player_name}", "--version", "${version_name}",
                      "--gameDir", "${game_directory}", "--assetsDir", "${assets_root}",
@@ -111,6 +129,7 @@ fn fixture(server_uri: &str) -> Fixture {
         verify: Verify::Quick,
         join_server: None,
         demo: false,
+        target: LaunchTarget::Desktop,
     };
     Fixture {
         _tmp: tmp,
@@ -245,4 +264,61 @@ async fn rejects_a_non_java_override() {
         .await
         .unwrap_err();
     assert_eq!(e.code(), "instance.invalid");
+}
+
+#[tokio::test]
+async fn phone_gets_an_engine_plan() {
+    let server = MockServer::builder().start().await;
+    serve_with(&server, 1, true).await;
+    let f = fixture(&server.uri());
+    let cancel = CancellationToken::new();
+
+    // An installed Android runtime for Java 21 (no download in tests).
+    let jre = launcher_core::java::android::pick(21).unwrap();
+    let home = f.ctx.paths.runtime().join("android-java21");
+    let java_name = if cfg!(windows) { "java.exe" } else { "java" };
+    std::fs::create_dir_all(home.join("bin")).unwrap();
+    std::fs::write(home.join("bin").join(java_name), b"").unwrap();
+    std::fs::write(
+        home.join("release"),
+        "JAVA_VERSION=\"21.0.1\"
+",
+    )
+    .unwrap();
+    std::fs::write(home.join(".mehbur-jre"), jre.sha256).unwrap();
+
+    let mut opts = f.opts.clone();
+    opts.target = LaunchTarget::Android;
+    opts.java_path = None;
+    opts.extra_game_args = vec!["--fullscreen".into()];
+    let p = launch::prepare(&f.ctx, &opts, "t", &cancel).await.unwrap();
+    let plan = p.android.expect("engine plan");
+    assert!(p.args.is_empty());
+    assert_eq!(plan.java_major, 21);
+    assert_eq!(plan.java_home, home.display().to_string());
+    assert_eq!(plan.lwjgl, "3.3.3");
+    assert!(!plan.lwjglx);
+    assert_eq!(plan.renderer, "opengles2");
+    assert!(plan.modern_input);
+    assert_eq!(plan.memory_mb, 2048);
+    assert_eq!(plan.main_class, "net.minecraft.client.main.Main");
+    assert_eq!(plan.classpath.len(), 2, "{:?}", plan.classpath);
+    assert!(plan.classpath[0].ends_with("lib-1.0.jar"));
+    assert!(plan.classpath[1].ends_with("t1.jar"));
+    assert!(!plan.classpath.iter().any(|c| c.contains("lwjgl")));
+    assert_eq!(plan.jvm_args, vec!["-XX:+UseG1GC".to_owned()]);
+    assert!(
+        plan.game_args
+            .windows(2)
+            .any(|w| w == ["--username", "Steve"])
+    );
+    assert!(!plan.game_args.iter().any(|a| a == "--fullscreen"));
+    assert!(std::path::Path::new(&plan.natives_dir).is_dir());
+    assert!(
+        !f.ctx
+            .paths
+            .libraries()
+            .join("org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3.jar")
+            .exists()
+    );
 }

@@ -6,6 +6,7 @@
 //! (no process spawn needed).
 
 pub mod adoptium;
+pub mod android;
 
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
