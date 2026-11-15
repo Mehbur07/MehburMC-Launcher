@@ -17,21 +17,32 @@ use crate::state::AppState;
 /// Matches `--mc-bg` so the window never flashes white before the UI paints.
 const BACKGROUND: Color = Color(5, 7, 10, 255);
 
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let exe_dir = std::env::current_exe()
-        .ok()
-        .and_then(|p| p.parent().map(|d| d.to_path_buf()));
-    let app_state = AppState::init(exe_dir.as_deref());
+    // Masaüstünde durum pencere açılmadan kurulur (taşınabilir mod exe'nin
+    // yanındaki dosyaya bakar). Telefonda veri klasörü ancak uygulama
+    // başladıktan sonra bilinir, bu yüzden durum `setup` içinde kurulur.
+    #[cfg(desktop)]
+    let early_state = {
+        let exe_dir = std::env::current_exe()
+            .ok()
+            .and_then(|p| p.parent().map(|d| d.to_path_buf()));
+        Some(AppState::init(exe_dir.as_deref()))
+    };
 
-    tauri::Builder::default()
-        // Must be registered first: a second launch focuses the existing window.
+    let builder = tauri::Builder::default();
+    // Must be registered first: a second launch focuses the existing window.
+    #[cfg(desktop)]
+    let builder = builder
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
             // Brings the window back, also when it was closed for a game (K93).
             play::reopen_window(app);
         }))
+        .plugin(tauri_plugin_updater::Builder::new().build());
+
+    builder
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
         // Voice calls (K86): the microphone is granted without a WebView2
         // prompt (the call UI asks first); everything else keeps the default.
         .on_permission_request(|_, kind| match kind {
@@ -39,6 +50,10 @@ pub fn run() {
             _ => PermissionResponse::Default,
         })
         .setup(move |app| {
+            #[cfg(desktop)]
+            let app_state = early_state.expect("desktop state is built before the app");
+            #[cfg(mobile)]
+            let app_state = AppState::init_mobile(app.path().app_data_dir().ok());
             // WebView2 data lives inside the data folder, never in %LOCALAPPDATA% (K79).
             if let Some(paths) = &app_state.paths
                 && paths.mode() == launcher_core::DataMode::Standard
@@ -248,15 +263,18 @@ pub(crate) fn main_window(
     app: &AppHandle,
     data_dir: Option<PathBuf>,
 ) -> tauri::Result<WebviewWindow> {
-    let mut builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+    let builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default());
+    // Telefonda pencere her zaman tam ekrandır; boyut/kenarlık ayarları yalnız masaüstünde.
+    #[cfg(desktop)]
+    let builder = builder
         .title(launcher_core::LAUNCHER_NAME)
         .inner_size(1180.0, 720.0)
         .min_inner_size(960.0, 600.0)
         .decorations(false)
         .shadow(true)
         .resizable(true)
-        .center()
-        .background_color(BACKGROUND);
+        .center();
+    let mut builder = builder.background_color(BACKGROUND);
     if let Some(dir) = data_dir {
         builder = builder.data_directory(dir);
     }

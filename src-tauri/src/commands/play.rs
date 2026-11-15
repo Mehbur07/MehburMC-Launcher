@@ -58,6 +58,7 @@ fn bring_back(window: &tauri::WebviewWindow) {
     // minimised. Without this it would only flash in the task bar.
     #[cfg(target_os = "linux")]
     let _ = window.hide();
+    #[cfg(desktop)]
     let _ = window.unminimize();
     let _ = window.show();
     let _ = window.set_focus();
@@ -115,6 +116,7 @@ impl WindowHooks {
 
 impl LaunchHooks for WindowHooks {
     fn game_started(&self, _instance: &Instance) {
+        #[cfg(desktop)]
         if self.behavior != LaunchBehavior::KeepOpen
             && let Some(w) = self.app.get_webview_window("main")
         {

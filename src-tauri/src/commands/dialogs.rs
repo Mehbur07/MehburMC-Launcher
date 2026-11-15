@@ -112,6 +112,7 @@ pub async fn pick_path(
     let handle = app.clone();
     let picked = tokio::task::spawn_blocking(move || {
         let mut d = handle.dialog().file();
+        #[cfg(desktop)]
         if let Some(w) = handle.get_webview_window("main") {
             d = d.set_parent(&w);
         }
@@ -130,7 +131,11 @@ pub async fn pick_path(
                     .set_file_name(file)
                     .blocking_save_file()
             }
+            #[cfg(desktop)]
             Kind::Folder => d.blocking_pick_folder(),
+            // Android'de klasör seçici yok; veri klasörü uygulamanın içindedir.
+            #[cfg(mobile)]
+            Kind::Folder => None,
         };
         picked.and_then(|p| p.into_path().ok())
     })

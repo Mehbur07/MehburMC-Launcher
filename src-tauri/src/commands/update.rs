@@ -4,7 +4,10 @@
 
 use launcher_core::CoreError;
 use serde::Serialize;
-use tauri::{AppHandle, Emitter, State};
+#[cfg(desktop)]
+use tauri::Emitter;
+use tauri::{AppHandle, State};
+#[cfg(desktop)]
 use tauri_plugin_updater::UpdaterExt;
 use ts_rs::TS;
 
@@ -14,6 +17,8 @@ use crate::state::AppState;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
+// Telefonda yalnız `Unavailable` kullanılır (güncelleme yeni APK ile gelir).
+#[cfg_attr(mobile, allow(dead_code))]
 pub enum UpdateStatus {
     UpToDate,
     Available,
@@ -34,6 +39,25 @@ pub struct AppUpdate {
     pub notes: Option<String>,
 }
 
+/// Android: güncelleme yeni APK ile gelir, uygulama içi güncelleyici yok.
+#[cfg(mobile)]
+#[tauri::command]
+pub async fn check_app_update(app: AppHandle, _state: State<'_, AppState>) -> CmdResult<AppUpdate> {
+    Ok(AppUpdate {
+        status: UpdateStatus::Unavailable,
+        current: app.package_info().version.to_string(),
+        version: None,
+        notes: None,
+    })
+}
+
+#[cfg(mobile)]
+#[tauri::command]
+pub async fn install_app_update(_app: AppHandle, _state: State<'_, AppState>) -> CmdResult<()> {
+    Err(CoreError::InvalidSetting("update".into()).to_payload())
+}
+
+#[cfg(desktop)]
 #[tauri::command]
 pub async fn check_app_update(app: AppHandle, state: State<'_, AppState>) -> CmdResult<AppUpdate> {
     let current = app.package_info().version.to_string();
@@ -73,6 +97,7 @@ pub async fn check_app_update(app: AppHandle, state: State<'_, AppState>) -> Cmd
 
 /// Downloads, verifies (minisign) and installs the update found by the last
 /// check, then restarts. Progress on `core://update` as `[done, total]`.
+#[cfg(desktop)]
 #[tauri::command]
 pub async fn install_app_update(app: AppHandle, state: State<'_, AppState>) -> CmdResult<()> {
     let update = state

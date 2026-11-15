@@ -98,6 +98,12 @@ impl Paths {
         Self::from_root(base.data_dir().join(ROOT_DIR), DataMode::Standard)
     }
 
+    /// Paths below a platform data folder given by the caller, e.g. the
+    /// Android app's private `files` folder (no shared AppData there).
+    pub fn resolve_under(data_dir: &Path) -> Result<Self> {
+        Self::from_root(data_dir.join(ROOT_DIR), DataMode::Standard)
+    }
+
     /// Builds paths below an explicit `MehburMC` root, honouring a redirect.
     pub fn from_root(root: PathBuf, mode: DataMode) -> Result<Self> {
         let mc = root.join(GAME_DIR).join(MC_DIR);
