@@ -52,6 +52,95 @@ pub enum LaunchBehavior {
     CloseReopen,
 }
 
+/// Telefonda grafik çevirmeni (A3, K105): masaüstü OpenGL'i telefonun GLES'ine
+/// çeviren katman. `Auto` sürüme göre seçer (yeni sürümler MobileGlues).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum PhoneRenderer {
+    #[default]
+    Auto,
+    MobileGlues,
+    Gl4es,
+}
+
+/// Yalnız telefonda kullanılan oyun ayarları (A3, K105). Yüzdeler; sınırlar
+/// aşağıdaki `PHONE_*_RANGE` sabitlerinde.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", default)]
+#[ts(export)]
+pub struct PhoneSettings {
+    pub renderer: PhoneRenderer,
+    /// Oyunun çizim çözünürlüğü (100 = cihaza göre seçilen en iyi boyut).
+    pub resolution_percent: u32,
+    /// Ekranda sürükleyerek etrafa bakma hızı.
+    pub sensitivity_percent: u32,
+    /// Dokunmatik düğmelerin boyutu.
+    pub controls_size_percent: u32,
+    /// Dokunmatik düğmelerin görünürlüğü (100 = tamamen opak).
+    pub controls_opacity_percent: u32,
+}
+
+pub const PHONE_RESOLUTION_RANGE: std::ops::RangeInclusive<u32> = 25..=100;
+pub const PHONE_SENSITIVITY_RANGE: std::ops::RangeInclusive<u32> = 25..=300;
+pub const PHONE_CONTROLS_SIZE_RANGE: std::ops::RangeInclusive<u32> = 50..=200;
+pub const PHONE_CONTROLS_OPACITY_RANGE: std::ops::RangeInclusive<u32> = 10..=100;
+
+impl Default for PhoneSettings {
+    fn default() -> Self {
+        Self {
+            renderer: PhoneRenderer::Auto,
+            resolution_percent: 100,
+            sensitivity_percent: 100,
+            controls_size_percent: 100,
+            controls_opacity_percent: 60,
+        }
+    }
+}
+
+impl PhoneSettings {
+    fn ranges(&mut self) -> [(&mut u32, std::ops::RangeInclusive<u32>, &'static str); 4] {
+        [
+            (
+                &mut self.resolution_percent,
+                PHONE_RESOLUTION_RANGE,
+                "phone.resolutionPercent",
+            ),
+            (
+                &mut self.sensitivity_percent,
+                PHONE_SENSITIVITY_RANGE,
+                "phone.sensitivityPercent",
+            ),
+            (
+                &mut self.controls_size_percent,
+                PHONE_CONTROLS_SIZE_RANGE,
+                "phone.controlsSizePercent",
+            ),
+            (
+                &mut self.controls_opacity_percent,
+                PHONE_CONTROLS_OPACITY_RANGE,
+                "phone.controlsOpacityPercent",
+            ),
+        ]
+    }
+
+    fn validate(&self) -> Result<()> {
+        let mut copy = *self;
+        for (v, range, name) in copy.ranges() {
+            if !range.contains(&*v) {
+                return Err(CoreError::InvalidSetting(name.into()));
+            }
+        }
+        Ok(())
+    }
+
+    fn clamp(&mut self) {
+        for (v, range, _) in self.ranges() {
+            *v = (*v).clamp(*range.start(), *range.end());
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase", default)]
 #[ts(export)]
@@ -82,6 +171,8 @@ pub struct Settings {
     pub voice_input_device: Option<String>,
     /// Send call audio through the TURN relay so others never see our IP (K86).
     pub voice_hide_ip: bool,
+    /// Telefon oyun ayarları (A3, K105); masaüstünde kullanılmaz.
+    pub phone: PhoneSettings,
 }
 
 impl Default for Settings {
@@ -100,6 +191,7 @@ impl Default for Settings {
             curseforge_api_key: None,
             voice_input_device: None,
             voice_hide_ip: true,
+            phone: PhoneSettings::default(),
         }
     }
 }
@@ -163,7 +255,7 @@ impl Settings {
         {
             return Err(CoreError::InvalidSetting("voiceInputDevice".into()));
         }
-        Ok(())
+        self.phone.validate()
     }
 
     fn migrate(&mut self) {
@@ -181,6 +273,7 @@ impl Settings {
             .clamp(*MEMORY_MB_RANGE.start(), *MEMORY_MB_RANGE.end());
         // A bad hand-edited color must not block saving other settings.
         self.accent_color = self.accent_color.take().filter(|c| is_hex_color(c));
+        self.phone.clamp();
     }
 }
 
@@ -291,6 +384,38 @@ mod tests {
         }
         fs::write(paths.settings_file(), br#"{"accentColor":"url(x)"}"#).unwrap();
         assert_eq!(Settings::load(&paths).unwrap().accent_color, None);
+    }
+
+    #[test]
+    fn phone_settings_default_clamp_and_validate() {
+        let (_t, paths) = temp_paths();
+        // Eski dosya (telefon alanı yok) varsayılanlarla açılır.
+        fs::write(paths.settings_file(), br#"{"accent":"green"}"#).unwrap();
+        assert_eq!(
+            Settings::load(&paths).unwrap().phone,
+            PhoneSettings::default()
+        );
+        // Elle bozulmuş değerler sınırlara çekilir, eksik alanlar varsayılan kalır.
+        fs::write(
+            paths.settings_file(),
+            br#"{"phone":{"renderer":"gl4es","resolutionPercent":5,"sensitivityPercent":999}}"#,
+        )
+        .unwrap();
+        let p = Settings::load(&paths).unwrap().phone;
+        assert_eq!(p.renderer, PhoneRenderer::Gl4es);
+        assert_eq!(p.resolution_percent, 25);
+        assert_eq!(p.sensitivity_percent, 300);
+        assert_eq!(p.controls_opacity_percent, 60);
+        // Arayüzden sınır dışı değer gelirse kaydedilmez.
+        let bad = Settings {
+            phone: PhoneSettings {
+                controls_size_percent: 10,
+                ..PhoneSettings::default()
+            },
+            ..Settings::default()
+        };
+        assert!(bad.validate().is_err());
+        assert!(Settings::default().validate().is_ok());
     }
 
     #[test]

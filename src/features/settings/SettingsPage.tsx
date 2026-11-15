@@ -5,11 +5,13 @@ import { useTranslation } from "react-i18next";
 import { Badge, Button, ConfirmDialog, Toggle } from "../../components/ui";
 import type { Language } from "../../lib/ipc/bindings/Language";
 import type { LaunchBehavior } from "../../lib/ipc/bindings/LaunchBehavior";
+import { IS_MOBILE } from "../../lib/platform";
 import { useApp } from "../../stores/app";
 import { useAuth } from "../../stores/auth";
 import { useUpdate } from "../../stores/update";
 import { AccentSetting } from "./AccentSetting";
 import { DataFolderSection } from "./DataFolderSection";
+import { PhoneSection } from "./PhoneSection";
 import { VoiceSection } from "./VoiceSection";
 
 export function SettingsPage() {
@@ -53,19 +55,22 @@ export function SettingsPage() {
       </Section>
 
       <Section title={t("settings.game")}>
-        <Row label={t("settings.launchBehavior")} hint={t("settings.launchBehaviorHint")}>
-          <select
-            value={settings.launchBehavior}
-            onChange={(e) => void update({ launchBehavior: e.target.value as LaunchBehavior })}
-            className="rounded-md border border-line bg-surface-2 px-3 py-2 text-sm focus:border-accent"
-          >
-            {(["minimize", "close", "closeReopen", "keepOpen"] as const).map((b) => (
-              <option key={b} value={b}>
-                {t(`settings.launch.${b}`)}
-              </option>
-            ))}
-          </select>
-        </Row>
+        {/* Telefonda launcher penceresi oyunla birlikte kalır; bu seçenek anlamsız. */}
+        {!IS_MOBILE && (
+          <Row label={t("settings.launchBehavior")} hint={t("settings.launchBehaviorHint")}>
+            <select
+              value={settings.launchBehavior}
+              onChange={(e) => void update({ launchBehavior: e.target.value as LaunchBehavior })}
+              className="rounded-md border border-line bg-surface-2 px-3 py-2 text-sm focus:border-accent"
+            >
+              {(["minimize", "close", "closeReopen", "keepOpen"] as const).map((b) => (
+                <option key={b} value={b}>
+                  {t(`settings.launch.${b}`)}
+                </option>
+              ))}
+            </select>
+          </Row>
+        )}
         <Row
           label={t("settings.defaultMemory")}
           hint={t("settings.defaultMemoryHint", {
@@ -98,6 +103,12 @@ export function SettingsPage() {
           />
         </Row>
       </Section>
+
+      {IS_MOBILE && (
+        <Section title={t("settings.phone.title")}>
+          <PhoneSection />
+        </Section>
+      )}
 
       {!(auth?.localAccount ?? false) && (
         <Section title={t("settings.voice.title")}>

@@ -15,7 +15,14 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sür
 - **Oyun telefonda açılıyor (deneme):** Android sürümünde OYNA artık Minecraft'ı telefonda başlatıyor.
   Gereken Java ilk oyunda indirilir; oyun ayrı bir ekranda açılır. Menülerde dokunarak gezinebilir,
   dünyada sürükleyerek etrafa bakabilir, dokunarak blok koyup basılı tutarak kırabilirsin; geri tuşu
-  ESC'dir, sağ üstteki düğme klavyeyi açar. Yürüme düğmeleri sonraki güncellemede.
+  ESC'dir, sağ üstteki düğme klavyeyi açar.
+- **Telefonda oyun içi düğmeler:** dünyadayken sol altta yürüme çubuğu (sonuna kadar itince koşarsın),
+  sağ altta zıpla, eğil ve envanter, sol üstte duraklat, sohbet, kamera açısı ve eşya at düğmeleri
+  var; alttaki eşya çubuğuna dokunarak yuva seçebilirsin. Menülerde düğmeler gizlenir.
+- **Telefon ayarları:** Ayarlar'daki yeni "Telefonda oyun" bölümünden grafik çevirmenini,
+  çözünürlüğü, bakış hassasiyetini, düğme boyutunu ve görünürlüğünü değiştirebilirsin.
+- **Launcher telefondaki oyunu takip ediyor:** oyun açıkken "oynanıyor" görünür ve Durdur ile
+  kapatılabilir; oyun bitince oynama süresi kaydedilir, çökerse nedeni gösterilir.
 
 ## [0.32.0] — 2026-11-10
 

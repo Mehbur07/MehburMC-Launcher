@@ -45,6 +45,11 @@ import kotlin.system.exitProcess
  * - Dünyada sürükle = etrafa bak, kısa dokun = sağ tık (koy/kullan),
  *   basılı tut = sol tık basılı (kır/vur).
  * - Geri tuşu = ESC; sağ üstteki düğme ekran klavyesini açar.
+ * - Dünyadayken dokunmatik kontroller görünür (A3, [TouchControls]).
+ *
+ * Ayarlar (A3): bakış hassasiyeti, çözünürlük, düğme boyutu/saydamlığı plandan
+ * gelir. Oyun bitince çıkış kodu plandaki dosyaya yazılır; launcher oyunun
+ * nasıl kapandığını oradan öğrenir.
  */
 class GameActivity : Activity(), CallbackBridge.GrabListener {
     private val ui = Handler(Looper.getMainLooper())
@@ -52,6 +57,7 @@ class GameActivity : Activity(), CallbackBridge.GrabListener {
     private lateinit var surface: SurfaceView
     private lateinit var status: TextView
     private lateinit var keyboard: KeyboardSink
+    private lateinit var controls: TouchControls
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,6 +73,7 @@ class GameActivity : Activity(), CallbackBridge.GrabListener {
             return
         }
 
+        ExitActivity.setExitFile(plan.exitFile)
         // CallbackBridge ilk kez arayüz iş parçacığında yüklenmeli (pojavexec).
         CallbackBridge.nativeSetUseInputStackQueue(plan.modernInput)
         MainActivity.init(this)
@@ -85,6 +92,8 @@ class GameActivity : Activity(), CallbackBridge.GrabListener {
         val root = FrameLayout(this).apply { setBackgroundColor(Color.BLACK) }
         surface = SurfaceView(this)
         root.addView(surface, FrameLayout.LayoutParams(-1, -1))
+        controls = TouchControls(this, plan.controls, plan.gameDir)
+        root.addView(controls, FrameLayout.LayoutParams(-1, -1))
         keyboard = KeyboardSink(this)
         root.addView(keyboard, FrameLayout.LayoutParams(1, 1))
         status = TextView(this).apply {
@@ -163,6 +172,7 @@ class GameActivity : Activity(), CallbackBridge.GrabListener {
     }
 
     override fun onPause() {
+        if (::controls.isInitialized) controls.releaseAll()
         if (started) {
             // Dünyadaysa oyunu duraklat (menü açılır).
             if (CallbackBridge.isGrabbing()) CallbackBridge.sendKeyPress(Keys.GLFW_KEY_ESCAPE)
@@ -195,7 +205,7 @@ class GameActivity : Activity(), CallbackBridge.GrabListener {
     /** Oyun ekranının çizim çözünürlüğü: büyük ekranlarda kısa kenar sınırlanır. */
     private fun renderSize(viewW: Int, viewH: Int): Pair<Int, Int> {
         val powerful = GameLauncher.memoryCap(this) >= 1536 && Runtime.getRuntime().availableProcessors() > 4
-        val target = if (powerful) 1080 else 720
+        val target = (if (powerful) 1080 else 720) * plan.controls.resolutionPercent / 100
         val shortSide = min(viewW, viewH)
         val scale = if (shortSide <= target) 1f else target.toFloat() / shortSide
         fun even(v: Float) = ceil(v).toInt().let { if (it % 2 != 0) it - 1 else it }.coerceAtLeast(2)
@@ -279,7 +289,11 @@ class GameActivity : Activity(), CallbackBridge.GrabListener {
     // --- Girdi ---
 
     override fun onGrabState(isGrabbing: Boolean) {
-        touch?.reset()
+        // Oyunun iş parçacığından gelebilir: görünüm işleri arayüzde yapılır.
+        ui.post {
+            touch?.reset()
+            controls.setInWorld(isGrabbing)
+        }
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
@@ -311,6 +325,7 @@ class GameActivity : Activity(), CallbackBridge.GrabListener {
     /** Dokunmaları fare olaylarına çevirir (ayrıntı sınıf açıklamasında). */
     private inner class Touch : View.OnTouchListener {
         private val slop = dp(10)
+        private val sensitivity = plan.controls.sensitivityPercent / 100f
         private var pointer = -1
         private var downX = 0f
         private var downY = 0f
@@ -388,8 +403,8 @@ class GameActivity : Activity(), CallbackBridge.GrabListener {
                     if (grabbing) {
                         if (moved && !holdingLeft) ui.removeCallbacks(longPress)
                         CallbackBridge.sendCursorPos(
-                            CallbackBridge.mouseX + (x - lastX) * sx,
-                            CallbackBridge.mouseY + (y - lastY) * sy,
+                            CallbackBridge.mouseX + (x - lastX) * sx * sensitivity,
+                            CallbackBridge.mouseY + (y - lastY) * sy * sensitivity,
                         )
                     } else if (!scrolling) {
                         CallbackBridge.sendCursorPos(x * sx, y * sy)

@@ -2,9 +2,11 @@
 //!
 //! Rust tarafı başlatma planını bir dosyaya yazar ve Android'deki `GamePlugin`'e
 //! (Kotlin) iletir. O da oyun ekranını (`GameActivity`) launcher'dan ayrı bir
-//! süreçte açar; oyun kapanınca ya da çökünce launcher etkilenmez.
+//! süreçte açar; oyun kapanınca ya da çökünce launcher etkilenmez. Launcher
+//! oyun sürecinin açık olup olmadığını `status` ile sorar, `stop` ile kapatır (A3).
 
 use launcher_core::launch::android::AndroidLaunch;
+use launcher_core::launch::process::EngineStatus;
 use tauri::plugin::{Builder, TauriPlugin};
 use tauri::{AppHandle, Runtime};
 
@@ -64,3 +66,61 @@ pub fn start<R: Runtime>(
         "no game engine on this platform".into(),
     ))
 }
+
+/// Oyun süreci açık mı, kapandıysa sistem çökme olarak mı kaydetti (A3).
+/// Eklenti yanıt vermezse `None`: launcher oyunu izlemeyi bırakır.
+#[cfg(target_os = "android")]
+pub fn status<R: Runtime>(
+    app: &AppHandle<R>,
+    since: std::time::SystemTime,
+) -> Option<EngineStatus> {
+    use tauri::Manager;
+
+    #[derive(serde::Deserialize)]
+    struct Reply {
+        running: bool,
+        crashed: bool,
+    }
+    let since_ms = since
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or_default();
+    let engine = app.try_state::<Engine<R>>()?;
+    match engine
+        .0
+        .run_mobile_plugin::<Reply>("status", serde_json::json!({ "since": since_ms }))
+    {
+        Ok(r) => Some(EngineStatus {
+            running: r.running,
+            crashed: r.crashed,
+        }),
+        Err(e) => {
+            tracing::warn!(error = %e, "cannot read the game engine status");
+            None
+        }
+    }
+}
+
+#[cfg(not(target_os = "android"))]
+pub fn status<R: Runtime>(
+    _app: &AppHandle<R>,
+    _since: std::time::SystemTime,
+) -> Option<EngineStatus> {
+    None
+}
+
+/// Oyun sürecini kapatır (launcher'daki Durdur düğmesi).
+#[cfg(target_os = "android")]
+pub fn stop<R: Runtime>(app: &AppHandle<R>) {
+    use tauri::Manager;
+    if let Some(engine) = app.try_state::<Engine<R>>()
+        && let Err(e) = engine
+            .0
+            .run_mobile_plugin::<serde_json::Value>("stop", serde_json::json!({}))
+    {
+        tracing::warn!(error = %e, "cannot stop the game engine");
+    }
+}
+
+#[cfg(not(target_os = "android"))]
+pub fn stop<R: Runtime>(_app: &AppHandle<R>) {}

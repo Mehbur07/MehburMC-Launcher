@@ -19,6 +19,7 @@ import type { Settings } from "../../lib/ipc/bindings/Settings";
 import { useApp } from "../../stores/app";
 import { useAuth } from "../../stores/auth";
 import { useUpdate } from "../../stores/update";
+import { PhoneSection } from "./PhoneSection";
 import { SettingsPage } from "./SettingsPage";
 
 const settings: Settings = {
@@ -32,6 +33,13 @@ const settings: Settings = {
   defaultMemoryMb: 4096,
   launchBehavior: "minimize",
   checkUpdates: true,
+  phone: {
+    renderer: "auto",
+    resolutionPercent: 100,
+    sensitivityPercent: 100,
+    controlsSizePercent: 100,
+    controlsOpacityPercent: 60,
+  },
 };
 
 describe("SettingsPage", () => {
@@ -93,6 +101,25 @@ describe("SettingsPage", () => {
   it("has no sign-out button when signed out", () => {
     render(<SettingsPage />);
     expect(screen.queryByRole("button", { name: "Sign out" })).toBeNull();
+  });
+
+  it("hides the phone settings on desktop", () => {
+    render(<SettingsPage />);
+    expect(screen.queryByText("Playing on the phone")).toBeNull();
+    expect(screen.getByLabelText("Default RAM")).toBeTruthy();
+  });
+
+  it("saves phone settings without losing the other phone values", async () => {
+    render(<PhoneSection />);
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Look sensitivity"), { target: { value: "150" } });
+    });
+    expect(saved()?.phone).toEqual({ ...settings.phone, sensitivityPercent: 150 });
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Graphics translator"), { target: { value: "gl4es" } });
+    });
+    expect(saved()?.phone.renderer).toBe("gl4es");
+    expect(screen.getByText("Button visibility: 60%")).toBeTruthy();
   });
 
   it("has no CurseForge key field", () => {

@@ -118,6 +118,26 @@
       "stopTest": "Durdur",
       "hideIp": "IP adresimi gizle",
       "hideIpHint": "Ses Cloudflare aktarım sunucusu üzerinden gider, aramadaki kişiler IP adresini göremez. Kapatırsan ses doğrudan gider (biraz daha az gecikme), ama karşı taraf IP adresini görebilir."
+    },
+    "phone": {
+      "title": "Telefonda oyun",
+      "renderer": "Grafik çevirmeni",
+      "rendererHint": "Oyunun grafiklerini telefona çeviren katman. Görüntü bozuksa ya da oyun açılmıyorsa diğerini dene.",
+      "renderers": {
+        "auto": "Otomatik (sürüme göre)",
+        "mobileGlues": "MobileGlues (yeni sürümler)",
+        "gl4es": "gl4es (eski sürümler)"
+      },
+      "resolutionPercent": "Çözünürlük",
+      "resolutionPercentHint": "Düşük değer görüntüyü bulanıklaştırır ama oyunu hızlandırır.",
+      "sensitivityPercent": "Bakış hassasiyeti",
+      "sensitivityPercentHint": "Ekranı sürükleyerek etrafa bakma hızı.",
+      "controlsSizePercent": "Düğme boyutu",
+      "controlsSizePercentHint": "Yürüme çubuğu ve oyun içi düğmelerin büyüklüğü.",
+      "controlsOpacityPercent": "Düğme görünürlüğü",
+      "controlsOpacityPercentHint": "Düşük değerde düğmeler daha saydam olur, oyun daha iyi görünür.",
+      "nextGame": "Değişiklikler bir sonraki oyunda geçerli olur.",
+      "percent": "%{{value}}"
     }
   },
   "startup": {

@@ -118,6 +118,26 @@
       "stopTest": "Stop",
       "hideIp": "Hide my IP address",
       "hideIpHint": "Audio goes through the Cloudflare relay so people in the call cannot see your IP address. Off: audio goes direct (slightly lower latency), but others can see your IP address."
+    },
+    "phone": {
+      "title": "Playing on the phone",
+      "renderer": "Graphics translator",
+      "rendererHint": "The layer that translates the game's graphics for the phone. If the picture is broken or the game does not start, try the other one.",
+      "renderers": {
+        "auto": "Automatic (by version)",
+        "mobileGlues": "MobileGlues (newer versions)",
+        "gl4es": "gl4es (older versions)"
+      },
+      "resolutionPercent": "Resolution",
+      "resolutionPercentHint": "A lower value makes the picture blurrier but the game faster.",
+      "sensitivityPercent": "Look sensitivity",
+      "sensitivityPercentHint": "How fast you look around when dragging the screen.",
+      "controlsSizePercent": "Button size",
+      "controlsSizePercentHint": "Size of the movement stick and the in-game buttons.",
+      "controlsOpacityPercent": "Button visibility",
+      "controlsOpacityPercentHint": "Lower values make the buttons more see-through so you see more of the game.",
+      "nextGame": "Changes apply from the next game.",
+      "percent": "{{value}}%"
     }
   },
   "startup": {

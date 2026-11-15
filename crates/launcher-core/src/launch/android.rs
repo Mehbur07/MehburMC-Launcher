@@ -20,6 +20,7 @@ use serde::Serialize;
 
 use crate::library::{LibArtifact, ResolvedLibraries};
 use crate::maven::Coordinate;
+use crate::settings::{PhoneRenderer, PhoneSettings};
 
 /// Grafik çevirmeni: masaüstü OpenGL çağrılarını telefonun GLES'ine çevirir.
 pub const RENDERER_MOBILEGLUES: &str = "opengles_mobileglues";
@@ -57,6 +58,60 @@ pub struct AndroidLaunch {
     /// `arguments` bloklu (1.13+) sürüm: girdi kuyruğu yöntemi buna göre seçilir.
     pub modern_input: bool,
     pub log_config: Option<LogConfig>,
+    /// Oyun bitince motorun çıkış kodunu yazdığı dosya (A3): launcher oyunun
+    /// nasıl kapandığını buradan öğrenir. Dosya yoksa süreç dışarıdan
+    /// öldürülmüştür (sistem, kullanıcı ya da çökme).
+    pub exit_file: String,
+    /// Telefon ayarlarından gelen çözünürlük ve dokunmatik kontrol değerleri.
+    pub controls: PhoneControls,
+}
+
+/// Oyun ekranının ayarları (A3, K105); `settings::PhoneSettings`'ten gelir.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PhoneControls {
+    pub resolution_percent: u32,
+    pub sensitivity_percent: u32,
+    pub size_percent: u32,
+    pub opacity_percent: u32,
+}
+
+impl From<&PhoneSettings> for PhoneControls {
+    fn from(s: &PhoneSettings) -> Self {
+        Self {
+            resolution_percent: s.resolution_percent,
+            sensitivity_percent: s.sensitivity_percent,
+            size_percent: s.controls_size_percent,
+            opacity_percent: s.controls_opacity_percent,
+        }
+    }
+}
+
+impl AndroidLaunch {
+    /// Kullanıcının telefon ayarlarını plana işler (çevirmen seçimi dahil).
+    pub fn with_phone_settings(mut self, s: &PhoneSettings) -> Self {
+        match s.renderer {
+            PhoneRenderer::Auto => {}
+            PhoneRenderer::MobileGlues => self.renderer = RENDERER_MOBILEGLUES.into(),
+            PhoneRenderer::Gl4es => self.renderer = RENDERER_GL4ES.into(),
+        }
+        self.controls = PhoneControls::from(s);
+        self
+    }
+}
+
+/// Motorun çıkış kodunu yazdığı dosya: `<oyun klasörü>/logs/android-exit.txt`.
+pub fn exit_file(game_dir: &Path) -> std::path::PathBuf {
+    game_dir.join("logs").join("android-exit.txt")
+}
+
+/// Motorun yazdığı çıkış kodunu okur ve dosyayı siler (bir sonraki oyuna
+/// karışmasın). Dosya yoksa ya da bozuksa `None`.
+pub fn take_exit_code(game_dir: &Path) -> Option<i32> {
+    let path = exit_file(game_dir);
+    let code = std::fs::read_to_string(&path).ok()?.trim().parse().ok();
+    let _ = std::fs::remove_file(&path);
+    code
 }
 
 /// LWJGL sürümü, Amethyst'teki gibi rakamlar birleştirilerek (`3.3.3` → 333).
@@ -356,6 +411,8 @@ mod tests {
                 id: "client-1.12.xml".into(),
                 path: "/l.xml".into(),
             }),
+            exit_file: "/g/logs/android-exit.txt".into(),
+            controls: PhoneControls::from(&PhoneSettings::default()),
         };
         let v = serde_json::to_value(&plan).unwrap();
         let mut keys: Vec<_> = v.as_object().unwrap().keys().cloned().collect();
@@ -364,6 +421,8 @@ mod tests {
             keys,
             [
                 "classpath",
+                "controls",
+                "exitFile",
                 "gameArgs",
                 "gameDir",
                 "javaHome",
@@ -382,6 +441,42 @@ mod tests {
         );
         assert_eq!(v["logConfig"]["id"], "client-1.12.xml");
         assert_eq!(v["logConfig"]["path"], "/l.xml");
+        let mut c: Vec<_> = v["controls"].as_object().unwrap().keys().cloned().collect();
+        c.sort();
+        assert_eq!(
+            c,
+            [
+                "opacityPercent",
+                "resolutionPercent",
+                "sensitivityPercent",
+                "sizePercent"
+            ]
+        );
+
+        // Çevirmen seçimi: otomatikte sürümünki kalır, seçilince değişir.
+        let mut s = PhoneSettings::default();
+        assert_eq!(
+            plan.clone().with_phone_settings(&s).renderer,
+            RENDERER_MOBILEGLUES
+        );
+        s.renderer = PhoneRenderer::Gl4es;
+        s.sensitivity_percent = 150;
+        let p = plan.with_phone_settings(&s);
+        assert_eq!(p.renderer, RENDERER_GL4ES);
+        assert_eq!(p.controls.sensitivity_percent, 150);
+    }
+
+    #[test]
+    fn exit_code_is_read_once() {
+        let tmp = tempfile::tempdir().unwrap();
+        assert_eq!(take_exit_code(tmp.path()), None);
+        let f = exit_file(tmp.path());
+        std::fs::create_dir_all(f.parent().unwrap()).unwrap();
+        std::fs::write(&f, "1\n").unwrap();
+        assert_eq!(take_exit_code(tmp.path()), Some(1));
+        assert!(!f.exists());
+        std::fs::write(&f, "garbage").unwrap();
+        assert_eq!(take_exit_code(tmp.path()), None);
     }
 
     #[test]

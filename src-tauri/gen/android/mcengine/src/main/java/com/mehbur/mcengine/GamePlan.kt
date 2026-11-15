@@ -25,7 +25,31 @@ data class GamePlan(
     val modernInput: Boolean,
     val logConfigId: String?,
     val logConfigPath: String?,
+    /** Oyun bitince çıkış kodunun yazıldığı dosya (A3). */
+    val exitFile: String?,
+    val controls: Controls,
 ) {
+    /** Telefon ayarları (A3, K105); yüzdeler launcher'da sınırlanmıştır. */
+    data class Controls(
+        val resolutionPercent: Int = 100,
+        val sensitivityPercent: Int = 100,
+        val sizePercent: Int = 100,
+        val opacityPercent: Int = 60,
+    ) {
+        companion object {
+            fun parse(o: JSONObject?): Controls {
+                val d = Controls()
+                if (o == null) return d
+                return Controls(
+                    resolutionPercent = o.optInt("resolutionPercent", d.resolutionPercent).coerceIn(25, 100),
+                    sensitivityPercent = o.optInt("sensitivityPercent", d.sensitivityPercent).coerceIn(25, 300),
+                    sizePercent = o.optInt("sizePercent", d.sizePercent).coerceIn(50, 200),
+                    opacityPercent = o.optInt("opacityPercent", d.opacityPercent).coerceIn(10, 100),
+                )
+            }
+        }
+    }
+
     companion object {
         fun read(file: File): GamePlan = parse(JSONObject(file.readText()))
 
@@ -48,6 +72,8 @@ data class GamePlan(
                 modernInput = o.getBoolean("modernInput"),
                 logConfigId = log?.getString("id"),
                 logConfigPath = log?.getString("path"),
+                exitFile = o.optString("exitFile").ifEmpty { null },
+                controls = Controls.parse(o.optJSONObject("controls")),
             )
         }
 

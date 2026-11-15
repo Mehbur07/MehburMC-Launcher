@@ -38,7 +38,8 @@ pub trait LaunchHooks: Send + Sync {
     fn game_ready(&self, _instance: &Instance) {}
     fn game_exited(&self, _instance: &Instance, _exit: &GameExit) {}
     /// Phone (K104): hands the plan to the Android game engine, which runs
-    /// the game in its own process. The launcher does not track that process.
+    /// the game in its own process, then the launcher polls
+    /// [`LaunchHooks::engine_status`] until it ends (A3).
     fn start_engine(
         &self,
         _instance: &Instance,
@@ -48,6 +49,13 @@ pub trait LaunchHooks: Send + Sync {
             "no game engine on this platform".into(),
         ))
     }
+    /// Phone (A3): is the engine process still running? `None` = cannot tell
+    /// (no engine), then the launcher stops tracking the game. Blocking call.
+    fn engine_status(&self, _since: std::time::SystemTime) -> Option<process::EngineStatus> {
+        None
+    }
+    /// Phone (A3): ends the engine process (Stop button). Blocking call.
+    fn stop_engine(&self) {}
 }
 
 pub struct NoHooks;
@@ -226,8 +234,45 @@ impl Launcher {
                     this.sync_skin(&opts.game_dir, id, &opts.account.name);
                 }
                 if let Some(plan) = &prepared.android {
-                    tracing::info!(command = %prepared.masked_command, "starting the Android game engine");
-                    hooks.start_engine(&inst, plan)?;
+                    let plan = plan.clone().with_phone_settings(&settings.phone);
+                    // Önceki oyundan kalmış bir çıkış kodu bu oyuna karışmasın.
+                    let _ = launch::android::take_exit_code(&opts.game_dir);
+                    tracing::info!(command = %prepared.masked_command, renderer = %plan.renderer, "starting the Android game engine");
+                    hooks.start_engine(&inst, &plan)?;
+                    this.tasks.set_status(&tid, TaskStatus::Playing);
+                    // Oyun ayrı süreçte: kapanana kadar durumu sorulur (A3).
+                    let status = {
+                        let h = hooks.clone();
+                        move |since| {
+                            let h = h.clone();
+                            async move {
+                                tokio::task::spawn_blocking(move || h.engine_status(since))
+                                    .await
+                                    .ok()
+                                    .flatten()
+                            }
+                        }
+                    };
+                    let stop = {
+                        let h = hooks.clone();
+                        move || async move {
+                            let _ = tokio::task::spawn_blocking(move || h.stop_engine()).await;
+                        }
+                    };
+                    let exit = process::watch_engine(
+                        status,
+                        stop,
+                        &opts.game_dir,
+                        this.ctx.events.clone(),
+                        &tid,
+                        &cancel,
+                        process::ENGINE_POLL,
+                    )
+                    .await;
+                    if let Some(e) = &exit {
+                        this.after_exit(&inst, &opts.game_dir, &tid, e);
+                        hooks.game_exited(&inst, e);
+                    }
                     return Ok(());
                 }
                 this.tasks.set_status(&tid, TaskStatus::Playing);
@@ -272,28 +317,7 @@ impl Launcher {
                     .await;
                 }
                 if let Ok(e) = &exit {
-                    let secs = e.duration.as_secs();
-                    if let Err(err) = this.instances.record_session(&inst.id, secs) {
-                        tracing::warn!(error = %err.detail(), "could not record play time");
-                    }
-                    if !e.killed && e.code != Some(0) {
-                        let info = crash::analyze(
-                            &inst.id,
-                            &inst.name,
-                            crash::Inputs {
-                                game_dir: &opts.game_dir,
-                                exit_code: e.code,
-                                crash_report: e.crash_report.as_deref(),
-                                output: &e.output_tail,
-                                started: e.started_at,
-                            },
-                        );
-                        tracing::info!(diagnoses = ?info.diagnoses, "crash analysed");
-                        this.ctx.events.emit(CoreEvent::GameCrashed {
-                            task: tid.clone(),
-                            info,
-                        });
-                    }
+                    this.after_exit(&inst, &opts.game_dir, &tid, e);
                     hooks.game_exited(&inst, e);
                 }
                 // A user-requested stop of a running game is a normal end.
@@ -306,6 +330,33 @@ impl Launcher {
             this.tasks.finish(&tid, &result);
         });
         Ok(task_id)
+    }
+
+    /// Oyun bittikten sonra: oynama süresini kaydeder, hatayla bittiyse
+    /// çökme analizini gönderir (masaüstü ve telefon ortak).
+    fn after_exit(&self, inst: &Instance, game_dir: &std::path::Path, tid: &str, e: &GameExit) {
+        let secs = e.duration.as_secs();
+        if let Err(err) = self.instances.record_session(&inst.id, secs) {
+            tracing::warn!(error = %err.detail(), "could not record play time");
+        }
+        if !e.killed && e.code != Some(0) {
+            let info = crash::analyze(
+                &inst.id,
+                &inst.name,
+                crash::Inputs {
+                    game_dir,
+                    exit_code: e.code,
+                    crash_report: e.crash_report.as_deref(),
+                    output: &e.output_tail,
+                    started: e.started_at,
+                },
+            );
+            tracing::info!(diagnoses = ?info.diagnoses, "crash analysed");
+            self.ctx.events.emit(CoreEvent::GameCrashed {
+                task: tid.to_owned(),
+                info,
+            });
+        }
     }
 
     /// Hands the account's offline skin to CustomSkinLoader, if installed.

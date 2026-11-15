@@ -442,6 +442,8 @@ fn android_plan(
         renderer: android::renderer_for(&v.assets_id()).into(),
         modern_input: v.arguments.is_some(),
         log_config,
+        exit_file: android::exit_file(&opts.game_dir).display().to_string(),
+        controls: android::PhoneControls::from(&crate::settings::PhoneSettings::default()),
     })
 }
 

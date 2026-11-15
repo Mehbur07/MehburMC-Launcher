@@ -26,6 +26,13 @@ const settings: Settings = {
   defaultMemoryMb: 4096,
   launchBehavior: "minimize",
   checkUpdates: true,
+  phone: {
+    renderer: "auto",
+    resolutionPercent: 100,
+    sensitivityPercent: 100,
+    controlsSizePercent: 100,
+    controlsOpacityPercent: 60,
+  },
 };
 
 const boot: Bootstrap = {
