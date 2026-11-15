@@ -51,8 +51,8 @@ export function LogsTab({ inst }: { inst: Instance }) {
   }
 
   return (
-    <div className="grid h-full min-h-[420px] grid-cols-[240px_minmax(0,1fr)] gap-3">
-      <div className="flex flex-col gap-2 overflow-y-auto">
+    <div className="grid h-full min-h-[420px] grid-cols-[240px_minmax(0,1fr)] gap-3 mobile:grid-cols-1 mobile:grid-rows-[auto_minmax(360px,1fr)]">
+      <div className="flex flex-col gap-2 overflow-y-auto mobile:max-h-48">
         <Button size="sm" variant="ghost" onClick={refresh} className="self-start">
           <RefreshCw size={14} />
           {t("common.refresh")}

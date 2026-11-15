@@ -4,10 +4,38 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { UpdateButton } from "../features/update/UpdateButton";
+import { IS_MOBILE } from "../lib/platform";
 import { useApp } from "../stores/app";
 import { Logo } from "./Logo";
 
 export function TitleBar() {
+  return IS_MOBILE ? <MobileTitleBar /> : <DesktopTitleBar />;
+}
+
+/** Telefonda pencere düğmesi yok; durum çubuğunun altında ince bir başlık. */
+function MobileTitleBar() {
+  const { t } = useTranslation();
+  const version = useApp((s) => s.boot?.version);
+  return (
+    <header className="relative z-20 flex h-11 shrink-0 items-center border-b border-line bg-surface-1/90 px-3 backdrop-blur">
+      <div className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-accent/70 to-transparent" />
+      <Logo className="h-6 w-6 rounded" />
+      <span className="ml-2 font-brand text-[13px] font-bold tracking-wider">
+        MehburMC <span className="text-accent">Launcher</span>
+      </span>
+      {version && (
+        <span
+          title={t("titlebar.version")}
+          className="ml-auto rounded border border-line bg-surface-2/70 px-1.5 py-px font-mono text-[10px] leading-4 text-muted"
+        >
+          v{version}
+        </span>
+      )}
+    </header>
+  );
+}
+
+function DesktopTitleBar() {
   const { t } = useTranslation();
   const [maximized, setMaximized] = useState(false);
   const version = useApp((s) => s.boot?.version);

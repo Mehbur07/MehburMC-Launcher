@@ -39,6 +39,7 @@ import {
 import { openFolder, play, stop } from "../../lib/actions";
 import { formatDuration } from "../../lib/format";
 import { ipc, toErrorPayload } from "../../lib/ipc";
+import { IS_MOBILE } from "../../lib/platform";
 import type { ImportResult } from "../../lib/ipc/bindings/ImportResult";
 import type { Instance } from "../../lib/ipc/bindings/Instance";
 import { useApp } from "../../stores/app";
@@ -209,7 +210,11 @@ function InstanceCard({ inst, index }: { inst: Instance; index: number }) {
       className={`rise-in group relative flex flex-col gap-3 rounded-lg border bg-surface-1/85 p-4 backdrop-blur transition-colors ${
         selected ? "border-accent/60 neon-ring" : "border-line hover:border-accent/40"
       } ${isDragging ? "opacity-80" : ""}`}
-      onClick={() => void select(inst.id)}
+      onClick={() => {
+        void select(inst.id);
+        // Telefonda çift dokunma yok: dokunmak ayrıntıları açar (K103).
+        if (IS_MOBILE) openInstance(inst.id);
+      }}
       onDoubleClick={() => openInstance(inst.id)}
     >
       <div className="flex items-start gap-3">

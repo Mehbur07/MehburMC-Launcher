@@ -20,6 +20,7 @@ import { IconButton } from "../../components/ui";
 import type { Call } from "../../lib/ipc/bindings/Call";
 import type { CallMember } from "../../lib/ipc/bindings/CallMember";
 import { playTone } from "../../lib/voice/audio";
+import { IS_MOBILE } from "../../lib/platform";
 import { callTitle, useCalls } from "../../stores/calls";
 import { useFriends } from "../../stores/friends";
 import { LocalSharePreview, ScreenPanel, ShareButton } from "./ScreenShare";
@@ -67,7 +68,7 @@ function IncomingCard({ call }: { call: Call }) {
     <div
       role="alertdialog"
       aria-label={t("calls.incoming")}
-      className="call-ringing pop-in flex w-80 items-center gap-3 rounded-lg border border-line bg-surface-1/95 p-3 backdrop-blur"
+      className="call-ringing pop-in flex w-80 items-center gap-3 rounded-lg border border-line bg-surface-1/95 p-3 backdrop-blur mobile:w-auto"
     >
       {call.groupId === null && caller ? <Face id={caller.id} /> : <GroupFace />}
       <div className="min-w-0 flex-1">
@@ -107,7 +108,7 @@ function IncomingCalls() {
   useEffect(() => (ring ? playTone("incoming") : undefined), [ring]);
   if (ringing.length === 0) return null;
   return (
-    <div className="pointer-events-auto fixed top-12 right-4 z-50 flex flex-col gap-2">
+    <div className="pointer-events-auto fixed top-12 right-4 z-50 flex flex-col gap-2 mobile:right-3 mobile:left-3">
       {ringing.map((c) => (
         <IncomingCard key={c.id} call={c} />
       ))}
@@ -208,7 +209,7 @@ function CallBar() {
       {call && <ScreenPanel members={call.members.filter((m) => m.id !== me)} />}
       <section
         aria-label={t("calls.title")}
-        className="pointer-events-auto fixed right-4 bottom-4 z-50 w-72 rounded-lg border border-line bg-surface-1/95 p-3 neon-ring backdrop-blur"
+        className="pointer-events-auto fixed right-4 bottom-4 z-50 w-72 rounded-lg border border-line bg-surface-1/95 p-3 neon-ring backdrop-blur mobile:right-3 mobile:bottom-[4.5rem] mobile:left-3 mobile:w-auto"
       >
         <div className="flex items-center gap-2">
           <span
@@ -264,7 +265,8 @@ function CallBar() {
           >
             {deafened ? <HeadphoneOff size={17} /> : <Headphones size={17} />}
           </IconButton>
-          {activeId !== null && !joining && <ShareButton />}
+          {/* Android WebView ekran paylaşamaz; izlemek mümkün (K103). */}
+          {activeId !== null && !joining && !IS_MOBILE && <ShareButton />}
           <IconButton
             label={t("calls.leave")}
             onClick={() => void leave()}
@@ -286,7 +288,7 @@ function CallError() {
   return (
     <div
       role="alert"
-      className="pointer-events-auto fixed bottom-4 left-1/2 z-50 flex max-w-md -translate-x-1/2 items-center gap-2 rounded-lg border border-warn/40 bg-surface-1/95 px-3 py-2 text-xs text-warn backdrop-blur"
+      className="pointer-events-auto fixed bottom-4 left-1/2 z-50 flex max-w-md -translate-x-1/2 items-center gap-2 rounded-lg border border-warn/40 bg-surface-1/95 px-3 py-2 text-xs text-warn backdrop-blur mobile:bottom-[4.5rem] mobile:w-[calc(100vw-1.5rem)]"
     >
       <AlertTriangle size={14} className="shrink-0" />
       <span className="flex-1">

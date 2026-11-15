@@ -226,7 +226,7 @@ function SignOutButton() {
 
 function Row({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-6 py-3">
+    <div className="flex items-center justify-between gap-6 py-3 mobile:flex-wrap mobile:gap-x-4 mobile:gap-y-2 mobile:[&>*:last-child]:ml-auto">
       <div>
         <div className="text-sm font-medium">{label}</div>
         {hint && <div className="mt-0.5 text-xs text-muted">{hint}</div>}

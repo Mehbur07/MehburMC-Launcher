@@ -163,6 +163,12 @@ fn start(
     mode: StartMode,
     join: Option<ServerAddress>,
 ) -> CmdResult<String> {
+    // Telefonda oyun motoru henüz yok (K103): indirmeye başlamadan durdur, yoksa
+    // telefon yüzlerce MB oyun dosyası indirip sonunda Java bulamazdı.
+    if cfg!(mobile) {
+        let _ = (app, id, mode, join);
+        return Err(launcher_core::CoreError::GameNotOnThisDevice.into());
+    }
     let settings = state.settings();
     let hooks = Arc::new(WindowHooks {
         app,

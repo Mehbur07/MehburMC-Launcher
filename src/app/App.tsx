@@ -7,7 +7,7 @@ import { Lock } from "lucide-react";
 import { ErrorNotice } from "../components/ErrorNotice";
 import { Logo } from "../components/Logo";
 import { NeonBackground } from "../components/NeonBackground";
-import { Sidebar } from "../components/Sidebar";
+import { MobileNav, Sidebar } from "../components/Sidebar";
 import { Button } from "../components/ui";
 import { TitleBar } from "../components/TitleBar";
 import { HomePage } from "../features/home/HomePage";
@@ -25,7 +25,9 @@ import { useSkins } from "../stores/skins";
 import { useUpdate } from "../stores/update";
 import { CallLayer } from "../features/calls/CallLayer";
 import { CrashDialog } from "../features/crash/CrashDialog";
+import { IS_MOBILE } from "../lib/platform";
 import { connectEvents } from "./events";
+import { useMobileHistory } from "./mobileHistory";
 
 // Every screen except Home is loaded on first use (three.js for skins,
 // dnd-kit, the virtualised console, …), keeping the startup bundle small.
@@ -110,6 +112,7 @@ export function App() {
   const loadAccounts = useAccounts((s) => s.load);
   const loadSkins = useSkins((s) => s.load);
   const checkUpdate = useUpdate((s) => s.check);
+  useMobileHistory(IS_MOBILE);
 
   useEffect(() => {
     void load();
@@ -184,7 +187,9 @@ export function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="flex h-full flex-col overflow-hidden border border-line bg-bg">
+      <div
+        className={`flex h-full flex-col overflow-hidden bg-bg ${IS_MOBILE ? "" : "border border-line"}`}
+      >
         <TitleBar />
 
         {status === "loading" && (
@@ -223,8 +228,10 @@ export function App() {
             {settings.backgroundEffects && (
               <NeonBackground accent={settings.accentColor ?? settings.accent} />
             )}
-            <Sidebar />
-            <main className="relative z-0 flex min-w-0 flex-1 flex-col overflow-y-auto p-6">
+            {!IS_MOBILE && <Sidebar />}
+            <main
+              className={`relative z-0 flex min-w-0 flex-1 flex-col overflow-y-auto ${IS_MOBILE ? "p-3" : "p-6"}`}
+            >
               {notice && (
                 <div className="mb-4">
                   <ErrorNotice error={notice} onDismiss={dismissNotice} />
@@ -254,6 +261,7 @@ export function App() {
             {!local && <CallLayer />}
           </div>
         )}
+        {status === "ready" && settings && usable && IS_MOBILE && <MobileNav />}
       </div>
     </MotionConfig>
   );

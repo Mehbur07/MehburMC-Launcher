@@ -23,7 +23,8 @@
     "whatsNew": "What's new",
     "settings": "Settings",
     "support": "Contact admins",
-    "admin": "Admin"
+    "admin": "Admin",
+    "menu": "Menu"
   },
   "home": {
     "play": "PLAY",
@@ -139,6 +140,9 @@
     "saved": "Saved"
   },
   "errors": {
+    "platform": {
+      "gameNotYet": "Starting the game on a phone is not ready yet; it is coming in a later update."
+    },
     "unknown": "An unexpected error occurred.",
     "paths": {
       "noDataDir": "Could not determine the user data folder.",
@@ -1078,6 +1082,7 @@
     "chatWith": "Chat with {{name}}",
     "noMessages": "No messages yet. Say hi!",
     "messagePlaceholder": "Write a message… (Enter sends, Shift+Enter new line)",
+    "messagePlaceholderMobile": "Write a message…",
     "sendMessage": "Send",
     "offline": "Server unreachable",
     "disable": "Turn off friends and delete my data",

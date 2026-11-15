@@ -1,11 +1,13 @@
-import { MessageSquarePlus, Send, XCircle } from "lucide-react";
+import { ArrowLeft, MessageSquarePlus, Send, XCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useBackLayer } from "../../app/mobileHistory";
 import { Badge, Button, TextInput } from "../../components/ui";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
 import type { SupportThread } from "../../lib/ipc/bindings/SupportThread";
 import { formatIso } from "../../lib/format";
+import { IS_MOBILE } from "../../lib/platform";
 import { useSupport } from "../../stores/support";
 import { ChatView, ErrorText, MAX_CHARS } from "../friends/ChatView";
 
@@ -144,16 +146,31 @@ export function SupportPanel() {
   }, [loadThreads]);
 
   const current = threads?.find((x) => x.id === selected) ?? null;
+  // Telefonda (K103) liste ve içerik ayrı ekranlar; geri tuşu listeye döner.
+  const [detail, setDetail] = useState(false);
+  useBackLayer(detail, () => setDetail(false));
+  const pick = (id: number | null) => {
+    setSelected(id);
+    setDetail(true);
+  };
+  const listHidden = IS_MOBILE && detail;
+  const detailHidden = IS_MOBILE && !detail;
 
   return (
-    <div className="grid min-h-[420px] flex-1 grid-cols-[260px_1fr] overflow-hidden rounded-lg border border-line bg-surface-1/85 backdrop-blur">
-      <aside className="flex min-h-0 flex-col border-r border-line">
+    <div
+      className={`min-h-[420px] flex-1 overflow-hidden rounded-lg border border-line bg-surface-1/85 backdrop-blur ${
+        IS_MOBILE ? "flex flex-col" : "grid grid-cols-[260px_1fr]"
+      }`}
+    >
+      <aside
+        className={`flex min-h-0 flex-col ${IS_MOBILE ? "flex-1" : "border-r border-line"} ${listHidden ? "hidden" : ""}`}
+      >
         <div className="p-3">
           <Button
             size="sm"
             variant={selected === null ? "primary" : "ghost"}
             className="w-full"
-            onClick={() => setSelected(null)}
+            onClick={() => pick(null)}
           >
             <MessageSquarePlus size={14} />
             {t("support.newThread")}
@@ -170,7 +187,7 @@ export function SupportPanel() {
               <li key={x.id}>
                 <button
                   type="button"
-                  onClick={() => setSelected(x.id)}
+                  onClick={() => pick(x.id)}
                   aria-current={x.id === selected ? "true" : undefined}
                   className={`flex w-full flex-col gap-0.5 rounded-md px-2 py-1.5 text-left transition-colors ${
                     x.id === selected ? "bg-accent/10 text-accent" : "hover:bg-surface-2"
@@ -194,7 +211,17 @@ export function SupportPanel() {
           )}
         </ul>
       </aside>
-      <section className="flex min-h-0 flex-col overflow-y-auto">
+      <section
+        className={`flex min-h-0 flex-col overflow-y-auto ${IS_MOBILE ? "flex-1" : ""} ${detailHidden ? "hidden" : ""}`}
+      >
+        {IS_MOBILE && (
+          <div className="border-b border-line p-2">
+            <Button size="sm" variant="ghost" onClick={() => setDetail(false)}>
+              <ArrowLeft size={15} />
+              {t("support.threads")}
+            </Button>
+          </div>
+        )}
         {error && threads?.length === 0 && (
           <div className="px-4 pt-3">
             <ErrorText error={error} />

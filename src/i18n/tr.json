@@ -23,7 +23,8 @@
     "whatsNew": "Yenilikler",
     "settings": "Ayarlar",
     "support": "Admine yaz",
-    "admin": "Admin"
+    "admin": "Admin",
+    "menu": "Menü"
   },
   "home": {
     "play": "OYNA",
@@ -139,6 +140,9 @@
     "saved": "Kaydedildi"
   },
   "errors": {
+    "platform": {
+      "gameNotYet": "Oyunu telefonda başlatma henüz hazır değil; bir sonraki güncellemelerde gelecek."
+    },
     "unknown": "Beklenmeyen bir hata oluştu.",
     "paths": {
       "noDataDir": "Kullanıcı veri klasörü belirlenemedi.",
@@ -1078,6 +1082,7 @@
     "chatWith": "{{name}} ile sohbet",
     "noMessages": "Henüz mesaj yok. İlk mesajı sen gönder!",
     "messagePlaceholder": "Mesaj yaz… (Enter gönderir, Shift+Enter yeni satır)",
+    "messagePlaceholderMobile": "Mesaj yaz…",
     "sendMessage": "Gönder",
     "offline": "Sunucuya ulaşılamıyor",
     "disable": "Arkadaşları kapat ve verilerimi sil",

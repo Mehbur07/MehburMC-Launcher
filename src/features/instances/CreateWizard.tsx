@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { INSTANCE_ICONS, InstanceIcon } from "../../components/InstanceIcon";
 import { Button, Field, Modal, TextInput } from "../../components/ui";
 import type { LoaderSpec } from "../../lib/ipc/bindings/LoaderSpec";
+import { IS_MOBILE } from "../../lib/platform";
 import { useApp } from "../../stores/app";
 import { useInstances } from "../../stores/instances";
 import { InstanceOptionsFields, type InstanceOptions } from "./InstanceOptionsFields";
@@ -91,10 +92,10 @@ export function CreateWizard() {
       }
     >
       <div
-        className="grid grid-cols-[minmax(0,1fr)_320px] gap-6"
-        style={{ height: "min(62vh, 560px)" }}
+        className={IS_MOBILE ? "flex flex-col gap-6" : "grid grid-cols-[minmax(0,1fr)_320px] gap-6"}
+        style={IS_MOBILE ? undefined : { height: "min(62vh, 560px)" }}
       >
-        <div className="flex min-h-0 flex-col gap-5 overflow-y-auto pr-2">
+        <div className={`flex min-h-0 flex-col gap-5 ${IS_MOBILE ? "" : "overflow-y-auto pr-2"}`}>
           <div className="flex items-end gap-4">
             <InstanceIcon icon={icon} size={64} />
             <div className="flex-1">
@@ -148,7 +149,8 @@ export function CreateWizard() {
           />
         </div>
 
-        <div className="flex min-h-0 flex-col">
+        {/* Telefonda önce sürüm seçilir: liste üstte, sabit yükseklikte. */}
+        <div className="flex min-h-0 flex-col mobile:order-first mobile:h-[22rem]">
           <span className="mb-1.5 text-xs font-semibold tracking-wide text-muted uppercase">
             {t("wizard.version")}
           </span>

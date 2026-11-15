@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "../../components/ui";
 import type { ErrorPayload } from "../../lib/ipc/bindings/ErrorPayload";
+import { IS_MOBILE } from "../../lib/platform";
 
 const CHAT_POLL_MS = 3000;
 export const MAX_CHARS = 2000;
@@ -118,14 +119,19 @@ export function ChatView({
               value={text}
               rows={2}
               maxLength={MAX_CHARS}
-              placeholder={t("friends.messagePlaceholder")}
-              aria-label={t("friends.messagePlaceholder")}
+              placeholder={t(
+                IS_MOBILE ? "friends.messagePlaceholderMobile" : "friends.messagePlaceholder",
+              )}
+              aria-label={t(
+                IS_MOBILE ? "friends.messagePlaceholderMobile" : "friends.messagePlaceholder",
+              )}
               onChange={(e) => {
                 setText(e.target.value);
                 setError(null);
               }}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
+                // Telefon klavyesinde Enter yeni satırdır; gönderme düğmeyle (K103).
+                if (e.key === "Enter" && !e.shiftKey && !IS_MOBILE) {
                   e.preventDefault();
                   void submit();
                 }
