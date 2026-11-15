@@ -7,12 +7,15 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sür
 
 ### Eklendi
 - **Android sürümüne ilk adım:** launcher artık telefona kurulabilen bir APK olarak da derlenebiliyor
-  (arm64, `npm run package:android`). Bu ilk test sürümünde arayüz açılıyor; oyunu telefonda
-  başlatma sonraki aşamalarda gelecek.
+  (arm64, `npm run package:android`).
 - **Telefon arayüzü:** telefonda altta Oyna, Profiller, Mod Tarayıcı, Arkadaşlar sekmeleri ve bütün
   sayfaları açan bir Menü var; Android'in geri tuşu önceki sayfaya döner, açık pencereyi ya da
   sohbeti kapatır. Arkadaş sohbeti ve "Admine yaz" konuları telefonda tam ekran açılır; sayfalar
   dar ekrana sığar. Sesli aramalar için mikrofon izni eklendi.
+- **Oyun telefonda açılıyor (deneme):** Android sürümünde OYNA artık Minecraft'ı telefonda başlatıyor.
+  Gereken Java ilk oyunda indirilir; oyun ayrı bir ekranda açılır. Menülerde dokunarak gezinebilir,
+  dünyada sürükleyerek etrafa bakabilir, dokunarak blok koyup basılı tutarak kırabilirsin; geri tuşu
+  ESC'dir, sağ üstteki düğme klavyeyi açar. Yürüme düğmeleri sonraki güncellemede.
 
 ## [0.32.0] — 2026-11-10
 
