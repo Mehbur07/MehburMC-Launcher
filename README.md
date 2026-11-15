@@ -116,6 +116,7 @@ koyar, `.deb` varsa ayrı bir `-linux` ön sürümüne yükler, güncelleme bilg
 
 Telefon sürümü Tauri'nin Android desteğiyle aynı arayüzü ve `launcher-core`'u kullanır
 (ARCHITECTURE K102). Şimdilik yalnız arm64 telefonlar; oyunu telefonda başlatma henüz yok.
+Telefonda arayüz alt sekmeler + Menü ile çalışır, Android'in geri tuşu desteklenir (K103).
 
 Gereksinimler: Android SDK (platform-tools, `platforms;android-36`, `build-tools;36.1.0`),
 NDK (`ndk;29.0.14206865`), JDK 21+ ve Rust hedefi `aarch64-linux-android`. SDK varsayılan olarak
