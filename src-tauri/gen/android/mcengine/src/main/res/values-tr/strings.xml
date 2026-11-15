@@ -4,4 +4,11 @@
     <string name="mcengine_failed">Oyun başlatılamadı: %1$s</string>
     <string name="mcengine_exit">Minecraft kapandı (çıkış kodu %1$d)</string>
     <string name="mcengine_keyboard">Klavye</string>
+    <string name="mcengine_jump">Zıpla</string>
+    <string name="mcengine_sneak">Eğil</string>
+    <string name="mcengine_inventory">Envanter</string>
+    <string name="mcengine_pause">Duraklat</string>
+    <string name="mcengine_chat">Sohbet</string>
+    <string name="mcengine_perspective">Kamera açısı</string>
+    <string name="mcengine_drop">Eşyayı at</string>
 </resources>

@@ -2,6 +2,7 @@
 import type { Accent } from "./Accent";
 import type { Language } from "./Language";
 import type { LaunchBehavior } from "./LaunchBehavior";
+import type { PhoneSettings } from "./PhoneSettings";
 
 export type Settings = { schemaVersion: number, language: Language, accent: Accent, 
 /**
@@ -31,4 +32,8 @@ voiceInputDevice?: string,
 /**
  * Send call audio through the TURN relay so others never see our IP (K86).
  */
-voiceHideIp: boolean, };
+voiceHideIp: boolean, 
+/**
+ * Telefon oyun ayarları (A3, K105); masaüstünde kullanılmaz.
+ */
+phone: PhoneSettings, };

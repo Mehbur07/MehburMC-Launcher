@@ -291,6 +291,101 @@ fn newest_crash_report(dir: &Path, since: SystemTime) -> Option<PathBuf> {
         .map(|(_, p)| p)
 }
 
+/// Telefon (A3): oyun motoru sürecinin durumu (`GamePlugin.status`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct EngineStatus {
+    pub running: bool,
+    /// Süreç kapandı ve sistem bunu çökme olarak kaydetti (Android 11+).
+    pub crashed: bool,
+}
+
+/// Motor süreci hiç görünmezse bu kadar beklenir (yavaş telefonda açılış).
+const ENGINE_START_GRACE: Duration = Duration::from_secs(30);
+/// Motor durumunun sorulma aralığı.
+pub const ENGINE_POLL: Duration = Duration::from_secs(2);
+
+/// Telefon (A3): ayrı süreçteki oyunu kapanana kadar izler ve masaüstündeki
+/// gibi bir [`GameExit`] üretir. `status` `None` dönerse izlenemiyordur
+/// (motor yok); o zaman `None` döner. İptal (Durdur) `stop`'u çağırır.
+///
+/// Çıkış kodu motorun yazdığı dosyadan gelir. Dosya yoksa: sistem çökme
+/// kaydettiyse ya da yeni bir çökme raporu varsa çökme, değilse oyun son
+/// uygulamalardan kapatılmıştır (normal bitiş, `killed`).
+pub async fn watch_engine<S, SF, K, KF>(
+    status: S,
+    stop: K,
+    game_dir: &Path,
+    events: Arc<dyn EventSink>,
+    task: &str,
+    cancel: &CancellationToken,
+    poll: Duration,
+) -> Option<GameExit>
+where
+    S: Fn(SystemTime) -> SF,
+    SF: std::future::Future<Output = Option<EngineStatus>>,
+    K: FnOnce() -> KF,
+    KF: std::future::Future<Output = ()>,
+{
+    let started = std::time::Instant::now();
+    let started_wall = SystemTime::now();
+    let mut seen = false;
+    let mut killed = false;
+    let mut last = EngineStatus::default();
+    loop {
+        tokio::select! {
+            () = cancel.cancelled() => {
+                stop().await;
+                killed = true;
+                break;
+            }
+            () = tokio::time::sleep(poll) => {}
+        }
+        let s = status(started_wall).await?;
+        if s.running {
+            seen = true;
+            continue;
+        }
+        if seen || s.crashed || started.elapsed() >= ENGINE_START_GRACE {
+            last = s;
+            break;
+        }
+    }
+
+    let file_code = super::android::take_exit_code(game_dir);
+    let code = if killed { None } else { file_code };
+    let crash_report = if !killed && code != Some(0) {
+        newest_crash_report(&game_dir.join("crash-reports"), started_wall)
+    } else {
+        None
+    };
+    let closed_outside = !killed && code.is_none() && !last.crashed && crash_report.is_none();
+    let exit = GameExit {
+        code,
+        crash_report,
+        duration: started.elapsed(),
+        killed: killed || closed_outside,
+        output_tail: file_tail(&game_dir.join("logs").join("android-latest.log")),
+        started_at: started_wall,
+    };
+    tracing::info!(?exit.code, killed, closed_outside, crashed = last.crashed, secs = exit.duration.as_secs(), "game engine exited");
+    events.emit(CoreEvent::GameExited {
+        task: task.to_owned(),
+        code: exit.code,
+        crash_report: exit.crash_report.as_ref().map(|p| p.display().to_string()),
+    });
+    Some(exit)
+}
+
+/// Dosyanın son `TAIL_LINES` satırı (çökme analizi için).
+fn file_tail(path: &Path) -> String {
+    let Ok(raw) = std::fs::read(path) else {
+        return String::new();
+    };
+    let text = String::from_utf8_lossy(&raw);
+    let lines: Vec<&str> = text.lines().collect();
+    lines[lines.len().saturating_sub(TAIL_LINES)..].join("\n")
+}
+
 /// Log lines that indicate the client finished loading (main menu reached).
 pub fn is_ready_line(line: &str) -> bool {
     line.contains("Sound engine started")
@@ -311,6 +406,101 @@ mod tests {
             "[Render thread/INFO]: Created: 1024x512x4 minecraft:textures/atlas/blocks.png-atlas"
         ));
         assert!(!is_ready_line("[main/INFO]: Loading Minecraft"));
+    }
+
+    struct Quiet;
+    impl EventSink for Quiet {
+        fn emit(&self, _e: CoreEvent) {}
+    }
+
+    /// Sırayla verilen durumları döndüren sahte motor.
+    fn scripted(
+        steps: Vec<Option<EngineStatus>>,
+    ) -> impl Fn(SystemTime) -> std::future::Ready<Option<EngineStatus>> {
+        let steps = Mutex::new(VecDeque::from(steps));
+        move |_| {
+            let next = steps
+                .lock()
+                .unwrap()
+                .pop_front()
+                .unwrap_or(Some(EngineStatus::default()));
+            std::future::ready(next)
+        }
+    }
+
+    const RUN: Option<EngineStatus> = Some(EngineStatus {
+        running: true,
+        crashed: false,
+    });
+    const GONE: Option<EngineStatus> = Some(EngineStatus {
+        running: false,
+        crashed: false,
+    });
+    const CRASHED: Option<EngineStatus> = Some(EngineStatus {
+        running: false,
+        crashed: true,
+    });
+
+    async fn watch(
+        dir: &Path,
+        steps: Vec<Option<EngineStatus>>,
+        cancel: &CancellationToken,
+    ) -> Option<GameExit> {
+        watch_engine(
+            scripted(steps),
+            || std::future::ready(()),
+            dir,
+            Arc::new(Quiet),
+            "t",
+            cancel,
+            Duration::from_millis(1),
+        )
+        .await
+    }
+
+    #[tokio::test]
+    async fn engine_exit_cases() {
+        let dir = tempfile::tempdir().unwrap();
+        let cancel = CancellationToken::new();
+        let exit_file = super::super::android::exit_file(dir.path());
+        std::fs::create_dir_all(exit_file.parent().unwrap()).unwrap();
+
+        // Oyundan "Oyundan çık": motor 0 yazar.
+        std::fs::write(&exit_file, "0").unwrap();
+        let e = watch(dir.path(), vec![GONE, RUN, RUN, GONE], &cancel)
+            .await
+            .unwrap();
+        assert_eq!((e.code, e.killed), (Some(0), false));
+        assert!(!exit_file.exists());
+
+        // Java hata koduyla bitti: çökme analizi yapılmalı.
+        std::fs::write(&exit_file, "1").unwrap();
+        let e = watch(dir.path(), vec![RUN, GONE], &cancel).await.unwrap();
+        assert_eq!((e.code, e.killed), (Some(1), false));
+
+        // Son uygulamalardan kaydırıldı: dosya yok, çökme kaydı yok → normal bitiş.
+        let e = watch(dir.path(), vec![RUN, GONE], &cancel).await.unwrap();
+        assert_eq!((e.code, e.killed), (None, true));
+
+        // Sistem çökme kaydetti (yerel çökme): analiz yapılmalı.
+        std::fs::write(
+            dir.path().join("logs").join("android-latest.log"),
+            "a\nb\nboom",
+        )
+        .unwrap();
+        let e = watch(dir.path(), vec![RUN, CRASHED], &cancel)
+            .await
+            .unwrap();
+        assert_eq!((e.code, e.killed), (None, false));
+        assert!(e.output_tail.ends_with("boom"));
+
+        // İzleme yok (masaüstü / eklenti yok).
+        assert!(watch(dir.path(), vec![None], &cancel).await.is_none());
+
+        // Durdur düğmesi.
+        cancel.cancel();
+        let e = watch(dir.path(), vec![RUN], &cancel).await.unwrap();
+        assert!(e.killed);
     }
 
     struct Collect(Mutex<Vec<String>>);

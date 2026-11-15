@@ -155,6 +155,17 @@ impl LaunchHooks for WindowHooks {
         crate::game_engine::start(&self.app, plan, &path)
     }
 
+    fn engine_status(
+        &self,
+        since: std::time::SystemTime,
+    ) -> Option<launcher_core::launch::process::EngineStatus> {
+        crate::game_engine::status(&self.app, since)
+    }
+
+    fn stop_engine(&self) {
+        crate::game_engine::stop(&self.app);
+    }
+
     fn game_exited(&self, _instance: &Instance, _exit: &GameExit) {
         self.exited.store(true, Ordering::SeqCst);
         let away = {
