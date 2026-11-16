@@ -26,8 +26,18 @@ fn jre_zip() -> Vec<u8> {
         let mut z = zip::ZipWriter::new(&mut buf);
         let opts = zip::write::SimpleFileOptions::default();
         z.start_file("jdk-21.0.5+11-jre/release", opts).unwrap();
+        // Testin çalıştığı makinenin mimarisi: Mac'te Java mimarisi oyunla
+        // eşleşmek zorunda (K108); Apple Silicon'da Intel Java seçilmez.
+        let arch = if cfg!(target_arch = "aarch64") {
+            "aarch64"
+        } else {
+            "x86_64"
+        };
         z.write_all(
-            b"IMPLEMENTOR=\"Eclipse Adoptium\"\nJAVA_VERSION=\"21.0.5\"\nOS_ARCH=\"x86_64\"\n",
+            format!(
+                "IMPLEMENTOR=\"Eclipse Adoptium\"\nJAVA_VERSION=\"21.0.5\"\nOS_ARCH=\"{arch}\"\n"
+            )
+            .as_bytes(),
         )
         .unwrap();
         z.start_file(format!("jdk-21.0.5+11-jre/bin/{exe}"), opts)
