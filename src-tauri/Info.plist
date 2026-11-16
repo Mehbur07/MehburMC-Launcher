@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- macOS (K106): Tauri bu dosyayı uygulamanın Info.plist'ine ekler.
+     Mikrofon izni sesli aramalar içindir; macOS izin penceresinde bu yazıyı gösterir. -->
+<plist version="1.0">
+<dict>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>MehburMC Launcher uses the microphone for voice calls with your friends.</string>
+  <key>LSApplicationCategoryType</key>
+  <string>public.app-category.games</string>
+</dict>
+</plist>
