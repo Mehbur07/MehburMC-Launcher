@@ -111,6 +111,10 @@ pub enum CoreError {
     #[error("the command line is too long for Java {major}")]
     CommandLineTooLong { major: u32 },
 
+    /// Apple Silicon Mac'te Intel Java açılamadı: Rosetta 2 kurulu değil (K108).
+    #[error("Rosetta 2 is required to run this Minecraft version on Apple Silicon")]
+    RosettaMissing,
+
     #[error("failed to start {}", program.display())]
     Spawn {
         program: PathBuf,
@@ -244,6 +248,7 @@ impl CoreError {
             Self::UnsafeArchiveEntry { .. } => "archive.unsafe",
             Self::InvalidPlayerName(_) => "auth.invalidName",
             Self::CommandLineTooLong { .. } => "launch.commandTooLong",
+            Self::RosettaMissing => "launch.rosettaMissing",
             Self::Spawn { .. } => "launch.spawnFailed",
             Self::InstanceNotFound(_) => "instance.notFound",
             Self::InstanceBusy { .. } => "instance.busy",
@@ -372,6 +377,7 @@ impl CoreError {
             }
             Self::NoDataDir
             | Self::Cancelled
+            | Self::RosettaMissing
             | Self::NoAccount
             | Self::CurseForgeKey
             | Self::AvatarFormat

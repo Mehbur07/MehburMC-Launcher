@@ -344,7 +344,7 @@ pub async fn install(
     let client_processors = profile.processors.iter().any(Processor::runs_on_client);
     if client_processors {
         let (vanilla, client_jar) = ensure_client(ctx, mc, progress, cancel).await?;
-        let java = java::resolve(ctx, vanilla.json.java_major(), None, true, cancel).await?;
+        let java = java::resolve_for_version(ctx, &vanilla.json, cancel).await?;
         let work = ctx.paths.loaders().join("work").join(format!(
             "{}-{loader_version}",
             flavor.name().to_ascii_lowercase()

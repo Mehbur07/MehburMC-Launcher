@@ -72,6 +72,18 @@ pub async fn prepare(
     meta.finish();
     tracing::info!(version = %v.id, chain = ?resolved.chain, java = v.java_major(), "version resolved");
 
+    // Apple Silicon'da eski sürümler Intel olarak (Rosetta 2) çalışır: kütüphane
+    // kuralları, yerel dosyalar ve Java bu platforma göre seçilir (K108).
+    let game_ctx;
+    let ctx = {
+        let os = ctx.os.for_game(&v.libraries);
+        if os.rosetta {
+            tracing::info!(version = %v.id, "no arm64 natives; running under Rosetta 2 (x86_64)");
+        }
+        game_ctx = Ctx { os, ..ctx.clone() };
+        &game_ctx
+    };
+
     let mut env = RuleEnv::new(ctx.os.clone())
         .with_feature("is_demo_user", opts.demo)
         .with_feature("has_custom_resolution", opts.resolution.is_some());

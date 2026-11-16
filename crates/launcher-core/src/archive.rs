@@ -123,7 +123,9 @@ pub fn extract_tar_gz(
             .to_string_lossy()
             .replace('\\', "/");
         let kind = entry.header().entry_type();
-        if kind.is_dir() {
+        // pax başlık kayıtları dosya değildir (macOS'ta hazırlanan arşivlerde,
+        // ör. Adoptium'un Mac Java'sı, bulunabilir; K108).
+        if kind.is_dir() || kind.is_pax_global_extensions() || kind.is_pax_local_extensions() {
             continue;
         }
         let Some(rel) = map(&name) else { continue };

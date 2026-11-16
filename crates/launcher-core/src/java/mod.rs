@@ -55,8 +55,45 @@ pub fn executable_in(home: &Path) -> PathBuf {
     home.join("bin").join(name)
 }
 
+/// Mac'teki Java'lar bir uygulama paketi gibi durur: asıl Java klasörü
+/// `<paket>/Contents/Home` içindedir (Adoptium arşivi ve
+/// `/Library/Java/JavaVirtualMachines/*.jdk` böyle). Öyleyse onu döndürür,
+/// değilse klasörün kendisini (K108).
+pub fn bundle_home(dir: &Path) -> PathBuf {
+    let inner = dir.join("Contents").join("Home");
+    if inner.join("bin").is_dir() {
+        inner
+    } else {
+        dir.to_path_buf()
+    }
+}
+
+/// `OS_ARCH` değerini Mojang adlarına çevirir (`amd64` → `x86_64`, `aarch64` → `arm64`).
+fn normalize_arch(arch: &str) -> &str {
+    match arch {
+        "amd64" | "x86_64" | "x64" => "x86_64",
+        "aarch64" | "arm64" => "arm64",
+        "i386" | "i586" | "i686" | "x86" => "x86",
+        other => other,
+    }
+}
+
+/// Bu Java bu oyun için uygun mimaride mi? Mac'te Intel Java ile arm64 yerel
+/// dosyaları (ya da tersi) birlikte çalışmaz; Rosetta kararı (K108) mimariyi
+/// belirler. Mimarisini yazmayan Java'lar ve başka sistemler kabul edilir.
+fn arch_fits(java: &JavaInstall, os: &crate::os::OsInfo) -> bool {
+    if os.name != "osx" {
+        return true;
+    }
+    java.arch
+        .as_deref()
+        .is_none_or(|a| normalize_arch(a) == os.arch)
+}
+
 /// Reads `<home>/release` (`JAVA_VERSION="21.0.4"`, `IMPLEMENTOR=…`, `OS_ARCH=…`).
+/// A macOS bundle (`<dir>/Contents/Home`) is accepted too.
 pub fn read_release(home: &Path, managed: bool) -> Option<JavaInstall> {
+    let home = &bundle_home(home);
     let exe = executable_in(home);
     if !exe.is_file() {
         return None;
@@ -79,8 +116,11 @@ pub fn read_release(home: &Path, managed: bool) -> Option<JavaInstall> {
     })
 }
 
+/// `runtime/java<major>`; Rosetta ile çalışan oyunların Intel Java'sı ayrı
+/// durur: `runtime/java<major>-x64` (K108).
 pub fn managed_home(ctx: &Ctx, major: u32) -> PathBuf {
-    ctx.paths.runtime().join(format!("java{major}"))
+    let suffix = if ctx.os.rosetta { "-x64" } else { "" };
+    ctx.paths.runtime().join(format!("java{major}{suffix}"))
 }
 
 /// Runtimes under `runtime/`.
@@ -196,16 +236,36 @@ pub async fn resolve(
         return Err(CoreError::JavaNotFound { major });
     }
 
-    if let Some(j) = read_release(&managed_home(ctx, major), true) {
+    if let Some(j) = read_release(&managed_home(ctx, major), true)
+        && arch_fits(&j, &ctx.os)
+    {
         return Ok(j);
     }
-    if let Some(j) = scan_system().into_iter().find(|j| j.major == major) {
+    if let Some(j) = scan_system()
+        .into_iter()
+        .find(|j| j.major == major && arch_fits(j, &ctx.os))
+    {
         return Ok(j);
     }
     if !auto_download {
         return Err(CoreError::JavaNotFound { major });
     }
     adoptium::install(ctx, major, cancel).await
+}
+
+/// Bir sürümü kuran yardımcı programlar (Forge işlemcileri, OptiFine
+/// yamacısı) için Java: oyunun kendisiyle aynı seçim, Apple Silicon'daki
+/// Rosetta kararı dahil (K108). Böylece aynı Java bir kez indirilir.
+pub async fn resolve_for_version(
+    ctx: &Ctx,
+    version: &crate::version::VersionJson,
+    cancel: &CancellationToken,
+) -> Result<JavaInstall> {
+    let game = Ctx {
+        os: ctx.os.for_game(&version.libraries),
+        ..ctx.clone()
+    };
+    resolve(&game, version.java_major(), None, true, cancel).await
 }
 
 #[cfg(test)]
@@ -236,5 +296,56 @@ mod tests {
         assert_eq!(j.vendor.as_deref(), Some("Eclipse Adoptium"));
         assert_eq!(j.arch.as_deref(), Some("amd64"));
         assert!(j.managed);
+    }
+
+    fn fake_java(home: &Path, version: &str, arch: &str) {
+        std::fs::create_dir_all(home.join("bin")).unwrap();
+        std::fs::write(executable_in(home), b"").unwrap();
+        std::fs::write(
+            home.join("release"),
+            format!("JAVA_VERSION=\"{version}\"\nOS_ARCH=\"{arch}\"\n"),
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn reads_a_mac_bundle() {
+        // Adoptium'un Mac arşivi (üst klasör atıldıktan sonra) ve *.jdk paketleri.
+        let dir = tempfile::tempdir().unwrap();
+        let home = dir.path().join("Contents").join("Home");
+        fake_java(&home, "17.0.12", "aarch64");
+        let j = read_release(dir.path(), true).unwrap();
+        assert_eq!(j.major, 17);
+        assert_eq!(PathBuf::from(&j.home), home);
+        assert_eq!(j.executable_path(), executable_in(&home));
+        // Düz klasör olduğu gibi kalır.
+        assert_eq!(bundle_home(&home), home);
+    }
+
+    #[test]
+    fn mac_java_must_match_the_game_arch() {
+        let java = |arch: Option<&str>| JavaInstall {
+            executable: String::new(),
+            home: String::new(),
+            major: 17,
+            version: "17".into(),
+            vendor: None,
+            arch: arch.map(Into::into),
+            managed: false,
+        };
+        let m1 = crate::os::OsInfo::fake("osx", "arm64");
+        let rosetta = crate::os::OsInfo {
+            arch: "x86_64",
+            rosetta: true,
+            ..m1.clone()
+        };
+        assert!(arch_fits(&java(Some("aarch64")), &m1));
+        assert!(!arch_fits(&java(Some("x86_64")), &m1));
+        assert!(arch_fits(&java(Some("x86_64")), &rosetta));
+        assert!(!arch_fits(&java(Some("aarch64")), &rosetta));
+        assert!(arch_fits(&java(None), &m1));
+        // Windows'ta değişiklik yok (ARM'de Intel Java da çalışır).
+        let win_arm = crate::os::OsInfo::fake("windows", "arm64");
+        assert!(arch_fits(&java(Some("amd64")), &win_arm));
     }
 }

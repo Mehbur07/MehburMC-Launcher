@@ -145,7 +145,7 @@ pub async fn install(
         std::fs::create_dir_all(parent).map_err(|e| CoreError::io(parent, e))?;
     }
     if names.iter().any(|n| n == "optifine/Patcher.class") {
-        let java = java::resolve(ctx, vanilla.json.java_major(), None, true, cancel).await?;
+        let java = java::resolve_for_version(ctx, &vanilla.json, cancel).await?;
         let mut cmd = Command::new(java.executable_path());
         cmd.arg("-cp")
             .arg(&jar)
