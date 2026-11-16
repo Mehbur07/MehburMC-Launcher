@@ -9,6 +9,9 @@ pub struct OsInfo {
     pub arch: &'static str,
     /// OS version string matched against `rules[].os.version` regexes.
     pub version: String,
+    /// Apple Silicon Mac'te oyun Intel olarak, Rosetta 2 ile çalışıyor (K108):
+    /// `arch` bu durumda `x86_64` olur, Java da Intel sürümüdür.
+    pub rosetta: bool,
 }
 
 impl OsInfo {
@@ -29,6 +32,33 @@ impl OsInfo {
             name,
             arch,
             version: os_version(),
+            rosetta: false,
+        }
+    }
+
+    /// Bu kütüphanelerle oyun hangi platform gibi çalışmalı? Apple Silicon
+    /// Mac'te 1.19 ve sonrası `natives-macos-arm64` kütüphaneleri getirir ve
+    /// yerel çalışır. Daha eski sürümlerin (LWJGL 2 / 3.2) yalnız Intel yerel
+    /// dosyaları vardır: oyun Intel Java ile Rosetta 2 üzerinden açılır (K108).
+    /// Başka her sistemde platform aynen kalır.
+    pub fn for_game(&self, libraries: &[crate::version::profile::Library]) -> Self {
+        if self.name != "osx" || self.arch != "arm64" {
+            return self.clone();
+        }
+        let native_arm = libraries.iter().any(|l| {
+            l.name.ends_with(":natives-macos-arm64")
+                || l.downloads
+                    .as_ref()
+                    .and_then(|d| d.classifiers.as_ref())
+                    .is_some_and(|c| c.contains_key("natives-macos-arm64"))
+        });
+        if native_arm {
+            return self.clone();
+        }
+        Self {
+            arch: "x86_64",
+            rosetta: true,
+            ..self.clone()
         }
     }
 
@@ -78,6 +108,7 @@ impl OsInfo {
             name,
             arch,
             version: "10.0".into(),
+            rosetta: false,
         }
     }
 }
@@ -106,5 +137,43 @@ mod tests {
 
         let mac = OsInfo::fake("osx", "arm64");
         assert!(mac.matches_native_classifier("natives-macos-arm64"));
+    }
+
+    fn libs(json: &str) -> Vec<crate::version::profile::Library> {
+        serde_json::from_str(json).unwrap()
+    }
+
+    #[test]
+    fn old_versions_run_under_rosetta_on_apple_silicon() {
+        // 1.19+: arm64 yerel kütüphanesi var → yerel.
+        let modern = libs(
+            r#"[{"name":"org.lwjgl:lwjgl:3.3.1"},
+                {"name":"org.lwjgl:lwjgl:3.3.1:natives-macos-arm64","rules":[{"action":"allow","os":{"name":"osx"}}]}]"#,
+        );
+        // 1.12 (LWJGL 2, eski "natives" haritası) ve 1.18 (LWJGL 3.2, yalnız natives-macos).
+        let legacy = libs(
+            r#"[{"name":"org.lwjgl.lwjgl:lwjgl-platform:2.9.4","natives":{"osx":"natives-osx"},
+                 "downloads":{"classifiers":{"natives-osx":{"path":"a.jar","url":"https://x/a.jar"}}}}]"#,
+        );
+        let lwjgl32 = libs(
+            r#"[{"name":"org.lwjgl:lwjgl:3.2.2:natives-macos","rules":[{"action":"allow","os":{"name":"osx"}}]}]"#,
+        );
+
+        let m1 = OsInfo::fake("osx", "arm64");
+        assert_eq!(m1.for_game(&modern), m1);
+        for old in [&legacy, &lwjgl32] {
+            let g = m1.for_game(old);
+            assert!(g.rosetta);
+            assert_eq!((g.name, g.arch), ("osx", "x86_64"));
+        }
+
+        // Intel Mac, Windows, Linux: hiçbir şey değişmez.
+        for host in [
+            OsInfo::fake("osx", "x86_64"),
+            OsInfo::fake("windows", "arm64"),
+            OsInfo::fake("linux", "arm64"),
+        ] {
+            assert_eq!(host.for_game(&legacy), host);
+        }
     }
 }

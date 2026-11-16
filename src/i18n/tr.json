@@ -206,7 +206,8 @@
     },
     "launch": {
       "commandTooLong": "Komut satırı Java {{major}} için çok uzun.",
-      "spawnFailed": "Oyun başlatılamadı: {{path}}"
+      "spawnFailed": "Oyun başlatılamadı: {{path}}",
+      "rosettaMissing": "Bu Minecraft sürümü Apple Silicon Mac'te Rosetta 2 ile çalışır, ama Rosetta 2 kurulu değil. Terminal'i açıp şunu çalıştır, sonra oyunu tekrar başlat: softwareupdate --install-rosetta --agree-to-license"
     },
     "instance": {
       "notFound": "Profil bulunamadı: {{id}}",

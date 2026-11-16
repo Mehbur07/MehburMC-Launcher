@@ -206,7 +206,8 @@
     },
     "launch": {
       "commandTooLong": "The command line is too long for Java {{major}}.",
-      "spawnFailed": "Could not start the game: {{path}}"
+      "spawnFailed": "Could not start the game: {{path}}",
+      "rosettaMissing": "This Minecraft version runs through Rosetta 2 on Apple Silicon Macs, but Rosetta 2 is not installed. Open Terminal, run the following, then start the game again: softwareupdate --install-rosetta --agree-to-license"
     },
     "instance": {
       "notFound": "Instance not found: {{id}}",

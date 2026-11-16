@@ -52,6 +52,20 @@ type Shared<T> = Arc<Mutex<T>>;
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
+/// macOS "Bad CPU type in executable": Apple Silicon'da Intel bir program
+/// Rosetta 2 olmadan açılamaz (K108).
+const EBADARCH: i32 = 86;
+
+fn spawn_error(program: &std::path::Path, source: std::io::Error) -> CoreError {
+    if cfg!(target_os = "macos") && source.raw_os_error() == Some(EBADARCH) {
+        return CoreError::RosettaMissing;
+    }
+    CoreError::Spawn {
+        program: program.to_path_buf(),
+        source,
+    }
+}
+
 /// Runs the prepared game to completion. Cancelling `cancel` kills it.
 pub async fn run(
     prepared: &PreparedLaunch,
@@ -97,10 +111,9 @@ pub async fn run_with(
     tracing::info!(command = %prepared.masked_command, "starting game");
     let started_wall = SystemTime::now();
     let started = std::time::Instant::now();
-    let mut child = cmd.spawn().map_err(|source| CoreError::Spawn {
-        program: prepared.program.clone(),
-        source,
-    })?;
+    let mut child = cmd
+        .spawn()
+        .map_err(|source| spawn_error(&prepared.program, source))?;
 
     let secrets = Arc::new(prepared.secrets.clone());
     let tail: Shared<VecDeque<String>> = Arc::new(Mutex::new(VecDeque::with_capacity(TAIL_LINES)));
