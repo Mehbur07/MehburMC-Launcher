@@ -4,7 +4,7 @@
 [![Sürüm](https://img.shields.io/github/v/release/Mehbur07/MehburMC-Launcher?label=s%C3%BCr%C3%BCm)](https://github.com/Mehbur07/MehburMC-Launcher/releases/latest)
 [![Lisans: GPL-3.0](https://img.shields.io/badge/lisans-GPL--3.0-blue)](LICENSE)
 
-Windows ve Linux için hafif, reklamsız ve telemetrisiz bir Minecraft Java Edition launcher'ı.
+Windows, Linux ve macOS için hafif, reklamsız ve telemetrisiz bir Minecraft Java Edition launcher'ı.
 Modları, skinleri ve arkadaşlarını tek yerden yönet.
 
 _[English below](#english)_
@@ -24,6 +24,12 @@ _[English below](#english)_
 - **Windows:** sayfadaki **`MehburMC-Launcher_<sürüm>_x64-setup.exe`** dosyasını indirip çalıştır.
 - **Linux (Ubuntu 26.04 / MehburOS):** `-linux` ile biten sürümdeki `.deb` paketini indir, sonra
   `sudo apt install ./MehburMC-Launcher_<sürüm>_amd64.deb` komutunu çalıştır.
+- **macOS 11+ (deneme, Apple Silicon ve Intel):** `-macos` ile biten sürümdeki `.dmg` dosyasını aç
+  ve uygulamayı **Applications** klasörüne sürükle. Uygulama Apple'a kayıtlı olmadığı için ilk
+  açılışta macOS uyarır; bir kez şunlardan birini yap:
+  - macOS 15 ve sonrası: açmayı dene, sonra **Sistem Ayarları → Gizlilik ve Güvenlik → Yine de Aç**
+  - macOS 14 ve öncesi: uygulamaya **Control tuşuyla tıkla → Aç**
+  - her sürümde, Terminal'de: `xattr -cr "/Applications/MehburMC Launcher.app"`
 
 "Source code" dosyaları launcher değildir, kaynak koddur; oynamak için gerekmez. Launcher kendini
 güncel tutar: yeni sürüm çıkınca başlık çubuğunda **Güncelle** butonu belirir.
@@ -53,7 +59,7 @@ Ayrıntılar: [kullanım kılavuzu](docs/KULLANIM.md) · [sorun giderme](docs/SO
 
 ## English
 
-MehburMC Launcher is a lightweight Minecraft: Java Edition launcher for Windows and Linux, with no
+MehburMC Launcher is a lightweight Minecraft: Java Edition launcher for Windows, Linux and macOS, with no
 ads and no telemetry. It is built with Tauri 2 (Rust) and React + TypeScript. The interface is
 available in Turkish and English (Settings → Language).
 
@@ -69,7 +75,9 @@ available in Turkish and English (Settings → Language).
 
 **Download:** get `MehburMC-Launcher_<version>_x64-setup.exe` from the
 [latest release](https://github.com/Mehbur07/MehburMC-Launcher/releases/latest), or the `.deb` from
-the matching `-linux` release (Ubuntu 26.04). The game itself is downloaded from Mojang's official
+the matching `-linux` release (Ubuntu 26.04), or the `.dmg` from the `-macos` release (macOS 11+,
+preview; the app is not notarized, so use System Settings → Privacy & Security → **Open Anyway** on
+first launch, or `xattr -cr "/Applications/MehburMC Launcher.app"`). The game itself is downloaded from Mojang's official
 servers. Microsoft sign-in is not supported; the game runs with offline accounts.
 
 **Build from source:** see [Development](#geliştirme-gereksinimleri) below (commands are the same in
@@ -92,6 +100,7 @@ npm run lint               # ESLint
 cargo run -p launcher-cli -- paths   # çekirdeği UI olmadan dene
 npm run package            # imzalı NSIS kurulum + portable zip (aşağıya bakın)
 npm run package:linux      # Linux .deb (Docker gerekir)
+npm run package:macos      # macOS: CI'daki paketi indirip güncelleme dosyasını imzalar
 ```
 
 Her push'ta GitHub Actions biçim, Clippy, Rust ve frontend testlerini çalıştırır
@@ -109,8 +118,14 @@ npm run package
 ```
 
 Yayınlamak için `node scripts/publish-release.mjs`: GitHub sürümüne yalnızca kurulum `.exe`'sini
-koyar, `.deb` varsa ayrı bir `-linux` ön sürümüne yükler, güncelleme bilgisini (`latest.json`)
-`updater` dalına yazar.
+koyar, `.deb` varsa ayrı bir `-linux` ön sürümüne, Mac paketi varsa `-macos` ön sürümüne yükler,
+güncelleme bilgisini (`latest.json`) `updater` dalına yazar. `--dry-run` ile hiçbir şey yayınlamadan
+ne yapacağını gösterir.
+
+macOS paketi Mac olmadan derlenemediği için CI'daki macOS işinde derlenir (ad-hoc imzalı, universal).
+`npm run package:macos` o commit'in başarılı CI çalışmasındaki dosyaları `target/macos/` altına indirir
+ve otomatik güncelleme dosyasını (`.app.tar.gz`) bu bilgisayardaki anahtarla imzalar; anahtar CI'a
+hiç verilmez (ARCHITECTURE K106, K109).
 
 ### Çekirdek CLI (`mehbur-cli`)
 
