@@ -4,6 +4,7 @@
 const COMMANDS: &[&str] = &[
     "get_bootstrap",
     "save_settings",
+    "set_menu_language",
     "open_data_dir",
     "list_versions",
     "list_java",

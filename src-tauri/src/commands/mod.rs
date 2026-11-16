@@ -83,6 +83,14 @@ pub fn save_settings(state: State<'_, AppState>, settings: Settings) -> CmdResul
     Ok(settings)
 }
 
+/// Mac menüsünü arayüzün diliyle kurar ("tr" / "en"); başka sistemlerde
+/// hiçbir şey yapmaz (K107).
+#[tauri::command]
+pub fn set_menu_language(app: AppHandle, locale: String) -> CmdResult<()> {
+    crate::mac_menu::apply(&app, &locale)
+        .map_err(|e| CoreError::io("", std::io::Error::other(e.to_string())).to_payload())
+}
+
 #[tauri::command]
 pub fn open_data_dir(app: AppHandle, state: State<'_, AppState>) -> CmdResult<()> {
     open_path(&app, state.usable_paths()?.content())

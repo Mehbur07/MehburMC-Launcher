@@ -89,6 +89,8 @@ export const ipc = {
   getBootstrap: () => invoke<Bootstrap>("get_bootstrap"),
   saveSettings: (settings: Settings) => invoke<Settings>("save_settings", { settings }),
   openDataDir: () => invoke<void>("open_data_dir"),
+  /** Mac menüsünün dili ("tr" / "en"); başka sistemlerde etkisi yok (K107). */
+  setMenuLanguage: (locale: string) => invoke<void>("set_menu_language", { locale }),
   listVersions: () => invoke<ManifestEntry[]>("list_versions"),
   listJava: () => invoke<JavaInstall[]>("list_java"),
   /** Writes to the path chosen with `pickPath("consoleLog")`. */

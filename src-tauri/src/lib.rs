@@ -1,5 +1,6 @@
 mod bridge;
 mod commands;
+mod mac_menu;
 mod state;
 
 use std::path::PathBuf;
@@ -66,6 +67,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_bootstrap,
             commands::save_settings,
+            commands::set_menu_language,
             commands::open_data_dir,
             commands::list_versions,
             commands::list_java,
@@ -238,6 +240,13 @@ pub fn run() {
                 api.prevent_exit();
             }
             tauri::RunEvent::Exit => friends::go_offline_on_exit(app),
+            // Mac: Dock simgesine tıklanınca pencere geri gelir (K107). Küçültülmüşse
+            // açılır; oyun için kapatılmışsa (K93) yeniden kurulur.
+            #[cfg(target_os = "macos")]
+            tauri::RunEvent::Reopen {
+                has_visible_windows: false,
+                ..
+            } => play::reopen_window(app),
             _ => {}
         });
 }
@@ -248,15 +257,26 @@ pub(crate) fn main_window(
     app: &AppHandle,
     data_dir: Option<PathBuf>,
 ) -> tauri::Result<WebviewWindow> {
-    let mut builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+    let builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
         .title(launcher_core::LAUNCHER_NAME)
         .inner_size(1180.0, 720.0)
         .min_inner_size(960.0, 600.0)
-        .decorations(false)
         .shadow(true)
         .resizable(true)
         .center()
         .background_color(BACKGROUND);
+    // Windows/Linux: kenarlıksız pencere, düğmeleri arayüz çizer (TitleBar).
+    #[cfg(not(target_os = "macos"))]
+    let mut builder = builder.decorations(false);
+    // Mac: kendi pencere düğmeleri (kırmızı/sarı/yeşil) arayüzün üstünde kalır,
+    // başlık yazısı gizlenir (K107). Düğmeler 40 px'lik başlık çubuğunda dikey
+    // ortalanır (düğme 14 px: üstten 13 px).
+    #[cfg(target_os = "macos")]
+    let mut builder = builder
+        .decorations(true)
+        .title_bar_style(tauri::TitleBarStyle::Overlay)
+        .hidden_title(true)
+        .traffic_light_position(tauri::LogicalPosition::new(14.0, 13.0));
     if let Some(dir) = data_dir {
         builder = builder.data_directory(dir);
     }

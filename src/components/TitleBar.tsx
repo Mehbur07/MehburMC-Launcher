@@ -4,29 +4,21 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { UpdateButton } from "../features/update/UpdateButton";
+import { IS_MAC } from "../lib/mac";
 import { useApp } from "../stores/app";
 import { Logo } from "./Logo";
 
 export function TitleBar() {
   const { t } = useTranslation();
-  const [maximized, setMaximized] = useState(false);
   const version = useApp((s) => s.boot?.version);
-
-  useEffect(() => {
-    const win = getCurrentWindow();
-    let unlisten: (() => void) | undefined;
-    const sync = () => void win.isMaximized().then(setMaximized);
-    sync();
-    void win.onResized(sync).then((u) => (unlisten = u));
-    return () => unlisten?.();
-  }, []);
-
-  const win = () => getCurrentWindow();
 
   return (
     <header
       data-tauri-drag-region
-      className="relative z-20 flex h-10 shrink-0 items-center border-b border-line bg-surface-1/90 pl-3 backdrop-blur"
+      className={`relative z-20 flex h-10 shrink-0 items-center border-b border-line bg-surface-1/90 backdrop-blur ${
+        // Mac: soldaki kırmızı/sarı/yeşil düğmeler macOS'un kendisinden gelir (K107).
+        IS_MAC ? "pl-[84px]" : "pl-3"
+      }`}
     >
       {/* Thin neon line under the title bar. */}
       <div className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-accent/70 to-transparent" />
@@ -44,21 +36,42 @@ export function TitleBar() {
       )}
       <UpdateButton />
 
-      <div className="ml-auto flex h-full">
-        <WindowButton label={t("titlebar.minimize")} onClick={() => void win().minimize()}>
-          <Minus size={16} />
-        </WindowButton>
-        <WindowButton
-          label={maximized ? t("titlebar.restore") : t("titlebar.maximize")}
-          onClick={() => void win().toggleMaximize()}
-        >
-          {maximized ? <Copy size={13} /> : <Square size={13} />}
-        </WindowButton>
-        <WindowButton label={t("titlebar.close")} onClick={() => void win().close()} danger>
-          <X size={17} />
-        </WindowButton>
-      </div>
+      {!IS_MAC && <WindowControls />}
     </header>
+  );
+}
+
+/** Windows/Linux: kenarlıksız pencerenin küçült/büyüt/kapat düğmeleri. */
+function WindowControls() {
+  const { t } = useTranslation();
+  const [maximized, setMaximized] = useState(false);
+
+  useEffect(() => {
+    const win = getCurrentWindow();
+    let unlisten: (() => void) | undefined;
+    const sync = () => void win.isMaximized().then(setMaximized);
+    sync();
+    void win.onResized(sync).then((u) => (unlisten = u));
+    return () => unlisten?.();
+  }, []);
+
+  const win = () => getCurrentWindow();
+
+  return (
+    <div className="ml-auto flex h-full">
+      <WindowButton label={t("titlebar.minimize")} onClick={() => void win().minimize()}>
+        <Minus size={16} />
+      </WindowButton>
+      <WindowButton
+        label={maximized ? t("titlebar.restore") : t("titlebar.maximize")}
+        onClick={() => void win().toggleMaximize()}
+      >
+        {maximized ? <Copy size={13} /> : <Square size={13} />}
+      </WindowButton>
+      <WindowButton label={t("titlebar.close")} onClick={() => void win().close()} danger>
+        <X size={17} />
+      </WindowButton>
+    </div>
   );
 }
 
