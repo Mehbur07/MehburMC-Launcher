@@ -14,6 +14,7 @@ import { HomePage } from "../features/home/HomePage";
 import { applyLanguage } from "../i18n";
 import { applyAccent } from "../lib/accentColor";
 import { ipc } from "../lib/ipc";
+import { IS_MAC, syncMenuLanguage } from "../lib/mac";
 import { useAccounts } from "../stores/accounts";
 import { canUse, isMember, LOCAL_LOCKED, useAuth } from "../stores/auth";
 import { AuthScreen, BanScreen } from "../features/auth/AuthScreen";
@@ -179,12 +180,17 @@ export function App() {
     if (!settings) return;
     document.documentElement.dataset.accent = settings.accent;
     applyAccent(settings.accentColor);
-    applyLanguage(settings.language);
+    syncMenuLanguage(applyLanguage(settings.language));
   }, [settings]);
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="flex h-full flex-col overflow-hidden border border-line bg-bg">
+      <div
+        className={`flex h-full flex-col overflow-hidden bg-bg ${
+          // Mac penceresinin kendi kenarı ve yuvarlak köşeleri var; çizgi yalnız kenarlıksız pencerede.
+          IS_MAC ? "" : "border border-line"
+        }`}
+      >
         <TitleBar />
 
         {status === "loading" && (

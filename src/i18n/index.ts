@@ -20,10 +20,12 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
-export function applyLanguage(language: Language) {
+/** Applies the setting and returns the resolved locale. */
+export function applyLanguage(language: Language): Locale {
   const locale = resolveLocale(language);
   document.documentElement.lang = locale;
   if (i18n.language !== locale) void i18n.changeLanguage(locale);
+  return locale;
 }
 
 export default i18n;

@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button, IconButton, TextInput } from "../../../components/ui";
 import type { SkinModel } from "../../../lib/ipc/bindings/SkinModel";
+import { IS_MAC, shortcut } from "../../../lib/mac";
 import type { TextureKind } from "../../../lib/ipc/bindings/TextureKind";
 import { drawCape, drawPerson, hex, skinCanvas } from "../presets/paint";
 import { fromDataUri, toCanvas, toDataUri } from "./canvas";
@@ -435,10 +436,13 @@ export function SkinEditor({
           <SquareDashed size={15} />
         </IconButton>
         <span className="mx-1 h-5 w-px bg-line" />
-        <IconButton label={`${t("skins.editor.undo")} (Ctrl+Z)`} onClick={undo}>
+        <IconButton label={`${t("skins.editor.undo")} (${shortcut("Z")})`} onClick={undo}>
           <Undo2 size={15} />
         </IconButton>
-        <IconButton label={`${t("skins.editor.redo")} (Ctrl+Y)`} onClick={redo}>
+        <IconButton
+          label={`${t("skins.editor.redo")} (${IS_MAC ? shortcut("Z", { shift: true }) : shortcut("Y")})`}
+          onClick={redo}
+        >
           <Redo2 size={15} />
         </IconButton>
         <IconButton

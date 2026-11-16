@@ -17,6 +17,7 @@
     "core:window:allow-set-fullscreen",
     "allow-get-bootstrap",
     "allow-save-settings",
+    "allow-set-menu-language",
     "allow-open-data-dir",
     "allow-list-versions",
     "allow-list-java",
