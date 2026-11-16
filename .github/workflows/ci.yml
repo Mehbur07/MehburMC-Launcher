@@ -58,6 +58,59 @@ jobs:
           npm run lint
           npm test
 
+  # macOS (K106, faz M0): testler + imzasız deneme paketi (.dmg ve .zip).
+  # Apple hesabı yok: uygulama yalnız "ad-hoc" imzalı (Apple Silicon bunsuz hiç açmaz).
+  # Güncelleme imzası burada atılmaz (anahtar CI'da tutulmaz); paket yalnız denemelik.
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+          # Universal: aynı uygulama hem Apple Silicon hem Intel Mac'te çalışır.
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: Swatinem/rust-cache@v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Frontend build
+        run: npm run build
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Rust tests
+        run: cargo test --workspace
+
+      - name: Build the app (universal, ad-hoc signed)
+        run: npx tauri build --target universal-apple-darwin --config '{"bundle":{"createUpdaterArtifacts":false}}'
+
+      # .app klasörü ditto ile sıkıştırılır: Finder'daki "Sıkıştır" gibi izinleri ve
+      # bağlantıları korur (düz zip uygulamayı bozabilir).
+      - name: Package .dmg and .zip
+        run: |
+          out=target/universal-apple-darwin/release/bundle
+          mkdir -p macos-dist
+          cp "$out"/dmg/*.dmg macos-dist/
+          ditto -c -k --keepParent "$out/macos/MehburMC Launcher.app" macos-dist/MehburMC-Launcher-macos-universal.zip
+          codesign -dv --verbose=2 "$out/macos/MehburMC Launcher.app" 2>&1 | grep -E "Signature|Identifier|Format"
+          ls -la macos-dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MehburMC-Launcher-macos
+          path: macos-dist/
+          retention-days: 14
+
   audit:
     runs-on: ubuntu-latest
     timeout-minutes: 15
