@@ -94,15 +94,28 @@ jobs:
       - name: Build the app (universal, ad-hoc signed)
         run: npx tauri build --target universal-apple-darwin --config '{"bundle":{"createUpdaterArtifacts":false}}'
 
-      # .app klasörü ditto ile sıkıştırılır: Finder'daki "Sıkıştır" gibi izinleri ve
-      # bağlantıları korur (düz zip uygulamayı bozabilir).
-      - name: Package .dmg and .zip
+      # Yayında kullanılan üç dosya (K109), adlarında boşluk yok:
+      #  - .dmg: Applications'a sürükle-bırak kurulum
+      #  - .zip: .app, ditto ile (Finder'daki "Sıkıştır" gibi izinleri ve bağlantıları korur)
+      #  - .app.tar.gz: otomatik güncelleme dosyası. İmzası (.sig) burada ATILMAZ:
+      #    anahtar CI'da yok, scripts/package-macos.mjs geliştirici bilgisayarında imzalar.
+      #    COPYFILE_DISABLE / --no-mac-metadata: arşive "._" ek dosyaları girmesin.
+      - name: Package .dmg, .zip and updater .app.tar.gz
+        env:
+          COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           out=target/universal-apple-darwin/release/bundle
+          app="$out/macos/MehburMC Launcher.app"
+          v=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          name="MehburMC-Launcher_${v}_universal"
           mkdir -p macos-dist
-          cp "$out"/dmg/*.dmg macos-dist/
-          ditto -c -k --keepParent "$out/macos/MehburMC Launcher.app" macos-dist/MehburMC-Launcher-macos-universal.zip
-          codesign -dv --verbose=2 "$out/macos/MehburMC Launcher.app" 2>&1 | grep -E "Signature|Identifier|Format"
+          cp "$out"/dmg/*.dmg "macos-dist/$name.dmg"
+          ditto -c -k --keepParent "$app" "macos-dist/$name.zip"
+          COPYFILE_DISABLE=1 tar --no-mac-metadata -czf "macos-dist/$name.app.tar.gz" -C "$out/macos" "MehburMC Launcher.app"
+          # PR'da checkout birleştirme commit'idir; asıl branch commit'i yazılır.
+          echo "$COMMIT" > macos-dist/commit.txt
+          codesign -dv --verbose=2 "$app" 2>&1 | grep -E "Signature|Identifier|Format"
+          tar -tzf "macos-dist/$name.app.tar.gz" | head -3
           ls -la macos-dist
 
       - uses: actions/upload-artifact@v4
