@@ -106,7 +106,9 @@ try {
       signature: readFileSync(`${deb}.sig`, "utf8").trim(),
       url: `https://github.com/${REPO}/releases/download/${linuxTag}/${linuxAsset}`,
     };
-    console.log(`published ${linuxTag}: ${platforms["linux-x86_64-deb"].url}`);
+    console.log(
+      `${DRY ? "[dry-run] would publish" : "published"} ${linuxTag}: ${platforms["linux-x86_64-deb"].url}`,
+    );
   } else {
     console.warn("no Linux package for this version: Linux launchers will not see this update");
   }
@@ -127,7 +129,7 @@ try {
     };
     platforms["darwin-aarch64"] = macPlatform;
     platforms["darwin-x86_64"] = macPlatform;
-    console.log(`published ${macTag}: ${macPlatform.url}`);
+    console.log(`${DRY ? "[dry-run] would publish" : "published"} ${macTag}: ${macPlatform.url}`);
   } else {
     console.warn("no macOS package for this version: Mac launchers will not see this update");
   }
@@ -158,7 +160,7 @@ ${JSON.stringify(latest, null, 2)}`);
   ]);
   run("git", [...identity, "commit", "--quiet", "-m", `updater: ${tag}`], { cwd: branch });
   run("git", ["push", "--quiet", "origin", "updater"], { cwd: branch });
-  console.log(`published ${tag}: ${platform.url}`);
+  console.log(`${DRY ? "[dry-run] would publish" : "published"} ${tag}: ${platform.url}`);
 } finally {
   rmSync(work, { recursive: true, force: true });
 }

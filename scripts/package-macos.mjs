@@ -23,11 +23,7 @@ const base = `MehburMC-Launcher_${version}_universal`;
 const FILES = [`${base}.dmg`, `${base}.zip`, `${base}.app.tar.gz`];
 
 function run(cmd, args, opts = {}) {
-  const r = spawnSync(cmd, args, {
-    encoding: "utf8",
-    shell: process.platform === "win32" && cmd === "npx",
-    ...opts,
-  });
+  const r = spawnSync(cmd, args, { encoding: "utf8", ...opts });
   if (r.status !== 0)
     throw new Error(`${cmd} ${args[0]} failed${r.stderr ? `: ${r.stderr.trim()}` : ""}`);
   return (r.stdout ?? "").trim();
@@ -88,7 +84,9 @@ try {
       env.TAURI_SIGNING_PRIVATE_KEY_PASSWORD = readFileSync(pw, "utf8").trim();
   }
   const updater = join(out, `${base}.app.tar.gz`);
-  run("npx", ["tauri", "signer", "sign", "--app-version", version, updater], { env });
+  // Tauri CLI doğrudan node ile çalışır (npx Windows'ta kabuk ister, argümanlar kaçışsız kalır).
+  const cli = join("node_modules", "@tauri-apps", "cli", "tauri.js");
+  run(process.execPath, [cli, "signer", "sign", "--app-version", version, updater], { env });
   if (!existsSync(`${updater}.sig`)) throw new Error(`signing did not produce ${updater}.sig`);
 
   console.log(`macOS ${version} from CI run ${runId} (${commit.slice(0, 7)}) ready in ${out}:`);
