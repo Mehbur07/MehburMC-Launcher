@@ -88,6 +88,9 @@ jobs:
           defaults write -g AppleLanguages '("tr-TR")' || true
           open -a "/Applications/MehburMC Launcher.app"
           sleep 25
+          # Test ekranı 1024 px: 1180 px'lik pencere ortalanınca sol kenarı (Mac düğmeleri) taşar.
+          osascript -e 'tell application "System Events" to set position of window 1 of process "MehburMC Launcher" to {0, 30}' 2>&1 || true
+          sleep 2
           screencapture -x out/app-first-launch.png || echo "screencapture failed"
           pgrep -fl "MehburMC Launcher" | tee out/process.txt || echo "NOT RUNNING" | tee out/process.txt
           osascript -e 'tell application "System Events" to tell process "MehburMC Launcher" to get name of every menu of menu bar 1' 2>&1 | tee out/menus.txt || true
@@ -103,70 +106,86 @@ jobs:
           path: out/
           retention-days: 7
 
-  # Oyun: ana menüye kadar başlatılır, ekran görüntüsü alınır.
+  # Oyun: her sürüm ayrı işte ana menüye kadar başlatılır, ekran görüntüsü alınır.
+  # Apple Silicon makinesinin sanal ekran kartı var (Metal); Intel makinesinde
+  # yok (OpenGL "Could not create pixel format"), orada yalnız hazırlık denenir.
   game:
     needs: build
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { runner: macos-latest, name: arm64, versions: "26.3 1.21.1:fabric 1.18.2 1.12.2" }
-          - { runner: macos-15-intel, name: intel, versions: "26.3 1.12.2" }
+          - { runner: macos-latest, spec: "26.3", mode: play }
+          - { runner: macos-latest, spec: "1.21.1", mode: play }
+          - { runner: macos-latest, spec: "1.21.1:fabric", mode: play }
+          - { runner: macos-latest, spec: "1.18.2", mode: play }
+          - { runner: macos-latest, spec: "1.12.2", mode: play }
+          - { runner: macos-15-intel, spec: "26.3", mode: prepare }
+          - { runner: macos-15-intel, spec: "1.12.2", mode: prepare }
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 90
+    name: game ${{ matrix.spec }} (${{ matrix.runner }}, ${{ matrix.mode }})
+    timeout-minutes: 45
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: macos-test-build
       - name: Rosetta 2 (Apple Silicon only)
-        if: matrix.name == 'arm64'
+        if: runner.arch == 'ARM64'
         run: |
           if arch -x86_64 /usr/bin/true 2>/dev/null; then echo "Rosetta present"; else
             softwareupdate --install-rosetta --agree-to-license; fi
-      - name: Launch each version to the main menu
+      - name: Prepare (and play) ${{ matrix.spec }}
+        env:
+          SPEC: ${{ matrix.spec }}
+          MODE: ${{ matrix.mode }}
         run: |
-          # Bir sürümün başarısızlığı diğerlerini durdurmasın; sonuç en sonda verilir.
           set +e
           chmod +x mehbur-cli
           mkdir -p out
           uname -m | tee out/system.txt
-          fail=0
-          for spec in ${{ matrix.versions }}; do
-            v=${spec%%:*}; loader=""; [ "$spec" != "$v" ] && loader="--loader ${spec#*:}"
-            tag=$(echo "$spec" | tr ':' '-')
-            log="out/game-$tag.log"
-            echo "::group::$spec"
-            ./mehbur-cli launch "$v" $loader --offline MacTest --memory 2048 --width 854 --height 480 \
-              --exit-when-ready 15 > "$log" 2>&1 &
-            pid=$!
-            # Ana menüyü bekle (indirme dahil en çok 20 dk), sonra ekran görüntüsü.
-            for i in $(seq 1 240); do
-              grep -q "MAIN MENU READY" "$log" && break
-              kill -0 $pid 2>/dev/null || break
-              sleep 5
-            done
-            if grep -q "MAIN MENU READY" "$log"; then
-              sleep 6; screencapture -x "out/game-$tag.png" || true
-            fi
-            wait $pid; code=$?
-            grep -E "prepared|Rosetta|SUCCESS|exited before|error|Error" "$log" | head -20
-            if grep -q ">>> SUCCESS" "$log"; then echo "$spec: OK" | tee -a out/summary.txt
-            else echo "$spec: FAILED (exit $code)" | tee -a out/summary.txt; fail=1; fi
-            echo "::endgroup::"
+          v=${SPEC%%:*}; loader=""; [ "$SPEC" != "$v" ] && loader="--loader ${SPEC#*:}"
+          tag=$(echo "$SPEC" | tr ':' '-')
+          args="launch $v $loader --offline MacTest --memory 2048 --width 854 --height 480"
+          # Komut satırı (gizli değerler maskeli): Java yolu ve Mac ayarları görünür.
+          ./mehbur-cli $args --dry-run > "out/command-$tag.txt" 2> "out/prepare-$tag.log"
+          code=$?
+          grep -E "prepared|error|Error" "out/prepare-$tag.log"
+          tr ' ' '\n' < "out/command-$tag.txt" | grep -E "^-X|^-Djava.library|/bin/java$|java.*/bin/java" | tee "out/jvm-$tag.txt"
+          if [ "$MODE" = prepare ]; then
+            [ $code -eq 0 ] && echo "$SPEC: PREPARED" | tee out/summary.txt || echo "$SPEC: PREPARE FAILED" | tee out/summary.txt
+            exit $code
+          fi
+          log="out/game-$tag.log"
+          ./mehbur-cli $args --exit-when-ready 15 > "$log" 2>&1 &
+          pid=$!
+          # Ana menüyü en çok 15 dk bekle. Takılırsa ekran görüntüsü + Java iş parçacığı dökümü.
+          for i in $(seq 1 180); do
+            grep -q "MAIN MENU READY" "$log" && break
+            kill -0 $pid 2>/dev/null || break
+            sleep 5
           done
-          cat out/summary.txt
-          # Oyun günlükleri ve çökme raporları
+          if grep -q "MAIN MENU READY" "$log"; then
+            sleep 6; screencapture -x "out/game-$tag.png"
+          elif kill -0 $pid 2>/dev/null; then
+            echo ">>> no main menu after 15 min: screenshot + thread dump" | tee -a "$log"
+            screencapture -x "out/stuck-$tag.png"
+            jpid=$(pgrep -f "java.*MacTest" | head -1)
+            [ -n "$jpid" ] && kill -QUIT "$jpid" && sleep 3
+            pkill -f "java.*MacTest"; sleep 2; kill $pid
+          fi
+          wait $pid; code=$?
+          if grep -q ">>> SUCCESS" "$log"; then echo "$SPEC: OK" | tee out/summary.txt
+          else echo "$SPEC: FAILED (exit $code)" | tee out/summary.txt; fi
           mc="$HOME/Library/Application Support/MehburMC/game/mc"
           for d in "$mc"/instances/cli-*; do
-            n=$(basename "$d"); mkdir -p "out/$n"
-            cp "$d"/logs/latest.log "out/$n/" 2>/dev/null || true
-            cp -R "$d"/crash-reports "out/$n/" 2>/dev/null || true
+            cp "$d"/logs/latest.log "out/latest-$tag.log" 2>/dev/null
+            cp -R "$d"/crash-reports "out/crash-$tag" 2>/dev/null
           done
-          ls "$mc/runtime" | tee out/runtimes.txt
-          exit $fail
+          ls "$mc/runtime" > out/runtimes.txt 2>/dev/null
+          grep -q ">>> SUCCESS" "$log"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: macos-test-game-${{ matrix.name }}
+          name: macos-test-game-${{ matrix.mode }}-${{ runner.arch }}-${{ strategy.job-index }}
           path: out/
           retention-days: 7
