@@ -1,0 +1,172 @@
+# macOS deneme akışı (faz M4a, K110): gerçek Mac olmadan, GitHub'ın Mac
+# makinelerinde uygulamayı kurar, açar ve Minecraft'ı başlatır; ekran
+# görüntülerini ve günlükleri "macos-test-*" dosyası olarak saklar.
+# Uzun sürdüğü için her push'ta değil: elle (Actions → macOS test → Run) ya da
+# feature/macos-test* branch'ine push ile çalışır. İmza anahtarı burada da yok.
+name: macOS test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["feature/macos-test*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Build the app (universal, ad-hoc signed)
+        run: npx tauri build --target universal-apple-darwin --bundles dmg --config '{"bundle":{"createUpdaterArtifacts":false}}'
+
+      # Oyunu arayüzsüz başlatmak için çekirdeğin komut satırı aracı (uygulamayla aynı kod).
+      - name: Build mehbur-cli (universal)
+        run: |
+          cargo build -p launcher-cli --release --target aarch64-apple-darwin
+          cargo build -p launcher-cli --release --target x86_64-apple-darwin
+          mkdir -p test-dist
+          lipo -create -output test-dist/mehbur-cli \
+            target/aarch64-apple-darwin/release/mehbur-cli target/x86_64-apple-darwin/release/mehbur-cli
+          cp target/universal-apple-darwin/release/bundle/dmg/*.dmg test-dist/MehburMC.dmg
+          lipo -info test-dist/mehbur-cli
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-test-build
+          path: test-dist/
+          retention-days: 3
+
+  # Uygulama: .dmg'den kurulum, Gatekeeper, açılış, menü.
+  app:
+    needs: build
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-test-build
+      - name: Install from the .dmg like a user
+        run: |
+          mkdir -p out
+          hdiutil attach MehburMC.dmg -nobrowse -mountpoint /Volumes/MehburMC
+          ls -la /Volumes/MehburMC | tee out/dmg-contents.txt
+          cp -R "/Volumes/MehburMC/MehburMC Launcher.app" /Applications/
+          hdiutil detach /Volumes/MehburMC
+          sw_vers | tee out/system.txt
+          uname -m | tee -a out/system.txt
+      - name: Gatekeeper (downloaded file) and the xattr workaround
+        run: |
+          app="/Applications/MehburMC Launcher.app"
+          {
+            echo "== codesign =="; codesign --verify --deep --strict --verbose=2 "$app" 2>&1 || true
+            codesign -dv "$app" 2>&1 | grep -E "Signature|Format|Identifier" || true
+            # İnternetten indirilmiş gibi işaretle (tarayıcının koyduğu karantina etiketi).
+            xattr -w com.apple.quarantine "0083;$(printf %x "$(date +%s)");Safari;" "$app"
+            echo "== spctl, quarantined (expect: rejected) =="; spctl -a -vv -t exec "$app" 2>&1 || true
+            echo "== xattr -cr (talimattaki komut) =="; xattr -cr "$app"; xattr -l "$app" | grep -c quarantine || true
+          } | tee out/gatekeeper.txt
+      - name: Open the app, screenshot and read the menu bar
+        run: |
+          set +e
+          defaults write -g AppleLanguages '("tr-TR")' || true
+          open -a "/Applications/MehburMC Launcher.app"
+          sleep 25
+          screencapture -x out/app-first-launch.png || echo "screencapture failed"
+          pgrep -fl "MehburMC Launcher" | tee out/process.txt || echo "NOT RUNNING" | tee out/process.txt
+          osascript -e 'tell application "System Events" to tell process "MehburMC Launcher" to get name of every menu of menu bar 1' 2>&1 | tee out/menus.txt || true
+          osascript -e 'tell application "System Events" to tell process "MehburMC Launcher" to get name of every menu item of menu 2 of menu bar 1' 2>&1 | tee -a out/menus.txt || true
+          osascript -e 'tell application "MehburMC Launcher" to quit' || true
+          sleep 5
+          pgrep -fl "MehburMC Launcher" && echo "still running after quit" | tee -a out/process.txt || echo "quit ok" | tee -a out/process.txt
+          cp -R "$HOME/Library/Application Support/MehburMC/game/mc/logs" out/launcher-logs 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-test-app
+          path: out/
+          retention-days: 7
+
+  # Oyun: ana menüye kadar başlatılır, ekran görüntüsü alınır.
+  game:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: macos-latest, name: arm64, versions: "26.3 1.21.1:fabric 1.18.2 1.12.2" }
+          - { runner: macos-15-intel, name: intel, versions: "26.3 1.12.2" }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-test-build
+      - name: Rosetta 2 (Apple Silicon only)
+        if: matrix.name == 'arm64'
+        run: |
+          if arch -x86_64 /usr/bin/true 2>/dev/null; then echo "Rosetta present"; else
+            softwareupdate --install-rosetta --agree-to-license; fi
+      - name: Launch each version to the main menu
+        run: |
+          # Bir sürümün başarısızlığı diğerlerini durdurmasın; sonuç en sonda verilir.
+          set +e
+          chmod +x mehbur-cli
+          mkdir -p out
+          uname -m | tee out/system.txt
+          fail=0
+          for spec in ${{ matrix.versions }}; do
+            v=${spec%%:*}; loader=""; [ "$spec" != "$v" ] && loader="--loader ${spec#*:}"
+            tag=$(echo "$spec" | tr ':' '-')
+            log="out/game-$tag.log"
+            echo "::group::$spec"
+            ./mehbur-cli launch "$v" $loader --offline MacTest --memory 2048 --width 854 --height 480 \
+              --exit-when-ready 15 > "$log" 2>&1 &
+            pid=$!
+            # Ana menüyü bekle (indirme dahil en çok 20 dk), sonra ekran görüntüsü.
+            for i in $(seq 1 240); do
+              grep -q "MAIN MENU READY" "$log" && break
+              kill -0 $pid 2>/dev/null || break
+              sleep 5
+            done
+            if grep -q "MAIN MENU READY" "$log"; then
+              sleep 6; screencapture -x "out/game-$tag.png" || true
+            fi
+            wait $pid; code=$?
+            grep -E "prepared|Rosetta|SUCCESS|exited before|error|Error" "$log" | head -20
+            if grep -q ">>> SUCCESS" "$log"; then echo "$spec: OK" | tee -a out/summary.txt
+            else echo "$spec: FAILED (exit $code)" | tee -a out/summary.txt; fail=1; fi
+            echo "::endgroup::"
+          done
+          cat out/summary.txt
+          # Oyun günlükleri ve çökme raporları
+          mc="$HOME/Library/Application Support/MehburMC/game/mc"
+          for d in "$mc"/instances/cli-*; do
+            n=$(basename "$d"); mkdir -p "out/$n"
+            cp "$d"/logs/latest.log "out/$n/" 2>/dev/null || true
+            cp -R "$d"/crash-reports "out/$n/" 2>/dev/null || true
+          done
+          ls "$mc/runtime" | tee out/runtimes.txt
+          exit $fail
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-test-game-${{ matrix.name }}
+          path: out/
+          retention-days: 7
