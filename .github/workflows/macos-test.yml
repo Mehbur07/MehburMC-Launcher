@@ -158,31 +158,43 @@ jobs:
           log="out/game-$tag.log"
           ./mehbur-cli $args --exit-when-ready 15 > "$log" 2>&1 &
           pid=$!
-          # Ana menüyü en çok 15 dk bekle. Takılırsa ekran görüntüsü + Java iş parçacığı dökümü.
+          # Ana menüyü bekle (indirme dahil en çok 15 dk). Oyun pencere açma aşamasına
+          # ("Backend library" / "LWJGL Version") gelip 2 dk ilerlemezse takılmış sayılır:
+          # ekran görüntüsü + Java iş parçacığı dökümü alınır.
+          t0=""
           for i in $(seq 1 180); do
             grep -q "MAIN MENU READY" "$log" && break
             kill -0 $pid 2>/dev/null || break
+            if [ -z "$t0" ] && grep -qE "Backend library|LWJGL Version" "$log"; then t0=$i; fi
+            [ -n "$t0" ] && [ $((i - t0)) -ge 24 ] && break
             sleep 5
           done
           if grep -q "MAIN MENU READY" "$log"; then
             sleep 6; screencapture -x "out/game-$tag.png"
           elif kill -0 $pid 2>/dev/null; then
-            echo ">>> no main menu after 15 min: screenshot + thread dump" | tee -a "$log"
+            echo ">>> no main menu: screenshot + thread dump" | tee -a "$log"
             screencapture -x "out/stuck-$tag.png"
             jpid=$(pgrep -f "java.*MacTest" | head -1)
             [ -n "$jpid" ] && kill -QUIT "$jpid" && sleep 3
             pkill -f "java.*MacTest"; sleep 2; kill $pid
           fi
           wait $pid; code=$?
-          if grep -q ">>> SUCCESS" "$log"; then echo "$SPEC: OK" | tee out/summary.txt
-          else echo "$SPEC: FAILED (exit $code)" | tee out/summary.txt; fi
           mc="$HOME/Library/Application Support/MehburMC/game/mc"
           for d in "$mc"/instances/cli-*; do
             cp "$d"/logs/latest.log "out/latest-$tag.log" 2>/dev/null
             cp -R "$d"/crash-reports "out/crash-$tag" 2>/dev/null
           done
           ls "$mc/runtime" > out/runtimes.txt 2>/dev/null
-          grep -q ">>> SUCCESS" "$log"
+          # Sonuç: OK = ana menü. BLOCKED-GL = oyun, Java ve yerel dosyalar yüklenip pencere
+          # açma aşamasına geldi ama sanal makine donanım hızlandırmalı OpenGL veremedi
+          # (GLFW: "NSGL: Failed to find a suitable pixel format" uyarı kutusu; LWJGL 2:
+          # "Could not create pixel format"). Gerçek Mac'te ekran kartı bunu sağlar (M4b).
+          if grep -q ">>> SUCCESS" "$log"; then result=OK
+          elif grep -q "nglfwCreateWindow" "$log" && grep -q "tinyfd_messageBox" "$log"; then result=BLOCKED-GL
+          elif grep -rqs "Could not create pixel format" "$log" out/crash-$tag; then result=BLOCKED-GL
+          else result="FAILED (exit $code)"; fi
+          echo "$SPEC: $result" | tee out/summary.txt
+          [ "$result" = OK ] || [ "$result" = BLOCKED-GL ]
       - uses: actions/upload-artifact@v4
         if: always()
         with:
