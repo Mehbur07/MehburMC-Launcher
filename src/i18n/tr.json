@@ -1501,7 +1501,8 @@
       "reject": "Reddet",
       "rejectTitle": "\"{{name}}\" reddedilsin mi?",
       "myScan": "Senin taraman",
-      "uploaderScan": "Yükleyenin taraması: {{count}} bulgu"
+      "uploaderScan": "Yükleyenin taraması: {{count}} bulgu",
+      "fromWeb": "Siteden yüklendi"
     },
     "published": {
       "hint": "Kütüphanede herkese açık modlar. Kaldırılan mod yalnızca yükleyene \"Reddedildi\" olarak görünür.",

@@ -5,4 +5,9 @@ export type AdminMod = { mod: LibraryMod,
 /**
  * Uploader's user id.
  */
-owner: string, reports: number, };
+owner: string, reports: number, 
+/**
+ * Uploaded from the library website (K102); false on servers without
+ * library_web.sql.
+ */
+fromWeb: boolean, };

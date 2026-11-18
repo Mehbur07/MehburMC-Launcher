@@ -3,6 +3,14 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.33.0] — 2026-11-18
+
+### Eklendi
+- **MehburMC Kütüphane sitesi için hazırlık:** onaylı modlar, modpack'ler, resource pack'ler ve
+  shader'lar yakında [mehburmclibrary.github.io](https://mehburmclibrary.github.io) adresinde giriş
+  yapmadan görülüp indirilebilecek. Sunucu tarafı `supabase/library_web.sql` ile eklendi.
+- **Admin → Onay kuyruğu:** siteden yüklenen içerik "Siteden yüklendi" rozetiyle görünür.
+
 ## [0.32.0] — 2026-11-10
 
 ### Eklendi

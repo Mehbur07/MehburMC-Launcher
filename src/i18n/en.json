@@ -1501,7 +1501,8 @@
       "reject": "Reject",
       "rejectTitle": "Reject \"{{name}}\"?",
       "myScan": "Your scan",
-      "uploaderScan": "Uploader's scan: {{count}} findings"
+      "uploaderScan": "Uploader's scan: {{count}} findings",
+      "fromWeb": "Uploaded on the website"
     },
     "published": {
       "hint": "Mods everyone can see in the library. A removed mod shows as \"Rejected\" to its uploader only.",
