@@ -68,6 +68,7 @@
     "allow-search-modrinth",
     "allow-project-versions",
     "allow-install-content",
+    "allow-install-performance-mods",
     "allow-scan-content",
     "allow-update-content",
     "allow-transfer-mods",

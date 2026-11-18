@@ -46,6 +46,7 @@ import type { SharedList } from "./bindings/SharedList";
 import type { ImportResult } from "./bindings/ImportResult";
 import type { InstallRequest } from "./bindings/InstallRequest";
 import type { InstallResult } from "./bindings/InstallResult";
+import type { PerformanceModsResult } from "./bindings/PerformanceModsResult";
 import type { InstalledItem } from "./bindings/InstalledItem";
 import type { ModGroup } from "./bindings/ModGroup";
 import type { Folder } from "./bindings/Folder";
@@ -149,6 +150,9 @@ export const ipc = {
     invoke<LoaderVersion[]>("list_loader_versions", { kind, mc }),
   importOptifine: () => invoke<OptifineInfo>("import_optifine"),
   installShaderSupport: (id: string) => invoke<InstallResult>("install_shader_support", { id }),
+  /** ModernFix + FerriteCore (K111); her biri ayrı denenir. */
+  installPerformanceMods: (id: string) =>
+    invoke<PerformanceModsResult>("install_performance_mods", { id }),
 
   searchModrinth: (query: SearchQuery) => invoke<SearchPage>("search_modrinth", { query }),
   projectVersions: (project: string, projectType: ProjectType, instanceId?: string) =>

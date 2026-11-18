@@ -258,3 +258,49 @@ async fn corrupted_downloads_are_rejected() {
         "no unverified file is left behind"
     );
 }
+
+/// Performans modları (K111): biri bu sürüm için yoksa diğeri yine kurulur.
+#[tokio::test]
+async fn performance_mods_install_what_exists() {
+    let (server, _tmp, ctx, game) = setup().await;
+    let uri = server.uri();
+    let jar = b"modernfix jar".as_slice();
+    Mock::given(method("GET"))
+        .and(path("/v2/project/modernfix/version"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!([version(
+            &uri,
+            "v-mf",
+            "MF",
+            "modernfix-5.0.jar",
+            jar,
+            json!([])
+        )])))
+        .mount(&server)
+        .await;
+    json_route(
+        &server,
+        "/v2/project/MF",
+        json!({"id": "MF", "slug": "modernfix", "title": "ModernFix"}),
+    )
+    .await;
+    Mock::given(method("GET"))
+        .and(path("/dl/modernfix-5.0.jar"))
+        .respond_with(ResponseTemplate::new(200).set_body_bytes(jar.to_vec()))
+        .mount(&server)
+        .await;
+    // FerriteCore bu sürüm için yok.
+    json_route(&server, "/v2/project/ferrite-core/version", json!([])).await;
+
+    let r = install::install_performance_mods(
+        &ctx,
+        &fabric_instance(),
+        &game,
+        &install::quiet_progress(),
+        &CancellationToken::new(),
+    )
+    .await
+    .unwrap();
+    assert_eq!(r.installed, ["modernfix-5.0.jar"]);
+    assert_eq!(r.unavailable, ["FerriteCore"]);
+    assert!(game.join("mods/modernfix-5.0.jar").is_file());
+}

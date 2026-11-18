@@ -45,6 +45,27 @@ pub struct InstallResult {
     pub incompatible: Vec<String>,
 }
 
+/// Açılışı hızlandıran, oynanışı değiştirmeyen modlar (K111), Modrinth kısa
+/// adı ve görünen adıyla: ModernFix açılış süresini, FerriteCore bellek
+/// kullanımını düşürür. Fabric, Quilt, Forge ve NeoForge'da 1.16+ için var.
+pub const PERFORMANCE_MODS: &[(&str, &str)] =
+    &[("modernfix", "ModernFix"), ("ferrite-core", "FerriteCore")];
+
+/// "Performans modlarını ekle" sonucu.
+#[derive(Debug, Clone, Default, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct PerformanceModsResult {
+    /// İndirilen dosyalar (gerekli bağımlılıklar dahil).
+    pub installed: Vec<String>,
+    /// Zaten kurulu olanlar.
+    pub already_present: Vec<String>,
+    /// Bu Minecraft sürümü / mod yükleyici için olmayanlar.
+    pub unavailable: Vec<String>,
+    /// Kurulu bir modla uyumsuz olduğunu bildirenler.
+    pub incompatible: Vec<String>,
+}
+
 /// Modrinth loader names whose mods run on `kind`.
 pub fn modrinth_loaders(kind: LoaderKind) -> &'static [&'static str] {
     match kind {
@@ -106,6 +127,36 @@ pub(super) fn present_by_name(dir: &Path, slug: &str) -> bool {
         name.strip_prefix(&slug)
             .is_some_and(|rest| rest.starts_with(['-', '_', '+', '.']))
     })
+}
+
+/// [`PERFORMANCE_MODS`]'ı kurar. Her mod ayrı denenir: biri bu sürüm ya da
+/// yükleyici için yoksa "unavailable" olur, diğeri yine kurulur.
+pub async fn install_performance_mods(
+    ctx: &Ctx,
+    inst: &Instance,
+    game_dir: &Path,
+    progress: &Progress,
+    cancel: &CancellationToken,
+) -> Result<PerformanceModsResult> {
+    let mut out = PerformanceModsResult::default();
+    for (slug, title) in PERFORMANCE_MODS {
+        let request = InstallRequest {
+            project: (*slug).to_owned(),
+            project_type: ProjectType::Mod,
+            version_id: None,
+        };
+        match install(ctx, inst, game_dir, &[request], progress, cancel).await {
+            Ok(r) => {
+                out.installed.extend(r.installed);
+                out.already_present.extend(r.already_present);
+                out.incompatible.extend(r.incompatible);
+            }
+            Err(CoreError::AddonUnavailable { .. }) => out.unavailable.push((*title).to_owned()),
+            Err(e) => return Err(e),
+        }
+    }
+    tracing::info!(?out, "performance mods");
+    Ok(out)
 }
 
 /// Downloads `roots` (and, for mods, their required dependencies) into the

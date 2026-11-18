@@ -1,6 +1,7 @@
 import {
   Clock,
   FolderOpen,
+  Gauge,
   Play,
   ShieldCheck,
   Sparkles,
@@ -22,6 +23,9 @@ import { loaderLabel, usePlayTimeUnits } from "../instances/loaderLabels";
 import { SHADER_LOADERS } from "../instances/LoaderPicker";
 import { forgeLabel } from "../instances/loaderLabels";
 
+/** Performans modlarının (ModernFix, FerriteCore) bulunduğu mod yükleyiciler. */
+const PERF_MOD_LOADERS: Instance["loader"]["kind"][] = ["fabric", "quilt", "forge", "neoForge"];
+
 export function GeneralTab({ inst }: { inst: Instance }) {
   const { t, i18n } = useTranslation();
   const units = usePlayTimeUnits();
@@ -30,6 +34,27 @@ export function GeneralTab({ inst }: { inst: Instance }) {
   const defaultMem = useApp((s) => s.settings?.defaultMemoryMb ?? 4096);
   const [shaderBusy, setShaderBusy] = useState(false);
   const [shaderResult, setShaderResult] = useState<string | null>(null);
+  const [perfBusy, setPerfBusy] = useState(false);
+  const [perfResult, setPerfResult] = useState<string | null>(null);
+
+  // Performans modları (K111): kurulan, zaten olan ve bu sürüm için olmayanlar tek satırda.
+  const installPerfMods = async () => {
+    setPerfBusy(true);
+    setPerfResult(null);
+    try {
+      const r = await ipc.installPerformanceMods(inst.id);
+      const parts = [
+        r.installed.length ? t("perfMods.installed", { files: r.installed.join(", ") }) : "",
+        r.alreadyPresent.length ? t("perfMods.nothing", { mods: r.alreadyPresent.join(", ") }) : "",
+        r.unavailable.length ? t("perfMods.unavailable", { mods: r.unavailable.join(", ") }) : "",
+      ];
+      setPerfResult(parts.filter(Boolean).join(" · "));
+    } catch (e) {
+      useApp.setState({ notice: toErrorPayload(e) });
+    } finally {
+      setPerfBusy(false);
+    }
+  };
 
   const installShaders = async () => {
     setShaderBusy(true);
@@ -96,6 +121,20 @@ export function GeneralTab({ inst }: { inst: Instance }) {
           <Button disabled={!!task || shaderBusy} onClick={() => void installShaders()}>
             <Sparkles size={15} />
             {shaderBusy ? t("shaders.installing") : t("shaders.install")}
+          </Button>
+        </div>
+      )}
+
+      {PERF_MOD_LOADERS.includes(inst.loader.kind) && (
+        <div className="flex flex-wrap items-center gap-3 rounded-md border border-line bg-surface-1/80 px-4 py-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-semibold">{t("perfMods.title")}</div>
+            <div className="text-xs text-muted">{t("perfMods.body")}</div>
+            {perfResult && <div className="mt-1 text-xs text-success">{perfResult}</div>}
+          </div>
+          <Button disabled={!!task || perfBusy} onClick={() => void installPerfMods()}>
+            <Gauge size={15} />
+            {perfBusy ? t("perfMods.installing") : t("perfMods.install")}
           </Button>
         </div>
       )}
