@@ -91,6 +91,7 @@ const COMMANDS: &[&str] = &[
     "call_signal",
     "call_ice_config",
     "calls_snapshot",
+    "take_deep_link",
     "my_shares",
     "share_instance",
     "unshare_instance",

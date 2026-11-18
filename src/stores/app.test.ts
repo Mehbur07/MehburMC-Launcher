@@ -75,6 +75,18 @@ describe("app store", () => {
     expect(useApp.getState().whatsNewUnseen).toBe(false);
   });
 
+  it("opens the Library tab for a mehburmc:// link, keeping the instance (K112)", () => {
+    useApp.setState({ view: "home", browseTarget: "inst-1", browseType: "mod" });
+    const seq = useApp.getState().libraryFocusSeq;
+    useApp.getState().openLibraryItem(7);
+    const s = useApp.getState();
+    expect(s.view).toBe("browse");
+    expect(s.browseType).toBe("library");
+    expect(s.browseTarget).toBe("inst-1");
+    expect(s.libraryFocus).toBe(7);
+    expect(s.libraryFocusSeq).toBe(seq + 1);
+  });
+
   it("keeps saved settings on success", async () => {
     ipcMock.getBootstrap.mockResolvedValue(boot);
     await useApp.getState().load();

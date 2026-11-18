@@ -321,6 +321,8 @@ export const ipc = {
     invoke<number>("call_signal", { call, signals }),
   callIceConfig: () => invoke<IceConfig>("call_ice_config"),
   callsSnapshot: () => invoke<CallPoll>("calls_snapshot"),
+  /** The library item a mehburmc:// link asked for, once (K112). */
+  takeDeepLink: () => invoke<number | null>("take_deep_link"),
   myShares: () => invoke<SharedList[]>("my_shares"),
   shareInstance: (id: string) => invoke<SharedList>("share_instance", { id }),
   unshareInstance: (id: string) => invoke<void>("unshare_instance", { id }),
@@ -383,6 +385,11 @@ export async function subscribe(handlers: {
     a();
     b();
   };
+}
+
+/** A mehburmc:// link arrived; fetch it with `ipc.takeDeepLink` (K112). */
+export function subscribeDeepLink(onLink: () => void): Promise<UnlistenFn> {
+  return listen("app://deep-link", () => onLink());
 }
 
 /** Call state and set-up messages from the Rust poll loop (K86). */
