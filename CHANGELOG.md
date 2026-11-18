@@ -3,6 +3,16 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
+## [Unreleased]
+
+### Eklendi
+- **Performans modları:** modlu bir profilin Genel sekmesindeki **Tek tıkla kur** düğmesi ModernFix
+  (daha hızlı açılış) ve FerriteCore'u (daha az bellek) kurar. Sürüm için olmayan mod atlanır.
+
+### Değişti
+- **Daha hızlı ilk açılış:** aynı anda inen dosya sayısının varsayılanı 8'den 32'ye çıktı; bir sürümün
+  ilk hazırlığı ölçümde ~105 sn'den ~76 sn'ye indi. Ayarı elle değiştirdiysen dokunulmaz.
+
 ## [0.33.0] — 2026-11-18
 
 ### Eklendi
