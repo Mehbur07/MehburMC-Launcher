@@ -3,7 +3,7 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
-## [Unreleased]
+## [0.35.0] — 2026-11-18
 
 ### Eklendi
 - **Launcher'da aç:** MehburMC Kütüphane sitesindeki bir içeriğin **Launcher'da aç** düğmesi
