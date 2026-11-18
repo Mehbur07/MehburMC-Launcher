@@ -43,6 +43,9 @@ pub struct AdminMod {
     pub owner: String,
     #[ts(type = "number")]
     pub reports: i64,
+    /// Uploaded from the library website (K102); false on servers without
+    /// library_web.sql.
+    pub from_web: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -139,6 +142,9 @@ struct ModRow {
     #[serde(flatten)]
     row: Row,
     reports: i64,
+    /// 'launcher' or 'web'; missing before library_web.sql.
+    #[serde(default)]
+    source: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -232,6 +238,7 @@ impl FriendsClient {
                     item: r.row.into_mod()?,
                     owner,
                     reports: r.reports,
+                    from_web: r.source.as_deref() == Some("web"),
                 })
             })
             .collect())
@@ -481,9 +488,11 @@ mod tests {
                 class(&[], &["https://discord.com/api/webhooks/1/x"]),
             ),
         ]);
+        let mut web_row = mod_row(2, &evil);
+        web_row["source"] = json!("web");
         serve_pending(
             &server,
-            json!([mod_row(1, &good), mod_row(2, &evil)]),
+            json!([mod_row(1, &good), web_row]),
             &[&good, &evil],
         )
         .await;
@@ -510,6 +519,8 @@ mod tests {
         let c = signed_in(&tmp, &server).await;
         let list = c.admin_library(AdminModStatus::Pending).await.unwrap();
         assert_eq!((list.len(), list[0].reports), (2, 2));
+        // Rows without `source` (servers before library_web.sql) are launcher uploads.
+        assert_eq!((list[0].from_web, list[1].from_web), (false, true));
         c.admin_review_mod(1, AdminModStatus::Pending, true, " ok ")
             .await
             .unwrap();

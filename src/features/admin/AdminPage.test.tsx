@@ -42,6 +42,7 @@ const FRIEND = "22222222-2222-2222-2222-222222222222";
 const pending = (): AdminMod => ({
   owner: FRIEND,
   reports: 0,
+  fromWeb: false,
   mod: {
     id: 7,
     kind: "mod",
@@ -138,6 +139,19 @@ describe("AdminPage", () => {
     expect(row).toHaveTextContent("Connects to the internet");
     await act(async () => fireEvent.click(approve));
     expect(ipcMock.adminReviewMod).toHaveBeenCalledWith(7, "pending", true, "");
+  });
+
+  it("marks uploads from the library website", async () => {
+    asRank(1);
+    ipcMock.adminLibrary.mockResolvedValue([
+      pending(),
+      { ...pending(), fromWeb: true, mod: { ...pending().mod, id: 8, name: "Web Mod" } },
+    ]);
+    render(<AdminPage />);
+    const web = (await screen.findByText("Web Mod")).closest("li")!;
+    expect(web).toHaveTextContent("Uploaded on the website");
+    const local = screen.getByText("Cool Mod").closest("li")!;
+    expect(local).not.toHaveTextContent("Uploaded on the website");
   });
 
   it("rejects with a note", async () => {

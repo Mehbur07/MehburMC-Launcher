@@ -3,6 +3,7 @@ import {
   Check,
   EyeOff,
   Flag,
+  Globe,
   Loader2,
   RefreshCw,
   ScanSearch,
@@ -343,6 +344,12 @@ function ModInfo({ m }: { m: AdminMod }) {
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-semibold">{m.mod.name}</span>
         <KindBadge kind={m.mod.kind} />
+        {m.fromWeb && (
+          <Badge tone="accent">
+            <Globe size={10} />
+            {t("admin.queue.fromWeb")}
+          </Badge>
+        )}
         <span className="text-xs text-muted">
           {m.mod.author} · {m.mod.modId} {m.mod.version} · {formatBytes(m.mod.size)}
         </span>
