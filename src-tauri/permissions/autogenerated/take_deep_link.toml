@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-take-deep-link"
+description = "Enables the take_deep_link command without any pre-configured scope."
+commands.allow = ["take_deep_link"]
+
+[[permission]]
+identifier = "deny-take-deep-link"
+description = "Denies the take_deep_link command without any pre-configured scope."
+commands.deny = ["take_deep_link"]

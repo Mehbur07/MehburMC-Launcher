@@ -104,6 +104,7 @@
     "allow-call-signal",
     "allow-call-ice-config",
     "allow-calls-snapshot",
+    "allow-take-deep-link",
     "allow-my-shares",
     "allow-share-instance",
     "allow-unshare-instance",

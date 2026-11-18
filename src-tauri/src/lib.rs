@@ -1,5 +1,6 @@
 mod bridge;
 mod commands;
+mod deep_link;
 mod state;
 
 use std::path::PathBuf;
@@ -29,6 +30,8 @@ pub fn run() {
             // Brings the window back, also when it was closed for a game (K93).
             play::reopen_window(app);
         }))
+        // After single-instance: a second start forwards its mehburmc:// link (K112).
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -61,6 +64,7 @@ pub fn run() {
                 tauri::async_runtime::spawn(calls::poll_loop(app.handle().clone(), launcher));
             }
             app.manage(app_state);
+            deep_link::setup(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -227,6 +231,7 @@ pub fn run() {
             calls::call_signal,
             calls::call_ice_config,
             calls::calls_snapshot,
+            deep_link::take_deep_link,
         ])
         .build(tauri::generate_context!())
         .expect("error while building MehburMC Launcher")

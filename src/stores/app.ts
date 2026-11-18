@@ -40,6 +40,10 @@ interface AppStore {
   browseTarget: string | null;
   /** Modrinth project type, or the MehburMC Library tab. */
   browseType: ProjectType | "library";
+  /** Library item a mehburmc:// link asked for, until the Library tab shows it (K112). */
+  libraryFocus: number | null;
+  /** Grows with every link, so the Library tab reloads even for the same item. */
+  libraryFocusSeq: number;
   wizardOpen: boolean;
   /** Release notes not looked at yet (first start after an update). */
   whatsNewUnseen: boolean;
@@ -53,6 +57,7 @@ interface AppStore {
   openInstance: (id: string, tab?: string) => void;
   openConsole: (instanceId: string) => void;
   openBrowse: (instanceId: string | null, type?: ProjectType) => void;
+  openLibraryItem: (id: number) => void;
   setWizard: (open: boolean) => void;
   updateSettings: (patch: Partial<Settings>) => Promise<void>;
   dismissNotice: () => void;
@@ -69,6 +74,8 @@ export const useApp = create<AppStore>((set, get) => ({
   consoleInstance: null,
   browseTarget: null,
   browseType: "mod",
+  libraryFocus: null,
+  libraryFocusSeq: 0,
   wizardOpen: false,
   whatsNewUnseen: false,
   notice: null,
@@ -96,6 +103,14 @@ export const useApp = create<AppStore>((set, get) => ({
   openConsole: (instanceId) => set({ view: "console", consoleInstance: instanceId }),
   openBrowse: (instanceId, type) =>
     set((s) => ({ view: "browse", browseTarget: instanceId, browseType: type ?? s.browseType })),
+  // Keeps the chosen instance, so the item can be installed right away.
+  openLibraryItem: (id) =>
+    set((s) => ({
+      view: "browse",
+      browseType: "library",
+      libraryFocus: id,
+      libraryFocusSeq: s.libraryFocusSeq + 1,
+    })),
   setWizard: (open) => set({ wizardOpen: open }),
 
   // Optimistic: apply immediately, roll back if the backend rejects it.

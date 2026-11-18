@@ -21,6 +21,7 @@ import { applyLanguage } from "../../i18n";
 import type { LibraryMod } from "../../lib/ipc/bindings/LibraryMod";
 import type { LibraryScan } from "../../lib/ipc/bindings/LibraryScan";
 import { useAccounts } from "../../stores/accounts";
+import { useApp } from "../../stores/app";
 import { useInstances } from "../../stores/instances";
 import { instance } from "../../test/fixtures";
 import { LibraryPanel, fitsLoader } from "./LibraryPanel";
@@ -119,6 +120,33 @@ describe("LibraryPanel", () => {
     );
     expect(ipcMock.libraryWithdraw).toHaveBeenCalledWith(5);
     expect(ipcMock.libraryMods).toHaveBeenCalledTimes(2);
+  });
+
+  it("shows the item a mehburmc:// link points at, with filters cleared (K112)", async () => {
+    ipcMock.libraryMods.mockResolvedValue([
+      mod({ id: 1, name: "Cool Mod" }),
+      mod({ id: 2, name: "Pretty Pack", kind: "resourcepack" }),
+    ]);
+    render(<LibraryPanel inst={instance()} gameBusy={false} />);
+    await screen.findByText("Cool Mod");
+    fireEvent.click(screen.getByRole("button", { name: "Mods" }));
+    expect(screen.queryByText("Pretty Pack")).not.toBeInTheDocument();
+
+    // The link reloads the list, clears the filter and outlines the item.
+    act(() => useApp.getState().openLibraryItem(2));
+    const pack = (await screen.findByText("Pretty Pack")).closest("li")!;
+    expect(pack).toHaveAttribute("aria-current", "true");
+    expect(ipcMock.libraryMods).toHaveBeenCalledTimes(2);
+    expect(useApp.getState().libraryFocus).toBeNull();
+    expect(ipcMock.libraryInstall).not.toHaveBeenCalled();
+  });
+
+  it("says so when a linked item is not in the library", async () => {
+    ipcMock.libraryMods.mockResolvedValue([mod({ id: 1 }), mod({ id: 3, status: "pending" })]);
+    useApp.getState().openLibraryItem(3);
+    render(<LibraryPanel inst={instance()} gameBusy={false} />);
+    expect(await screen.findByText(/This item is not in the library/)).toBeInTheDocument();
+    expect(useApp.getState().libraryFocus).toBeNull();
   });
 
   it("scans a picked jar and submits it for review", async () => {

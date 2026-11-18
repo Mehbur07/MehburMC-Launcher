@@ -1279,6 +1279,7 @@
     "approved": "Onaylı içerik",
     "empty": "Henüz onaylanmış içerik yok",
     "emptyHint": "Yüklenenler admin onayından sonra burada görünür.",
+    "linkMissing": "Bu içerik kütüphanede bulunamadı. Kaldırılmış ya da henüz onaylanmamış olabilir.",
     "withdraw": "Geri çek",
     "withdrawTitle": "Geri çekmek istediğine emin misin?",
     "withdrawMessage": "\"{{name}}\" kütüphaneden ve sunucudan silinecek.",

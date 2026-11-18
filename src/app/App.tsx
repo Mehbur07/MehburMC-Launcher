@@ -13,7 +13,7 @@ import { TitleBar } from "../components/TitleBar";
 import { HomePage } from "../features/home/HomePage";
 import { applyLanguage } from "../i18n";
 import { applyAccent } from "../lib/accentColor";
-import { ipc } from "../lib/ipc";
+import { ipc, subscribeDeepLink } from "../lib/ipc";
 import { useAccounts } from "../stores/accounts";
 import { canUse, isMember, LOCAL_LOCKED, useAuth } from "../stores/auth";
 import { AuthScreen, BanScreen } from "../features/auth/AuthScreen";
@@ -133,6 +133,29 @@ export function App() {
       unlisten?.();
     };
   }, [status, loadInstances, loadAccounts, loadSkins, checkUpdate]);
+
+  // mehburmc:// links from the library website (K112): the one the launcher
+  // was started with, then each later one. Rust keeps it until taken, so it
+  // also waits through the sign-in screen.
+  useEffect(() => {
+    if (status !== "ready") return;
+    const take = () =>
+      void ipc
+        .takeDeepLink()
+        .then((id) => id !== null && useApp.getState().openLibraryItem(id))
+        .catch(() => {});
+    let unlisten: (() => void) | undefined;
+    let cancelled = false;
+    void subscribeDeepLink(take).then((u) => {
+      if (cancelled) u();
+      else unlisten = u;
+    });
+    take();
+    return () => {
+      cancelled = true;
+      unlisten?.();
+    };
+  }, [status]);
 
   // MehburMC account (K73): saved state first (works offline), then the
   // server's view of rank and ban; re-checked every 5 minutes.

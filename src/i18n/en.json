@@ -1279,6 +1279,7 @@
     "approved": "Approved content",
     "empty": "Nothing approved yet",
     "emptyHint": "Uploads appear here once an admin approves them.",
+    "linkMissing": "This item is not in the library. It may have been removed or not approved yet.",
     "withdraw": "Withdraw",
     "withdrawTitle": "Withdraw this upload?",
     "withdrawMessage": "\"{{name}}\" will be removed from the library and the server.",

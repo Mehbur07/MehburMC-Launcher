@@ -42,6 +42,7 @@ import type { LoaderKind } from "../../lib/ipc/bindings/LoaderKind";
 import type { ModLoader } from "../../lib/ipc/bindings/ModLoader";
 import type { PickPurpose } from "../../lib/ipc/bindings/PickPurpose";
 import { selectedAccount, useAccounts } from "../../stores/accounts";
+import { useApp } from "../../stores/app";
 import { useInstances } from "../../stores/instances";
 import { loaderLabel } from "../instances/loaderLabels";
 
@@ -493,6 +494,10 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
   const [confirm, setConfirm] = useState<{ mod: LibraryMod; findings: Finding[] } | null>(null);
   const [withdrawing, setWithdrawing] = useState<LibraryMod | null>(null);
   const [reporting, setReporting] = useState<LibraryMod | null>(null);
+  /** Item a mehburmc:// link pointed at (K112), outlined for a few seconds. */
+  const [highlight, setHighlight] = useState<number | null>(null);
+  const [linkMissing, setLinkMissing] = useState(false);
+  const focusSeq = useApp((s) => s.libraryFocusSeq);
 
   const refresh = useCallback(() => setReload((n) => n + 1), []);
 
@@ -500,15 +505,40 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setLinkMissing(false);
     ipc
       .libraryMods()
-      .then((list) => !cancelled && setMods(list))
+      .then((list) => {
+        if (cancelled) return;
+        setMods(list);
+        // A link is answered with a fresh list: the item may be brand new.
+        const focus = useApp.getState().libraryFocus;
+        if (focus === null) return;
+        useApp.setState({ libraryFocus: null });
+        const found = list.some((m) => m.id === focus && (m.mine || m.status === "approved"));
+        setLinkMissing(!found);
+        setHighlight(found ? focus : null);
+        if (found) {
+          setQuery("");
+          setFilter("all");
+        }
+      })
       .catch((e) => !cancelled && setError(toErrorPayload(e)))
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
-  }, [reload]);
+  }, [reload, focusSeq]);
+
+  // Bring the linked item into view, then let the outline fade.
+  useEffect(() => {
+    if (highlight === null) return;
+    document
+      .getElementById(`library-item-${highlight}`)
+      ?.scrollIntoView?.({ block: "center", behavior: "smooth" });
+    const id = window.setTimeout(() => setHighlight(null), 4000);
+    return () => window.clearTimeout(id);
+  }, [highlight]);
 
   const q = query.trim().toLowerCase();
   const matches = useCallback(
@@ -641,7 +671,9 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
     return (
       <li
         key={m.id}
-        className="flex items-center gap-3 rounded-lg border border-line bg-surface-1/85 px-3 py-2.5"
+        id={`library-item-${m.id}`}
+        aria-current={highlight === m.id ? "true" : undefined}
+        className={`flex items-center gap-3 rounded-lg border bg-surface-1/85 px-3 py-2.5 transition-colors ${highlight === m.id ? "border-accent ring-2 ring-accent/40" : "border-line"}`}
       >
         <div className="grid size-10 shrink-0 place-items-center rounded-md bg-surface-2 text-accent">
           <Icon size={18} />
@@ -719,6 +751,11 @@ export function LibraryPanel({ inst, gameBusy }: { inst: Instance | null; gameBu
       </div>
       <p className="text-xs text-muted">{t("library.intro")}</p>
       <ErrorLine error={notice} />
+      {linkMissing && (
+        <p role="status" className="text-sm text-warn">
+          {t("library.linkMissing")}
+        </p>
+      )}
       {created && (
         <p role="status" className="text-sm text-success">
           {t("library.packCreatedNotice", { name: created })}

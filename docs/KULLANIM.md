@@ -158,6 +158,11 @@ Resource packler / Shaderlar** düğmeleriyle türe göre süz.
   Profiller sayfasından başlatırsın. İndirilen dosya doğrulanır ve senin launcher'ında yeniden
   kontrol edilir; uyarı varsa önce sorulur. Hiçbir otomatik kontrol %100 güvenlik sağlamaz —
   şüpheli bir şey görürsen bayrak simgesiyle **Bildir**.
+- [MehburMC Kütüphane sitesinde](https://mehburmclibrary.github.io) bir içeriğin sayfasındaki
+  **Launcher'da aç** düğmesi launcher'ı açar (açıksa öne getirir) ve içeriği bu sekmede gösterir;
+  oradan **Kur** ile kurarsın. Bağlantı hiçbir şeyi kendiliğinden kurmaz. Tarayıcı ilk seferde
+  "MehburMC Launcher açılsın mı?" diye sorabilir. Portable sürüm bu bağlantıları açıldığında kendine
+  bağlar; birden fazla launcher kopyan varsa en son açtığın kullanılır.
 
 ### Aynı profili iki hesapla açmak
 
