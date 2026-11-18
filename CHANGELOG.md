@@ -3,7 +3,7 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sürümler
 [SemVer](https://semver.org/lang/tr/) izler.
 
-## [Unreleased]
+## [0.34.0] — 2026-11-18
 
 ### Eklendi
 - **Performans modları:** modlu bir profilin Genel sekmesindeki **Tek tıkla kur** düğmesi ModernFix
