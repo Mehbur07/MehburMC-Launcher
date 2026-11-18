@@ -1,19 +1,15 @@
 {
-  "version": "0.34.0",
-  "notes": "### Eklendi\n- **Launcher'da aç:** MehburMC Kütüphane sitesindeki bir içeriğin **Launcher'da aç** düğmesi\n  launcher'ı açar (açıksa öne getirir) ve içeriği Kütüphane sekmesinde vurgular; oradan tek tıkla\n  kurabilirsin. Bağlantı hiçbir şeyi kendiliğinden kurmaz.\n- **Performans modları:** modlu bir profilin Genel sekmesindeki **Tek tıkla kur** düğmesi ModernFix\n  (daha hızlı açılış) ve FerriteCore'u (daha az bellek) kurar. Sürüm için olmayan mod atlanır.\n\n### Değişti\n- **Daha hızlı ilk açılış:** aynı anda inen dosya sayısının varsayılanı 8'den 32'ye çıktı; bir sürümün\n  ilk hazırlığı ölçümde ~105 sn'den ~76 sn'ye indi. Ayarı elle değiştirdiysen dokunulmaz.",
-  "pub_date": "2026-11-18T19:49:53Z",
+  "version": "0.35.0",
+  "notes": "### Eklendi\n- **Launcher'da aç:** MehburMC Kütüphane sitesindeki bir içeriğin **Launcher'da aç** düğmesi\n  launcher'ı açar (açıksa öne getirir) ve içeriği Kütüphane sekmesinde vurgular; oradan tek tıkla\n  kurabilirsin. Bağlantı hiçbir şeyi kendiliğinden kurmaz.",
+  "pub_date": "2026-11-18T20:15:36Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUFqbGUxc05qMDRVR2JhQngvNUFsd01EN1JKRGtZbkZXcmlSYWhXR2tpZGM4RFVZL01MQWZnZERhMXF1eGxtS2NBNCt1NXJYZjlLbzBXdGtpckRQUWc0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MDI5ODM1CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4zNC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjM0LjAKVEthZXhCRWJjMWgybEROdStTaUlhdDNNTXk1YzAxY3Y1bit6dllxQ3hqSTFkcmRlM2c1cG5Ud0I1SG1KbVNBQzlsVnhqVnJuNmRhY2FWK2dsTm1BQVE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.34.0/MehburMC-Launcher_0.34.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUM1cEliZlJWemRkQmlnTGZkSnlJUGUxbWVWM1pDdzU4VXBCMGtJZ2c4M0dsRTVOU3VvcXRrSlVhMjUva0VDeC9hNzMrZ1BKcnFTMC9idTRnNndtQlF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MDMyODkzCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4zNS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjM1LjAKMjgvTXdRdEswVjcrR1h2YWw1VDY5d3Q0VE82L1FjOU41b3NaVkVEVndYY1hlYzJ5MGlYMkFDRCs0YmhxVXpGcWxGaGtDdEp0OHhCTlJ2dC8wVzNoQ3c9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.35.0/MehburMC-Launcher_0.35.0_x64-setup.exe"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUFqbGUxc05qMDRVR2JhQngvNUFsd01EN1JKRGtZbkZXcmlSYWhXR2tpZGM4RFVZL01MQWZnZERhMXF1eGxtS2NBNCt1NXJYZjlLbzBXdGtpckRQUWc0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MDI5ODM1CWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4zNC4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjM0LjAKVEthZXhCRWJjMWgybEROdStTaUlhdDNNTXk1YzAxY3Y1bit6dllxQ3hqSTFkcmRlM2c1cG5Ud0I1SG1KbVNBQzlsVnhqVnJuNmRhY2FWK2dsTm1BQVE9PQo=",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.34.0/MehburMC-Launcher_0.34.0_x64-setup.exe"
-    },
-    "linux-x86_64-deb": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUY5NjNXK0cwRUtDMDVwYis1bDZvZWIwQ2hXeHl2RHVBWll5LzdwbzlRUTRWOWwrUXF4S2pQZmJNUnBJa2lOcjFwNXlhTHRjQ05IREg0Y1lUK3Jqa0FjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MDMxMzUyCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4zNC4wX2FtZDY0LmRlYgl2ZXJzaW9uOjAuMzQuMAp4eEVPUVkzUFdxYXNqQ2plZlhZa3RwVkk2U3FCMG1SWlRvdWxUZDZaWFliclFXVlY1d0lDS2Vra3I1QkdORG9OL2thOEdlekJJdytYbG11dDBwNTdDZz09Cg==",
-      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.34.0-linux/MehburMC-Launcher_0.34.0_amd64.deb"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTQ25zTHR6VWZtYUM1cEliZlJWemRkQmlnTGZkSnlJUGUxbWVWM1pDdzU4VXBCMGtJZ2c4M0dsRTVOU3VvcXRrSlVhMjUva0VDeC9hNzMrZ1BKcnFTMC9idTRnNndtQlF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MDMyODkzCWZpbGU6TWVoYnVyTUMgTGF1bmNoZXJfMC4zNS4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjM1LjAKMjgvTXdRdEswVjcrR1h2YWw1VDY5d3Q0VE82L1FjOU41b3NaVkVEVndYY1hlYzJ5MGlYMkFDRCs0YmhxVXpGcWxGaGtDdEp0OHhCTlJ2dC8wVzNoQ3c9PQo=",
+      "url": "https://github.com/Mehbur07/MehburMC-Launcher/releases/download/v0.35.0/MehburMC-Launcher_0.35.0_x64-setup.exe"
     }
   }
 }
