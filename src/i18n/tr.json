@@ -502,6 +502,15 @@
     "installed": "Kuruldu: {{files}}",
     "nothing": "Zaten kurulu: {{mods}}"
   },
+  "perfMods": {
+    "title": "Performans modları",
+    "body": "ModernFix (daha hızlı açılış) ve FerriteCore'u (daha az bellek) Modrinth'ten mods klasörüne kurar. Oynanışı değiştirmezler.",
+    "install": "Tek tıkla kur",
+    "installing": "Kuruluyor…",
+    "installed": "Kuruldu: {{files}}",
+    "nothing": "Zaten kurulu: {{mods}}",
+    "unavailable": "Bu sürüm için yok: {{mods}}"
+  },
   "browse": {
     "target": "Hedef profil",
     "noInstances": "Önce bir profil oluştur",

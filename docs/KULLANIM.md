@@ -133,6 +133,10 @@ profili seç, **Aktar**'a bas; profilin bütün modları oraya gider. Kapalı mo
 **Shader desteği**: Fabric/Quilt/NeoForge'da Iris + Sodium, Forge'da Oculus + Embeddium tek
 tıkla kurulur (profil → Genel → **Tek tıkla kur**).
 
+**Performans modları**: modlu profillerde (Fabric, Quilt, Forge, NeoForge) profil → Genel →
+**Performans modları → Tek tıkla kur**, ModernFix (daha hızlı açılış) ve FerriteCore'u (daha az
+bellek) kurar. Oynanışı değiştirmezler; profilin sürümü için olmayan mod atlanır.
+
 **MehburMC Kütüphanesi** (Mod Tarayıcı'nın son sekmesi): MehburMC kullanıcılarının yüklediği
 modlar, modpackler, resource packler ve shaderlar. Üstteki **Tümü / Modlar / Modpackler /
 Resource packler / Shaderlar** düğmeleriyle türe göre süz.

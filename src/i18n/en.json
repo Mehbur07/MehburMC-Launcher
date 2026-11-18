@@ -502,6 +502,15 @@
     "installed": "Installed: {{files}}",
     "nothing": "Already installed: {{mods}}"
   },
+  "perfMods": {
+    "title": "Performance mods",
+    "body": "Installs ModernFix (faster start-up) and FerriteCore (less memory) from Modrinth into the mods folder. They do not change gameplay.",
+    "install": "One-click install",
+    "installing": "Installing…",
+    "installed": "Installed: {{files}}",
+    "nothing": "Already installed: {{mods}}",
+    "unavailable": "Not available for this version: {{mods}}"
+  },
   "browse": {
     "target": "Target instance",
     "noInstances": "Create an instance first",

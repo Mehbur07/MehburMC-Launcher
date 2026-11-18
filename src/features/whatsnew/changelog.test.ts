@@ -29,6 +29,19 @@ describe("changelog", () => {
     expect(r[1]!.blocks).toEqual([{ kind: "text", text: "Düz metin" }]);
   });
 
+  it("skips the [Unreleased] section", () => {
+    const md = [
+      "## [Unreleased]",
+      "### Eklendi",
+      "- Yakında",
+      "## [0.2.0] — 2026-10-04",
+      "- Var",
+    ].join("\n");
+    const r = parseChangelog(md);
+    expect(r.map((x) => x.version)).toEqual(["0.2.0"]);
+    expect(r[0]!.blocks).toEqual([{ kind: "bullet", text: "Var" }]);
+  });
+
   it("parses bold, code and links", () => {
     expect(parseInline("a **b** `c` [d](http://x) e")).toEqual([
       { kind: "text", text: "a " },

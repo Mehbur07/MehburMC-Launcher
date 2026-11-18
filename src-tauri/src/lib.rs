@@ -117,6 +117,7 @@ pub fn run() {
             content::search_modrinth,
             content::project_versions,
             content::install_content,
+            content::install_performance_mods,
             content::scan_content,
             content::update_content,
             content::transfer_mods,
