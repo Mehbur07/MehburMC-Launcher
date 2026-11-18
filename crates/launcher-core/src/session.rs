@@ -7,7 +7,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::auth::avatar::{self, AvatarStore};
 use crate::auth::store::AccountStore;
-use crate::content::install::{self, InstallRequest, InstallResult};
+use crate::content::install::{self, InstallRequest, InstallResult, PerformanceModsResult};
 use crate::content::installed::{self, InstalledItem};
 use crate::content::modpack::{self, ImportResult, PackKind};
 use crate::content::transfer::{self, TransferResult};
@@ -337,6 +337,24 @@ impl Launcher {
             &inst,
             &dir,
             requests,
+            &install::quiet_progress(),
+            &CancellationToken::new(),
+        )
+        .await
+    }
+
+    /// Performans modlarını (K111) profile kurar.
+    pub async fn install_performance_mods(
+        &self,
+        instance_id: &str,
+    ) -> Result<PerformanceModsResult> {
+        let inst = self.instances.get(instance_id)?;
+        let _claim = self.running.try_claim(&inst)?;
+        let dir = self.instances.dir(&inst.id)?;
+        install::install_performance_mods(
+            &self.ctx,
+            &inst,
+            &dir,
             &install::quiet_progress(),
             &CancellationToken::new(),
         )

@@ -1,6 +1,6 @@
 use launcher_core::CoreError;
 use launcher_core::content::icons;
-use launcher_core::content::install::{self, InstallRequest, InstallResult};
+use launcher_core::content::install::{self, InstallRequest, InstallResult, PerformanceModsResult};
 use launcher_core::content::installed::InstalledItem;
 use launcher_core::content::modpack::ImportResult;
 use launcher_core::content::modrinth::{
@@ -55,6 +55,16 @@ pub async fn install_content(
 ) -> CmdResult<InstallResult> {
     let l = state.launcher()?.clone();
     Ok(l.install_content(&id, &requests).await?)
+}
+
+/// Performans modlarını (ModernFix, FerriteCore) profile kurar (K111).
+#[tauri::command]
+pub async fn install_performance_mods(
+    state: State<'_, AppState>,
+    id: String,
+) -> CmdResult<PerformanceModsResult> {
+    let l = state.launcher()?.clone();
+    Ok(l.install_performance_mods(&id).await?)
 }
 
 #[tauri::command]
