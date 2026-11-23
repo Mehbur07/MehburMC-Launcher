@@ -6,3 +6,7 @@
 3946a2fe4a8f2ba9339d529a2bfbc7aac1f2ee07:crates/launcher-core/src/friends/mod.rs:jwt:22
 # Log'larda token gizlemeyi deneyen sahte test token'ı.
 1ba6c845155b46cbe7c5e9fba7192851afc9f811:crates/launcher-core/src/logging.rs:jwt:137
+# 029b8ab bu iki dosyaya dokundu, aynı satırlar yeni parmak iziyle yeniden bulundu (2026-11-16).
+# Satır içerikleri yukarıdaki onaylı bulgularla birebir aynı (hash karşılaştırmasıyla doğrulandı).
+029b8abe510b15df05bb48624d432790a4e143c2:crates/launcher-core/src/friends/mod.rs:jwt:22
+029b8abe510b15df05bb48624d432790a4e143c2:crates/launcher-core/src/logging.rs:jwt:148
