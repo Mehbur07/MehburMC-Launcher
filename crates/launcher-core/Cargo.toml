@@ -38,6 +38,11 @@ zip.workspace = true
 [target.'cfg(windows)'.dependencies]
 wic-decode = { path = "../wic-decode" }
 
+# Telefonda HTTPS sertifikaları uygulamayla gelen Mozilla kök listesiyle
+# doğrulanır (bkz. net::Http::new).
+[target.'cfg(target_os = "android")'.dependencies]
+webpki-root-certs = "1.0.11"
+
 [dev-dependencies]
 lzma-rust2 = { workspace = true, features = ["encoder"] }
 tempfile.workspace = true
