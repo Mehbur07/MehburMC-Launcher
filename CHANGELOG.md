@@ -24,6 +24,11 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir; sür
 - **Launcher telefondaki oyunu takip ediyor:** oyun açıkken "oynanıyor" görünür ve Durdur ile
   kapatılabilir; oyun bitince oynama süresi kaydedilir, çökerse nedeni gösterilir.
 
+### Düzeltildi
+- **Android uygulaması açıldıktan birkaç saniye sonra kapanıyordu:** telefonda ilk internet
+  bağlantısında güvenlik sertifikası doğrulanamayıp uygulama çöküyordu. Artık sertifikalar
+  uygulamayla gelen güvenilir listeyle doğrulanıyor.
+
 ## [0.32.0] — 2026-11-10
 
 ### Eklendi

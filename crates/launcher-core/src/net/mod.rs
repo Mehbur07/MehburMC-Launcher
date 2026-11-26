@@ -32,7 +32,7 @@ impl Http {
     pub fn new(allowlist: Allowlist) -> Result<Self> {
         let allowlist = Arc::new(allowlist);
         let policy_list = allowlist.clone();
-        let client = reqwest::Client::builder()
+        let builder = reqwest::Client::builder()
             .user_agent(USER_AGENT)
             .connect_timeout(Duration::from_secs(15))
             .read_timeout(Duration::from_secs(30))
@@ -45,7 +45,19 @@ impl Http {
                     let url = attempt.url().to_string();
                     attempt.error(format!("redirect to {url} is not on the allowlist"))
                 }
-            }))
+            }));
+        // Android'de reqwest'in varsayılan doğrulayıcısı (rustls-platform-verifier)
+        // önce Java tarafından başlatılmak ister; başlatılmazsa ilk HTTPS
+        // isteğinde panic atar ve `panic = "abort"` yüzünden uygulama birkaç
+        // saniye içinde kapanır. Telefonda bu yüzden uygulamayla gelen Mozilla
+        // kök sertifikaları kullanılır.
+        #[cfg(target_os = "android")]
+        let builder = builder.tls_certs_only(
+            webpki_root_certs::TLS_SERVER_ROOT_CERTS
+                .iter()
+                .filter_map(|der| reqwest::Certificate::from_der(der).ok()),
+        );
+        let client = builder
             .build()
             .map_err(|source| CoreError::Network {
                 url: String::new(),
